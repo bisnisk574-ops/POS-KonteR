@@ -1,0 +1,461 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KonterKU Pro - My Cloud</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    :root { --primary: #00529C; --bg: #f8fafc; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); overflow-x: hidden; }
+    .header-gradient { background: linear-gradient(135deg, #00529C 0%, #0073D1 100%); border-radius: 0 0 40px 40px; }
+    .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 24px; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255,255,255,0.5); }
+    .form-control { width: 100%; background: #f1f5f9; border: 2px solid transparent; padding: 1rem; border-radius: 18px; font-weight: 600; outline: none; transition: 0.3s; font-size: 0.875rem; color: #1e293b; }
+    .form-control:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0, 82, 156, 0.1); }
+    #sidebar { transform: translateX(-100%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1200; position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: white; }
+    #sidebar.active { transform: translateX(0); }
+    #sidebar-overlay { opacity: 0; pointer-events: none; transition: 0.3s; z-index: 1100; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+    #sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+    .tab-btn { flex: 1; padding: 12px; border-radius: 16px; font-size: 0.75rem; font-weight: 800; color: #64748b; transition: 0.3s; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; background: #f1f5f9; }
+    .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 74px; background: #0f172a; border-radius: 24px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .nav-item { color: #475569; font-size: 0.65rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; }
+    .nav-item.active { color: white; }
+    .fab-main { width: 62px; height: 62px; background: linear-gradient(135deg, #00529C, #0073D1); color: white; border-radius: 22px; display: flex; align-items: center; justify-content: center; transform: translateY(-28px); border: 6px solid var(--bg); box-shadow: 0 8px 20px rgba(0,82,156,0.3); cursor: pointer; }
+    .view-section { display: none; animation: fadeIn 0.3s ease-out; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="pb-32">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-overlay" class="fixed inset-0 bg-[#00529C] z-[2000] flex items-center justify-center p-6">
+        <div class="w-full max-w-sm bg-white rounded-[32px] p-8 text-center shadow-2xl">
+            <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 text-3xl font-black mx-auto mb-6">K</div>
+            <h2 class="text-xl font-black text-slate-800 mb-2">KonterKU Pro</h2>
+            <p class="text-[10px] font-bold text-slate-400 mb-8 px-4 uppercase tracking-wider">Masukkan ID Toko untuk Akses Database Cloud</p>
+            <input type="text" id="input-store-id" class="form-control text-center mb-4 uppercase tracking-widest" placeholder="CONTOH: TOKO-ABC">
+            <button onclick="handleLogin()" class="w-full py-4 bg-[#00529C] text-white rounded-2xl font-black shadow-lg active:scale-95 transition-transform">BUKA TOKO</button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <aside id="sidebar" class="p-6 shadow-2xl">
+        <div class="flex items-center gap-4 mb-10">
+            <div class="w-12 h-12 bg-[#00529C] rounded-2xl flex items-center justify-center text-white text-xl font-black">K</div>
+            <div>
+                <h3 class="font-black text-slate-800 leading-none">KonterKU Pro</h3>
+                <p id="display-store-id" class="text-[9px] font-black text-blue-500 mt-1 uppercase tracking-widest"></p>
+            </div>
+        </div>
+        <nav class="space-y-1">
+            <button onclick="showView('dashboard'); toggleSidebar()" class="w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-all text-left">
+                <i class="fas fa-home-alt w-5 text-blue-600"></i> Beranda
+            </button>
+            <button onclick="showView('stok'); toggleSidebar()" class="w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 text-left">
+                <i class="fas fa-box-open w-5 text-amber-500"></i> Inventaris
+            </button>
+            <button onclick="showView('hutang'); toggleSidebar()" class="w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 text-left">
+                <i class="fas fa-hand-holding-dollar w-5 text-rose-500"></i> Piutang
+            </button>
+            <div class="my-6 border-t border-slate-100"></div>
+            <button onclick="logout()" class="w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-rose-600 hover:bg-rose-50 text-left">
+                <i class="fas fa-sign-out-alt w-5"></i> Keluar / Ganti Toko
+            </button>
+        </nav>
+    </aside>
+
+    <!-- LOADING SPINNER -->
+    <div id="loading" class="fixed inset-0 bg-white/90 z-[9999] flex flex-col items-center justify-center" style="display: none;">
+        <div class="loader-spin mb-4"></div>
+        <p class="font-black text-slate-800 tracking-widest text-[10px]">SINKRONISASI DATABASE...</p>
+    </div>
+
+    <!-- MAIN UI -->
+    <header class="header-gradient pt-10 pb-14 px-6 text-white">
+        <div class="flex justify-between items-center mb-8">
+            <button onclick="toggleSidebar()" class="w-11 h-11 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20"><i class="fas fa-bars-staggered"></i></button>
+            <div class="text-center">
+                <h1 class="text-[10px] font-black uppercase tracking-[0.2em] opacity-70" id="view-title">Beranda</h1>
+                <p class="text-[10px] font-extrabold mt-0.5" id="header-date">-</p>
+            </div>
+            <button onclick="location.reload()" class="w-11 h-11 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white/15 backdrop-blur-md p-5 rounded-[28px] border border-white/10">
+                <p class="text-[8px] font-black uppercase opacity-60 mb-1">Total Saldo</p>
+                <h2 id="header-saldo" class="text-sm font-black">Rp 0</h2>
+            </div>
+            <div class="bg-emerald-400/20 backdrop-blur-md p-5 rounded-[28px] border border-emerald-400/20">
+                <p class="text-[8px] font-black uppercase text-emerald-300 mb-1">Laba Hari Ini</p>
+                <h2 id="header-profit" class="text-sm font-black text-emerald-100">Rp 0</h2>
+            </div>
+        </div>
+    </header>
+
+    <main class="px-6 py-8">
+        <section id="view-dashboard" class="view-section active">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-xs font-black text-slate-800">Dompet & Kas</h3>
+                <button onclick="addWalletUI()" class="w-9 h-9 bg-slate-900 text-white rounded-xl flex items-center justify-center text-xs"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="wallet-grid" class="grid grid-cols-1 gap-4 mb-8"></div>
+            <div class="glass-card p-6">
+                <h4 class="text-[10px] font-black text-slate-400 uppercase mb-5 tracking-widest">Aktivitas Terakhir</h4>
+                <div id="recent-list" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <section id="view-stok" class="view-section">
+            <div class="flex gap-2 bg-slate-200/50 p-1.5 rounded-[22px] mb-6">
+                <button onclick="setStockView('fisik')" id="tab-sv-fisik" class="tab-btn active text-[10px]">STOK FISIK</button>
+                <button onclick="setStockView('digital')" id="tab-sv-digital" class="tab-btn text-[10px]">DIGITAL</button>
+            </div>
+            <div id="stok-list" class="space-y-3 mb-6"></div>
+            <button onclick="openAddStok()" class="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase text-[10px]">TAMBAH PRODUK</button>
+        </section>
+
+        <section id="view-pos" class="view-section text-center py-10">
+            <div class="glass-card p-8">
+                <i class="fas fa-cash-register text-4xl text-blue-600 mb-6"></i>
+                <h2 class="font-black text-slate-800 mb-6">Mulai Transaksi</h2>
+                <div class="space-y-3">
+                    <button onclick="setPosCategory('fisik')" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase">JUAL STOK FISIK</button>
+                    <button onclick="setPosCategory('digital')" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase">JUAL PRODUK DIGITAL</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-pos_form" class="view-section">
+             <div class="glass-card p-6">
+                <div class="mb-4">
+                    <p class="text-[9px] font-black text-slate-400 mb-2 uppercase">Produk</p>
+                    <select id="pos-item" onchange="autoFillPos()" class="form-control"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div><p class="text-[9px] font-black text-slate-400 mb-2 uppercase">Modal</p><input type="number" id="pos-modal" class="form-control"></div>
+                    <div><p class="text-[9px] font-black text-slate-400 mb-2 uppercase">Harga Jual</p><input type="number" id="pos-sell" class="form-control"></div>
+                </div>
+                <div id="pos-wallet-out-box" class="hidden mb-4">
+                    <p class="text-[9px] font-black text-slate-400 mb-2 uppercase">Saldo Terpotong Dari</p>
+                    <select id="pos-wallet-out" class="form-control"></select>
+                </div>
+                <div class="p-5 bg-slate-50 rounded-[24px] mb-6">
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="setPosStatus('Lunas')" id="tab-s-lunas" class="tab-btn active text-[10px]">LUNAS</button>
+                        <button onclick="setPosStatus('Hutang')" id="tab-s-hutang" class="tab-btn text-[10px]">PIUTANG</button>
+                    </div>
+                    <div id="pos-wallet-in-box">
+                        <p class="text-[9px] font-black text-slate-400 mb-2 uppercase">Simpan Hasil Ke</p>
+                        <select id="pos-wallet-in" class="form-control"></select>
+                    </div>
+                </div>
+                <button onclick="submitPos()" class="w-full py-5 bg-blue-600 text-white rounded-[22px] font-black text-[10px] uppercase">SIMPAN TRANSAKSI</button>
+             </div>
+        </section>
+
+        <section id="view-hutang" class="view-section">
+             <div id="debt-list" class="space-y-3"></div>
+             <button onclick="openAddDebtUI()" class="w-full py-5 bg-rose-600 text-white rounded-[24px] font-black uppercase text-[10px] mt-6">TAMBAH PIUTANG BARU</button>
+        </section>
+    </main>
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bottom-nav">
+        <button onclick="showView('dashboard')" class="nav-item active" id="nav-dashboard"><i class="fas fa-home text-lg"></i>HOME</button>
+        <button onclick="showView('stok')" class="nav-item" id="nav-stok"><i class="fas fa-box text-lg"></i>STOK</button>
+        <button onclick="showView('pos')" class="fab-main shadow-blue-500/40"><i class="fas fa-plus text-xl"></i></button>
+        <button onclick="showView('hutang')" class="nav-item" id="nav-hutang"><i class="fas fa-user-clock text-lg"></i>PIUTANG</button>
+        <button onclick="toggleSidebar()" class="nav-item"><i class="fas fa-bars text-lg"></i>MENU</button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // FIREBASE CONFIG FROM USER
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgVPVwYJudzAMNmR011PlWZC0_P0SnK8w",
+            authDomain: "konterkupro.firebaseapp.com",
+            projectId: "konterkupro",
+            storageBucket: "konterkupro.firebasestorage.app",
+            messagingSenderId: "819746888017",
+            appId: "1:819746888017:web:437b6e5b4cbaf1aa821b70",
+            measurementId: "G-W8E39FLYKP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db_fs = getFirestore(app);
+        const appId = "konterku-pro"; // Static identifier for the app structure
+
+        let user = null;
+        let storeId = localStorage.getItem('konterku_v2_store_id') || "";
+        let db = { dompet: [], stok: [], transaksi: [], piutang: [] };
+        
+        // UI Helpers
+        let currentPosCategory = 'fisik';
+        let currentPosStatus = 'Lunas';
+        let currentStockCategory = 'fisik';
+        const fmt = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0);
+
+        // AUTH & BOOTSTRAP
+        async function init() {
+            if (!storeId) {
+                document.getElementById('login-overlay').style.display = 'flex';
+                return;
+            }
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('loading').style.display = 'flex';
+            
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                console.error("Auth Failed", err);
+            }
+        }
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user && storeId) {
+                document.getElementById('display-store-id').innerText = `STORE ID: ${storeId}`;
+                startSync();
+            }
+        });
+
+        window.handleLogin = () => {
+            const id = document.getElementById('input-store-id').value.trim().toUpperCase();
+            if (!id) return Swal.fire('Error', 'Masukkan ID Toko!', 'error');
+            localStorage.setItem('konterku_v2_store_id', id);
+            storeId = id;
+            init();
+        };
+
+        window.logout = () => {
+            localStorage.removeItem('konterku_v2_store_id');
+            location.reload();
+        };
+
+        // SYNCING
+        function startSync() {
+            const storePath = doc(db_fs, 'artifacts', appId, 'public', 'data', storeId);
+            
+            onSnapshot(storePath, (snap) => {
+                if (snap.exists()) {
+                    db = snap.data();
+                } else {
+                    db = {
+                        dompet: [
+                            { id: 'W1', nama: 'Kas Tunai', saldo: 0, jenis: 'tunai', locked: true },
+                            { id: 'W2', nama: 'E-Wallet/Bank', saldo: 0, jenis: 'bank', locked: true }
+                        ],
+                        stok: [], transaksi: [], piutang: []
+                    };
+                    saveToCloud();
+                }
+                document.getElementById('loading').style.display = 'none';
+                renderAll();
+            }, (err) => {
+                console.error("Database Sync Error", err);
+                Swal.fire('Error Database', 'Gagal memuat data dari cloud.', 'error');
+            });
+        }
+
+        async function saveToCloud() {
+            if (!user || !storeId) return;
+            const storePath = doc(db_fs, 'artifacts', appId, 'public', 'data', storeId);
+            try { await setDoc(storePath, db); } catch (e) { console.error("Cloud Save Failed", e); }
+        }
+
+        // UI ACTIONS
+        window.renderAll = () => {
+            const today = new Date().toISOString().split('T')[0];
+            const trxToday = (db.transaksi || []).filter(t => t.tgl === today);
+            
+            const totalSaldo = (db.dompet || []).reduce((a,b) => a + Number(b.saldo), 0);
+            const todayProfit = trxToday.filter(t => t.type === 'transaksi').reduce((a,b) => a + (Number(b.sell) - Number(b.modal)), 0);
+            
+            document.getElementById('header-saldo').innerText = `Rp ${fmt(totalSaldo)}`;
+            document.getElementById('header-profit').innerText = `Rp ${fmt(todayProfit)}`;
+            document.getElementById('header-date').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
+
+            // Wallets
+            document.getElementById('wallet-grid').innerHTML = (db.dompet || []).map(w => `
+                <div class="glass-card p-5 flex justify-between items-center bg-white border border-slate-100">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 ${w.jenis === 'bank' ? 'bg-indigo-50 text-indigo-600' : 'bg-blue-50 text-blue-600'} rounded-xl flex items-center justify-center">
+                            <i class="fas ${w.jenis === 'bank' ? 'fa-university' : 'fa-wallet'}"></i>
+                        </div>
+                        <div>
+                            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">${w.nama}</p>
+                            <h3 class="text-xs font-black text-slate-800">Rp ${fmt(w.saldo)}</h3>
+                        </div>
+                    </div>
+                </div>`).join('');
+
+            // Activities
+            document.getElementById('recent-list').innerHTML = (db.transaksi || []).slice(-8).reverse().map(t => `
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center text-[10px]"><i class="fas fa-history"></i></div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-800 leading-none mb-1">${t.name}</p>
+                            <p class="text-[7px] text-slate-400 font-bold uppercase">${t.type}</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] font-black ${t.sell >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${t.sell >= 0 ? '+':''}${fmt(t.sell)}</p>
+                </div>`).join('');
+
+            renderStokUI();
+            renderDebtUI();
+            renderPosFormOptions();
+        };
+
+        window.renderStokUI = () => {
+            const items = (db.stok || []).filter(s => s.kat === currentStockCategory);
+            document.getElementById('stok-list').innerHTML = items.map(s => `
+                <div class="glass-card p-4 flex justify-between items-center bg-white border border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center text-xs"><i class="fas ${s.kat==='fisik'?'fa-box':'fa-bolt'}"></i></div>
+                        <div><h4 class="text-[10px] font-black uppercase leading-none mb-1">${s.name}</h4><p class="text-[9px] font-black text-blue-600">Rp ${fmt(s.jual)}</p></div>
+                    </div>
+                    <div class="text-right"><p class="text-[7px] font-black text-slate-400 uppercase">Stok</p><p class="text-[10px] font-black">${s.kat==='digital'?'∞':s.qty}</p></div>
+                </div>`).join('');
+        };
+
+        window.openAddStok = async () => {
+            const { value: res } = await Swal.fire({
+                title: 'Produk Baru',
+                html: `<div class="text-left space-y-4"><input id="s-name" class="form-control" placeholder="Nama Produk"><select id="s-kat" class="form-control"><option value="fisik">Fisik</option><option value="digital">Digital</option></select><input id="s-qty" type="number" class="form-control" placeholder="Stok (untuk Fisik)"><input id="s-modal" type="number" class="form-control" placeholder="Modal"><input id="s-jual" type="number" class="form-control" placeholder="Jual"></div>`,
+                preConfirm: () => ({ name: document.getElementById('s-name').value, kat: document.getElementById('s-kat').value, modal: Number(document.getElementById('s-modal').value), jual: Number(document.getElementById('s-jual').value), qty: Number(document.getElementById('s-qty').value) || 0 })
+            });
+            if(res && res.name) { db.stok.push({ id: 'S'+Date.now(), ...res }); saveToCloud(); }
+        };
+
+        // POS LOGIC
+        window.setPosCategory = (c) => { 
+            currentPosCategory = c; 
+            showView('pos_form'); 
+            renderPosFormOptions(); 
+            document.getElementById('pos-wallet-out-box').classList.toggle('hidden', c !== 'digital'); 
+        };
+
+        function renderPosFormOptions() {
+            const items = (db.stok || []).filter(s => s.kat === currentPosCategory);
+            document.getElementById('pos-item').innerHTML = `<option value="">Pilih Produk...</option>` + items.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            const wOpts = (db.dompet || []).map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
+            document.getElementById('pos-wallet-in').innerHTML = wOpts;
+            document.getElementById('pos-wallet-out').innerHTML = wOpts;
+        }
+
+        window.autoFillPos = () => {
+            const sid = document.getElementById('pos-item').value;
+            const item = db.stok.find(x => x.id === sid);
+            if(item) {
+                document.getElementById('pos-modal').value = item.modal;
+                document.getElementById('pos-sell').value = item.jual;
+            }
+        };
+
+        window.setPosStatus = (s) => { 
+            currentPosStatus = s; 
+            document.getElementById('tab-s-lunas').classList.toggle('active', s === 'Lunas'); 
+            document.getElementById('tab-s-hutang').classList.toggle('active', s === 'Hutang'); 
+            document.getElementById('pos-wallet-in-box').classList.toggle('hidden', s === 'Hutang'); 
+        };
+
+        window.submitPos = async () => {
+            const sid = document.getElementById('pos-item').value;
+            const modal = Number(document.getElementById('pos-modal').value);
+            const sell = Number(document.getElementById('pos-sell').value);
+            if(!sid || sell <= 0) return Swal.fire('Error', 'Lengkapi data transaksi', 'error');
+            
+            const item = db.stok.find(x => x.id === sid);
+            
+            if(currentPosCategory === 'digital') {
+                const wOut = db.dompet.find(x => x.id === document.getElementById('pos-wallet-out').value);
+                if(wOut.saldo < modal) return Swal.fire('Gagal', 'Saldo dompet tidak cukup', 'error');
+                wOut.saldo -= modal;
+            } else {
+                if(item.qty <= 0) return Swal.fire('Habis', 'Stok fisik habis', 'error');
+                item.qty--;
+            }
+
+            if(currentPosStatus === 'Lunas') {
+                const wIn = db.dompet.find(x => x.id === document.getElementById('pos-wallet-in').value);
+                wIn.saldo += sell;
+                db.transaksi.push({ id: 'TX'+Date.now(), name: item.name, modal, sell, tgl: new Date().toISOString().split('T')[0], type: 'transaksi' });
+            } else {
+                const { value: p } = await Swal.fire({ title: 'Nama Pembeli', input: 'text', placeholder: 'Siapa yang berhutang?' });
+                if(!p) return;
+                db.piutang.push({ id: 'P'+Date.now(), name: p, total: sell, paid: 0, note: item.name, tgl: new Date().toISOString().split('T')[0] });
+                db.transaksi.push({ id: 'TX'+Date.now(), name: `Piutang: ${p}`, modal, sell: 0, tgl: new Date().toISOString().split('T')[0], type: 'piutang' });
+            }
+            saveToCloud();
+            showView('dashboard');
+        };
+
+        // DEBT LOGIC
+        window.renderDebtUI = () => {
+            document.getElementById('debt-list').innerHTML = (db.piutang || []).map(h => `
+                <div class="glass-card p-5 bg-white border-l-4 border-rose-500">
+                    <div class="flex justify-between mb-3">
+                        <div><h4 class="text-[10px] font-black uppercase">${h.name}</h4><p class="text-[8px] font-bold text-slate-400 uppercase">${h.note}</p></div>
+                        <p class="text-[10px] font-black text-rose-600">Sisa Rp ${fmt(h.total - h.paid)}</p>
+                    </div>
+                    <button onclick="payDebtUI('${h.id}')" class="w-full py-2.5 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase">BAYAR CICILAN</button>
+                </div>`).join('');
+        };
+
+        window.payDebtUI = async (id) => {
+            const h = db.piutang.find(x => x.id === id);
+            const wOpts = db.dompet.map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
+            const { value: res } = await Swal.fire({
+                title: 'Bayar Piutang',
+                html: `<div class="text-left space-y-4"><input id="pc-amount" type="number" class="form-control" placeholder="Nominal Bayar"><select id="pc-wallet" class="form-control">${wOpts}</select></div>`,
+                preConfirm: () => ({ amount: Number(document.getElementById('pc-amount').value), wid: document.getElementById('pc-wallet').value })
+            });
+            if(res && res.amount > 0) {
+                h.paid += res.amount;
+                const w = db.dompet.find(x => x.id === res.wid);
+                w.saldo += res.amount;
+                db.transaksi.push({ id: 'TX'+Date.now(), name: `Cicilan: ${h.name}`, modal: 0, sell: res.amount, tgl: new Date().toISOString().split('T')[0], type: 'transaksi' });
+                saveToCloud();
+            }
+        };
+
+        // NAVIGATION
+        window.showView = (v) => {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('view-' + v).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const nav = document.getElementById('nav-' + v); if(nav) nav.classList.add('active');
+            document.getElementById('view-title').innerText = v === 'dashboard' ? 'Beranda' : v.toUpperCase();
+        };
+
+        window.toggleSidebar = () => {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        };
+
+        window.setStockView = (v) => { currentStockCategory = v; renderStokUI(); 
+            document.getElementById('tab-sv-fisik').classList.toggle('active', v === 'fisik');
+            document.getElementById('tab-sv-digital').classList.toggle('active', v === 'digital');
+        };
+
+        init();
+    </script>
+</body>
+</html>
+
+```
