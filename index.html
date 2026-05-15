@@ -4,164 +4,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>KonterKU Pro - Cloud Edition</title>
+  <title>KonterKU Pro - Cloud</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
     :root { --primary: #00529C; --bg: #f8fafc; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); overflow-x: hidden; color: #1e293b; }
-    .header-gradient { background: linear-gradient(135deg, #00529C 0%, #0073D1 100%); border-radius: 0 0 35px 35px; }
-    .glass-card { background: white; border-radius: 24px; box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9; }
-    .form-control { width: 100%; background: #f1f5f9; border: 2px solid transparent; padding: 0.8rem 1rem; border-radius: 15px; font-weight: 600; outline: none; transition: 0.3s; font-size: 0.9rem; }
-    .form-control:focus { background: #fff; border-color: var(--primary); }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: #1e293b; -webkit-tap-highlight-color: transparent; }
+    .header-gradient { background: linear-gradient(135deg, #00529C 0%, #0073D1 100%); border-radius: 0 0 30px 30px; }
+    .glass-card { background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+    .form-control { width: 100%; background: #f1f5f9; border: 2px solid transparent; padding: 0.75rem 1rem; border-radius: 12px; font-weight: 600; outline: none; transition: 0.3s; }
+    .form-control:focus { background: white; border-color: var(--primary); }
     
-    /* Navigation */
-    .bottom-nav { position: fixed; bottom: 15px; left: 15px; right: 15px; height: 70px; background: #0f172a; border-radius: 22px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+    .bottom-nav { position: fixed; bottom: 12px; left: 12px; right: 12px; height: 65px; background: #0f172a; border-radius: 20px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
     .nav-item { color: #64748b; font-size: 0.6rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; }
     .nav-item.active { color: white; }
-    .fab-main { width: 58px; height: 58px; background: linear-gradient(135deg, #00529C, #0073D1); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; transform: translateY(-25px); border: 5px solid var(--bg); box-shadow: 0 8px 15px rgba(0,82,156,0.3); }
+    .fab-main { width: 54px; height: 54px; background: #00529C; color: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; transform: translateY(-20px); border: 4px solid var(--bg); box-shadow: 0 8px 15px rgba(0,82,156,0.3); }
 
-    /* Transitions */
-    .view-section { display: none; animation: fadeIn 0.4s ease; }
+    .view-section { display: none; animation: fadeIn 0.3s ease; }
     .view-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* Tab Buttons */
-    .tab-btn { flex: 1; padding: 10px; border-radius: 14px; font-size: 0.75rem; font-weight: 800; background: #f1f5f9; color: #64748b; transition: 0.3s; }
-    .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-
-    .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+    .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 28px; height: 28px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="pb-28">
+<body class="pb-24">
 
+    <!-- LOGIN SCREEN -->
     <div id="login-overlay" class="fixed inset-0 bg-[#00529C] z-[2000] flex items-center justify-center p-6" style="display: none;">
-        <div class="w-full max-w-sm bg-white rounded-[30px] p-8 text-center shadow-2xl">
-            <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-3xl font-black mx-auto mb-4">K</div>
-            <h2 class="text-xl font-black text-slate-800">Login Konter</h2>
-            <p class="text-[10px] font-bold text-slate-400 mb-8 uppercase tracking-widest">Gunakan ID Toko Anda</p>
-            <input type="text" id="input-store-id" class="form-control text-center mb-4 uppercase tracking-widest" placeholder="ID-TOKO-ANDA">
-            <button onclick="handleLogin()" class="w-full py-4 bg-[#00529C] text-white rounded-2xl font-black shadow-lg">MASUK SEKARANG</button>
+        <div class="w-full max-w-sm bg-white rounded-[28px] p-8 text-center shadow-2xl">
+            <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 text-2xl font-black mx-auto mb-4">K</div>
+            <h2 class="text-lg font-black text-slate-800">Login Toko</h2>
+            <p class="text-[9px] font-bold text-slate-400 mb-6 uppercase tracking-widest">Masukkan ID Toko Anda</p>
+            <input type="text" id="input-store-id" class="form-control text-center mb-4 uppercase tracking-widest" placeholder="AGSCELL">
+            <button onclick="handleLogin()" class="w-full py-4 bg-[#00529C] text-white rounded-xl font-black shadow-lg">MASUK</button>
         </div>
     </div>
 
-    <div id="loading" class="fixed inset-0 bg-white/90 z-[9999] flex flex-col items-center justify-center" style="display: none;">
+    <!-- LOADING SCREEN -->
+    <div id="loading" class="fixed inset-0 bg-white/95 z-[9999] flex flex-col items-center justify-center p-10 text-center" style="display: none;">
         <div class="loader-spin mb-4"></div>
-        <p class="font-black text-slate-800 tracking-widest text-[10px]">MENYAMBUNG KE CLOUD...</p>
+        <p id="loading-text" class="font-black text-slate-800 tracking-widest text-[9px] uppercase">Menghubungkan ke Cloud...</p>
+        <div id="debug-info" class="mt-4 text-[7px] text-rose-500 font-mono break-all opacity-50"></div>
+        <button id="retry-btn" onclick="location.reload()" class="mt-6 px-5 py-2 bg-slate-100 rounded-full text-[9px] font-black hidden uppercase">Coba Lagi</button>
     </div>
 
-    <header class="header-gradient pt-8 pb-12 px-6 text-white">
+    <!-- HEADER -->
+    <header class="header-gradient pt-6 pb-10 px-6 text-white">
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-black">K</div>
+                <div class="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center font-black">K</div>
                 <div>
-                    <h1 id="display-store-id" class="text-xs font-black uppercase tracking-wider">STORE ID: -</h1>
-                    <p id="header-date" class="text-[9px] font-bold opacity-70">Memuat tanggal...</p>
+                    <h1 id="display-store-id" class="text-[9px] font-black uppercase tracking-wider">STORE: -</h1>
+                    <p id="header-date" class="text-[8px] font-bold opacity-70">...</p>
                 </div>
             </div>
-            <button onclick="logout()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20"><i class="fas fa-power-off text-xs"></i></button>
+            <button onclick="logout()" class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center border border-white/20"><i class="fas fa-power-off text-xs"></i></button>
         </div>
         <div class="grid grid-cols-2 gap-4">
-            <div class="bg-white/15 backdrop-blur-md p-4 rounded-3xl border border-white/10">
-                <p class="text-[8px] font-black uppercase opacity-60 mb-1">Total Saldo</p>
-                <h2 id="header-saldo" class="text-sm font-black">Rp 0</h2>
+            <div class="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                <p class="text-[7px] font-black uppercase opacity-60 mb-1 tracking-wider">Total Kas</p>
+                <h2 id="header-saldo" class="text-xs font-black">Rp 0</h2>
             </div>
-            <div class="bg-emerald-400/20 backdrop-blur-md p-4 rounded-3xl border border-emerald-400/20">
-                <p class="text-[8px] font-black uppercase text-emerald-200 mb-1">Laba Hari Ini</p>
-                <h2 id="header-profit" class="text-sm font-black text-emerald-50">Rp 0</h2>
+            <div class="bg-emerald-400/20 backdrop-blur-md p-4 rounded-2xl border border-emerald-400/20">
+                <p class="text-[7px] font-black uppercase text-emerald-200 mb-1 tracking-wider">Laba Hari Ini</p>
+                <h2 id="header-profit" class="text-xs font-black text-emerald-50">Rp 0</h2>
             </div>
         </div>
     </header>
 
-    <main class="px-5 -mt-6">
-        
+    <main class="px-5 -mt-5">
+        <!-- BERANDA -->
         <section id="view-dashboard" class="view-section active">
-            <div class="flex items-center justify-between mb-4 px-1">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Dompet & Kas</h3>
-                <button onclick="addWalletUI()" class="text-blue-600 text-[10px] font-black tracking-widest">+ TAMBAH</button>
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h3 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Dompet & Saldo</h3>
+                <button onclick="addWalletUI()" class="text-blue-600 text-[9px] font-black">+ BARU</button>
             </div>
-            <div id="wallet-grid" class="space-y-3 mb-8"></div>
+            <div id="wallet-grid" class="space-y-2.5 mb-6"></div>
             
             <div class="glass-card p-5">
-                <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Aktivitas Terakhir</h4>
+                <h4 class="text-[9px] font-black text-slate-400 uppercase mb-4 tracking-widest">Log Aktivitas</h4>
                 <div id="recent-list" class="space-y-4"></div>
             </div>
         </section>
 
+        <!-- STOK -->
         <section id="view-stok" class="view-section">
-            <div class="flex gap-2 bg-slate-200/50 p-1.5 rounded-2xl mb-6">
-                <button onclick="setStockView('fisik')" id="tab-sv-fisik" class="tab-btn active">FISIK</button>
-                <button onclick="setStockView('digital')" id="tab-sv-digital" class="tab-btn">DIGITAL</button>
+            <div class="flex gap-2 bg-slate-200/50 p-1 rounded-xl mb-5">
+                <button onclick="setStockView('fisik')" id="tab-sv-fisik" class="flex-1 py-2 rounded-lg text-[9px] font-black bg-white text-blue-600 shadow-sm transition-all">FISIK</button>
+                <button onclick="setStockView('digital')" id="tab-sv-digital" class="flex-1 py-2 rounded-lg text-[9px] font-black text-slate-400 transition-all">DIGITAL</button>
             </div>
-            <div id="stok-list" class="space-y-3 mb-6"></div>
-            <button onclick="openAddStok()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] tracking-widest">TAMBAH PRODUK BARU</button>
+            <div id="stok-list" class="space-y-2.5 mb-5"></div>
+            <button onclick="openAddStok()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black text-[9px] tracking-widest">TAMBAH PRODUK</button>
         </section>
 
+        <!-- PIUTANG -->
         <section id="view-hutang" class="view-section">
-            <div class="px-1 mb-4">
-                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Daftar Piutang</h3>
-            </div>
-            <div id="debt-list" class="space-y-3 mb-6"></div>
-            <p class="text-center text-[10px] text-slate-400 font-bold">Piutang otomatis tercatat saat transaksi berstatus 'Hutang'</p>
+            <div id="debt-list" class="space-y-2.5 mb-5"></div>
+            <p class="text-center text-[8px] text-slate-400 font-bold uppercase tracking-widest">Hutang otomatis tercatat dari POS</p>
         </section>
 
+        <!-- POS -->
         <section id="view-pos_form" class="view-section">
-            <div class="glass-card p-6">
-                <h3 class="text-center font-black text-slate-800 mb-6 uppercase tracking-widest text-xs">Input Transaksi</h3>
+            <div class="glass-card p-5">
+                <h3 class="text-center font-black text-slate-800 mb-5 uppercase tracking-widest text-[10px]">Transaksi Baru</h3>
                 
                 <div class="mb-4">
-                    <label class="text-[9px] font-black text-slate-400 ml-1 uppercase">Pilih Produk</label>
+                    <label class="text-[8px] font-black text-slate-400 ml-1 uppercase">Pilih Produk</label>
                     <select id="pos-item" onchange="autoFillPos()" class="form-control"></select>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
-                        <label class="text-[9px] font-black text-slate-400 ml-1 uppercase">Harga Modal</label>
-                        <input type="number" id="pos-modal" class="form-control" placeholder="0">
+                        <label class="text-[8px] font-black text-slate-400 ml-1 uppercase">Harga Modal</label>
+                        <input type="number" id="pos-modal" class="form-control">
                     </div>
                     <div>
-                        <label class="text-[9px] font-black text-slate-400 ml-1 uppercase">Harga Jual</label>
-                        <input type="number" id="pos-sell" class="form-control" placeholder="0">
+                        <label class="text-[8px] font-black text-slate-400 ml-1 uppercase">Harga Jual</label>
+                        <input type="number" id="pos-sell" class="form-control">
                     </div>
                 </div>
 
-                <div id="pos-wallet-out-box" class="hidden mb-4 p-3 bg-blue-50 rounded-2xl">
-                    <label class="text-[9px] font-black text-blue-400 ml-1 uppercase">Pilih Sumber Dana (Modal)</label>
+                <div id="pos-wallet-out-box" class="hidden mb-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                    <label class="text-[8px] font-black text-blue-500 ml-1 uppercase">Sumber Dana Modal</label>
                     <select id="pos-wallet-out" class="form-control"></select>
                 </div>
 
-                <div class="p-4 bg-slate-50 rounded-[22px] mb-6 border border-slate-200">
-                    <div class="flex gap-2 mb-4">
-                        <button onclick="setPosStatus('Lunas')" id="tab-s-lunas" class="tab-btn active">LUNAS</button>
-                        <button onclick="setPosStatus('Hutang')" id="tab-s-hutang" class="tab-btn">HUTANG</button>
+                <div class="p-4 bg-slate-50 rounded-2xl mb-5 border border-slate-200">
+                    <div class="flex gap-2 mb-3">
+                        <button onclick="setPosStatus('Lunas')" id="tab-s-lunas" class="flex-1 py-1.5 rounded-lg text-[9px] font-black bg-white text-blue-600 shadow-sm">LUNAS</button>
+                        <button onclick="setPosStatus('Hutang')" id="tab-s-hutang" class="flex-1 py-1.5 rounded-lg text-[9px] font-black text-slate-400">HUTANG</button>
                     </div>
                     <div id="pos-wallet-in-box">
-                        <label class="text-[9px] font-black text-slate-400 ml-1 uppercase">Terima Uang Ke</label>
+                        <label class="text-[8px] font-black text-slate-400 ml-1 uppercase">Terima Uang Ke</label>
                         <select id="pos-wallet-in" class="form-control"></select>
                     </div>
                     <div id="pos-debtor-box" class="hidden">
-                        <label class="text-[9px] font-black text-slate-400 ml-1 uppercase">Nama Pelanggan</label>
-                        <input type="text" id="pos-debtor" class="form-control" placeholder="Nama yang hutang">
+                        <label class="text-[8px] font-black text-slate-400 ml-1 uppercase">Nama Pelanggan</label>
+                        <input type="text" id="pos-debtor" class="form-control" placeholder="Nama pengutang">
                     </div>
                 </div>
 
-                <button onclick="submitPos()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-[11px] tracking-widest uppercase shadow-lg shadow-blue-200">Simpan Transaksi</button>
-                <button onclick="showView('dashboard')" class="w-full py-3 text-slate-400 font-black text-[10px] mt-2">BATAL</button>
+                <button onclick="submitPos()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] tracking-widest uppercase shadow-lg">SIMPAN TRANSAKSI</button>
+                <button onclick="showView('dashboard')" class="w-full py-3 text-slate-400 font-black text-[8px] mt-1">BATAL</button>
             </div>
         </section>
-
     </main>
 
+    <!-- NAV -->
     <nav class="bottom-nav">
-        <button onclick="showView('dashboard')" class="nav-item active" id="nav-dashboard"><i class="fas fa-home text-lg"></i>BERANDA</button>
+        <button onclick="showView('dashboard')" class="nav-item active" id="nav-dashboard"><i class="fas fa-home text-lg"></i>HOME</button>
         <button onclick="showView('stok')" class="nav-item" id="nav-stok"><i class="fas fa-box text-lg"></i>STOK</button>
-        <button onclick="openPos()" class="fab-main"><i class="fas fa-plus text-xl"></i></button>
+        <button onclick="openPos()" class="fab-main"><i class="fas fa-plus text-lg"></i></button>
         <button onclick="showView('hutang')" class="nav-item" id="nav-hutang"><i class="fas fa-user-clock text-lg"></i>PIUTANG</button>
-        <button onclick="refreshData()" class="nav-item"><i class="fas fa-sync-alt text-lg"></i>RELOAD</button>
+        <button onclick="location.reload()" class="nav-item"><i class="fas fa-sync-alt text-lg"></i>RELOAD</button>
     </nav>
 
     <script type="module">
@@ -169,94 +168,107 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIG FIREBASE KAMU
+        // Ganti config ini sesuai console firebase kamu jika tetap tidak bisa
         const firebaseConfig = {
             apiKey: "AIzaSyBgVPVwYJudzAMNmR011PlWZC0_P0SnK8w",
             authDomain: "konterkupro.firebaseapp.com",
             projectId: "konterkupro",
             storageBucket: "konterkupro.firebasestorage.app",
             messagingSenderId: "819746888017",
-            appId: "1:819746888017:web:437b6e5b4cbaf1aa821b70",
-            measurementId: "G-W8E39FLYKP"
+            appId: "1:819746888017:web:437b6e5b4cbaf1aa821b70"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db_fs = getFirestore(app);
-        const appId = "konterku-pro-v2";
+        const appId = "konterku-pro-final";
 
-        let storeId = localStorage.getItem('konter_store_id') || "";
+        let storeId = localStorage.getItem('k_store_id') || "";
         let db = { dompet: [], stok: [], transaksi: [], piutang: [] };
         let currentStockView = 'fisik';
         let currentPosStatus = 'Lunas';
         const fmt = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0);
 
-        // STARTUP
-        async function boot() {
+        const setDebug = (msg) => {
+            document.getElementById('debug-info').innerText = msg;
+        };
+
+        async function init() {
             if (!storeId) {
                 document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('loading').style.display = 'none';
                 return;
             }
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('loading').style.display = 'flex';
-            await signInAnonymously(auth);
+            setDebug("Mencoba login anonim...");
+            
+            try {
+                await signInAnonymously(auth);
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loading-text').innerText = "Gagal Konek Auth!";
+                setDebug(e.message);
+                document.getElementById('retry-btn').classList.remove('hidden');
+            }
         }
 
         onAuthStateChanged(auth, (u) => {
             if (u && storeId) {
-                document.getElementById('display-store-id').innerText = `STORE ID: ${storeId}`;
+                setDebug("Auth Berhasil. Mengambil data...");
+                document.getElementById('display-store-id').innerText = `STORE: ${storeId}`;
                 startSync();
             }
         });
 
-        window.handleLogin = () => {
-            const id = document.getElementById('input-store-id').value.trim().toUpperCase();
-            if (!id) return Swal.fire('Error', 'Masukkan ID Toko!', 'error');
-            localStorage.setItem('konter_store_id', id);
-            storeId = id;
-            boot();
-        };
-
-        window.logout = () => {
-            localStorage.removeItem('konter_store_id');
-            location.reload();
-        };
-
-        // SYNC LOGIC
         function startSync() {
             const storeRef = doc(db_fs, 'artifacts', appId, 'public', 'data', storeId);
+            
+            // Timeout jika loading lebih dari 10 detik
+            const timeout = setTimeout(() => {
+                if(document.getElementById('loading').style.display !== 'none') {
+                    document.getElementById('loading-text').innerText = "Koneksi Lambat...";
+                    setDebug("Firestore belum merespon. Cek sinyal atau Rules.");
+                    document.getElementById('retry-btn').classList.remove('hidden');
+                }
+            }, 10000);
+
             onSnapshot(storeRef, (snap) => {
+                clearTimeout(timeout);
                 if (snap.exists()) {
                     db = snap.data();
+                    setDebug("Data ditemukan.");
                 } else {
+                    setDebug("Toko baru terdeteksi. Membuat database...");
                     db = {
-                        dompet: [
-                            { id: 'W1', nama: 'Kas Tunai', saldo: 0, jenis: 'tunai' },
-                            { id: 'W2', nama: 'E-Wallet', saldo: 0, jenis: 'bank' }
-                        ],
+                        dompet: [{ id: 'W1', nama: 'Kas Tunai', saldo: 0, jenis: 'tunai' }],
                         stok: [], transaksi: [], piutang: []
                     };
-                    saveToCloud();
+                    save();
                 }
                 document.getElementById('loading').style.display = 'none';
-                renderAll();
+                render();
             }, (err) => {
-                document.getElementById('loading').style.display = 'none';
-                Swal.fire('Database Error', 'Periksa Firestore Rules di Console Firebase Anda!', 'error');
+                clearTimeout(timeout);
+                console.error(err);
+                document.getElementById('loading-text').innerHTML = `<span class="text-rose-500 font-bold">AKSES DITOLAK!</span>`;
+                setDebug("Firestore Error: " + err.code + " - Pastikan Rules sudah terpublish.");
+                document.getElementById('retry-btn').classList.remove('hidden');
             });
         }
 
-        async function saveToCloud() {
-            if (!storeId) return;
-            const storeRef = doc(db_fs, 'artifacts', appId, 'public', 'data', storeId);
-            await setDoc(storeRef, db);
+        async function save() {
+            if (!storeId || !auth.currentUser) return;
+            try {
+                await setDoc(doc(db_fs, 'artifacts', appId, 'public', 'data', storeId), db);
+            } catch (e) {
+                setDebug("Gagal Simpan: " + e.message);
+            }
         }
 
-        // RENDERING
-        window.renderAll = () => {
+        window.render = () => {
             const today = new Date().toISOString().split('T')[0];
             const trxToday = (db.transaksi || []).filter(t => t.tgl === today);
-            
             const totalSaldo = (db.dompet || []).reduce((a,b) => a + Number(b.saldo), 0);
             const profitToday = trxToday.filter(t => t.type === 'Jual').reduce((a,b) => a + (Number(b.sell) - Number(b.modal)), 0);
 
@@ -264,76 +276,72 @@
             document.getElementById('header-profit').innerText = `Rp ${fmt(profitToday)}`;
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' });
 
-            // Wallets
             document.getElementById('wallet-grid').innerHTML = (db.dompet || []).map(w => `
                 <div class="glass-card p-4 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 ${w.jenis === 'bank' ? 'bg-indigo-50 text-indigo-600' : 'bg-blue-50 text-blue-600'} rounded-xl flex items-center justify-center">
+                        <div class="w-9 h-9 ${w.jenis === 'bank' ? 'bg-indigo-50 text-indigo-600' : 'bg-blue-50 text-blue-600'} rounded-lg flex items-center justify-center text-xs">
                             <i class="fas ${w.jenis === 'bank' ? 'fa-university' : 'fa-wallet'}"></i>
                         </div>
                         <div>
-                            <p class="text-[8px] font-black text-slate-400 uppercase">${w.nama}</p>
-                            <h3 class="text-[11px] font-black">Rp ${fmt(w.saldo)}</h3>
+                            <p class="text-[7px] font-black text-slate-400 uppercase">${w.nama}</p>
+                            <h3 class="text-[10px] font-black">Rp ${fmt(w.saldo)}</h3>
                         </div>
                     </div>
                 </div>`).join('');
 
-            // Activities
             document.getElementById('recent-list').innerHTML = (db.transaksi || []).slice(-5).reverse().map(t => `
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <div class="w-7 h-7 bg-slate-50 text-slate-300 rounded flex items-center justify-center text-[8px]"><i class="fas fa-history"></i></div>
+                        <div class="w-7 h-7 bg-slate-50 text-slate-300 rounded flex items-center justify-center text-[7px]"><i class="fas fa-history"></i></div>
                         <div>
-                            <p class="text-[9px] font-black text-slate-700 leading-none mb-1">${t.name}</p>
+                            <p class="text-[8px] font-black text-slate-700 leading-none mb-1">${t.name}</p>
                             <p class="text-[7px] text-slate-400 font-bold uppercase">${t.type}</p>
                         </div>
                     </div>
                     <p class="text-[9px] font-black ${t.sell > 0 ? 'text-emerald-600' : 'text-rose-600'}">${t.sell > 0 ? '+' : ''}${fmt(t.sell)}</p>
-                </div>`).join('') || '<p class="text-center text-[10px] text-slate-300 py-4">Belum ada aktivitas</p>';
+                </div>`).join('') || '<p class="text-center text-[8px] text-slate-300 py-2">Belum ada data</p>';
 
-            renderStokList();
-            renderDebtList();
+            renderStok();
+            renderHutang();
         };
 
-        // STOK LOGIC
-        window.setStockView = (v) => { currentStockView = v; renderStokList(); 
-            document.getElementById('tab-sv-fisik').classList.toggle('active', v==='fisik');
-            document.getElementById('tab-sv-digital').classList.toggle('active', v==='digital');
+        window.setStockView = (v) => { 
+            currentStockView = v; 
+            renderStok();
+            document.getElementById('tab-sv-fisik').className = v === 'fisik' ? 'flex-1 py-2 rounded-lg text-[9px] font-black bg-white text-blue-600 shadow-sm' : 'flex-1 py-2 rounded-lg text-[9px] font-black text-slate-400';
+            document.getElementById('tab-sv-digital').className = v === 'digital' ? 'flex-1 py-2 rounded-lg text-[9px] font-black bg-white text-blue-600 shadow-sm' : 'flex-1 py-2 rounded-lg text-[9px] font-black text-slate-400';
         };
 
-        function renderStokList() {
+        function renderStok() {
             const list = (db.stok || []).filter(s => s.kat === currentStockView);
             document.getElementById('stok-list').innerHTML = list.map(s => `
-                <div class="glass-card p-4 flex justify-between items-center">
+                <div class="glass-card p-3 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center"><i class="fas ${s.kat==='fisik'?'fa-box':'fa-bolt'}"></i></div>
-                        <div><h4 class="text-[10px] font-black uppercase leading-none mb-1">${s.name}</h4><p class="text-[9px] font-bold text-blue-600">Rp ${fmt(s.jual)}</p></div>
+                        <div class="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center text-[10px]"><i class="fas ${s.kat==='fisik'?'fa-box':'fa-bolt'}"></i></div>
+                        <div><h4 class="text-[9px] font-black uppercase mb-0.5">${s.name}</h4><p class="text-[8px] font-bold text-blue-600">Rp ${fmt(s.jual)}</p></div>
                     </div>
                     <div class="text-right">
                         <p class="text-[7px] font-black text-slate-300 uppercase">Stok</p>
-                        <p class="text-[10px] font-black ${s.qty < 5 ? 'text-rose-500' : ''}">${s.kat==='digital'?'∞':s.qty}</p>
+                        <p class="text-[10px] font-black">${s.kat==='digital'?'∞':s.qty}</p>
                     </div>
-                </div>`).join('') || '<p class="text-center text-[10px] text-slate-300 py-10 uppercase font-black">Kosong</p>';
+                </div>`).join('') || '<div class="text-center py-8 opacity-20 text-[9px] font-black uppercase">KOSONG</div>';
         }
 
         window.openAddStok = async () => {
-            const { value: res } = await Swal.fire({
-                title: 'Produk Baru',
-                html: `<div class="text-left space-y-4"><input id="s-name" class="form-control" placeholder="Nama Produk"><select id="s-kat" class="form-control"><option value="fisik">Fisik</option><option value="digital">Digital</option></select><input id="s-modal" type="number" class="form-control" placeholder="Harga Modal"><input id="s-jual" type="number" class="form-control" placeholder="Harga Jual"><input id="s-qty" type="number" class="form-control" placeholder="Jumlah Stok"></div>`,
-                preConfirm: () => ({ name: document.getElementById('s-name').value, kat: document.getElementById('s-kat').value, modal: Number(document.getElementById('s-modal').value), jual: Number(document.getElementById('s-jual').value), qty: Number(document.getElementById('s-qty').value) || 0 })
+            const { value: r } = await Swal.fire({
+                title: 'Tambah Produk',
+                html: `<div class="text-left space-y-2"><input id="s-n" class="form-control" placeholder="Nama"><select id="s-k" class="form-control"><option value="fisik">Fisik</option><option value="digital">Digital</option></select><input id="s-m" type="number" class="form-control" placeholder="Modal"><input id="s-j" type="number" class="form-control" placeholder="Jual"><input id="s-q" type="number" class="form-control" placeholder="Stok"></div>`,
+                preConfirm: () => ({ name: document.getElementById('s-n').value, kat: document.getElementById('s-k').value, modal: Number(document.getElementById('s-m').value), jual: Number(document.getElementById('s-j').value), qty: Number(document.getElementById('s-q').value) || 0 })
             });
-            if(res && res.name) { db.stok.push({ id: 'S'+Date.now(), ...res }); saveToCloud(); }
+            if(r && r.name) { if(!db.stok) db.stok = []; db.stok.push({ id: 'S'+Date.now(), ...r }); save(); }
         };
 
-        // TRANS LOGIC (POS)
         window.openPos = () => {
             showView('pos_form');
-            const items = (db.stok || []);
-            document.getElementById('pos-item').innerHTML = '<option value="">-- PILIH PRODUK --</option>' + items.map(i => `<option value="${i.id}">${i.name.toUpperCase()} (${i.kat})</option>`).join('');
-            
-            const wOpts = (db.dompet || []).map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
-            document.getElementById('pos-wallet-in').innerHTML = wOpts;
-            document.getElementById('pos-wallet-out').innerHTML = wOpts;
+            document.getElementById('pos-item').innerHTML = '<option value="">-- PILIH --</option>' + (db.stok || []).map(i => `<option value="${i.id}">${i.name.toUpperCase()}</option>`).join('');
+            const w = (db.dompet || []).map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
+            document.getElementById('pos-wallet-in').innerHTML = w;
+            document.getElementById('pos-wallet-out').innerHTML = w;
         };
 
         window.autoFillPos = () => {
@@ -347,104 +355,98 @@
 
         window.setPosStatus = (s) => {
             currentPosStatus = s;
-            document.getElementById('tab-s-lunas').classList.toggle('active', s === 'Lunas');
-            document.getElementById('tab-s-hutang').classList.toggle('active', s === 'Hutang');
+            document.getElementById('tab-s-lunas').className = s === 'Lunas' ? 'flex-1 py-1.5 rounded-lg text-[9px] font-black bg-white text-blue-600 shadow-sm' : 'flex-1 py-1.5 rounded-lg text-[9px] font-black text-slate-400';
+            document.getElementById('tab-s-hutang').className = s === 'Hutang' ? 'flex-1 py-1.5 rounded-lg text-[9px] font-black bg-white text-blue-600 shadow-sm' : 'flex-1 py-1.5 rounded-lg text-[9px] font-black text-slate-400';
             document.getElementById('pos-wallet-in-box').classList.toggle('hidden', s === 'Hutang');
             document.getElementById('pos-debtor-box').classList.toggle('hidden', s === 'Lunas');
         };
 
         window.submitPos = async () => {
-            const sid = document.getElementById('pos-item').value;
-            const modal = Number(document.getElementById('pos-modal').value);
-            const sell = Number(document.getElementById('pos-sell').value);
-            const item = db.stok.find(x => x.id === sid);
-            
-            if(!item || sell <= 0) return Swal.fire('Gagal', 'Lengkapi data!', 'error');
+            const i = db.stok.find(x => x.id === document.getElementById('pos-item').value);
+            const m = Number(document.getElementById('pos-modal').value);
+            const s = Number(document.getElementById('pos-sell').value);
+            if(!i || s <= 0) return;
 
-            // Logika Stok & Pengeluaran Modal Digital
-            if(item.kat === 'digital') {
-                const wOut = db.dompet.find(x => x.id === document.getElementById('pos-wallet-out').value);
-                if(wOut.saldo < modal) return Swal.fire('Saldo Kurang', `Saldo di ${wOut.nama} tidak cukup untuk modal.`, 'error');
-                wOut.saldo -= modal;
+            if(i.kat === 'digital') {
+                const wO = db.dompet.find(x => x.id === document.getElementById('pos-wallet-out').value);
+                if(wO.saldo < m) return Swal.fire('Saldo Kurang', '', 'error');
+                wO.saldo -= m;
             } else {
-                if(item.qty <= 0) return Swal.fire('Habis', 'Stok fisik habis!', 'error');
-                item.qty--;
+                if(i.qty <= 0) return Swal.fire('Stok Habis', '', 'error');
+                i.qty--;
             }
 
-            // Logika Penerimaan Uang
             if(currentPosStatus === 'Lunas') {
-                const wIn = db.dompet.find(x => x.id === document.getElementById('pos-wallet-in').value);
-                wIn.saldo += sell;
-                db.transaksi.push({ id: 'TX'+Date.now(), name: item.name, modal, sell, tgl: new Date().toISOString().split('T')[0], type: 'Jual' });
+                const wI = db.dompet.find(x => x.id === document.getElementById('pos-wallet-in').value);
+                wI.saldo += s;
+                if(!db.transaksi) db.transaksi = [];
+                db.transaksi.push({ id: 'T'+Date.now(), name: i.name, modal: m, sell: s, tgl: new Date().toISOString().split('T')[0], type: 'Jual' });
             } else {
-                const debtor = document.getElementById('pos-debtor').value;
-                if(!debtor) return Swal.fire('Nama?', 'Nama pelanggan harus diisi untuk hutang!', 'warning');
-                db.piutang.push({ id: 'P'+Date.now(), name: debtor, total: sell, paid: 0, note: item.name, tgl: new Date().toISOString().split('T')[0] });
-                db.transaksi.push({ id: 'TX'+Date.now(), name: `Piutang: ${debtor}`, modal, sell: 0, tgl: new Date().toISOString().split('T')[0], type: 'Hutang' });
+                const d = document.getElementById('pos-debtor').value;
+                if(!d) return;
+                if(!db.piutang) db.piutang = [];
+                db.piutang.push({ id: 'P'+Date.now(), name: d, total: s, paid: 0, tgl: new Date().toISOString().split('T')[0] });
+                if(!db.transaksi) db.transaksi = [];
+                db.transaksi.push({ id: 'T'+Date.now(), name: `Hutang: ${d}`, modal: m, sell: 0, tgl: new Date().toISOString().split('T')[0], type: 'Hutang' });
             }
-
-            await saveToCloud();
-            Swal.fire({ title: 'Berhasil', icon: 'success', timer: 1000, showConfirmButton: false });
+            await save();
             showView('dashboard');
         };
 
-        // DEBT LOGIC
-        function renderDebtList() {
-            const list = (db.piutang || []).filter(h => h.total - h.paid > 0);
-            document.getElementById('debt-list').innerHTML = list.map(h => `
+        function renderHutang() {
+            const l = (db.piutang || []).filter(h => h.total - h.paid > 0);
+            document.getElementById('debt-list').innerHTML = l.map(h => `
                 <div class="glass-card p-4 flex justify-between items-center border-l-4 border-rose-500">
-                    <div>
-                        <h4 class="text-[10px] font-black uppercase mb-1">${h.name}</h4>
-                        <p class="text-[8px] font-bold text-slate-400">SISA: Rp ${fmt(h.total - h.paid)}</p>
-                    </div>
-                    <button onclick="payDebtUI('${h.id}')" class="px-3 py-2 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase">BAYAR</button>
-                </div>`).join('') || '<p class="text-center text-[10px] text-slate-300 py-10 uppercase font-black">Tidak ada piutang</p>';
+                    <div><h4 class="text-[9px] font-black uppercase mb-1">${h.name}</h4><p class="text-[8px] font-bold text-slate-400">SISA: Rp ${fmt(h.total - h.paid)}</p></div>
+                    <button onclick="payUI('${h.id}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-[8px] font-black">BAYAR</button>
+                </div>`).join('') || '<div class="text-center py-8 opacity-20 text-[9px] font-black uppercase">LUNAS SEMUA</div>';
         }
 
-        window.payDebtUI = async (id) => {
+        window.payUI = async (id) => {
             const h = db.piutang.find(x => x.id === id);
-            const wOpts = (db.dompet || []).map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
-            const { value: res } = await Swal.fire({
-                title: 'Bayar Hutang',
-                html: `<p class="text-[10px] mb-4">Sisa Hutang: Rp ${fmt(h.total-h.paid)}</p><input id="pay-amt" type="number" class="form-control" placeholder="Nominal Bayar"><select id="pay-wal" class="form-control mt-3">${wOpts}</select>`,
-                preConfirm: () => ({ amt: Number(document.getElementById('pay-amt').value), wid: document.getElementById('pay-wal').value })
+            const w = db.dompet.map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
+            const { value: r } = await Swal.fire({
+                title: 'Cicil',
+                html: `<input id="p-a" type="number" class="form-control" placeholder="Jumlah"><select id="p-w" class="form-control mt-2">${w}</select>`,
+                preConfirm: () => ({ a: Number(document.getElementById('p-a').value), wid: document.getElementById('p-w').value })
             });
-            
-            if(res && res.amt > 0) {
-                h.paid += res.amt;
-                const w = db.dompet.find(x => x.id === res.wid);
-                w.saldo += res.amt;
-                db.transaksi.push({ id: 'TX'+Date.now(), name: `Bayar: ${h.name}`, modal: 0, sell: res.amt, tgl: new Date().toISOString().split('T')[0], type: 'Jual' });
-                saveToCloud();
+            if(r && r.a > 0) {
+                h.paid += r.a;
+                db.dompet.find(x => x.id === r.wid).saldo += r.a;
+                db.transaksi.push({ id: 'T'+Date.now(), name: `Cicilan: ${h.name}`, modal: 0, sell: r.a, tgl: new Date().toISOString().split('T')[0], type: 'Jual' });
+                save();
             }
         };
 
-        // NAV GLOBAL
         window.showView = (v) => {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById('view-' + v).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            const nav = document.getElementById('nav-' + v); if(nav) nav.classList.add('active');
+            const n = document.getElementById('nav-' + v); if(n) n.classList.add('active');
         };
+
+        window.handleLogin = () => {
+            const id = document.getElementById('input-store-id').value.trim().toUpperCase();
+            if(!id) return;
+            localStorage.setItem('k_store_id', id);
+            storeId = id;
+            init();
+        };
+
+        window.logout = () => { localStorage.removeItem('k_store_id'); location.reload(); };
 
         window.addWalletUI = async () => {
-            const { value: res } = await Swal.fire({
-                title: 'Dompet Baru',
-                html: `<input id="w-name" class="form-control" placeholder="Nama Dompet"><select id="w-type" class="form-control mt-3"><option value="tunai">Tunai</option><option value="bank">Bank/E-Wallet</option></select><input id="w-sal" type="number" class="form-control mt-3" placeholder="Saldo Awal">`,
-                preConfirm: () => ({ nama: document.getElementById('w-name').value, jenis: document.getElementById('w-type').value, saldo: Number(document.getElementById('w-sal').value) || 0 })
+            const { value: r } = await Swal.fire({
+                title: 'Dompet',
+                html: `<input id="w-n" class="form-control" placeholder="Nama"><select id="w-t" class="form-control mt-2"><option value="tunai">Tunai</option><option value="bank">Bank/Digital</option></select><input id="w-s" type="number" class="form-control mt-2" placeholder="Saldo">`,
+                preConfirm: () => ({ nama: document.getElementById('w-n').value, jenis: document.getElementById('w-t').value, saldo: Number(document.getElementById('w-s').value) || 0 })
             });
-            if(res && res.nama) { db.dompet.push({ id: 'W'+Date.now(), ...res }); saveToCloud(); }
+            if(r && r.nama) { if(!db.dompet) db.dompet = []; db.dompet.push({ id: 'W'+Date.now(), ...r }); save(); }
         };
 
-        window.refreshData = () => {
-            document.getElementById('loading').style.display = 'flex';
-            location.reload();
-        };
-
-        boot();
+        init();
     </script>
 </body>
 </html>
-
 
 ```
