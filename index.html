@@ -70,9 +70,16 @@
                         <p class="text-xs font-bold" id="display-store-name">TOKO DEMO</p>
                     </div>
                 </div>
-                <button onclick="logout()" class="text-xs font-bold bg-white/10 px-4 py-2 rounded-full hover:bg-white/20 transition">
-                    <i class="fas fa-sign-out-alt mr-2"></i>KELUAR
-                </button>
+                <div class="flex items-center gap-2">
+                    <!-- Indikator Koneksi Offline / Online -->
+                    <div id="connection-status" class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[10px] font-black transition-all">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" id="status-dot"></span>
+                        <span id="status-text">ONLINE</span>
+                    </div>
+                    <button onclick="logout()" class="text-xs font-bold bg-white/10 px-4 py-2 rounded-full hover:bg-white/20 transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>KELUAR
+                    </button>
+                </div>
             </div>
             <div class="card-premium p-6 text-slate-800 translate-y-10 shadow-lg border-none">
                 <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Total Saldo Terpusat</p>
@@ -120,10 +127,18 @@
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Transaksi Terakhir</h4>
                     </div>
-                    <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-                        <button onclick="setTrFilter('all')" id="fltr-all" class="filter-chip active">SEMUA</button>
+                    <!-- Filter Kategori Produk -->
+                    <div class="flex gap-2 mb-2 overflow-x-auto no-scrollbar">
+                        <button onclick="setTrFilter('all')" id="fltr-all" class="filter-chip active">SEMUA LAYANAN</button>
                         <button onclick="setTrFilter('DIG')" id="fltr-DIG" class="filter-chip">DIGITAL</button>
                         <button onclick="setTrFilter('FIS')" id="fltr-FIS" class="filter-chip">FISIK</button>
+                    </div>
+                    <!-- Filter Rentang Waktu Baru -->
+                    <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+                        <button onclick="setTimeFilter('all')" id="time-fltr-all" class="filter-chip active">SEMUA WAKTU</button>
+                        <button onclick="setTimeFilter('today')" id="time-fltr-today" class="filter-chip">HARI INI</button>
+                        <button onclick="setTimeFilter('yesterday')" id="time-fltr-yesterday" class="filter-chip">KEMARIN</button>
+                        <button onclick="setTimeFilter('week')" id="time-fltr-week" class="filter-chip">MINGGU INI</button>
                     </div>
                     <div id="recent-list" class="space-y-3"></div>
                 </div>
@@ -155,7 +170,11 @@
                 <div id="form-k-digital" class="card-premium p-6 space-y-4">
                     <div><label>Tanggal</label><input type="date" id="kd-tgl" class="input-premium"></div>
                     <div><label>Pilih Pelanggan</label><select id="kd-customer" class="input-premium"></select></div>
-                    <div><label>Produk Digital</label><select id="kd-produk" class="input-premium" onchange="autoFillPrices('digital')"></select></div>
+                    <div>
+                        <label>Produk Digital</label>
+                        <select id="kd-produk" class="input-premium" onchange="autoFillPrices('digital')"></select>
+                        <input type="text" id="kd-produk-manual" class="input-premium mt-2 hidden" placeholder="Masukkan Nama Produk Digital Manual...">
+                    </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label>Harga Modal</label><input type="number" id="kd-modal" class="input-premium" placeholder="0"></div>
                         <div><label>Harga Jual</label><input type="number" id="kd-jual" class="input-premium" placeholder="0"></div>
@@ -190,7 +209,7 @@
             <section id="view-stok" class="view-section">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-black">Stok Produk</h3>
-                    <button onclick="openModal('modal-produk')" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center"><i class="fas fa-plus"></i></button>
+                    <button onclick="openAddProdukModal()" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center"><i class="fas fa-plus"></i></button>
                 </div>
                 <div id="stok-list" class="space-y-3"></div>
             </section>
@@ -242,9 +261,11 @@
             <section id="view-hutang" class="view-section">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-black">Hutang</h3>
+                    <!-- Dropdown switcher tab diganti menjadi 3 tab: PELANGGAN, TOKO KITA, RIWAYAT BAYAR -->
                     <div class="flex bg-slate-200/50 p-1.5 rounded-2xl gap-1 flex-1 ml-4 border border-slate-200">
-                        <button onclick="setHutangTab('pelanggan')" id="btn-h-plg" class="tab-btn active">PELANGGAN</button>
-                        <button onclick="setHutangTab('toko')" id="btn-h-toko" class="tab-btn inactive">TOKO KITA</button>
+                        <button onclick="setHutangTab('pelanggan')" id="btn-h-plg" class="tab-btn active text-[10px]">PELANGGAN</button>
+                        <button onclick="setHutangTab('toko')" id="btn-h-toko" class="tab-btn inactive text-[10px]">TOKO KITA</button>
+                        <button onclick="setHutangTab('riwayat')" id="btn-h-riwayat" class="tab-btn inactive text-[10px]">RIWAYAT BAYAR</button>
                     </div>
                 </div>
 
@@ -357,10 +378,12 @@
             </div>
         </div>
 
+        <!-- MODAL: Tambah/Edit Produk -->
         <div id="modal-produk" class="modal-overlay" onclick="closeModal('modal-produk')">
             <div class="modal-content" onclick="event.stopPropagation()">
-                <h4 class="text-lg font-black mb-6">Tambah Produk</h4>
+                <h4 class="text-lg font-black mb-6" id="p-modal-title">Tambah Produk</h4>
                 <div class="space-y-4">
+                    <input type="hidden" id="p-id">
                     <div><label>Nama Produk</label><input type="text" id="p-nama" class="input-premium"></div>
                     <div><label>Tipe</label><select id="p-tipe" class="input-premium"><option value="digital">Digital</option><option value="fisik">Fisik</option></select></div>
                     <div class="grid grid-cols-2 gap-3">
@@ -397,13 +420,52 @@
             </div>
         </div>
 
+        <!-- MODAL: Penyesuaian Saldo -->
         <div id="modal-adj-wallet" class="modal-overlay" onclick="closeModal('modal-adj-wallet')">
             <div class="modal-content" onclick="event.stopPropagation()">
-                <h4 class="text-lg font-black mb-6">Penyesuaian Saldo</h4>
+                <div class="flex justify-between items-center mb-6">
+                    <h4 class="text-lg font-black">Penyesuaian Saldo</h4>
+                    <button onclick="closeModal('modal-adj-wallet')" class="text-slate-400"><i class="fas fa-times"></i></button>
+                </div>
                 <div class="space-y-4">
-                    <div><label>Dompet</label><select id="adj-wallet" class="input-premium"></select></div>
-                    <div><label>Saldo Baru</label><input type="number" id="adj-amount" class="input-premium"></div>
-                    <button onclick="processAdjustment()" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-black">SINKRONKAN</button>
+                    <div>
+                        <label>Pilih Dompet</label>
+                        <select id="adj-wallet" class="input-premium"></select>
+                    </div>
+                    <div>
+                        <label>Tipe Aksi</label>
+                        <select id="adj-type" class="input-premium">
+                            <option value="tambah">Tambah Saldo (+)</option>
+                            <option value="kurang">Kurangi Saldo (-)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Jumlah Nominal Perubahan</label>
+                        <input type="number" id="adj-amount" class="input-premium" placeholder="0">
+                    </div>
+                    <div>
+                        <label>Alasan / Keterangan</label>
+                        <input type="text" id="adj-reason" class="input-premium" placeholder="Contoh: Koreksi selisih, Bonus harian">
+                    </div>
+                    <button onclick="processAdjustment()" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-black shadow-lg shadow-amber-200">SINKRONKAN SALDO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Edit Transaksi Terakhir -->
+        <div id="modal-edit-tr" class="modal-overlay" onclick="closeModal('modal-edit-tr')">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="flex justify-between items-center mb-6">
+                    <h4 class="text-lg font-black">Edit Transaksi</h4>
+                    <button onclick="closeModal('modal-edit-tr')" class="text-slate-400"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <input type="hidden" id="edit-tr-id">
+                    <div><label>Tanggal Transaksi</label><input type="date" id="edit-tr-tgl" class="input-premium"></div>
+                    <div><label>Nama Pelanggan</label><input type="text" id="edit-tr-pelanggan" class="input-premium" placeholder="Nama Pelanggan"></div>
+                    <div><label>Harga Modal (Rp)</label><input type="number" id="edit-tr-modal" class="input-premium" placeholder="0"></div>
+                    <div><label>Harga Jual (Rp)</label><input type="number" id="edit-tr-jual" class="input-premium" placeholder="0"></div>
+                    <button onclick="saveEditTr()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100">SIMPAN PERUBAHAN</button>
                 </div>
             </div>
         </div>
@@ -420,10 +482,11 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvat0C4aqitYiaEWWlcYx_C2BfUL65ODh1kNJtxvumbG90avcTLnc5rp7bXlHB6-FwAA/exec";
         
-        let db = { dompet: [], transaksi: [], inventory: [], hutang: [], pelanggan: [], mutasi: [], notes: [] };
+        let db = { dompet: [], transaksi: [], inventory: [], hutang: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
         
         let activeHutangTab = 'pelanggan';
         let currentTrFilter = 'all';
+        let currentTimeFilter = 'all'; // State filter waktu
         let currentManualHutangType = 'pelanggan';
         const fmt = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0);
 
@@ -431,6 +494,28 @@
             const pill = document.getElementById('sync-pill');
             if (pill) pill.classList.toggle('hidden', !s);
         }
+
+        // FUNGSI DETEKSI OFFLINE/ONLINE DINAMIS
+        function updateConnectionStatus() {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const connectionStatus = document.getElementById('connection-status');
+            
+            if (!statusDot || !statusText || !connectionStatus) return;
+            
+            if (navigator.onLine) {
+                statusDot.className = "w-2 h-2 bg-emerald-500 rounded-full animate-pulse";
+                statusText.innerText = "ONLINE";
+                connectionStatus.className = "flex items-center gap-1.5 px-3 py-2 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[10px] font-black transition-all";
+            } else {
+                statusDot.className = "w-2 h-2 bg-rose-500 rounded-full animate-bounce";
+                statusText.innerText = "OFFLINE";
+                connectionStatus.className = "flex items-center gap-1.5 px-3 py-2 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[10px] font-black transition-all";
+            }
+        }
+
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
 
         const saveLocalData = () => {
             const activeStoreId = localStorage.getItem('k_sid');
@@ -453,7 +538,8 @@
                             hutang: parsed.hutang || [],
                             pelanggan: parsed.pelanggan || [],
                             mutasi: parsed.mutasi || [],
-                            notes: parsed.notes || []
+                            notes: parsed.notes || [],
+                            riwayat_hutang: parsed.riwayat_hutang || []
                         };
                     } catch (e) {
                         console.error("Gagal membaca storage lokal", e);
@@ -469,9 +555,17 @@
             document.getElementById('nav-' + v).classList.add('active');
         }
 
+        // FILTER TRANSAKSI
         function setTrFilter(f) {
             currentTrFilter = f;
-            document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.id === 'fltr-' + f));
+            document.querySelectorAll('.filter-chip[id^="fltr-"]').forEach(c => c.classList.toggle('active', c.id === 'fltr-' + f));
+            renderDashboard();
+        }
+
+        // FILTER WAKTU
+        function setTimeFilter(f) {
+            currentTimeFilter = f;
+            document.querySelectorAll('.filter-chip[id^="time-fltr-"]').forEach(c => c.classList.toggle('active', c.id === 'time-fltr-' + f));
             renderDashboard();
         }
 
@@ -481,13 +575,35 @@
             document.getElementById('btn-k-fisik').className = `tab-btn ${!isDig ? 'active' : 'inactive'}`;
             document.getElementById('form-k-digital').classList.toggle('hidden', !isDig);
             document.getElementById('form-k-fisik').classList.toggle('hidden', isDig);
+            toggleManualProductInput();
+        }
+
+        function toggleManualProductInput() {
+            const select = document.getElementById('kd-produk');
+            const manualInput = document.getElementById('kd-produk-manual');
+            if (select && select.value === 'manual') {
+                manualInput.classList.remove('hidden');
+                document.getElementById('kd-modal').value = '';
+                document.getElementById('kd-jual').value = '';
+                document.getElementById('kd-modal').readOnly = false;
+                document.getElementById('kd-jual').readOnly = false;
+            } else if (manualInput) {
+                manualInput.classList.add('hidden');
+                manualInput.value = '';
+                document.getElementById('kd-modal').readOnly = false;
+                document.getElementById('kd-jual').readOnly = false;
+            }
         }
 
         function setHutangTab(tab) {
             activeHutangTab = tab;
             const isPlg = tab === 'pelanggan';
+            const isToko = tab === 'toko';
+            const isRiwayat = tab === 'riwayat';
+            
             document.getElementById('btn-h-plg').className = `tab-btn ${isPlg ? 'active' : 'inactive'}`;
-            document.getElementById('btn-h-toko').className = `tab-btn ${!isPlg ? 'active' : 'inactive'}`;
+            document.getElementById('btn-h-toko').className = `tab-btn ${isToko ? 'active' : 'inactive'}`;
+            document.getElementById('btn-h-riwayat').className = `tab-btn ${isRiwayat ? 'active' : 'inactive'}`;
             renderHutang(tab);
         }
 
@@ -757,6 +873,7 @@
             document.getElementById('display-store-name').innerText = localStorage.getItem('k_sid');
             
             loadLocalData();
+            updateConnectionStatus();
             renderAll();
             fetchCloudData();
         }
@@ -781,7 +898,8 @@
                         hutang: data.hutang || [], 
                         pelanggan: data.pelanggan || [], 
                         mutasi: data.mutasi || [],
-                        notes: data.notes || []
+                        notes: data.notes || [],
+                        riwayat_hutang: data.riwayat_hutang || []
                     };
                     saveLocalData();
                     renderAll();
@@ -828,22 +946,179 @@
             updateSelects();
         }
 
+        // RENDER DAFTAR TRANSAKSI DENGAN INTEGRASI FILTER WAKTU & OPERASI REFUND/EDIT
         function renderDashboard() {
             const list = document.getElementById('recent-list');
             let filtered = [...db.transaksi].reverse();
-            if(currentTrFilter !== 'all') filtered = filtered.filter(t => t.produk.includes(currentTrFilter));
+            
+            // 1. Filter Jasa (All / Digital / Fisik)
+            if(currentTrFilter !== 'all') {
+                filtered = filtered.filter(t => t.produk.includes(currentTrFilter));
+            }
+
+            // 2. Filter Waktu (Hari ini, Kemarin, Minggu ini)
+            const todayStr = new Date().toISOString().split('T')[0];
+            const yesterdayObj = new Date();
+            yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+            const yesterdayStr = yesterdayObj.toISOString().split('T')[0];
+
+            if (currentTimeFilter === 'today') {
+                filtered = filtered.filter(t => t.tgl === todayStr);
+            } else if (currentTimeFilter === 'yesterday') {
+                filtered = filtered.filter(t => t.tgl === yesterdayStr);
+            } else if (currentTimeFilter === 'week') {
+                filtered = filtered.filter(t => {
+                    const tDate = new Date(t.tgl);
+                    const todayDate = new Date();
+                    tDate.setHours(0,0,0,0);
+                    todayDate.setHours(0,0,0,0);
+                    const diffDays = (todayDate - tDate) / (1000 * 60 * 60 * 24);
+                    return diffDays >= 0 && diffDays < 7;
+                });
+            }
+
             list.innerHTML = filtered.slice(0, 15).map(t => `
-                <div class="card-premium p-4 flex justify-between items-center">
-                    <div>
-                        <p class="text-[10px] font-black uppercase text-slate-700">${t.produk}</p>
-                        <p class="text-[8px] font-bold text-slate-400 uppercase">${t.tgl} • ${t.pelanggan}</p>
+                <div class="card-premium p-4 flex flex-col gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-black uppercase text-slate-700">${t.produk}</p>
+                            <p class="text-[8px] font-bold text-slate-400 uppercase">${t.tgl} • ${t.pelanggan}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-black text-blue-600">Rp ${fmt(t.jual)}</p>
+                            <p class="text-[8px] font-bold ${t.status === 'Hutang' ? 'text-red-500' : 'text-emerald-500'}">${t.status.toUpperCase()}</p>
+                        </div>
                     </div>
-                    <div class="text-right">
-                        <p class="text-xs font-black text-blue-600">Rp ${fmt(t.jual)}</p>
-                        <p class="text-[8px] font-bold ${t.status === 'Hutang' ? 'text-red-500' : 'text-emerald-500'}">${t.status.toUpperCase()}</p>
+                    <!-- Tombol Edit & Refund -->
+                    <div class="flex justify-end gap-2 pt-2 border-t border-slate-50">
+                        <button onclick="editTr('${t.id}')" class="px-3 py-1.5 bg-blue-50 text-[9px] font-black rounded-lg text-blue-600 flex items-center gap-1 hover:bg-blue-100 transition-all"><i class="fas fa-edit text-[8px]"></i> EDIT</button>
+                        <button onclick="deleteTr('${t.id}')" class="px-3 py-1.5 bg-red-50 text-[9px] font-black rounded-lg text-red-500 flex items-center gap-1 hover:bg-red-100 transition-all"><i class="fas fa-trash-alt text-[8px]"></i> REFUND</button>
                     </div>
                 </div>
             `).join('') || '<p class="text-center py-10 text-[10px] opacity-30 tracking-widest uppercase">Kosong</p>';
+        }
+
+        // LOGIKA EDIT TRANSAKSI
+        function editTr(id) {
+            const t = db.transaksi.find(x => x.id === id);
+            if(!t) return;
+            document.getElementById('edit-tr-id').value = t.id;
+            document.getElementById('edit-tr-tgl').value = t.tgl;
+            document.getElementById('edit-tr-pelanggan').value = t.pelanggan;
+            document.getElementById('edit-tr-modal').value = t.modal || 0;
+            document.getElementById('edit-tr-jual').value = t.jual || 0;
+            openModal('modal-edit-tr');
+        }
+
+        async function saveEditTr() {
+            const id = document.getElementById('edit-tr-id').value;
+            const tgl = document.getElementById('edit-tr-tgl').value;
+            const pelanggan = document.getElementById('edit-tr-pelanggan').value.trim();
+            const modal = Number(document.getElementById('edit-tr-modal').value);
+            const jual = Number(document.getElementById('edit-tr-jual').value);
+
+            const idx = db.transaksi.findIndex(x => x.id === id);
+            if(idx === -1) return;
+
+            const oldTr = db.transaksi[idx];
+
+            // 1. Penyesuaian Saldo Dompet Modal (Bila modal digital berubah)
+            if(oldTr.tipe === 'digital' && oldTr.walletModal) {
+                const diffModal = modal - oldTr.modal;
+                if(diffModal !== 0) {
+                    const wmIdx = db.dompet.findIndex(w => w.id === oldTr.walletModal);
+                    if(wmIdx !== -1) {
+                        db.dompet[wmIdx].saldo -= diffModal;
+                        addMutasi(oldTr.walletModal, Math.abs(diffModal), diffModal > 0 ? 'out' : 'in', 'KOREKSI MODAL: ' + oldTr.produk);
+                    }
+                }
+            }
+
+            // 2. Penyesuaian Saldo Dompet Penerima (Bila harga jual lunas berubah)
+            if(oldTr.status === 'Lunas' && oldTr.walletJual) {
+                const diffJual = jual - oldTr.jual;
+                if(diffJual !== 0) {
+                    const wpIdx = db.dompet.findIndex(w => w.id === oldTr.walletJual);
+                    if(wpIdx !== -1) {
+                        db.dompet[wpIdx].saldo += diffJual;
+                        addMutasi(oldTr.walletJual, Math.abs(diffJual), diffJual > 0 ? 'in' : 'out', 'KOREKSI PENJUALAN: ' + oldTr.produk);
+                    }
+                }
+            }
+
+            // 3. Penyesuaian Catatan Hutang (Bila harga jual hutang berubah)
+            if(oldTr.status === 'Hutang') {
+                const hIdx = db.hutang.findIndex(h => h.nama === oldTr.pelanggan && h.jumlah === oldTr.jual && h.tgl === oldTr.tgl);
+                if(hIdx !== -1) {
+                    db.hutang[hIdx].jumlah = jual;
+                    db.hutang[hIdx].nama = pelanggan;
+                    db.hutang[hIdx].tgl = tgl;
+                }
+            }
+
+            // Update database transaksi utama
+            db.transaksi[idx].tgl = tgl;
+            db.transaksi[idx].pelanggan = pelanggan;
+            db.transaksi[idx].modal = modal;
+            db.transaksi[idx].jual = jual;
+
+            closeModal('modal-edit-tr');
+            await sync();
+            Swal.fire('Sukses', 'Perubahan transaksi berhasil disimpan!', 'success');
+        }
+
+        // LOGIKA REFUND TRANSAKSI
+        async function deleteTr(id) {
+            const res = await Swal.fire({
+                title: 'Refund Transaksi?',
+                text: 'Dana saldo dompet dan stok unit barang akan dikembalikan otomatis!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Refund'
+            });
+
+            if(!res.isConfirmed) return;
+
+            const t = db.transaksi.find(x => x.id === id);
+            if(!t) return;
+
+            // 1. Batalkan Pengurangan Modal (Digital)
+            if(t.tipe === 'digital' && t.walletModal) {
+                const wmIdx = db.dompet.findIndex(w => w.id === t.walletModal);
+                if(wmIdx !== -1) {
+                    db.dompet[wmIdx].saldo += Number(t.modal);
+                    addMutasi(t.walletModal, t.modal, 'in', 'REFUND MODAL: ' + t.produk);
+                }
+            }
+
+            // 2. Tarik Kembali Pendapatan Jual (Lunas)
+            if(t.status === 'Lunas' && t.walletJual) {
+                const wpIdx = db.dompet.findIndex(w => w.id === t.walletJual);
+                if(wpIdx !== -1) {
+                    db.dompet[wpIdx].saldo -= Number(t.jual);
+                    addMutasi(t.walletJual, t.jual, 'out', 'REFUND JUAL: ' + t.produk);
+                }
+            }
+
+            // 3. Kembalikan Unit Stok Barang (Fisik)
+            if(t.tipe === 'fisik' && t.pRef) {
+                const pIdx = db.inventory.findIndex(p => p.id === t.pRef);
+                if(pIdx !== -1) {
+                    db.inventory[pIdx].stok += 1;
+                }
+            }
+
+            // 4. Hapus Piutang Terkait (Hutang)
+            if(t.status === 'Hutang') {
+                db.hutang = db.hutang.filter(h => !(h.nama === t.pelanggan && h.jumlah === t.jual && h.tgl === t.tgl));
+            }
+
+            // Hapus transaksi dari log list
+            db.transaksi = db.transaksi.filter(x => x.id !== id);
+
+            await sync();
+            Swal.fire('Sukses', 'Transaksi berhasil di-refund!', 'success');
         }
 
         function renderWallets() {
@@ -866,8 +1141,43 @@
             `;
         }
 
+        // RENDER HUTANG TERMASUK DAFTAR RIWAYAT CICILAN & PELUNASAN (BARU)
         function renderHutang(tipe) {
             const list = document.getElementById('hutang-list');
+            
+            if (tipe === 'riwayat') {
+                const historyData = [...(db.riwayat_hutang || [])].reverse();
+                list.innerHTML = historyData.map(h => `
+                    <div class="card-premium p-4 border-l-4 ${h.tipe === 'pelanggan' ? 'border-emerald-500 bg-emerald-50/10' : 'border-amber-500 bg-amber-50/10'} flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-black uppercase text-slate-800">${h.nama}</p>
+                                <p class="text-[8px] font-bold text-slate-400 mt-0.5 uppercase">
+                                    ${h.tgl} • DOMPET: ${h.dompet}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-2 py-0.5 text-[8px] font-black uppercase rounded-full ${h.tipe === 'pelanggan' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                    ${h.tipe === 'pelanggan' ? 'PIUTANG PLG' : 'HUTANG TOKO'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] font-bold bg-white/50 p-2 rounded-xl border border-slate-100 mt-1">
+                            <div>
+                                <p class="text-[8px] text-slate-400">BAYAR</p>
+                                <p class="text-emerald-600 font-black">Rp ${fmt(h.jumlah_bayar)}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[8px] text-slate-400">SISA HUTANG</p>
+                                <p class="text-slate-700">Rp ${fmt(h.sisa_sebelumnya)} ➔ <span class="text-red-500">Rp ${fmt(h.sisa_sekarang)}</span></p>
+                            </div>
+                        </div>
+                        ${h.ket ? `<p class="text-[9px] text-slate-500 italic mt-1 font-semibold">Ket: ${h.ket}</p>` : ''}
+                    </div>
+                `).join('') || '<p class="text-center py-20 text-[10px] opacity-30 tracking-widest uppercase">Belum ada riwayat pembayaran</p>';
+                return;
+            }
+
             const filtered = db.hutang.filter(h => h.tipe === tipe);
             list.innerHTML = filtered.map(h => `
                 <div class="card-premium p-5 flex flex-col gap-4">
@@ -892,12 +1202,15 @@
             list.innerHTML = db.inventory.map(p => `
                 <div class="card-premium p-4 flex justify-between items-center relative">
                     <div>
-                        <p class="text-xs font-black uppercase">${p.nama}</p>
+                        <p class="text-xs font-black uppercase text-slate-700">${p.nama}</p>
                         <p class="text-[9px] font-bold text-slate-400">Modal: Rp ${fmt(p.modal)} • Jual: Rp ${fmt(p.jual)}</p>
                     </div>
                     <div class="flex items-center gap-4">
-                        <p class="text-[10px] font-black ${p.stok < 5 ? 'text-red-500' : 'text-blue-500'}">${p.tipe === 'fisik' ? p.stok + ' UNIT' : 'DIGITAL'}</p>
-                        <button onclick="deleteProduk('${p.id}')" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt text-[11px]"></i></button>
+                        <p class="text-[10px] font-black ${p.stok < 5 && p.tipe === 'fisik' ? 'text-red-500' : 'text-blue-500'}">${p.tipe === 'fisik' ? p.stok + ' UNIT' : 'DIGITAL'}</p>
+                        <div class="flex gap-1">
+                            <button onclick="editProduk('${p.id}'); event.stopPropagation();" class="text-blue-500 hover:text-blue-700 text-[10px] p-1.5 bg-blue-50 rounded-lg transition-colors"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteProduk('${p.id}'); event.stopPropagation();" class="text-red-500 hover:text-red-700 text-[10px] p-1.5 bg-red-50 rounded-lg transition-colors"><i class="fas fa-trash-alt"></i></button>
+                        </div>
                     </div>
                 </div>
             `).join('') || '<p class="text-center py-10 text-[10px] opacity-30">Belum ada produk</p>';
@@ -970,6 +1283,31 @@
             await sync();
         }
 
+        // TAMBAH/EDIT PRODUK LOGIC
+        function openAddProdukModal() {
+            document.getElementById('p-modal-title').innerText = "Tambah Produk";
+            document.getElementById('p-id').value = "";
+            document.getElementById('p-nama').value = "";
+            document.getElementById('p-tipe').value = "digital";
+            document.getElementById('p-modal').value = 0;
+            document.getElementById('p-jual').value = 0;
+            document.getElementById('p-stok').value = 0;
+            openModal('modal-produk');
+        }
+
+        function editProduk(id) {
+            const p = db.inventory.find(item => item.id === id);
+            if(!p) return;
+            document.getElementById('p-modal-title').innerText = "Edit Produk";
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-nama').value = p.nama;
+            document.getElementById('p-tipe').value = p.tipe;
+            document.getElementById('p-modal').value = p.modal;
+            document.getElementById('p-jual').value = p.jual;
+            document.getElementById('p-stok').value = p.stok || 0;
+            openModal('modal-produk');
+        }
+
         function updateSelects() {
             const wOpts = db.dompet.map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
             const cOpts = db.pelanggan.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('');
@@ -985,20 +1323,38 @@
                 if(el) el.innerHTML = wOpts;
             });
             
-            document.getElementById('kd-produk').innerHTML = '<option value="">Pilih...</option>' + db.inventory.filter(p=>p.tipe==='digital').map(p=>`<option value="${p.id}">${p.nama}</option>`).join('');
+            // Tambahkan "Tulis Manual..." di list produk digital
+            document.getElementById('kd-produk').innerHTML = '<option value="">Pilih...</option>' + 
+                db.inventory.filter(p=>p.tipe==='digital').map(p=>`<option value="${p.id}">${p.nama}</option>`).join('') + 
+                '<option value="manual">Tulis Manual...</option>';
+                
             document.getElementById('kf-produk').innerHTML = '<option value="">Pilih...</option>' + db.inventory.filter(p=>p.tipe==='fisik').map(p=>`<option value="${p.id}">${p.nama}</option>`).join('');
             
             ['kd-customer', 'kf-customer'].forEach(id => document.getElementById(id).innerHTML = '<option value="Umum">Umum</option>' + cOpts);
         }
 
         function autoFillPrices(tipe) {
-            const pid = document.getElementById(tipe === 'digital' ? 'kd-produk' : 'kf-produk').value;
-            const item = db.inventory.find(p => p.id === pid);
-            if(item) {
-                if(tipe === 'digital') {
+            if (tipe === 'digital') {
+                const select = document.getElementById('kd-produk');
+                const isManual = select.value === 'manual';
+                
+                // Show/hide manual text input
+                toggleManualProductInput();
+
+                if (isManual) {
+                    return; // Skip auto-fill, biarkan kosong untuk diinput sendiri
+                }
+                
+                const pid = select.value;
+                const item = db.inventory.find(p => p.id === pid);
+                if(item) {
                     document.getElementById('kd-modal').value = item.modal;
                     document.getElementById('kd-jual').value = item.jual;
-                } else {
+                }
+            } else {
+                const pid = document.getElementById('kf-produk').value;
+                const item = db.inventory.find(p => p.id === pid);
+                if(item) {
                     document.getElementById('kf-modal').value = item.modal;
                     document.getElementById('kf-jual').value = item.jual;
                 }
@@ -1022,12 +1378,32 @@
         }
 
         async function saveProduk() {
-            db.inventory.push({ 
-                id: 'P-'+Date.now(), nama: document.getElementById('p-nama').value, tipe: document.getElementById('p-tipe').value, 
-                modal: Number(document.getElementById('p-modal').value), jual: Number(document.getElementById('p-jual').value),
-                stok: Number(document.getElementById('p-stok').value)
-            });
-            closeModal('modal-produk'); await sync();
+            const id = document.getElementById('p-id').value;
+            const nama = document.getElementById('p-nama').value.trim();
+            const tipe = document.getElementById('p-tipe').value;
+            const modal = Number(document.getElementById('p-modal').value);
+            const jual = Number(document.getElementById('p-jual').value);
+            const stok = Number(document.getElementById('p-stok').value);
+
+            if(!nama) return Swal.fire('Error', 'Nama produk harus diisi', 'warning');
+
+            if(id) {
+                const idx = db.inventory.findIndex(p => p.id === id);
+                if(idx !== -1) {
+                    db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok };
+                }
+            } else {
+                db.inventory.push({ 
+                    id: 'P-'+Date.now(), 
+                    nama, 
+                    tipe, 
+                    modal, 
+                    jual, 
+                    stok 
+                });
+            }
+            closeModal('modal-produk'); 
+            await sync();
         }
 
         async function saveWallet() {
@@ -1037,41 +1413,140 @@
             closeModal('modal-wallet'); await sync();
         }
 
+        async function deleteProduk(id) { 
+            const res = await Swal.fire({
+                title: 'Hapus Produk?',
+                text: 'Data produk ini akan dihapus permanen',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Hapus'
+            });
+            if(res.isConfirmed) {
+                db.inventory = db.inventory.filter(p => p.id !== id); 
+                await sync(); 
+            }
+        }
+        
+        async function deleteWallet(id) { db.dompet = db.dompet.filter(w => w.id !== id); await sync(); }
+
         async function prosesKasir(tipe) {
             const isDig = tipe === 'digital';
-            const pid = document.getElementById(isDig ? 'kd-produk' : 'kf-produk').value;
-            const pIdx = db.inventory.findIndex(p => p.id === pid);
-            if(pIdx === -1) return;
-
-            const modal = isDig ? Number(document.getElementById('kd-modal').value) : db.inventory[pIdx].modal;
-            const jual = Number(document.getElementById(isDig ? 'kd-jual' : 'kf-jual').value);
+            const tgl = document.getElementById(isDig ? 'kd-tgl' : 'kf-tgl').value || new Date().toISOString().split('T')[0];
             const status = document.getElementById(isDig ? 'kd-status' : 'kf-status').value;
             const wpId = document.getElementById(isDig ? 'kd-w-penerima' : 'kf-w-penerima').value;
             const cust = document.getElementById(isDig ? 'kd-customer' : 'kf-customer').value;
+            const note = document.getElementById(isDig ? 'kd-note' : 'kf-note').value;
 
-            if(!isDig) db.inventory[pIdx].stok -= 1;
-            if(isDig) {
+            let productName = '';
+            let modal = 0;
+            let jual = 0;
+
+            if (isDig) {
+                const selectVal = document.getElementById('kd-produk').value;
+                const isManual = selectVal === 'manual';
+
+                modal = Number(document.getElementById('kd-modal').value);
+                jual = Number(document.getElementById('kd-jual').value);
+
+                if (isManual) {
+                    productName = document.getElementById('kd-produk-manual').value.trim();
+                    if (!productName) {
+                        return Swal.fire('Error', 'Nama produk manual harus diisi!', 'warning');
+                    }
+                } else {
+                    const item = db.inventory.find(p => p.id === selectVal);
+                    if (!item) return Swal.fire('Error', 'Silakan pilih produk!', 'warning');
+                    productName = item.nama;
+                }
+
+                // Pengurangan saldo dompet modal (Sumber Modal)
                 const wmId = document.getElementById('kd-w-modal').value;
                 const wmIdx = db.dompet.findIndex(w => w.id === wmId);
-                db.dompet[wmIdx].saldo -= modal;
-                addMutasi(wmId, modal, 'out', 'MODAL DIG: ' + db.inventory[pIdx].nama);
-            }
+                if (wmIdx !== -1) {
+                    db.dompet[wmIdx].saldo -= modal;
+                    addMutasi(wmId, modal, 'out', 'MODAL DIG: ' + productName);
+                }
 
-            if(status === 'Lunas') {
-                const wpIdx = db.dompet.findIndex(w => w.id === wpId);
-                db.dompet[wpIdx].saldo += jual;
-                addMutasi(wpId, jual, 'in', 'TRX: ' + db.inventory[pIdx].nama);
+                // Penerimaan dana / Penulisan piutang
+                if (status === 'Lunas') {
+                    const wpIdx = db.dompet.findIndex(w => w.id === wpId);
+                    if (wpIdx !== -1) {
+                        db.dompet[wpIdx].saldo += jual;
+                        addMutasi(wpId, jual, 'in', 'TRX LUNAS: ' + productName);
+                    }
+                } else {
+                    db.hutang.push({ 
+                        id: 'H-'+Date.now(), 
+                        tipe: 'pelanggan', 
+                        nama: cust, 
+                        jumlah: jual, 
+                        tgl: tgl, 
+                        ket: 'DIG: ' + productName + ' ' + note 
+                    });
+                }
+
+                db.transaksi.push({ 
+                    id: 'TR-'+Date.now(), 
+                    tgl: tgl, 
+                    produk: 'DIG: ' + productName, 
+                    modal, 
+                    jual, 
+                    pelanggan: cust, 
+                    status,
+                    walletModal: wmId,
+                    walletJual: wpId,
+                    pRef: isManual ? null : selectVal,
+                    tipe: 'digital'
+                });
+
             } else {
-                db.hutang.push({ id: 'H-'+Date.now(), tipe: 'pelanggan', nama: cust, jumlah: jual, tgl: new Date().toISOString().split('T')[0], ket: db.inventory[pIdx].nama });
-            }
+                const pid = document.getElementById('kf-produk').value;
+                const pIdx = db.inventory.findIndex(p => p.id === pid);
+                if(pIdx === -1) return Swal.fire('Error', 'Silakan pilih produk fisik!', 'warning');
 
-            db.transaksi.push({ 
-                id: 'TR-'+Date.now(), tgl: new Date().toISOString().split('T')[0], produk: db.inventory[pIdx].nama, 
-                modal, jual, pelanggan: cust, status 
-            });
+                productName = db.inventory[pIdx].nama;
+                modal = db.inventory[pIdx].modal;
+                jual = Number(document.getElementById('kf-jual').value);
+
+                // Pengurangan stok fisik
+                db.inventory[pIdx].stok -= 1;
+
+                if (status === 'Lunas') {
+                    const wpIdx = db.dompet.findIndex(w => w.id === wpId);
+                    if (wpIdx !== -1) {
+                        db.dompet[wpIdx].saldo += jual;
+                        addMutasi(wpId, jual, 'in', 'TRX LUNAS: ' + productName);
+                    }
+                } else {
+                    db.hutang.push({ 
+                        id: 'H-'+Date.now(), 
+                        tipe: 'pelanggan', 
+                        nama: cust, 
+                        jumlah: jual, 
+                        tgl: tgl, 
+                        ket: 'FIS: ' + productName + ' ' + note 
+                    });
+                }
+
+                db.transaksi.push({ 
+                    id: 'TR-'+Date.now(), 
+                    tgl: tgl, 
+                    produk: 'FIS: ' + productName, 
+                    modal, 
+                    jual, 
+                    pelanggan: cust, 
+                    status,
+                    walletModal: null,
+                    walletJual: wpId,
+                    pRef: pid,
+                    tipe: 'fisik'
+                });
+            }
 
             await sync();
             showView('dashboard');
+            Swal.fire('Sukses', 'Transaksi Berhasil Disimpan!', 'success');
         }
 
         async function processTransfer() {
@@ -1141,26 +1616,92 @@
             openModal('modal-pay-hutang');
         }
 
+        // LOGIKA BAYAR/CICIL HUTANG DENGAN REKAMAN RIWAYAT (DIEDIT UNTUK RIWAYAT)
         async function processPayHutang() {
             const id = document.getElementById('pay-h-id').value;
             const amount = Number(document.getElementById('pay-h-amount').value);
             const wId = document.getElementById('pay-h-wallet').value;
+            
             const hIdx = db.hutang.findIndex(x => x.id === id);
+            if (hIdx === -1) return;
+            
             const hType = db.hutang[hIdx].tipe;
             const wIdx = db.dompet.findIndex(w => w.id === wId);
+            if (wIdx === -1) return;
+
+            const walletName = db.dompet[wIdx].nama;
+            const customerName = db.hutang[hIdx].nama;
+            const sisaSebelumnya = db.hutang[hIdx].jumlah;
+            const sisaSekarang = Math.max(0, sisaSebelumnya - amount);
 
             if(hType === 'pelanggan') {
                 db.dompet[wIdx].saldo += amount;
-                addMutasi(wId, amount, 'in', 'BAYAR PIUTANG: ' + db.hutang[hIdx].nama);
+                addMutasi(wId, amount, 'in', 'BAYAR PIUTANG: ' + customerName);
             } else {
                 db.dompet[wIdx].saldo -= amount;
-                addMutasi(wId, amount, 'out', 'BAYAR HUTANG: ' + db.hutang[hIdx].nama);
+                addMutasi(wId, amount, 'out', 'BAYAR HUTANG: ' + customerName);
             }
 
-            if(amount >= db.hutang[hIdx].jumlah) db.hutang.splice(hIdx, 1);
-            else db.hutang[hIdx].jumlah -= amount;
+            // Catat ke Riwayat Pembayaran Hutang
+            if (!db.riwayat_hutang) db.riwayat_hutang = [];
+            db.riwayat_hutang.push({
+                id: 'RH-' + Date.now(),
+                tgl: new Date().toLocaleDateString('id-ID') + ' ' + new Date().toLocaleTimeString('id-ID'),
+                nama: customerName,
+                tipe: hType,
+                jumlah_bayar: amount,
+                sisa_sebelumnya: sisaSebelumnya,
+                sisa_sekarang: sisaSekarang,
+                dompet: walletName,
+                ket: db.hutang[hIdx].ket || 'Cicilan/Pelunasan'
+            });
 
-            closeModal('modal-pay-hutang'); await sync();
+            if(amount >= db.hutang[hIdx].jumlah) {
+                db.hutang.splice(hIdx, 1);
+            } else {
+                db.hutang[hIdx].jumlah -= amount;
+            }
+
+            closeModal('modal-pay-hutang'); 
+            await sync();
+        }
+
+        function openEditHutang(id) {
+            const h = db.hutang.find(x => x.id === id);
+            if(!h) return;
+            document.getElementById('edit-h-id').value = h.id;
+            document.getElementById('edit-h-nama').value = h.nama;
+            document.getElementById('edit-h-jumlah').value = h.jumlah;
+            document.getElementById('edit-h-ket').value = h.ket || "";
+            openModal('modal-edit-hutang');
+        }
+
+        async function saveEditHutang() {
+            const id = document.getElementById('edit-h-id').value;
+            const idx = db.hutang.findIndex(x => x.id === id);
+            if(idx === -1) return;
+
+            db.hutang[idx].nama = document.getElementById('edit-h-nama').value;
+            db.hutang[idx].jumlah = Number(document.getElementById('edit-h-jumlah').value);
+            db.hutang[idx].ket = document.getElementById('edit-h-ket').value;
+
+            closeModal('modal-edit-hutang');
+            await sync();
+        }
+
+        async function deleteHutang(id) {
+            const res = await Swal.fire({
+                title: 'Hapus Data?',
+                text: 'Data hutang akan dihapus permanen',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Hapus'
+            });
+            if(res.isConfirmed) {
+                db.hutang = db.hutang.filter(h => h.id !== id);
+                await sync();
+            }
         }
 
         function logout() { 
