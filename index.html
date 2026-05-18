@@ -111,7 +111,7 @@
                 <div>
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Pelanggan</h4>
-                        <button onclick="openModal('modal-pelanggan')" class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-plus text-[10px]"></i></button>
+                        <button onclick="openAddCustomerModal()" class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-plus text-[10px]"></i></button>
                     </div>
                     <div id="customer-list-horizontal" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
                 </div>
@@ -293,7 +293,11 @@
                         <button onclick="setManualHutangType('pelanggan')" id="m-h-type-plg" class="flex-1 py-2 text-[9px] font-black rounded-lg bg-white shadow-sm">PIUTANG PELANGGAN</button>
                         <button onclick="setManualHutangType('toko')" id="m-h-type-toko" class="flex-1 py-2 text-[9px] font-black rounded-lg text-slate-400">HUTANG TOKO</button>
                     </div>
-                    <div><label>Nama (Pelanggan/Supplier)</label><input type="text" id="m-h-nama" class="input-premium" placeholder="Nama lengkap"></div>
+                    <div>
+                        <label>Nama (Pelanggan/Supplier)</label>
+                        <select id="m-h-customer-select" class="input-premium animate-fade-in" onchange="toggleManualDebtName()"></select>
+                        <input type="text" id="m-h-nama-manual" class="input-premium mt-2 hidden" placeholder="Masukkan nama manual di sini...">
+                    </div>
                     <div><label>Jumlah Hutang</label><input type="number" id="m-h-jumlah" class="input-premium" placeholder="0"></div>
                     <div id="container-h-wallet">
                         <label id="label-h-wallet">Pilih Dompet</label>
@@ -336,11 +340,19 @@
         <!-- MODAL LAINNYA -->
         <div id="modal-pelanggan" class="modal-overlay" onclick="closeModal('modal-pelanggan')">
             <div class="modal-content" onclick="event.stopPropagation()">
-                <h4 class="text-lg font-black mb-6">Pelanggan Baru</h4>
+                <div class="flex justify-between items-center mb-6">
+                    <h4 class="text-lg font-black" id="cust-modal-title">Pelanggan Baru</h4>
+                    <button onclick="closeModal('modal-pelanggan')"><i class="fas fa-times"></i></button>
+                </div>
                 <div class="space-y-4">
+                    <input type="hidden" id="c-id">
                     <div><label>Nama</label><input type="text" id="c-nama" class="input-premium"></div>
                     <div><label>WhatsApp</label><input type="text" id="c-phone" class="input-premium"></div>
-                    <button onclick="saveCustomer()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black">SIMPAN</button>
+                    <div id="cust-edit-actions" class="hidden grid grid-cols-2 gap-3">
+                        <button onclick="deleteCustomer()" class="py-4 bg-red-50 text-red-600 rounded-2xl font-black">HAPUS</button>
+                        <button onclick="saveCustomer()" class="py-4 bg-blue-600 text-white rounded-2xl font-black">UPDATE</button>
+                    </div>
+                    <button id="cust-save-btn" onclick="saveCustomer()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black">SIMPAN</button>
                 </div>
             </div>
         </div>
@@ -385,34 +397,13 @@
             </div>
         </div>
 
-        <!-- MODAL: Penyesuaian Saldo (Ubah ke Tambah/Kurangi) -->
         <div id="modal-adj-wallet" class="modal-overlay" onclick="closeModal('modal-adj-wallet')">
             <div class="modal-content" onclick="event.stopPropagation()">
-                <div class="flex justify-between items-center mb-6">
-                    <h4 class="text-lg font-black">Penyesuaian Saldo</h4>
-                    <button onclick="closeModal('modal-adj-wallet')" class="text-slate-400"><i class="fas fa-times"></i></button>
-                </div>
+                <h4 class="text-lg font-black mb-6">Penyesuaian Saldo</h4>
                 <div class="space-y-4">
-                    <div>
-                        <label>Pilih Dompet</label>
-                        <select id="adj-wallet" class="input-premium"></select>
-                    </div>
-                    <div>
-                        <label>Tipe Aksi</label>
-                        <select id="adj-type" class="input-premium">
-                            <option value="tambah">Tambah Saldo (+)</option>
-                            <option value="kurang">Kurangi Saldo (-)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Jumlah Nominal Perubahan</label>
-                        <input type="number" id="adj-amount" class="input-premium" placeholder="0">
-                    </div>
-                    <div>
-                        <label>Alasan / Keterangan</label>
-                        <input type="text" id="adj-reason" class="input-premium" placeholder="Contoh: Koreksi selisih, Bonus harian">
-                    </div>
-                    <button onclick="processAdjustment()" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-black shadow-lg shadow-amber-200">SINKRONKAN SALDO</button>
+                    <div><label>Dompet</label><select id="adj-wallet" class="input-premium"></select></div>
+                    <div><label>Saldo Baru</label><input type="number" id="adj-amount" class="input-premium"></div>
+                    <button onclick="processAdjustment()" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-black">SINKRONKAN</button>
                 </div>
             </div>
         </div>
@@ -674,7 +665,25 @@
         // MANUAL HUTANG LOGIC
         function openModalManualHutang() {
             setManualHutangType(activeHutangTab);
+            const select = document.getElementById('m-h-customer-select');
+            if (select) select.value = "";
+            const manualInput = document.getElementById('m-h-nama-manual');
+            if (manualInput) {
+                manualInput.value = "";
+                manualInput.classList.add('hidden');
+            }
             openModal('modal-add-hutang');
+        }
+
+        function toggleManualDebtName() {
+            const select = document.getElementById('m-h-customer-select');
+            const manualInput = document.getElementById('m-h-nama-manual');
+            if (select && select.value === 'manual') {
+                manualInput.classList.remove('hidden');
+            } else if (manualInput) {
+                manualInput.classList.add('hidden');
+                manualInput.value = '';
+            }
         }
 
         function setManualHutangType(type) {
@@ -686,14 +695,27 @@
         }
 
         async function saveManualHutang() {
-            const nama = document.getElementById('m-h-nama').value;
+            const selectVal = document.getElementById('m-h-customer-select').value;
+            let nama = selectVal;
+            if (selectVal === 'manual') {
+                nama = document.getElementById('m-h-nama-manual').value.trim();
+            } else if (selectVal === '') {
+                Swal.fire('Gagal', 'Silakan pilih pelanggan atau tulis manual!', 'error');
+                return;
+            }
+
             const jumlah = Number(document.getElementById('m-h-jumlah').value);
             const wId = document.getElementById('m-h-wallet').value;
             const ket = document.getElementById('m-h-ket').value || 'Manual';
             const type = currentManualHutangType;
 
-            if(!nama || jumlah <= 0 || !wId) return;
+            if(!nama || jumlah <= 0 || !wId) {
+                Swal.fire('Gagal', 'Lengkapi semua data dengan benar', 'error');
+                return;
+            }
+
             const wIdx = db.dompet.findIndex(w => w.id === wId);
+            if(wIdx === -1) return;
             
             if(type === 'pelanggan') {
                 db.dompet[wIdx].saldo -= jumlah;
@@ -884,17 +906,80 @@
         function renderCustomers() {
             const list = document.getElementById('customer-list-horizontal');
             list.innerHTML = db.pelanggan.map(c => `
-                <div class="flex-shrink-0 w-24 bg-white border border-slate-100 p-3 rounded-2xl flex flex-col items-center text-center">
-                    <div class="w-8 h-8 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-2"><i class="fas fa-user text-[10px]"></i></div>
-                    <p class="text-[9px] font-black truncate w-full uppercase">${c.nama}</p>
+                <div class="flex-shrink-0 w-56 bg-white border border-slate-100 p-4 rounded-2xl flex flex-col justify-between shadow-sm relative border-b-4 border-blue-100 hover:scale-[1.02] transition-transform">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-user text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-black uppercase text-slate-800 truncate max-w-[100px]" title="${c.nama}">${c.nama}</p>
+                                <p class="text-[9px] font-bold text-slate-400 truncate max-w-[100px]">${c.phone || '-'}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editCustomer('${c.id}'); event.stopPropagation();" class="text-blue-500 hover:text-blue-700 text-[10px] p-1.5 bg-blue-50 rounded-lg transition-colors"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteCustomerDirect('${c.id}'); event.stopPropagation();" class="text-red-500 hover:text-red-700 text-[10px] p-1.5 bg-red-50 rounded-lg transition-colors"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
                 </div>
-            `).join('') || '<p class="text-[9px] opacity-30 px-4">Belum ada pelanggan</p>';
+            `).join('') || '<p class="text-[10px] opacity-30 px-4 font-bold uppercase tracking-wider">Belum ada pelanggan</p>';
+        }
+
+        function openAddCustomerModal() {
+            document.getElementById('cust-modal-title').innerText = "Pelanggan Baru";
+            document.getElementById('c-id').value = "";
+            document.getElementById('c-nama').value = "";
+            document.getElementById('c-phone').value = "";
+            document.getElementById('cust-edit-actions').classList.add('hidden');
+            document.getElementById('cust-save-btn').classList.remove('hidden');
+            openModal('modal-pelanggan');
+        }
+
+        function editCustomer(id) {
+            const c = db.pelanggan.find(i => i.id === id);
+            if(!c) return;
+            document.getElementById('cust-modal-title').innerText = "Edit Pelanggan";
+            document.getElementById('c-id').value = c.id;
+            document.getElementById('c-nama').value = c.nama;
+            document.getElementById('c-phone').value = c.phone;
+            document.getElementById('cust-edit-actions').classList.remove('hidden');
+            document.getElementById('cust-save-btn').classList.add('hidden');
+            openModal('modal-pelanggan');
+        }
+
+        async function deleteCustomerDirect(id) {
+            const res = await Swal.fire({
+                title: 'Hapus Pelanggan?',
+                text: "Data pelanggan akan dihapus secara permanen",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Hapus'
+            });
+            if (res.isConfirmed) {
+                db.pelanggan = db.pelanggan.filter(c => c.id !== id);
+                await sync();
+            }
+        }
+
+        async function deleteCustomer() {
+            const id = document.getElementById('c-id').value;
+            db.pelanggan = db.pelanggan.filter(c => c.id !== id);
+            closeModal('modal-pelanggan');
+            await sync();
         }
 
         function updateSelects() {
             const wOpts = db.dompet.map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
             const cOpts = db.pelanggan.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('');
             
+            // For manual debt customer selection
+            const mHCustSelect = document.getElementById('m-h-customer-select');
+            if (mHCustSelect) {
+                mHCustSelect.innerHTML = '<option value="">-- Pilih Pelanggan --</option>' + cOpts + '<option value="manual">Tulis Manual...</option>';
+            }
+
             ['m-h-wallet', 'pay-h-wallet', 'tr-from', 'tr-to', 'adj-wallet', 'kd-w-modal', 'kd-w-penerima', 'kf-w-penerima'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.innerHTML = wOpts;
@@ -921,8 +1006,19 @@
         }
 
         async function saveCustomer() {
-            db.pelanggan.push({ id: 'C-'+Date.now(), nama: document.getElementById('c-nama').value, phone: document.getElementById('c-phone').value });
-            closeModal('modal-pelanggan'); await sync();
+            const id = document.getElementById('c-id').value;
+            const nama = document.getElementById('c-nama').value.trim();
+            const phone = document.getElementById('c-phone').value.trim();
+            if(!nama) return;
+
+            if(id) {
+                const idx = db.pelanggan.findIndex(c => c.id === id);
+                if(idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone };
+            } else {
+                db.pelanggan.push({ id: 'C-'+Date.now(), nama, phone });
+            }
+            closeModal('modal-pelanggan'); 
+            await sync();
         }
 
         async function saveProduk() {
@@ -940,9 +1036,6 @@
             addMutasi(w.id, w.saldo, 'in', 'SALDO AWAL');
             closeModal('modal-wallet'); await sync();
         }
-
-        async function deleteProduk(id) { db.inventory = db.inventory.filter(p => p.id !== id); await sync(); }
-        async function deleteWallet(id) { db.dompet = db.dompet.filter(w => w.id !== id); await sync(); }
 
         async function prosesKasir(tipe) {
             const isDig = tipe === 'digital';
