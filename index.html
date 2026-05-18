@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KonterKU Cloud - Premium POS</title>
+  
+  <!-- Favicon Shortcut Ikon -->
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -143,7 +148,7 @@
                         <p id="stat-laba-today" class="text-[11px] font-black text-emerald-600">Rp 0</p>
                     </div>
                     <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                        <p class="text-[7px] font-black text-slate-400 uppercase">TRX Hari Ini</p>
+                        <p class="text-[7px] font-black text-blue-600">TRX Hari Ini</p>
                         <p id="stat-trx-today" class="text-[11px] font-black text-blue-600">0</p>
                     </div>
                 </div>
@@ -671,18 +676,6 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    family: 'Plus Jakarta Sans',
-                                    size: 9,
-                                    weight: 'bold'
-                                },
-                                boxWidth: 12
-                            }
-                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -732,6 +725,44 @@
                             }
                         }
                     }
+                }
+            });
+        }
+
+        // FUNGSI MODAL DAFTAR TOKO BARU
+        function openRegisterModal() {
+            Swal.fire({
+                title: 'Daftarkan Toko Baru',
+                html: `
+                    <p class="text-xs text-slate-500 mb-4">Lengkapi data berikut untuk mengirim permintaan registrasi ke Admin.</p>
+                    <div class="space-y-3">
+                        <input type="text" id="reg-nama-toko" class="swal2-input !m-0 !w-full" placeholder="Nama Toko">
+                        <input type="text" id="reg-nama-pemilik" class="swal2-input !m-0 !w-full" placeholder="Nama Pemilik">
+                        <input type="text" id="reg-kota" class="swal2-input !m-0 !w-full" placeholder="Kota / Lokasi">
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fab fa-whatsapp mr-1"></i> Kirim ke WhatsApp',
+                confirmButtonColor: '#25D366',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const namaToko = document.getElementById('reg-nama-toko').value.trim();
+                    const namaPemilik = document.getElementById('reg-nama-pemilik').value.trim();
+                    const kota = document.getElementById('reg-kota').value.trim();
+
+                    if (!namaToko || !namaPemilik || !kota) {
+                        Swal.showValidationMessage('Semua kolom harus diisi!');
+                        return false;
+                    }
+                    return { namaToko, namaPemilik, kota };
+                }
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    const data = result.value;
+                    const textPesan = `Halo Admin KonterKU Cloud,\n\nSaya ingin mendaftarkan Toko POS Cloud baru dengan rincian berikut:\n\n• Nama Toko: ${data.namaToko}\n• Nama Pemilik: ${data.namaPemilik}\n• Kota/Lokasi: ${data.kota}\n\nMohon bantuannya untuk pembuatan ID Toko aktif. Terima kasih!`;
+                    const urlWA = `https://wa.me/62895621263666?text=${encodeURIComponent(textPesan)}`;
+                    window.open(urlWA, '_blank');
                 }
             });
         }
@@ -1711,6 +1742,7 @@
                         id: 'H-'+Date.now(), 
                         tipe: 'pelanggan', 
                         nama: cust, 
+                        shadow_tipe: 'pelanggan',
                         jumlah: jual, 
                         tgl: tgl, 
                         ket: 'DIG: ' + productName + ' ' + note 
@@ -1754,6 +1786,7 @@
                         id: 'H-'+Date.now(), 
                         tipe: 'pelanggan', 
                         nama: cust, 
+                        shadow_tipe: 'pelanggan',
                         jumlah: jual, 
                         tgl: tgl, 
                         ket: 'FIS: ' + productName + ' ' + note 
