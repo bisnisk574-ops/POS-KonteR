@@ -47,8 +47,8 @@
     </div>
 
     <!-- Login UI -->
-    <div id="login-screen" class="fixed inset-0 bg-white z-[2000] flex items-center justify-center p-10">
-        <div class="w-full max-w-sm text-center">
+    <div id="login-screen" class="fixed inset-0 bg-white z-[2000] flex items-center justify-center p-10 overflow-y-auto">
+        <div class="w-full max-w-sm text-center my-auto">
             <div class="w-20 h-20 bg-blue-600 text-white rounded-3xl flex items-center justify-center text-3xl shadow-xl mx-auto mb-8 rotate-3">
               <i class="fas fa-cloud"></i>
             </div>
@@ -69,14 +69,23 @@
                 </div>
 
                 <!-- Tombol Coba Akun Demo -->
-                <button onclick="loginDemo()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2">
+                <button onclick="loginDemo()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 mb-6">
                     <i class="fas fa-eye"></i> MASUK SEBAGAI TOKO DEMO
                 </button>
 
-                <!-- Tombol Registrasi Toko Baru -->
-                <button onclick="openRegisterModal()" class="w-full py-3.5 border-2 border-dashed border-blue-200 hover:border-blue-400 text-blue-600 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-plus-circle"></i> DAFTARKAN TOKO BARU
-                </button>
+                <!-- Box Catatan Pendaftaran ID Toko -->
+                <div class="text-left bg-blue-50/70 border border-blue-100 rounded-2xl p-4 space-y-2">
+                    <div class="flex items-center gap-2 text-blue-700 font-black text-[11px] uppercase tracking-wider">
+                        <i class="fas fa-info-circle text-xs text-blue-600"></i>
+                        Pendaftaran ID Toko
+                    </div>
+                    <p class="text-[11px] text-slate-600 leading-relaxed font-medium">
+                        Untuk mendapatkan ID Toko dan mulai menggunakan KonterKU Cloud, silakan hubungi Admin melalui WhatsApp di 0895621263666 atau klik tautan berikut:
+                    </p>
+                    <a href="http://wa.me/62895621263666" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1.5 rounded-xl hover:bg-blue-50 transition-all shadow-sm mt-1">
+                        <i class="fab fa-whatsapp text-emerald-500 font-bold"></i> Hubungi Admin via WhatsApp
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -1030,56 +1039,63 @@
             await sync();
         }
 
-        // Login & Data Handlers
+        // Login & Data Handlers (VERIFIKASI KETAT CLOUD)
         async function handleLogin() {
             const sid = document.getElementById('store-id-input').value.trim().toUpperCase();
             if(!sid) return;
             showSync(true);
             try {
+                // Aplikasi menanyakan validitas ID toko langsung ke server cloud Google Sheet
                 const res = await fetch(SCRIPT_URL, { 
                   method: 'POST', 
-                  body: JSON.stringify({ action: 'login', storeId: sid }) 
+                  body: JSON.stringify({ action: 'load', storeId: sid }) 
                 });
-                const result = await res.json();
-                if(result.status === 'success') { 
+                const response = await res.json();
+                
+                if (response && response.status === "success" && response.data) {
+                    // ID Terdaftar! Lolos validasi, simpan ke memori lokal
                     localStorage.setItem('k_logged', 'true'); 
-                    localStorage.setItem('k_sid', sid); 
-                    initApp(); 
-                } else { 
+                    localStorage.setItem('k_sid', sid);
+                    
+                    const data = response.data;
+                    db = { 
+                        dompet: data.dompet || [], 
+                        transaksi: data.transaksi || [], 
+                        inventory: data.inventory || [],
+                        hutang: data.hutang || [], 
+                        pelanggan: data.pelanggan || [], 
+                        mutasi: data.mutasi || [],
+                        notes: data.notes || [],
+                        riwayat_hutang: data.riwayat_hutang || []
+                    };
+                    saveLocalData();
+                    initApp();
+                } else {
+                    // Ditolak! ID Toko tidak terdaftar di Google Sheet
                     Swal.fire({
                         title: 'Akses Ditolak',
-                        text: result.message || 'ID Toko salah atau tidak terdaftar!',
+                        text: 'ID Toko Anda tidak terdaftar dalam sistem Google Sheet Cloud kami. Silakan daftarkan ID baru terlebih dahulu!',
                         icon: 'error',
                         confirmButtonText: 'Tutup'
-                    }); 
+                    });
                 }
             } catch(e) { 
                 console.error(e);
-                Swal.fire('Error', 'Gagal terhubung ke server cloud. Silakan coba lagi.', 'error');
+                // Jika offline total dan belum pernah login di perangkat ini dengan ID tersebut
+                const saved = localStorage.getItem('konterku_db_' + sid);
+                if (saved && localStorage.getItem('k_sid') === sid) {
+                    localStorage.setItem('k_logged', 'true');
+                    initApp();
+                } else {
+                    Swal.fire('Error', 'Gagal memvalidasi ID Toko. Pastikan Anda online untuk login pertama kali pada ID ini.', 'error');
+                }
             } finally { showSync(false); }
         }
 
-        // FUNGSI DEMO LOGIN INSTAN
+        // FUNGSI DEMO LOGIN INSTAN (ID: TOKO DEMO diatur ke akun demo Google Sheet ADMIN123)
         function loginDemo() {
             document.getElementById('store-id-input').value = 'ADMIN123';
             handleLogin();
-        }
-
-        // MODAL DAFTAR TOKO BARU (HUBUNGI WA ADMIN)
-        function openRegisterModal() {
-            Swal.fire({
-                title: 'Daftarkan Toko Baru',
-                html: `Untuk mendaftarkan ID Toko baru dan menggunakan layanan cloud POS penuh dari KonterKU Cloud, silakan hubungi admin kami melalui WhatsApp.<br><br><span class="font-bold text-blue-600 text-lg">WhatsApp: 0895-6212-63666</span>`,
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: '<i class="fab fa-whatsapp mr-1"></i> Hubungi via WhatsApp',
-                confirmButtonColor: '#25D366',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.open('https://wa.me/62895621263666?text=Halo%20Admin%20KonterKU%20Cloud,%20saya%20tertarik%20untuk%20mendaftarkan%20ID%20Toko%20POS%20baru.', '_blank');
-                }
-            });
         }
 
         function initApp() {
@@ -1162,7 +1178,6 @@
             renderProfitChart(); // Regenerasi grafik keuangan
         }
 
-        // RENDER DAFTAR TRANSAKSI DENGAN INTEGRASI FILTER WAKTU & OPERASI REFUND/EDIT
         function renderDashboard() {
             const list = document.getElementById('recent-list');
             let filtered = [...db.transaksi].reverse();
@@ -1357,7 +1372,7 @@
             `;
         }
 
-        // RENDER HUTANG TERMASUK DAFTAR RIWAYAT CICILAN & PELUNASAN (BARU)
+        // RENDER HUTANG TERMASUK DAFTAR RIWAYAT CICILAN & PELUNASAN
         function renderHutang(tipe) {
             const list = document.getElementById('hutang-list');
             
@@ -1452,7 +1467,7 @@
                         </div>
                     </div>
                 </div>
-            `).join('') || '<p class="text-[10px] opacity-30 px-4 font-bold uppercase tracking-wider">Belum ada pelanggan</p>';
+            `).join('') || '<p class="text-slate-400 text-xs py-2">Belum ada pelanggan</p>';
         }
 
         function openAddCustomerModal() {
@@ -1832,7 +1847,7 @@
             openModal('modal-pay-hutang');
         }
 
-        // LOGIKA BAYAR/CICIL HUTANG DENGAN REKAMAN RIWAYAT (DIEDIT UNTUK RIWAYAT)
+        // LOGIKA BAYAR/CICIL HUTANG DENGAN REKAMAN RIWAYAT
         async function processPayHutang() {
             const id = document.getElementById('pay-h-id').value;
             const amount = Number(document.getElementById('pay-h-amount').value);
@@ -1865,6 +1880,7 @@
                 tgl: new Date().toLocaleDateString('id-ID') + ' ' + new Date().toLocaleTimeString('id-ID'),
                 nama: customerName,
                 tipe: hType,
+                shadow_tipe: hType,
                 jumlah_bayar: amount,
                 sisa_sebelumnya: sisaSebelumnya,
                 sisa_sekarang: sisaSekarang,
