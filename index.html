@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Menambahkan Chart.js untuk grafik laporan laba rugi -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root { --primary: #0061C2; --bg: #F8FAFC; --slate-800: #1e293b; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--slate-800); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
@@ -112,6 +114,22 @@
                     <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                         <p class="text-[7px] font-black text-slate-400 uppercase">TRX Hari Ini</p>
                         <p id="stat-trx-today" class="text-[11px] font-black text-blue-600">0</p>
+                    </div>
+                </div>
+
+                <!-- Grafik Laporan Laba/Rugi Harian (Baru) -->
+                <div class="card-premium p-5 space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-50 pb-2">
+                        <div>
+                            <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest">Tren Keuangan</h4>
+                            <p class="text-[8px] font-bold text-slate-400">Analisis Omset & Laba 7 Hari Terakhir</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-chart-line text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="relative w-full h-[180px]">
+                        <canvas id="profitReportChart"></canvas>
                     </div>
                 </div>
 
@@ -488,6 +506,7 @@
         let currentTrFilter = 'all';
         let currentTimeFilter = 'all'; // State filter waktu
         let currentManualHutangType = 'pelanggan';
+        let profitChartInstance = null; // Instance Chart global untuk dihancurkan dan dibuat ulang
         const fmt = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0);
 
         function showSync(s) {
@@ -553,6 +572,11 @@
             document.getElementById('view-' + v).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('nav-' + v).classList.add('active');
+            
+            // Re-render grafik jika beralih kembali ke dashboard
+            if (v === 'dashboard') {
+                renderProfitChart();
+            }
         }
 
         // FILTER TRANSAKSI
@@ -944,6 +968,145 @@
             renderCustomers();
             renderNotes();
             updateSelects();
+            renderProfitChart(); // Regenerasi grafik keuangan
+        }
+
+        // FUNGSI MEMBUAT GRAFIK LABA/RUGI (NEW)
+        function renderProfitChart() {
+            const canvas = document.getElementById('profitReportChart');
+            if (!canvas) return;
+
+            // Dapatkan list 7 hari terakhir (tanggal ISO)
+            const daysRange = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                daysRange.push(d.toISOString().split('T')[0]);
+            }
+
+            // Hitung Omset dan Laba Bersih untuk masing-masing hari tersebut
+            const dataOmset = [];
+            const dataLaba = [];
+            
+            daysRange.forEach(dateStr => {
+                const daysTrx = db.transaksi.filter(t => t.tgl === dateStr);
+                const omsetSum = daysTrx.reduce((acc, curr) => acc + Number(curr.jual || 0), 0);
+                const labaSum = daysTrx.reduce((acc, curr) => acc + (Number(curr.jual || 0) - Number(curr.modal || 0)), 0);
+                
+                dataOmset.push(omsetSum);
+                dataLaba.push(labaSum);
+            });
+
+            // Format tanggal yang ramah dibaca untuk label X (misal: "18 Mei")
+            const labelX = daysRange.map(dateStr => {
+                const parts = dateStr.split('-');
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+                return `${parseInt(parts[2])} ${monthNames[parseInt(parts[1]) - 1]}`;
+            });
+
+            // Hancurkan Chart lama jika instance sudah ada sebelumnya
+            if (profitChartInstance) {
+                profitChartInstance.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            profitChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labelX,
+                    datasets: [
+                        {
+                            label: 'Laba Bersih',
+                            data: dataLaba,
+                            borderColor: '#10B981', // emerald-500
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: '#10B981',
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Total Omset',
+                            data: dataOmset,
+                            borderColor: '#0061C2', // primary-blue
+                            backgroundColor: 'rgba(0, 97, 194, 0.05)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: '#0061C2',
+                            pointRadius: 4,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    family: 'Plus Jakarta Sans',
+                                    size: 9,
+                                    weight: 'bold'
+                                },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'Rp ' + fmt(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Plus Jakarta Sans',
+                                    size: 8
+                                },
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toFixed(1) + 'jt';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
+                                    }
+                                    return 'Rp ' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Plus Jakarta Sans',
+                                    size: 8,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // RENDER DAFTAR TRANSAKSI DENGAN INTEGRASI FILTER WAKTU & OPERASI REFUND/EDIT
