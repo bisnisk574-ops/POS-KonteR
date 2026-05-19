@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>KonterKU Cloud - Premium POS</title>
   
-  <!-- Favicon Shortcut Ikon -->
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   
@@ -13,7 +12,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Menambahkan Chart.js untuk grafik laporan laba rugi -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root { --primary: #0061C2; --bg: #F8FAFC; --slate-800: #1e293b; }
@@ -45,13 +43,11 @@
 </head>
 <body class="pb-32">
 
-    <!-- Loading Pill -->
     <div id="sync-pill" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-5 py-2.5 rounded-full text-[10px] font-black z-[3000] hidden flex items-center gap-3">
         <div class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
         SINKRONISASI...
     </div>
 
-    <!-- Login UI -->
     <div id="login-screen" class="fixed inset-0 bg-white z-[2000] flex items-center justify-center p-10 overflow-y-auto">
         <div class="w-full max-w-sm text-center my-auto">
             <div class="w-20 h-20 bg-blue-600 text-white rounded-3xl flex items-center justify-center text-3xl shadow-xl mx-auto mb-8 rotate-3">
@@ -73,12 +69,10 @@
                     <hr class="flex-grow border-slate-200">
                 </div>
 
-                <!-- Tombol Coba Akun Demo -->
                 <button onclick="loginDemo()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 mb-6">
                     <i class="fas fa-eye"></i> MASUK SEBAGAI TOKO DEMO
                 </button>
 
-                <!-- Box Catatan Pendaftaran ID Toko -->
                 <div class="text-left bg-blue-50/70 border border-blue-100 rounded-2xl p-4 space-y-2">
                     <div class="flex items-center gap-2 text-blue-700 font-black text-[11px] uppercase tracking-wider">
                         <i class="fas fa-info-circle text-xs text-blue-600"></i>
@@ -95,7 +89,6 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div id="app-content" class="hidden">
         <header class="header-gradient pt-12 px-6 text-white">
             <div class="flex justify-between items-center mb-6">
@@ -109,7 +102,6 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <!-- Indikator Koneksi Offline / Online -->
                     <div id="connection-status" class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[10px] font-black transition-all">
                         <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" id="status-dot"></span>
                         <span id="status-text">ONLINE</span>
@@ -136,7 +128,6 @@
         </header>
 
         <main class="px-6 mt-16">
-            <!-- VIEW: DASHBOARD -->
             <section id="view-dashboard" class="view-section active space-y-8">
                 <div class="grid grid-cols-3 gap-2">
                     <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
@@ -153,7 +144,6 @@
                     </div>
                 </div>
 
-                <!-- Grafik Laporan Laba/Rugi Harian -->
                 <div class="card-premium p-5 space-y-3">
                     <div class="flex justify-between items-center border-b border-slate-50 pb-2">
                         <div>
@@ -181,13 +171,11 @@
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Transaksi Terakhir</h4>
                     </div>
-                    <!-- Filter Kategori Produk -->
                     <div class="flex gap-2 mb-2 overflow-x-auto no-scrollbar">
                         <button onclick="setTrFilter('all')" id="fltr-all" class="filter-chip active">SEMUA LAYANAN</button>
                         <button onclick="setTrFilter('DIG')" id="fltr-DIG" class="filter-chip">DIGITAL</button>
                         <button onclick="setTrFilter('FIS')" id="fltr-FIS" class="filter-chip">FISIK</button>
                     </div>
-                    <!-- Filter Rentang Waktu Baru -->
                     <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
                         <button onclick="setTimeFilter('all')" id="time-fltr-all" class="filter-chip active">SEMUA WAKTU</button>
                         <button onclick="setTimeFilter('today')" id="time-fltr-today" class="filter-chip">HARI INI</button>
@@ -197,7 +185,6 @@
                     <div id="recent-list" class="space-y-3"></div>
                 </div>
 
-                <!-- Section: Catatan Toko -->
                 <div>
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Catatan Toko</h4>
@@ -206,12 +193,10 @@
                         </button>
                     </div>
                     <div id="notes-list-dashboard" class="space-y-3">
-                        <!-- Catatan rendered here -->
-                    </div>
+                        </div>
                 </div>
             </section>
 
-            <!-- VIEW: KASIR -->
             <section id="view-kasir" class="view-section">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-black">Kasir</h3>
@@ -259,7 +244,6 @@
                 </div>
             </section>
 
-            <!-- VIEW: STOK -->
             <section id="view-stok" class="view-section">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-black">Stok Produk</h3>
@@ -268,7 +252,6 @@
                 <div id="stok-list" class="space-y-3"></div>
             </section>
 
-            <!-- VIEW: DOMPET & MUTASI -->
             <section id="view-wallets" class="view-section">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-black">Dompet</h3>
@@ -311,11 +294,9 @@
                 </div>
             </section>
 
-            <!-- VIEW: HUTANG -->
             <section id="view-hutang" class="view-section">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-black">Hutang</h3>
-                    <!-- Dropdown switcher tab diganti menjadi 3 tab: PELANGGAN, TOKO KITA, RIWAYAT BAYAR -->
                     <div class="flex bg-slate-200/50 p-1.5 rounded-2xl gap-1 flex-1 ml-4 border border-slate-200">
                         <button onclick="setHutangTab('pelanggan')" id="btn-h-plg" class="tab-btn active text-[10px]">PELANGGAN</button>
                         <button onclick="setHutangTab('toko')" id="btn-h-toko" class="tab-btn inactive text-[10px]">TOKO KITA</button>
@@ -333,8 +314,6 @@
             </section>
         </main>
 
-        <!-- MODALS -->
-        <!-- Modal: Tambah/Edit Catatan -->
         <div id="modal-note" class="modal-overlay" onclick="closeModal('modal-note')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="flex justify-between items-center mb-6">
@@ -356,7 +335,6 @@
             </div>
         </div>
 
-        <!-- Modal: Tambah Hutang Manual -->
         <div id="modal-add-hutang" class="modal-overlay" onclick="closeModal('modal-add-hutang')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="flex justify-between items-center mb-6">
@@ -384,7 +362,6 @@
             </div>
         </div>
 
-        <!-- Modal: Bayar Cicil Hutang -->
         <div id="modal-pay-hutang" class="modal-overlay" onclick="closeModal('modal-pay-hutang')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <h4 class="text-lg font-black mb-6">Bayar / Cicil Hutang</h4>
@@ -398,7 +375,6 @@
             </div>
         </div>
 
-        <!-- Modal Edit Hutang -->
         <div id="modal-edit-hutang" class="modal-overlay" onclick="closeModal('modal-edit-hutang')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <h4 class="text-lg font-black mb-6">Edit Data Hutang</h4>
@@ -412,7 +388,6 @@
             </div>
         </div>
 
-        <!-- MODAL LAINNYA -->
         <div id="modal-pelanggan" class="modal-overlay" onclick="closeModal('modal-pelanggan')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="flex justify-between items-center mb-6">
@@ -432,7 +407,6 @@
             </div>
         </div>
 
-        <!-- MODAL: Tambah/Edit Produk -->
         <div id="modal-produk" class="modal-overlay" onclick="closeModal('modal-produk')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <h4 class="text-lg font-black mb-6" id="p-modal-title">Tambah Produk</h4>
@@ -474,7 +448,6 @@
             </div>
         </div>
 
-        <!-- MODAL: Penyesuaian Saldo -->
         <div id="modal-adj-wallet" class="modal-overlay" onclick="closeModal('modal-adj-wallet')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="flex justify-between items-center mb-6">
@@ -506,7 +479,6 @@
             </div>
         </div>
 
-        <!-- MODAL: Edit Transaksi Terakhir -->
         <div id="modal-edit-tr" class="modal-overlay" onclick="closeModal('modal-edit-tr')">
             <div class="modal-content" onclick="event.stopPropagation()">
                 <div class="flex justify-between items-center mb-6">
@@ -551,10 +523,9 @@
         }
 
         // ==========================================
-        // UTILITAS FORMAT DAN KONVERSI WAKTU WIB (BARU)
+        // UTILITAS FORMAT DAN KONVERSI WAKTU WIB
         // ==========================================
         
-        // Mendapatkan Tanggal ISO Format 'YYYY-MM-DD' Berdasarkan Waktu WIB (Asia/Jakarta)
         function getWIBDate(dateObj = new Date()) {
             const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
             const wibTime = new Date(utc + (3600000 * 7)); // Offset WIB +7 jam
@@ -564,7 +535,6 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
-        // Mendapatkan Tanggal & Waktu format lokal Indonesia berbasis WIB
         function getWIBDateTime(dateObj = new Date()) {
             const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
             const wibTime = new Date(utc + (3600000 * 7));
@@ -577,7 +547,6 @@
             return `${dd}/${mm}/${yyyy}, ${hh}.${min}.${ss}`;
         }
 
-        // FUNGSI DETEKSI OFFLINE/ONLINE DINAMIS
         function updateConnectionStatus() {
             const statusDot = document.getElementById('status-dot');
             const statusText = document.getElementById('status-text');
@@ -630,20 +599,17 @@
             }
         };
 
-        // FUNGSI MEMBUAT GRAFIK LABA/RUGI (PENTING: Dideklarasikan di bagian atas agar aman saat di-hoisting)
         function renderProfitChart() {
             const canvas = document.getElementById('profitReportChart');
             if (!canvas) return;
 
-            // Dapatkan list 7 hari terakhir (tanggal ISO) berbasis WIB
             const daysRange = [];
             for (let i = 6; i >= 0; i--) {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
-                daysRange.push(getWIBDate(d)); // Menggunakan penanggalan WIB harian
+                daysRange.push(getWIBDate(d));
             }
 
-            // Hitung Omset dan Laba Bersih untuk masing-masing hari tersebut
             const dataOmset = [];
             const dataLaba = [];
             
@@ -656,14 +622,12 @@
                 dataLaba.push(labaSum);
             });
 
-            // Format tanggal yang ramah dibaca untuk label X (misal: "18 Mei")
             const labelX = daysRange.map(dateStr => {
                 const parts = dateStr.split('-');
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
                 return `${parseInt(parts[2])} ${monthNames[parseInt(parts[1]) - 1]}`;
             });
 
-            // Hancurkan Chart lama jika instance sudah ada sebelumnya
             if (profitChartInstance) {
                 profitChartInstance.destroy();
             }
@@ -677,7 +641,7 @@
                         {
                             label: 'Laba Bersih',
                             data: dataLaba,
-                            borderColor: '#10B981', // emerald-500
+                            borderColor: '#10B981',
                             backgroundColor: 'rgba(16, 185, 129, 0.1)',
                             borderWidth: 3,
                             fill: true,
@@ -688,7 +652,7 @@
                         {
                             label: 'Total Omset',
                             data: dataOmset,
-                            borderColor: '#0061C2', // primary-blue
+                            borderColor: '#0061C2',
                             backgroundColor: 'rgba(0, 97, 194, 0.05)',
                             borderWidth: 2,
                             fill: true,
@@ -707,12 +671,8 @@
                             callbacks: {
                                 label: function(context) {
                                     let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += 'Rp ' + fmt(context.parsed.y);
-                                    }
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += 'Rp ' + fmt(context.parsed.y);
                                     return label;
                                 }
                             }
@@ -721,42 +681,25 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: {
-                                color: '#f1f5f9'
-                            },
+                            grid: { color: '#f1f5f9' },
                             ticks: {
-                                font: {
-                                    family: 'Plus Jakarta Sans',
-                                    size: 8
-                                },
+                                font: { family: 'Plus Jakarta Sans', size: 8 },
                                 callback: function(value) {
-                                    if (value >= 1000000) {
-                                        return 'Rp ' + (value / 1000000).toFixed(1) + 'jt';
-                                    } else if (value >= 1000) {
-                                        return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
-                                    }
+                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) + 'jt';
+                                    if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
                                     return 'Rp ' + value;
                                 }
                             }
                         },
                         x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    family: 'Plus Jakarta Sans',
-                                    size: 8,
-                                    weight: 'bold'
-                                }
-                            }
+                            grid: { display: false },
+                            ticks: { font: { family: 'Plus Jakarta Sans', size: 8, weight: 'bold' } }
                         }
                     }
                 }
             });
         }
 
-        // FUNGSI MODAL DAFTAR TOKO BARU
         function openRegisterModal() {
             Swal.fire({
                 title: 'Daftarkan Toko Baru',
@@ -800,20 +743,17 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('nav-' + v).classList.add('active');
             
-            // Re-render grafik jika beralih kembali ke dashboard
             if (v === 'dashboard') {
                 renderProfitChart();
             }
         }
 
-        // FILTER TRANSAKSI
         function setTrFilter(f) {
             currentTrFilter = f;
             document.querySelectorAll('.filter-chip[id^="fltr-"]').forEach(c => c.classList.toggle('active', c.id === 'fltr-' + f));
             renderDashboard();
         }
 
-        // FILTER WAKTU
         function setTimeFilter(f) {
             currentTimeFilter = f;
             document.querySelectorAll('.filter-chip[id^="time-fltr-"]').forEach(c => c.classList.toggle('active', c.id === 'time-fltr-' + f));
@@ -870,13 +810,12 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // MUTASI LOGIC
         function addMutasi(wId, amount, type, ket) {
             const wallet = db.dompet.find(w => w.id === wId);
             if (!db.mutasi) db.mutasi = [];
             db.mutasi.push({
                 id: 'M-' + Date.now() + Math.random().toString(36).substr(2, 4),
-                tgl: getWIBDateTime(), // Mencatat waktu mutasi berdasarkan WIB
+                tgl: getWIBDateTime(),
                 wNama: wallet ? wallet.nama : 'N/A',
                 amount: amount,
                 type: type, 
@@ -906,7 +845,6 @@
             `).join('') || '<p class="text-center py-20 text-[10px] opacity-30 tracking-widest uppercase">Kosong</p>';
         }
 
-        // CATATAN LOGIC
         function openAddNoteModal() {
             document.getElementById('note-modal-title').innerText = "Tambah Catatan";
             document.getElementById('note-id').value = "";
@@ -985,7 +923,7 @@
                     title: title,
                     body: body,
                     pinned: false,
-                    tgl: getWIBDateTime().split(',')[0] // Mencatat tanggal catatan menggunakan format WIB
+                    tgl: getWIBDateTime().split(',')[0]
                 });
             }
 
@@ -1029,7 +967,6 @@
             }
         }
 
-        // MANUAL HUTANG LOGIC
         function openModalManualHutang() {
             setManualHutangType(activeHutangTab);
             const select = document.getElementById('m-h-customer-select');
@@ -1097,20 +1034,18 @@
                 tipe: type, 
                 nama, 
                 jumlah, 
-                tgl: getWIBDate(), // Tanggal tercatat berdasarkan penanggalan WIB
+                tgl: getWIBDate(), 
                 ket 
             });
             closeModal('modal-add-hutang');
             await sync();
         }
 
-        // Login & Data Handlers (VERIFIKASI KETAT CLOUD)
         async function handleLogin() {
             const sid = document.getElementById('store-id-input').value.trim().toUpperCase();
             if(!sid) return;
             showSync(true);
             try {
-                // Aplikasi menanyakan validitas ID toko langsung ke server cloud Google Sheet
                 const res = await fetch(SCRIPT_URL, { 
                   method: 'POST', 
                   body: JSON.stringify({ action: 'load', storeId: sid }) 
@@ -1118,7 +1053,6 @@
                 const response = await res.json();
                 
                 if (response && response.status === "success" && response.data) {
-                    // ID Terdaftar! Lolos validasi, simpan ke memori lokal
                     localStorage.setItem('k_logged', 'true'); 
                     localStorage.setItem('k_sid', sid);
                     
@@ -1136,7 +1070,6 @@
                     saveLocalData();
                     initApp();
                 } else {
-                    // Ditolak! ID Toko tidak terdaftar di Google Sheet
                     Swal.fire({
                         title: 'Akses Ditolak',
                         text: 'ID Toko Anda tidak terdaftar dalam sistem Google Sheet Cloud kami. Silakan daftarkan ID baru terlebih dahulu!',
@@ -1146,7 +1079,6 @@
                 }
             } catch(e) { 
                 console.error(e);
-                // Jika offline total dan belum pernah login di perangkat ini dengan ID tersebut
                 const saved = localStorage.getItem('konterku_db_' + sid);
                 if (saved && localStorage.getItem('k_sid') === sid) {
                     localStorage.setItem('k_logged', 'true');
@@ -1157,7 +1089,6 @@
             } finally { showSync(false); }
         }
 
-        // FUNGSI DEMO LOGIN INSTAN (ID: TOKO DEMO diatur ke akun demo Google Sheet ADMIN123)
         function loginDemo() {
             document.getElementById('store-id-input').value = 'ADMIN123';
             handleLogin();
@@ -1171,15 +1102,57 @@
             loadLocalData();
             updateConnectionStatus();
             
-            // Set Tanggal bawaan pada form kasir mengikuti tanggal hari ini berbasis WIB
-            const currentWIBDate = getWIBDate();
-            const kdTgl = document.getElementById('kd-tgl');
-            const kfTgl = document.getElementById('kf-tgl');
-            if (kdTgl) kdTgl.value = currentWIBDate;
-            if (kfTgl) kfTgl.value = currentWIBDate;
+            resetKasirForms(); // Reset & inisialisasi awal form kasir
             
             renderAll();
             fetchCloudData();
+        }
+
+        // FUNGSI KHUSUS UNTUK MENGOSONGKAN FORM KASIR (BARU)
+        function resetKasirForms() {
+            const todayWIB = getWIBDate();
+
+            // 1. Reset Form Kasir Digital
+            const kdTgl = document.getElementById('kd-tgl');
+            if (kdTgl) kdTgl.value = todayWIB;
+            
+            const kdCustomer = document.getElementById('kd-customer');
+            if (kdCustomer) kdCustomer.value = "Umum";
+            
+            const kdProduk = document.getElementById('kd-produk');
+            if (kdProduk) kdProduk.value = "";
+            
+            const kdProdukManual = document.getElementById('kd-produk-manual');
+            if (kdProdukManual) {
+                kdProdukManual.value = "";
+                kdProdukManual.classList.add('hidden');
+            }
+            
+            document.getElementById('kd-modal').value = "";
+            document.getElementById('kd-jual').value = "";
+            
+            const kdStatus = document.getElementById('kd-status');
+            if (kdStatus) kdStatus.value = "Lunas";
+            
+            document.getElementById('kd-note').value = "";
+
+            // 2. Reset Form Kasir Fisik
+            const kfTgl = document.getElementById('kf-tgl');
+            if (kfTgl) kfTgl.value = todayWIB;
+            
+            const kfCustomer = document.getElementById('kf-customer');
+            if (kfCustomer) kfCustomer.value = "Umum";
+            
+            const kfProduk = document.getElementById('kf-produk');
+            if (kfProduk) kfProduk.value = "";
+            
+            document.getElementById('kf-modal').value = "";
+            document.getElementById('kf-jual').value = "";
+            
+            const kfStatus = document.getElementById('kf-status');
+            if (kfStatus) kfStatus.value = "Lunas";
+            
+            document.getElementById('kf-note').value = "";
         }
 
         async function fetchCloudData() {
@@ -1248,20 +1221,17 @@
             renderCustomers();
             renderNotes();
             updateSelects();
-            renderProfitChart(); // Regenerasi grafik keuangan
+            renderProfitChart();
         }
 
-        // RENDER DAFTAR TRANSAKSI DENGAN INTEGRASI FILTER WAKTU BERBASIS WIB (DIOPTIMALKAN)
         function renderDashboard() {
             const list = document.getElementById('recent-list');
             let filtered = [...db.transaksi].reverse();
             
-            // 1. Filter Jasa (All / Digital / Fisik)
             if(currentTrFilter !== 'all') {
                 filtered = filtered.filter(t => t.produk.includes(currentTrFilter));
             }
 
-            // 2. Filter Waktu berbasis tanggal WIB
             const todayWIB = getWIBDate();
             const yesterdayObj = new Date();
             yesterdayObj.setDate(yesterdayObj.getDate() - 1);
@@ -1294,7 +1264,6 @@
                             <p class="text-[8px] font-bold ${t.status === 'Hutang' ? 'text-red-500' : 'text-emerald-500'}">${t.status.toUpperCase()}</p>
                         </div>
                     </div>
-                    <!-- Tombol Edit & Refund -->
                     <div class="flex justify-end gap-2 pt-2 border-t border-slate-50">
                         <button onclick="editTr('${t.id}')" class="px-3 py-1.5 bg-blue-50 text-[9px] font-black rounded-lg text-blue-600 flex items-center gap-1 hover:bg-blue-100 transition-all"><i class="fas fa-edit text-[8px]"></i> EDIT</button>
                         <button onclick="deleteTr('${t.id}')" class="px-3 py-1.5 bg-red-50 text-[9px] font-black rounded-lg text-red-500 flex items-center gap-1 hover:bg-red-100 transition-all"><i class="fas fa-trash-alt text-[8px]"></i> REFUND</button>
@@ -1303,7 +1272,6 @@
             `).join('') || '<p class="text-center py-10 text-[10px] opacity-30 tracking-widest uppercase">Kosong</p>';
         }
 
-        // LOGIKA EDIT TRANSAKSI
         function editTr(id) {
             const t = db.transaksi.find(x => x.id === id);
             if(!t) return;
@@ -1327,7 +1295,6 @@
 
             const oldTr = db.transaksi[idx];
 
-            // 1. Penyesuaian Saldo Dompet Modal (Bila modal digital berubah)
             if(oldTr.tipe === 'digital' && oldTr.walletModal) {
                 const diffModal = modal - oldTr.modal;
                 if(diffModal !== 0) {
@@ -1339,7 +1306,6 @@
                 }
             }
 
-            // 2. Penyesuaian Saldo Dompet Penerima (Bila harga jual lunas berubah)
             if(oldTr.status === 'Lunas' && oldTr.walletJual) {
                 const diffJual = jual - oldTr.jual;
                 if(diffJual !== 0) {
@@ -1351,7 +1317,6 @@
                 }
             }
 
-            // 3. Penyesuaian Catatan Hutang (Bila harga jual hutang berubah)
             if(oldTr.status === 'Hutang') {
                 const hIdx = db.hutang.findIndex(h => h.nama === oldTr.pelanggan && h.jumlah === oldTr.jual && h.tgl === oldTr.tgl);
                 if(hIdx !== -1) {
@@ -1361,7 +1326,6 @@
                 }
             }
 
-            // Update database transaksi utama
             db.transaksi[idx].tgl = tgl;
             db.transaksi[idx].pelanggan = pelanggan;
             db.transaksi[idx].modal = modal;
@@ -1372,7 +1336,6 @@
             Swal.fire('Sukses', 'Perubahan transaksi berhasil disimpan!', 'success');
         }
 
-        // LOGIKA REFUND TRANSAKSI
         async function deleteTr(id) {
             const res = await Swal.fire({
                 title: 'Refund Transaksi?',
@@ -1388,7 +1351,6 @@
             const t = db.transaksi.find(x => x.id === id);
             if(!t) return;
 
-            // 1. Batalkan Pengurangan Modal (Digital)
             if(t.tipe === 'digital' && t.walletModal) {
                 const wmIdx = db.dompet.findIndex(w => w.id === t.walletModal);
                 if(wmIdx !== -1) {
@@ -1397,7 +1359,6 @@
                 }
             }
 
-            // 2. Tarik Kembali Pendapatan Jual (Lunas)
             if(t.status === 'Lunas' && t.walletJual) {
                 const wpIdx = db.dompet.findIndex(w => w.id === t.walletJual);
                 if(wpIdx !== -1) {
@@ -1406,7 +1367,6 @@
                 }
             }
 
-            // 3. Kembalikan Unit Stok Barang (Fisik)
             if(t.tipe === 'fisik' && t.pRef) {
                 const pIdx = db.inventory.findIndex(p => p.id === t.pRef);
                 if(pIdx !== -1) {
@@ -1414,12 +1374,10 @@
                 }
             }
 
-            // 4. Hapus Piutang Terkait (Hutang)
             if(t.status === 'Hutang') {
                 db.hutang = db.hutang.filter(h => !(h.nama === t.pelanggan && h.jumlah === t.jual && h.tgl === t.tgl));
             }
 
-            // Hapus transaksi dari log list
             db.transaksi = db.transaksi.filter(x => x.id !== id);
 
             await sync();
@@ -1446,7 +1404,6 @@
             `;
         }
 
-        // RENDER HUTANG TERMASUK DAFTAR RIWAYAT CICILAN & PELUNASAN
         function renderHutang(tipe) {
             const list = document.getElementById('hutang-list');
             
@@ -1502,6 +1459,7 @@
             `).join('') || '<p class="text-center py-20 text-[10px] opacity-30 tracking-widest uppercase">Lunas!</p>';
         }
 
+        /* [KODE LANJUTAN TETAP SAMA] */
         function renderStok() {
             const list = document.getElementById('stok-list');
             list.innerHTML = db.inventory.map(p => `
@@ -1588,7 +1546,6 @@
             await sync();
         }
 
-        // TAMBAH/EDIT PRODUK LOGIC
         function openAddProdukModal() {
             document.getElementById('p-modal-title').innerText = "Tambah Produk";
             document.getElementById('p-id').value = "";
@@ -1617,7 +1574,6 @@
             const wOpts = db.dompet.map(w => `<option value="${w.id}">${w.nama}</option>`).join('');
             const cOpts = db.pelanggan.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('');
             
-            // For manual debt customer selection
             const mHCustSelect = document.getElementById('m-h-customer-select');
             if (mHCustSelect) {
                 mHCustSelect.innerHTML = '<option value="">-- Pilih Pelanggan --</option>' + cOpts + '<option value="manual">Tulis Manual...</option>';
@@ -1628,7 +1584,6 @@
                 if(el) el.innerHTML = wOpts;
             });
             
-            // Tambahkan "Tulis Manual..." di list produk digital
             document.getElementById('kd-produk').innerHTML = '<option value="">Pilih...</option>' + 
                 db.inventory.filter(p=>p.tipe==='digital').map(p=>`<option value="${p.id}">${p.nama}</option>`).join('') + 
                 '<option value="manual">Tulis Manual...</option>';
@@ -1643,12 +1598,9 @@
                 const select = document.getElementById('kd-produk');
                 const isManual = select.value === 'manual';
                 
-                // Show/hide manual text input
                 toggleManualProductInput();
 
-                if (isManual) {
-                    return; // Skip auto-fill, biarkan kosong untuk diinput sendiri
-                }
+                if (isManual) return;
                 
                 const pid = select.value;
                 const item = db.inventory.find(p => p.id === pid);
@@ -1735,9 +1687,9 @@
         
         async function deleteWallet(id) { db.dompet = db.dompet.filter(w => w.id !== id); await sync(); }
 
+        // PROSES KASIR SEKARANG OTOMATIS MERESET DAN MENGOSONGKAN FORM SETELAH BERHASIL (DIOPTIMALKAN)
         async function prosesKasir(tipe) {
             const isDig = tipe === 'digital';
-            // Nilai input tanggal kasir akan diverifikasi dan jika kosong, otomatis memakai tanggal hari ini WIB
             const tgl = document.getElementById(isDig ? 'kd-tgl' : 'kf-tgl').value || getWIBDate();
             const status = document.getElementById(isDig ? 'kd-status' : 'kf-status').value;
             const wpId = document.getElementById(isDig ? 'kd-w-penerima' : 'kf-w-penerima').value;
@@ -1766,7 +1718,6 @@
                     productName = item.nama;
                 }
 
-                // Pengurangan saldo dompet modal (Sumber Modal)
                 const wmId = document.getElementById('kd-w-modal').value;
                 const wmIdx = db.dompet.findIndex(w => w.id === wmId);
                 if (wmIdx !== -1) {
@@ -1774,7 +1725,6 @@
                     addMutasi(wmId, modal, 'out', 'MODAL DIG: ' + productName);
                 }
 
-                // Penerimaan dana / Penulisan piutang
                 if (status === 'Lunas') {
                     const wpIdx = db.dompet.findIndex(w => w.id === wpId);
                     if (wpIdx !== -1) {
@@ -1788,7 +1738,7 @@
                         nama: cust, 
                         shadow_tipe: 'pelanggan',
                         jumlah: jual, 
-                        tgl: tgl, // Tanggal transaksi berdasarkan WIB/manual input
+                        tgl: tgl, 
                         ket: 'DIG: ' + productName + ' ' + note 
                     });
                 }
@@ -1816,7 +1766,6 @@
                 modal = db.inventory[pIdx].modal;
                 jual = Number(document.getElementById('kf-jual').value);
 
-                // Pengurangan stok fisik
                 db.inventory[pIdx].stok -= 1;
 
                 if (status === 'Lunas') {
@@ -1852,6 +1801,9 @@
                 });
             }
 
+            // Jalankan pengosongan data pada form kasir sebelum sinkronisasi cloud selesai
+            resetKasirForms();
+
             await sync();
             showView('dashboard');
             Swal.fire('Sukses', 'Transaksi Berhasil Disimpan!', 'success');
@@ -1871,7 +1823,6 @@
             closeModal('modal-tr-wallet'); await sync();
         }
 
-        // LOGIKA PENYESUAIAN SALDO DENGAN TAMBAH/KURANG
         async function processAdjustment() {
             const wId = document.getElementById('adj-wallet').value;
             const type = document.getElementById('adj-type').value;
@@ -1898,10 +1849,9 @@
                 addMutasi(wId, amount, 'out', 'PENYESUAIAN (-): ' + reason);
             }
 
-            // Catat sebagai transaksi log penyesuaian
             db.transaksi.push({ 
                 id: 'ADJ-'+Date.now(), 
-                tgl: getWIBDate(), // Tanggal penyelarasan dicatat berdasarkan WIB
+                tgl: getWIBDate(), 
                 produk: `ADJ: ${db.dompet[wIdx].nama} (${reason})`, 
                 modal: 0, 
                 jual: amount, 
@@ -1924,7 +1874,6 @@
             openModal('modal-pay-hutang');
         }
 
-        // LOGIKA BAYAR/CICIL HUTANG DENGAN REKAMAN RIWAYAT
         async function processPayHutang() {
             const id = document.getElementById('pay-h-id').value;
             const amount = Number(document.getElementById('pay-h-amount').value);
@@ -1950,11 +1899,10 @@
                 addMutasi(wId, amount, 'out', 'BAYAR HUTANG: ' + customerName);
             }
 
-            // Catat ke Riwayat Pembayaran Hutang
             if (!db.riwayat_hutang) db.riwayat_hutang = [];
             db.riwayat_hutang.push({
                 id: 'RH-' + Date.now(),
-                tgl: getWIBDateTime(), // Menggunakan timestamp WIB penuh
+                tgl: getWIBDateTime(),
                 nama: customerName,
                 tipe: hType,
                 shadow_tipe: hType,
