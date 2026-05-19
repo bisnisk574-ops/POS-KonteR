@@ -187,7 +187,7 @@
                         <button onclick="setTrFilter('DIG')" id="fltr-DIG" class="filter-chip">DIGITAL</button>
                         <button onclick="setTrFilter('FIS')" id="fltr-FIS" class="filter-chip">FISIK</button>
                     </div>
-                    <!-- Filter Rentang Waktu Baru -->
+                    <!-- Filter Rentang Waktu -->
                     <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
                         <button onclick="setTimeFilter('all')" id="time-fltr-all" class="filter-chip active">SEMUA WAKTU</button>
                         <button onclick="setTimeFilter('today')" id="time-fltr-today" class="filter-chip">HARI INI</button>
@@ -195,6 +195,17 @@
                         <button onclick="setTimeFilter('week')" id="time-fltr-week" class="filter-chip">MINGGU INI</button>
                     </div>
                     <div id="recent-list" class="space-y-3"></div>
+                    
+                    <!-- Kontainer Navigasi Pagination Terintegrasi (Baru) -->
+                    <div id="pagination-controls" class="flex justify-between items-center mt-6 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <button onclick="prevTrPage()" id="btn-prev-page" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 text-[10px] font-black text-slate-600 rounded-xl transition-all">
+                            <i class="fas fa-chevron-left mr-1"></i> SEBELUMNYA
+                        </button>
+                        <p class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider" id="page-indicator">Halaman 1 dari 1</p>
+                        <button onclick="nextTrPage()" id="btn-next-page" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 text-[10px] font-black text-slate-600 rounded-xl transition-all">
+                            BERIKUTNYA <i class="fas fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Section: Catatan Toko -->
@@ -541,6 +552,8 @@
         let activeHutangTab = 'pelanggan';
         let currentTrFilter = 'all';
         let currentTimeFilter = 'all'; // State filter waktu
+        let currentTrPage = 1;         // Halaman aktif pagination riwayat transaksi (Baru)
+        const trPerPage = 10;          // Jumlah item per halaman pagination (Baru)
         let currentManualHutangType = 'pelanggan';
         let profitChartInstance = null; // Instance Chart global untuk dihancurkan dan dibuat ulang
         const fmt = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0);
@@ -776,16 +789,61 @@
             }
         }
 
+        // FILTER TRANSAKSI (Mereset halaman ke 1 saat filter berubah)
         function setTrFilter(f) {
             currentTrFilter = f;
+            currentTrPage = 1;
             document.querySelectorAll('.filter-chip[id^="fltr-"]').forEach(c => c.classList.toggle('active', c.id === 'fltr-' + f));
             renderDashboard();
         }
 
+        // FILTER WAKTU (Mereset halaman ke 1 saat filter berubah)
         function setTimeFilter(f) {
             currentTimeFilter = f;
+            currentTrPage = 1;
             document.querySelectorAll('.filter-chip[id^="time-fltr-"]').forEach(c => c.classList.toggle('active', c.id === 'time-fltr-' + f));
             renderDashboard();
+        }
+
+        // LOGIKA PAGINATION TRANSAKSI (BARU)
+        function prevTrPage() {
+            if (currentTrPage > 1) {
+                currentTrPage--;
+                renderDashboard();
+            }
+        }
+
+        function nextTrPage() {
+            // Kalkulasi total transaksi terfilter
+            let filtered = [...db.transaksi];
+            if(currentTrFilter !== 'all') {
+                filtered = filtered.filter(t => t.produk.includes(currentTrFilter));
+            }
+            const todayWIB = getWIBDate();
+            const yesterdayObj = new Date();
+            yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+            const yesterdayWIB = getWIBDate(yesterdayObj);
+
+            if (currentTimeFilter === 'today') {
+                filtered = filtered.filter(t => t.tgl === todayWIB);
+            } else if (currentTimeFilter === 'yesterday') {
+                filtered = filtered.filter(t => t.tgl === yesterdayWIB);
+            } else if (currentTimeFilter === 'week') {
+                filtered = filtered.filter(t => {
+                    const tDate = new Date(t.tgl);
+                    const todayDate = new Date(todayWIB);
+                    tDate.setHours(0,0,0,0);
+                    todayDate.setHours(0,0,0,0);
+                    const diffDays = (todayDate - tDate) / (1000 * 60 * 60 * 24);
+                    return diffDays >= 0 && diffDays < 7;
+                });
+            }
+
+            const maxPage = Math.ceil(filtered.length / trPerPage) || 1;
+            if (currentTrPage < maxPage) {
+                currentTrPage++;
+                renderDashboard();
+            }
         }
 
         function setKasirTab(tab) {
@@ -1249,14 +1307,17 @@
             renderProfitChart();
         }
 
+        // RENDER DAFTAR TRANSAKSI DENGAN INTEGRASI PAGINATION PER 10 TRANSAKSI (DIPERBARUI)
         function renderDashboard() {
             const list = document.getElementById('recent-list');
             let filtered = [...db.transaksi].reverse();
             
+            // 1. Filter Jasa (All / Digital / Fisik)
             if(currentTrFilter !== 'all') {
                 filtered = filtered.filter(t => t.produk.includes(currentTrFilter));
             }
 
+            // 2. Filter Waktu berbasis tanggal WIB
             const todayWIB = getWIBDate();
             const yesterdayObj = new Date();
             yesterdayObj.setDate(yesterdayObj.getDate() - 1);
@@ -1277,7 +1338,25 @@
                 });
             }
 
-            list.innerHTML = filtered.slice(0, 15).map(t => `
+            // Hitung logika Pagination
+            const totalItems = filtered.length;
+            const maxPage = Math.ceil(totalItems / trPerPage) || 1;
+            
+            // Batasi currentTrPage agar tidak keluar dari batas halaman maksimum jika data mengecil
+            if (currentTrPage > maxPage) {
+                currentTrPage = maxPage;
+            }
+
+            const startIndex = (currentTrPage - 1) * trPerPage;
+            const endIndex = startIndex + trPerPage;
+            const paginatedItems = filtered.slice(startIndex, endIndex);
+
+            // Update indikator halaman dan tombol navigasi
+            document.getElementById('page-indicator').innerText = `Halaman ${currentTrPage} dari ${maxPage}`;
+            document.getElementById('btn-prev-page').disabled = (currentTrPage === 1);
+            document.getElementById('btn-next-page').disabled = (currentTrPage === maxPage);
+
+            list.innerHTML = paginatedItems.map(t => `
                 <div class="card-premium p-4 flex flex-col gap-3">
                     <div class="flex justify-between items-start">
                         <div>
@@ -1289,6 +1368,7 @@
                             <p class="text-[8px] font-bold ${t.status === 'Hutang' ? 'text-red-500' : 'text-emerald-500'}">${t.status.toUpperCase()}</p>
                         </div>
                     </div>
+                    <!-- Tombol Edit & Refund -->
                     <div class="flex justify-end gap-2 pt-2 border-t border-slate-50">
                         <button onclick="editTr('${t.id}')" class="px-3 py-1.5 bg-blue-50 text-[9px] font-black rounded-lg text-blue-600 flex items-center gap-1 hover:bg-blue-100 transition-all"><i class="fas fa-edit text-[8px]"></i> EDIT</button>
                         <button onclick="deleteTr('${t.id}')" class="px-3 py-1.5 bg-red-50 text-[9px] font-black rounded-lg text-red-500 flex items-center gap-1 hover:bg-red-100 transition-all"><i class="fas fa-trash-alt text-[8px]"></i> REFUND</button>
@@ -1297,6 +1377,7 @@
             `).join('') || '<p class="text-center py-10 text-[10px] opacity-30 tracking-widest uppercase">Kosong</p>';
         }
 
+        // LOGIKA EDIT TRANSAKSI
         function editTr(id) {
             const t = db.transaksi.find(x => x.id === id);
             if(!t) return;
@@ -1361,6 +1442,7 @@
             Swal.fire('Sukses', 'Perubahan transaksi berhasil disimpan!', 'success');
         }
 
+        // LOGIKA REFUND TRANSAKSI
         async function deleteTr(id) {
             const res = await Swal.fire({
                 title: 'Refund Transaksi?',
@@ -1594,13 +1676,10 @@
             openModal('modal-produk');
         }
 
-        // FUNGSI UPDATE SELECTS DENGAN DETIL NOMINAL SALDO DOMPET (DIPERBARUI)
         function updateSelects() {
-            // Membuat opsi dompet dinamis dengan rincian nama dan jumlah nominal saldonya
             const wOpts = db.dompet.map(w => `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo)})</option>`).join('');
             const cOpts = db.pelanggan.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('');
             
-            // For manual debt customer selection
             const mHCustSelect = document.getElementById('m-h-customer-select');
             if (mHCustSelect) {
                 mHCustSelect.innerHTML = '<option value="">-- Pilih Pelanggan --</option>' + cOpts + '<option value="manual">Tulis Manual...</option>';
@@ -1611,7 +1690,6 @@
                 if(el) el.innerHTML = wOpts;
             });
             
-            // Tambahkan "Tulis Manual..." di list produk digital
             document.getElementById('kd-produk').innerHTML = '<option value="">Pilih...</option>' + 
                 db.inventory.filter(p=>p.tipe==='digital').map(p=>`<option value="${p.id}">${p.nama}</option>`).join('') + 
                 '<option value="manual">Tulis Manual...</option>';
@@ -1807,6 +1885,7 @@
                         tipe: 'pelanggan', 
                         nama: cust, 
                         shadow_tipe: 'pelanggan',
+                        shadow_amount: jual,
                         jumlah: jual, 
                         tgl: tgl, 
                         ket: 'FIS: ' + productName + ' ' + note 
