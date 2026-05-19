@@ -148,7 +148,7 @@
                         <p id="stat-laba-today" class="text-[11px] font-black text-emerald-600">Rp 0</p>
                     </div>
                     <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                        <p class="text-[7px] font-black text-blue-600">TRX Hari Ini</p>
+                        <p class="text-[7px] font-black text-slate-800">TRX Hari Ini</p>
                         <p id="stat-trx-today" class="text-[11px] font-black text-blue-600">0</p>
                     </div>
                 </div>
@@ -550,6 +550,33 @@
             if (pill) pill.classList.toggle('hidden', !s);
         }
 
+        // ==========================================
+        // UTILITAS FORMAT DAN KONVERSI WAKTU WIB (BARU)
+        // ==========================================
+        
+        // Mendapatkan Tanggal ISO Format 'YYYY-MM-DD' Berdasarkan Waktu WIB (Asia/Jakarta)
+        function getWIBDate(dateObj = new Date()) {
+            const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
+            const wibTime = new Date(utc + (3600000 * 7)); // Offset WIB +7 jam
+            const yyyy = wibTime.getFullYear();
+            const mm = String(wibTime.getMonth() + 1).padStart(2, '0');
+            const dd = String(wibTime.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Mendapatkan Tanggal & Waktu format lokal Indonesia berbasis WIB
+        function getWIBDateTime(dateObj = new Date()) {
+            const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
+            const wibTime = new Date(utc + (3600000 * 7));
+            const yyyy = wibTime.getFullYear();
+            const mm = String(wibTime.getMonth() + 1).padStart(2, '0');
+            const dd = String(wibTime.getDate()).padStart(2, '0');
+            const hh = String(wibTime.getHours()).padStart(2, '0');
+            const min = String(wibTime.getMinutes()).padStart(2, '0');
+            const ss = String(wibTime.getSeconds()).padStart(2, '0');
+            return `${dd}/${mm}/${yyyy}, ${hh}.${min}.${ss}`;
+        }
+
         // FUNGSI DETEKSI OFFLINE/ONLINE DINAMIS
         function updateConnectionStatus() {
             const statusDot = document.getElementById('status-dot');
@@ -608,12 +635,12 @@
             const canvas = document.getElementById('profitReportChart');
             if (!canvas) return;
 
-            // Dapatkan list 7 hari terakhir (tanggal ISO)
+            // Dapatkan list 7 hari terakhir (tanggal ISO) berbasis WIB
             const daysRange = [];
             for (let i = 6; i >= 0; i--) {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
-                daysRange.push(d.toISOString().split('T')[0]);
+                daysRange.push(getWIBDate(d)); // Menggunakan penanggalan WIB harian
             }
 
             // Hitung Omset dan Laba Bersih untuk masing-masing hari tersebut
@@ -849,7 +876,7 @@
             if (!db.mutasi) db.mutasi = [];
             db.mutasi.push({
                 id: 'M-' + Date.now() + Math.random().toString(36).substr(2, 4),
-                tgl: new Date().toLocaleString('id-ID'),
+                tgl: getWIBDateTime(), // Mencatat waktu mutasi berdasarkan WIB
                 wNama: wallet ? wallet.nama : 'N/A',
                 amount: amount,
                 type: type, 
@@ -958,7 +985,7 @@
                     title: title,
                     body: body,
                     pinned: false,
-                    tgl: new Date().toLocaleDateString('id-ID')
+                    tgl: getWIBDateTime().split(',')[0] // Mencatat tanggal catatan menggunakan format WIB
                 });
             }
 
@@ -1065,7 +1092,14 @@
                 addMutasi(wId, jumlah, 'in', 'HUTANG TOKO: ' + nama);
             }
             
-            db.hutang.push({ id: 'H-'+Date.now(), tipe: type, nama, jumlah, tgl: new Date().toISOString().split('T')[0], ket });
+            db.hutang.push({ 
+                id: 'H-'+Date.now(), 
+                tipe: type, 
+                nama, 
+                jumlah, 
+                tgl: getWIBDate(), // Tanggal tercatat berdasarkan penanggalan WIB
+                ket 
+            });
             closeModal('modal-add-hutang');
             await sync();
         }
@@ -1136,6 +1170,14 @@
             
             loadLocalData();
             updateConnectionStatus();
+            
+            // Set Tanggal bawaan pada form kasir mengikuti tanggal hari ini berbasis WIB
+            const currentWIBDate = getWIBDate();
+            const kdTgl = document.getElementById('kd-tgl');
+            const kfTgl = document.getElementById('kf-tgl');
+            if (kdTgl) kdTgl.value = currentWIBDate;
+            if (kfTgl) kfTgl.value = currentWIBDate;
+            
             renderAll();
             fetchCloudData();
         }
@@ -1185,8 +1227,8 @@
         }
 
         function renderAll() {
-            const today = new Date().toISOString().split('T')[0];
-            const trxToday = db.transaksi.filter(t => t.tgl === today);
+            const todayWIB = getWIBDate();
+            const trxToday = db.transaksi.filter(t => t.tgl === todayWIB);
             
             document.getElementById('stat-omset-today').innerText = `Rp ${fmt(trxToday.reduce((a, b) => a + Number(b.jual), 0))}`;
             document.getElementById('stat-laba-today').innerText = `Rp ${fmt(trxToday.reduce((a, b) => a + (Number(b.jual) - Number(b.modal || 0)), 0))}`;
@@ -1209,6 +1251,7 @@
             renderProfitChart(); // Regenerasi grafik keuangan
         }
 
+        // RENDER DAFTAR TRANSAKSI DENGAN INTEGRASI FILTER WAKTU BERBASIS WIB (DIOPTIMALKAN)
         function renderDashboard() {
             const list = document.getElementById('recent-list');
             let filtered = [...db.transaksi].reverse();
@@ -1218,20 +1261,20 @@
                 filtered = filtered.filter(t => t.produk.includes(currentTrFilter));
             }
 
-            // 2. Filter Waktu (Hari ini, Kemarin, Minggu ini)
-            const todayStr = new Date().toISOString().split('T')[0];
+            // 2. Filter Waktu berbasis tanggal WIB
+            const todayWIB = getWIBDate();
             const yesterdayObj = new Date();
             yesterdayObj.setDate(yesterdayObj.getDate() - 1);
-            const yesterdayStr = yesterdayObj.toISOString().split('T')[0];
+            const yesterdayWIB = getWIBDate(yesterdayObj);
 
             if (currentTimeFilter === 'today') {
-                filtered = filtered.filter(t => t.tgl === todayStr);
+                filtered = filtered.filter(t => t.tgl === todayWIB);
             } else if (currentTimeFilter === 'yesterday') {
-                filtered = filtered.filter(t => t.tgl === yesterdayStr);
+                filtered = filtered.filter(t => t.tgl === yesterdayWIB);
             } else if (currentTimeFilter === 'week') {
                 filtered = filtered.filter(t => {
                     const tDate = new Date(t.tgl);
-                    const todayDate = new Date();
+                    const todayDate = new Date(todayWIB);
                     tDate.setHours(0,0,0,0);
                     todayDate.setHours(0,0,0,0);
                     const diffDays = (todayDate - tDate) / (1000 * 60 * 60 * 24);
@@ -1694,7 +1737,8 @@
 
         async function prosesKasir(tipe) {
             const isDig = tipe === 'digital';
-            const tgl = document.getElementById(isDig ? 'kd-tgl' : 'kf-tgl').value || new Date().toISOString().split('T')[0];
+            // Nilai input tanggal kasir akan diverifikasi dan jika kosong, otomatis memakai tanggal hari ini WIB
+            const tgl = document.getElementById(isDig ? 'kd-tgl' : 'kf-tgl').value || getWIBDate();
             const status = document.getElementById(isDig ? 'kd-status' : 'kf-status').value;
             const wpId = document.getElementById(isDig ? 'kd-w-penerima' : 'kf-w-penerima').value;
             const cust = document.getElementById(isDig ? 'kd-customer' : 'kf-customer').value;
@@ -1744,7 +1788,7 @@
                         nama: cust, 
                         shadow_tipe: 'pelanggan',
                         jumlah: jual, 
-                        tgl: tgl, 
+                        tgl: tgl, // Tanggal transaksi berdasarkan WIB/manual input
                         ket: 'DIG: ' + productName + ' ' + note 
                     });
                 }
@@ -1857,7 +1901,7 @@
             // Catat sebagai transaksi log penyesuaian
             db.transaksi.push({ 
                 id: 'ADJ-'+Date.now(), 
-                tgl: new Date().toISOString().split('T')[0], 
+                tgl: getWIBDate(), // Tanggal penyelarasan dicatat berdasarkan WIB
                 produk: `ADJ: ${db.dompet[wIdx].nama} (${reason})`, 
                 modal: 0, 
                 jual: amount, 
@@ -1910,7 +1954,7 @@
             if (!db.riwayat_hutang) db.riwayat_hutang = [];
             db.riwayat_hutang.push({
                 id: 'RH-' + Date.now(),
-                tgl: new Date().toLocaleDateString('id-ID') + ' ' + new Date().toLocaleTimeString('id-ID'),
+                tgl: getWIBDateTime(), // Menggunakan timestamp WIB penuh
                 nama: customerName,
                 tipe: hType,
                 shadow_tipe: hType,
