@@ -43,6 +43,22 @@
     }
     .animate-float { animation: float 4s ease-in-out infinite; }
     select.input-premium { appearance: auto; }
+    @keyframes shimmer-sweep {
+      0% { transform: translateX(-100%) skewX(-15deg); }
+      100% { transform: translateX(300%) skewX(-15deg); }
+    }
+    .stat-card-omset { position: relative; }
+    .stat-card-omset::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 35%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.13), transparent);
+      animation: shimmer-sweep 4s ease-in-out infinite;
+      pointer-events: none;
+      border-radius: inherit;
+    }
   </style>
 </head>
 <body class="pb-32">
@@ -145,19 +161,79 @@
     <main class="px-6 mt-20">
 
       <!-- ===== VIEW: DASHBOARD ===== -->
-      <section id="view-dashboard" class="view-section active space-y-8">
-        <div class="grid grid-cols-3 gap-2">
-          <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-            <p class="text-[7px] font-black text-slate-400 uppercase">Omset Hari Ini</p>
-            <p id="stat-omset-today" class="text-[11px] font-black text-slate-800">Rp 0</p>
+      <section id="view-dashboard" class="view-section active space-y-6">
+
+        <!-- STAT CARDS ROW -->
+        <div class="flex flex-col gap-3">
+
+          <!-- Card Omset — Full Width -->
+          <div class="stat-card-omset relative overflow-hidden rounded-[22px] p-5 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-400 shadow-xl shadow-blue-200/60">
+            <!-- Ornamen lingkaran -->
+            <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full pointer-events-none"></div>
+            <div class="absolute right-8 -bottom-8 w-20 h-20 bg-white/10 rounded-full pointer-events-none"></div>
+            <div class="absolute right-0 top-0 w-40 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none"></div>
+            <!-- Shimmer bar -->
+            <div class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+
+            <div class="relative flex justify-between items-center">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <i class="fas fa-arrow-trend-up text-white text-[9px]"></i>
+                  </div>
+                  <p class="text-[9px] font-black text-blue-100 uppercase tracking-widest">Omset Hari Ini</p>
+                </div>
+                <p id="stat-omset-today" class="text-2xl font-black text-white tracking-tight leading-none">Rp 0</p>
+                <p class="text-[8px] text-blue-100/70 font-bold mt-1.5 uppercase tracking-wide">Total Pendapatan Kotor</p>
+              </div>
+              <!-- Big icon kanan -->
+              <div class="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shadow-inner border border-white/20">
+                <i class="fas fa-chart-bar text-white text-xl"></i>
+              </div>
+            </div>
           </div>
-          <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-            <p class="text-[7px] font-black text-slate-400 uppercase">Laba Hari Ini</p>
-            <p id="stat-laba-today" class="text-[11px] font-black text-emerald-600">Rp 0</p>
-          </div>
-          <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-            <p class="text-[7px] font-black text-slate-800">TRX Hari Ini</p>
-            <p id="stat-trx-today" class="text-[11px] font-black text-blue-600">0</p>
+
+          <!-- Card Laba + TRX — 2 kolom -->
+          <div class="grid grid-cols-2 gap-3">
+
+            <!-- Card Laba -->
+            <div class="relative overflow-hidden rounded-[20px] p-4 bg-gradient-to-br from-emerald-500 via-emerald-400 to-teal-400 shadow-lg shadow-emerald-200/60">
+              <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full pointer-events-none"></div>
+              <div class="absolute right-2 top-2 w-10 h-10 bg-white/10 rounded-full pointer-events-none"></div>
+              <div class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+
+              <div class="relative">
+                <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3 backdrop-blur-sm border border-white/20 shadow-inner">
+                  <i class="fas fa-sack-dollar text-white text-sm"></i>
+                </div>
+                <p class="text-[7.5px] font-black text-emerald-100 uppercase tracking-widest mb-1">Laba Bersih</p>
+                <p id="stat-laba-today" class="text-[15px] font-black text-white leading-tight">Rp 0</p>
+                <div class="flex items-center gap-1 mt-2">
+                  <div class="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+                  <p class="text-[7px] text-emerald-100/70 font-bold uppercase tracking-wide">Hari Ini</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card TRX -->
+            <div class="relative overflow-hidden rounded-[20px] p-4 bg-gradient-to-br from-violet-600 via-violet-500 to-purple-500 shadow-lg shadow-violet-200/60">
+              <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full pointer-events-none"></div>
+              <div class="absolute right-2 top-2 w-10 h-10 bg-white/10 rounded-full pointer-events-none"></div>
+              <div class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+
+              <div class="relative">
+                <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-3 backdrop-blur-sm border border-white/20 shadow-inner">
+                  <i class="fas fa-receipt text-white text-sm"></i>
+                </div>
+                <p class="text-[7.5px] font-black text-violet-100 uppercase tracking-widest mb-1">Total TRX</p>
+                <p id="stat-trx-today" class="text-[15px] font-black text-white leading-tight">0</p>
+                <div class="flex items-center gap-1 mt-2">
+                  <div class="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+                  <p class="text-[7px] text-violet-100/70 font-bold uppercase tracking-wide">Transaksi</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -566,7 +642,7 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvat0C4aqitYiaEWWlcYx_C2BfUL65ODh1kNJtxvumbG90avcTLnc5rp7bXlHB6-FwAA/exec";
 
-    let db = { dompet: [], transaksi: [], inventory: [], hutang: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
+    let db = { dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
 
     let activeHutangTab = 'pelanggan';
     let currentTrFilter = 'all';
@@ -656,8 +732,9 @@
             db = {
               dompet: p.dompet || [], transaksi: p.transaksi || [],
               inventory: p.inventory || [], hutang: p.hutang || [],
-              pelanggan: p.pelanggan || [], mutasi: p.mutasi || [],
-              notes: p.notes || [], riwayat_hutang: p.riwayat_hutang || []
+              hutang_lunas: p.hutang_lunas || [], pelanggan: p.pelanggan || [],
+              mutasi: p.mutasi || [], notes: p.notes || [],
+              riwayat_hutang: p.riwayat_hutang || []
             };
           } catch(e) { console.error("Gagal baca storage", e); }
         }
@@ -983,7 +1060,7 @@
           localStorage.setItem('k_logged', 'true');
           localStorage.setItem('k_sid', sid);
           const data = response.data;
-          db = { dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] };
+          db = { dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] };
           saveLocalData();
           initApp();
         } else {
@@ -1037,7 +1114,7 @@
         const response = await res.json();
         if (response && response.status === "success" && response.data) {
           const data = response.data;
-          db = { dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] };
+          db = { dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] };
           saveLocalData();
           renderAll();
         }
@@ -1219,45 +1296,124 @@
     // ---- RENDER HUTANG ----
     function renderHutang(tipe) {
       const list = document.getElementById('hutang-list');
+
+      // ===== TAB RIWAYAT BAYAR =====
       if (tipe === 'riwayat') {
         const data = [...(db.riwayat_hutang||[])].reverse();
+        if (data.length === 0) {
+          list.innerHTML = '<div class="text-center py-20"><i class="fas fa-file-invoice text-4xl text-slate-200 mb-3 block"></i><p class="text-[10px] opacity-40 tracking-widest uppercase font-bold">Belum ada riwayat pembayaran</p></div>';
+          return;
+        }
         list.innerHTML = data.map(h => `
-          <div class="card-premium p-4 border-l-4 ${h.tipe==='pelanggan' ? 'border-emerald-500 bg-emerald-50/10' : 'border-amber-500 bg-amber-50/10'} flex flex-col gap-2">
+          <div class="card-premium p-4 border-l-4 ${h.tipe==='pelanggan' ? 'border-emerald-500' : 'border-amber-500'} flex flex-col gap-2">
             <div class="flex justify-between items-start">
               <div>
                 <p class="text-xs font-black uppercase text-slate-800">${h.nama||''}</p>
                 <p class="text-[8px] font-bold text-slate-400 mt-0.5 uppercase">${h.tgl||''} • DOMPET: ${h.dompet||''}</p>
               </div>
-              <span class="px-2 py-0.5 text-[8px] font-black uppercase rounded-full ${h.tipe==='pelanggan' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                ${h.tipe==='pelanggan' ? 'PIUTANG PLG' : 'HUTANG TOKO'}
-              </span>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 text-[8px] font-black uppercase rounded-full ${h.tipe==='pelanggan' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                  ${h.tipe==='pelanggan' ? 'PIUTANG' : 'HUTANG TOKO'}
+                </span>
+                <button onclick="deleteRiwayatHutang('${h.id}')" class="w-6 h-6 flex items-center justify-center bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 rounded-lg cursor-pointer border-0 transition-all" title="Hapus riwayat ini">
+                  <i class="fas fa-trash-alt text-[9px]"></i>
+                </button>
+              </div>
             </div>
-            <div class="flex justify-between items-center text-[10px] font-bold bg-white/50 p-2 rounded-xl border border-slate-100 mt-1">
-              <div><p class="text-[8px] text-slate-400">BAYAR</p><p class="text-emerald-600 font-black">Rp ${fmt(h.jumlah_bayar)}</p></div>
-              <div class="text-right"><p class="text-[8px] text-slate-400">SISA HUTANG</p><p class="text-slate-700">Rp ${fmt(h.sisa_sebelumnya)} ➔ <span class="text-red-500">Rp ${fmt(h.sisa_sekarang)}</span></p></div>
+            <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-1">
+              <div>
+                <p class="text-[7px] text-slate-400 font-black uppercase">DIBAYAR</p>
+                <p class="text-emerald-600 font-black text-xs">Rp ${fmt(h.jumlah_bayar)}</p>
+              </div>
+              <i class="fas fa-arrow-right text-slate-300 text-[10px]"></i>
+              <div class="text-right">
+                <p class="text-[7px] text-slate-400 font-black uppercase">SISA HUTANG</p>
+                <p class="font-black text-xs ${h.sisa_sekarang === 0 ? 'text-emerald-600' : 'text-red-500'}">
+                  ${h.sisa_sekarang === 0 ? '<i class="fas fa-check-circle mr-1"></i>LUNAS' : 'Rp ' + fmt(h.sisa_sekarang)}
+                </p>
+              </div>
             </div>
-            ${h.ket ? `<p class="text-[9px] text-slate-500 italic mt-1 font-semibold">Ket: ${h.ket}</p>` : ''}
+            ${h.ket ? `<p class="text-[9px] text-slate-400 font-semibold italic">Ket: ${h.ket}</p>` : ''}
           </div>
-        `).join('') || '<p class="text-center py-20 text-[10px] opacity-30 tracking-widest uppercase">Belum ada riwayat pembayaran</p>';
+        `).join('');
         return;
       }
-      const filtered = db.hutang.filter(h => h.tipe === tipe);
-      list.innerHTML = filtered.map(h => `
-        <div class="card-premium p-5 flex flex-col gap-4">
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-xs font-black uppercase tracking-tight text-slate-800">${h.nama||''}</p>
-              <p class="text-[9px] font-bold text-slate-400 mt-0.5 uppercase">${h.tgl||''} • ${h.ket||'Manual'}</p>
+
+      // ===== TAB PELANGGAN / TOKO KITA =====
+      const aktif = db.hutang.filter(h => h.tipe === tipe);
+      const lunas = (db.hutang_lunas||[]).filter(h => h.tipe === tipe);
+
+      let html = '';
+
+      // Section: Hutang Aktif
+      if (aktif.length > 0) {
+        html += aktif.map(h => `
+          <div class="card-premium p-5 flex flex-col gap-4 border-l-4 ${tipe==='pelanggan' ? 'border-red-400' : 'border-amber-400'}">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span class="w-2 h-2 rounded-full ${tipe==='pelanggan' ? 'bg-red-400' : 'bg-amber-400'} animate-pulse"></span>
+                  <p class="text-xs font-black uppercase tracking-tight text-slate-800">${h.nama||''}</p>
+                </div>
+                <p class="text-[9px] font-bold text-slate-400 uppercase ml-4">${h.tgl||''} • ${h.ket||'Manual'}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[7px] font-black text-slate-400 uppercase">SISA HUTANG</p>
+                <p class="text-base font-black ${tipe==='pelanggan' ? 'text-red-600' : 'text-amber-600'}">Rp ${fmt(h.jumlah)}</p>
+              </div>
             </div>
-            <p class="text-sm font-black ${tipe==='pelanggan' ? 'text-red-600' : 'text-amber-600'}">Rp ${fmt(h.jumlah)}</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="openPayHutang('${h.id}')" class="py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"><i class="fas fa-money-bill-wave text-[8px]"></i> BAYAR</button>
+              <button onclick="openEditHutang('${h.id}')" class="py-2 bg-blue-50 text-blue-600 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"><i class="fas fa-edit text-[8px]"></i> EDIT</button>
+              <button onclick="deleteHutang('${h.id}')" class="py-2 bg-red-50 text-red-500 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"><i class="fas fa-trash-alt text-[8px]"></i> HAPUS</button>
+            </div>
           </div>
-          <div class="grid grid-cols-3 gap-2">
-            <button onclick="openPayHutang('${h.id}')" class="py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0">BAYAR / CICIL</button>
-            <button onclick="openEditHutang('${h.id}')" class="py-2 bg-blue-50 text-blue-600 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0">EDIT</button>
-            <button onclick="deleteHutang('${h.id}')" class="py-2 bg-red-50 text-red-600 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0">HAPUS</button>
+        `).join('');
+      } else {
+        html += `<div class="text-center py-8"><i class="fas fa-check-circle text-3xl text-emerald-300 mb-2 block"></i><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tidak ada hutang aktif</p></div>`;
+      }
+
+      // Section: Hutang Lunas
+      if (lunas.length > 0) {
+        html += `
+          <div class="mt-4">
+            <div class="flex items-center gap-2 mb-3 px-1">
+              <div class="h-px flex-1 bg-emerald-100"></div>
+              <span class="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+                <i class="fas fa-check-circle"></i> SUDAH LUNAS (${lunas.length})
+              </span>
+              <div class="h-px flex-1 bg-emerald-100"></div>
+            </div>
+            <div class="space-y-3">
+              ${lunas.map(h => `
+                <div class="card-premium p-4 border-l-4 border-emerald-400 bg-emerald-50/30 flex flex-col gap-2">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <div class="flex items-center gap-2 mb-0.5">
+                        <i class="fas fa-check-circle text-emerald-500 text-[10px]"></i>
+                        <p class="text-xs font-black uppercase text-slate-700">${h.nama||''}</p>
+                      </div>
+                      <p class="text-[8px] font-bold text-slate-400 uppercase ml-5">LUNAS ${h.lunas_tgl||''} • ${h.lunas_dompet||''}</p>
+                      ${h.ket ? `<p class="text-[8px] text-slate-400 italic ml-5">${h.ket}</p>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <div class="text-right">
+                        <p class="text-[7px] text-slate-400 font-black uppercase">JUMLAH</p>
+                        <p class="text-sm font-black text-emerald-600">Rp ${fmt(h.jumlah_awal||h.jumlah)}</p>
+                      </div>
+                      <button onclick="deleteHutangLunas('${h.id}')" class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-xl cursor-pointer border-0 transition-all" title="Hapus riwayat lunas">
+                        <i class="fas fa-trash-alt text-[10px]"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
           </div>
-        </div>
-      `).join('') || '<p class="text-center py-20 text-[10px] opacity-30 tracking-widest uppercase">Lunas! 🎉</p>';
+        `;
+      }
+
+      list.innerHTML = html;
     }
 
     // ---- RENDER STOK ----
@@ -1546,13 +1702,42 @@
       db.riwayat_hutang.push({
         id: 'RH-'+Date.now(), tgl: getWIBDateTime(), nama: customerName, tipe: hType,
         jumlah_bayar: amount, sisa_sebelumnya: sisaSebelumnya, sisa_sekarang: sisaSekarang,
-        dompet: walletName, ket: db.hutang[hIdx].ket || 'Cicilan/Pelunasan'
+        dompet: walletName, ket: db.hutang[hIdx].ket || 'Cicilan/Pelunasan',
+        hutang_ref_id: id
       });
-      if (amount >= db.hutang[hIdx].jumlah) db.hutang.splice(hIdx, 1);
-      else db.hutang[hIdx].jumlah -= amount;
+      const isLunas = amount >= db.hutang[hIdx].jumlah;
+      if (isLunas) {
+        // Pindahkan ke hutang_lunas, JANGAN hapus permanen
+        if (!db.hutang_lunas) db.hutang_lunas = [];
+        db.hutang_lunas.push({
+          ...db.hutang[hIdx],
+          lunas_tgl: getWIBDateTime(),
+          lunas_dompet: walletName,
+          jumlah_awal: sisaSebelumnya
+        });
+        db.hutang.splice(hIdx, 1);
+      } else {
+        db.hutang[hIdx].jumlah -= amount;
+      }
       closeModal('modal-pay-hutang');
       await sync();
-      Swal.fire('Sukses', sisaSekarang > 0 ? `Cicilan Rp ${fmt(amount)} tercatat. Sisa: Rp ${fmt(sisaSekarang)}` : 'Hutang LUNAS! 🎉', 'success');
+      Swal.fire('Sukses', isLunas ? 'Hutang LUNAS! Tersimpan di riwayat.' : `Cicilan Rp ${fmt(amount)} tercatat. Sisa: Rp ${fmt(sisaSekarang)}`, 'success');
+    }
+
+    async function deleteHutangLunas(id) {
+      const res = await Swal.fire({ title: 'Hapus Riwayat Lunas?', text: 'Data hutang lunas ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      if (res.isConfirmed) {
+        db.hutang_lunas = (db.hutang_lunas||[]).filter(h => h.id !== id);
+        await sync();
+      }
+    }
+
+    async function deleteRiwayatHutang(id) {
+      const res = await Swal.fire({ title: 'Hapus Riwayat Ini?', text: 'Entri riwayat bayar ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      if (res.isConfirmed) {
+        db.riwayat_hutang = (db.riwayat_hutang||[]).filter(h => h.id !== id);
+        await sync();
+      }
     }
 
     function openEditHutang(id) {
