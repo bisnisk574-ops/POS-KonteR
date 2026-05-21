@@ -14,7 +14,23 @@
   <style>
     :root { --primary: #0061C2; --bg: #F8FAFC; --slate-800: #1e293b; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--slate-800); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-    .header-gradient { background: linear-gradient(135deg, #0061C2 0%, #004a94 100%); padding-bottom: 110px; border-radius: 0 0 40px 40px; position: relative; }
+    /* ===== HEADER ===== */
+    .header-gradient {
+      background: linear-gradient(160deg, #0a1628 0%, #0d2550 40%, #0061C2 100%);
+      position: relative;
+      overflow: hidden;
+      padding-bottom: 28px;
+      border-radius: 0 0 32px 32px;
+    }
+    .header-gradient::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 85% 0%, rgba(56,189,248,0.20) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 45% at 5% 90%, rgba(0,97,194,0.30) 0%, transparent 60%);
+      pointer-events: none;
+    }
     .card-premium { background: white; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
     /* ===== BOTTOM NAV ===== */
     .bottom-nav {
@@ -108,6 +124,58 @@
     }
     .animate-float { animation: float 4s ease-in-out infinite; }
     select.input-premium { appearance: auto; }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar-overlay {
+      position: fixed; inset: 0; z-index: 3000;
+      background: rgba(0,0,0,0); pointer-events: none;
+      transition: background 0.35s ease;
+    }
+    .sidebar-overlay.open {
+      background: rgba(10,15,30,0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      pointer-events: all;
+    }
+    .sidebar-panel {
+      position: absolute; top: 0; left: 0; bottom: 0;
+      width: 300px; max-width: 85vw;
+      background: #0F172A;
+      display: flex; flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 8px 0 40px rgba(0,0,0,0.4);
+      overflow-y: auto; overflow-x: hidden;
+    }
+    .sidebar-overlay.open .sidebar-panel {
+      transform: translateX(0);
+    }
+    .sidebar-menu-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 20px; border-radius: 16px; margin: 2px 12px;
+      cursor: pointer; border: 0; background: transparent;
+      transition: background 0.18s, transform 0.15s;
+      text-align: left; width: calc(100% - 24px);
+      color: #94A3B8;
+    }
+    .sidebar-menu-item:hover { background: rgba(255,255,255,0.06); transform: translateX(3px); }
+    .sidebar-menu-item:active { transform: scale(0.97); }
+    .sidebar-menu-item.danger { color: #f87171; }
+    .sidebar-menu-item.danger:hover { background: rgba(239,68,68,0.1); }
+    .sidebar-icon-wrap {
+      width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .sidebar-divider {
+      height: 1px; background: rgba(255,255,255,0.07);
+      margin: 8px 20px;
+    }
+    .sidebar-section-label {
+      font-size: 9px; font-weight: 900; color: #334155;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      padding: 14px 24px 6px;
+    }
     @keyframes shimmer-sweep {
       0% { transform: translateX(-100%) skewX(-15deg); }
       100% { transform: translateX(300%) skewX(-15deg); }
@@ -126,7 +194,7 @@
     }
   </style>
 </head>
-<body class="pb-32">
+<body class="pb-32" style="background:#F8FAFC;">
 
   <!-- Loading Pill -->
   <div id="sync-pill" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-5 py-2.5 rounded-full text-[10px] font-black z-[3000] hidden flex items-center gap-3">
@@ -168,62 +236,411 @@
 
   <!-- ==================== APP CONTENT ==================== -->
   <div id="app-content" class="hidden">
-    <header class="header-gradient pt-12 px-6 text-white">
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-            <i class="fas fa-store text-xs"></i>
+    <!-- ===== SIDEBAR ===== -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar(event)">
+      <aside class="sidebar-panel" onclick="event.stopPropagation()">
+
+        <!-- Sidebar Header -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 px-5 pt-14 pb-6">
+          <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full pointer-events-none"></div>
+          <div class="absolute right-4 bottom-0 w-16 h-16 bg-white/5 rounded-full pointer-events-none"></div>
+          <!-- Avatar toko -->
+          <div class="w-14 h-14 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-2xl mb-3 shadow-xl backdrop-blur-sm">
+            <i class="fas fa-store text-white"></i>
           </div>
-          <div>
-            <p class="text-[9px] font-black opacity-60 uppercase tracking-widest">Premium POS</p>
-            <p class="text-xs font-bold" id="display-store-name">TOKO DEMO</p>
+          <p class="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-0.5">ID TOKO</p>
+          <p class="text-base font-black text-white" id="sidebar-store-name">DEMO</p>
+          <!-- Status online -->
+          <div id="sidebar-status" class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-emerald-500/15 border border-emerald-400/25 rounded-full">
+            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
+            <span class="text-[8px] font-black text-emerald-300" id="sidebar-status-text">ONLINE</span>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <div id="connection-status" class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[10px] font-black transition-all">
-            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" id="status-dot"></span>
-            <span id="status-text">ONLINE</span>
+
+        <!-- Menu Items -->
+        <div class="flex-1 py-2">
+
+          <p class="sidebar-section-label">MENU UTAMA</p>
+
+          <!-- Akun -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('akun')">
+            <div class="sidebar-icon-wrap bg-blue-500/15">
+              <i class="fas fa-user-circle text-blue-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Akun Toko</p>
+              <p class="text-[9px] text-slate-500 font-bold">Info & pengaturan akun</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+          </button>
+
+          <!-- Catatan -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('catatan')">
+            <div class="sidebar-icon-wrap bg-amber-500/15">
+              <i class="fas fa-sticky-note text-amber-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Catatan Toko</p>
+              <p class="text-[9px] text-slate-500 font-bold">Kelola catatan & memo</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="sidebar-note-badge" class="hidden px-2 py-0.5 bg-amber-500 text-white text-[8px] font-black rounded-full">0</span>
+              <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+            </div>
+          </button>
+
+          <p class="sidebar-section-label">DATA</p>
+
+          <!-- Backup & Restore -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('backup')">
+            <div class="sidebar-icon-wrap bg-emerald-500/15">
+              <i class="fas fa-cloud-arrow-up text-emerald-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Backup & Restore</p>
+              <p class="text-[9px] text-slate-500 font-bold">Sinkronisasi data cloud</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+          </button>
+
+          <p class="sidebar-section-label">LAINNYA</p>
+
+          <!-- Tentang -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('tentang')">
+            <div class="sidebar-icon-wrap bg-violet-500/15">
+              <i class="fas fa-circle-info text-violet-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Tentang Aplikasi</p>
+              <p class="text-[9px] text-slate-500 font-bold">Versi, lisensi & kontak</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+          </button>
+
+          <!-- Hubungi Admin -->
+          <a href="https://wa.me/62895621263666" target="_blank" class="sidebar-menu-item no-underline">
+            <div class="sidebar-icon-wrap bg-green-500/15">
+              <i class="fab fa-whatsapp text-green-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Hubungi Admin</p>
+              <p class="text-[9px] text-slate-500 font-bold">Bantuan via WhatsApp</p>
+            </div>
+            <i class="fas fa-external-link text-slate-600 text-[9px]"></i>
+          </a>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-divider"></div>
+        <button class="sidebar-menu-item danger mb-4" onclick="closeSidebar(); logout();">
+          <div class="sidebar-icon-wrap bg-red-500/15">
+            <i class="fas fa-right-from-bracket text-red-400"></i>
           </div>
-          <button onclick="logout()" class="text-xs font-bold bg-white/10 px-4 py-2 rounded-full hover:bg-white/20 transition cursor-pointer border-0">
-            <i class="fas fa-sign-out-alt mr-2"></i>KELUAR
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-black">Keluar</p>
+            <p class="text-[9px] text-red-300/60 font-bold">Logout dari akun ini</p>
+          </div>
+        </button>
+
+      </aside>
+    </div>
+    <!-- end SIDEBAR -->
+
+    <!-- ===== MODAL SIDEBAR: AKUN ===== -->
+    <div id="modal-sidebar-akun" class="modal-overlay">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <h4 class="text-lg font-black">Akun Toko</h4>
+          <button onclick="closeModal('modal-sidebar-akun')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-4">
+          <!-- Info ID -->
+          <div class="bg-blue-50 rounded-2xl p-4 flex items-center gap-4 border border-blue-100">
+            <div class="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-200">
+              <i class="fas fa-store"></i>
+            </div>
+            <div>
+              <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest">ID Toko</p>
+              <p class="text-lg font-black text-blue-800" id="akun-store-id">—</p>
+              <p class="text-[9px] text-blue-500 font-bold" id="akun-status-badge">● ONLINE</p>
+            </div>
+          </div>
+          <!-- Statistik -->
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-slate-50 rounded-2xl p-3 text-center border border-slate-100">
+              <p class="text-lg font-black text-blue-600" id="akun-stat-trx">0</p>
+              <p class="text-[7px] font-black text-slate-400 uppercase">TRX Total</p>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-3 text-center border border-slate-100">
+              <p class="text-lg font-black text-emerald-600" id="akun-stat-produk">0</p>
+              <p class="text-[7px] font-black text-slate-400 uppercase">Produk</p>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-3 text-center border border-slate-100">
+              <p class="text-lg font-black text-violet-600" id="akun-stat-plg">0</p>
+              <p class="text-[7px] font-black text-slate-400 uppercase">Pelanggan</p>
+            </div>
+          </div>
+          <!-- Saldo total -->
+          <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-4 text-white">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Saldo Semua Dompet</p>
+            <p class="text-2xl font-black" id="akun-total-saldo">Rp 0</p>
+          </div>
+          <button onclick="closeModal('modal-sidebar-akun'); logout();" class="w-full py-3.5 bg-red-50 text-red-600 rounded-2xl font-black text-sm border-0 cursor-pointer flex items-center justify-center gap-2 hover:bg-red-100 transition-all">
+            <i class="fas fa-right-from-bracket"></i> Keluar dari Akun
           </button>
         </div>
       </div>
+    </div>
 
-      <!-- CARD SALDO -->
-      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 p-6 text-white shadow-xl translate-y-12 border border-white/10">
-        <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/15 rounded-full blur-2xl"></div>
-        <div class="absolute -left-10 -bottom-10 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl"></div>
-        <div class="relative flex justify-between items-start mb-6">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="inline-block px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/20 text-[8px] font-extrabold uppercase tracking-widest">CLOUD DATABASE</span>
-            </div>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Saldo Terpusat</p>
-            <h2 id="header-saldo" class="text-3xl font-black tracking-tight text-white">Rp 0</h2>
+    <!-- ===== MODAL SIDEBAR: CATATAN ===== -->
+    <div id="modal-sidebar-catatan" class="modal-overlay">
+      <div class="modal-content" style="max-height:85vh">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h4 class="text-lg font-black">Catatan Toko</h4>
+            <p class="text-[9px] text-slate-400 font-bold" id="catatan-count-label">0 catatan</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20 animate-float">
-            <i class="fas fa-wallet text-lg text-white"></i>
+          <div class="flex gap-2">
+            <button onclick="openAddNoteFromSidebar()" class="w-9 h-9 bg-amber-500 text-white rounded-xl flex items-center justify-center shadow-md cursor-pointer border-0">
+              <i class="fas fa-plus text-sm"></i>
+            </button>
+            <button onclick="closeModal('modal-sidebar-catatan')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5 relative z-10">
-          <div class="space-y-0.5">
-            <p class="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Piutang (Plg)
-            </p>
-            <p id="stat-piutang" class="text-sm font-extrabold text-emerald-400">Rp 0</p>
+        <div id="sidebar-notes-list" class="space-y-3 overflow-y-auto" style="max-height:60vh"></div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL SIDEBAR: BACKUP & RESTORE ===== -->
+    <div id="modal-sidebar-backup" class="modal-overlay">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <h4 class="text-lg font-black">Backup & Restore</h4>
+          <button onclick="closeModal('modal-sidebar-backup')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-4">
+
+          <!-- Status cloud -->
+          <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+              <i class="fas fa-cloud text-emerald-600 text-lg"></i>
+            </div>
+            <div>
+              <p class="text-[10px] font-black text-emerald-700 uppercase">Google Sheet Cloud</p>
+              <p class="text-[9px] text-emerald-500 font-bold" id="backup-last-sync">Terakhir sync: —</p>
+            </div>
           </div>
-          <div class="space-y-0.5">
-            <p class="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Hutang (Toko)
-            </p>
-            <p id="stat-hutang" class="text-sm font-extrabold text-amber-400">Rp 0</p>
+
+          <!-- Backup ke Cloud -->
+          <div class="card-premium p-4 space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <i class="fas fa-cloud-arrow-up text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-xs font-black text-slate-800">Backup ke Cloud</p>
+                <p class="text-[9px] text-slate-400 font-bold">Simpan semua data ke Google Sheet</p>
+              </div>
+            </div>
+            <button onclick="doBackup()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-[11px] flex items-center justify-center gap-2 cursor-pointer border-0 transition-all">
+              <i class="fas fa-cloud-arrow-up"></i> BACKUP SEKARANG
+            </button>
+          </div>
+
+          <!-- Restore dari Cloud -->
+          <div class="card-premium p-4 space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                <i class="fas fa-cloud-arrow-down text-amber-600"></i>
+              </div>
+              <div>
+                <p class="text-xs font-black text-slate-800">Restore dari Cloud</p>
+                <p class="text-[9px] text-slate-400 font-bold">Ambil data terbaru dari Google Sheet</p>
+              </div>
+            </div>
+            <button onclick="doRestore()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-[11px] flex items-center justify-center gap-2 cursor-pointer border-0 transition-all">
+              <i class="fas fa-cloud-arrow-down"></i> RESTORE DARI CLOUD
+            </button>
+          </div>
+
+          <!-- Export JSON lokal -->
+          <div class="card-premium p-4 space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center">
+                <i class="fas fa-file-arrow-down text-slate-500"></i>
+              </div>
+              <div>
+                <p class="text-xs font-black text-slate-800">Export Data Lokal</p>
+                <p class="text-[9px] text-slate-400 font-bold">Unduh data sebagai file JSON</p>
+              </div>
+            </div>
+            <button onclick="doExportJSON()" class="w-full py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-xl font-black text-[11px] flex items-center justify-center gap-2 cursor-pointer border-0 transition-all">
+              <i class="fas fa-file-arrow-down"></i> UNDUH FILE JSON
+            </button>
+          </div>
+
+          <!-- Import JSON lokal -->
+          <div class="card-premium p-4 space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                <i class="fas fa-file-arrow-up text-violet-500"></i>
+              </div>
+              <div>
+                <p class="text-xs font-black text-slate-800">Import File JSON</p>
+                <p class="text-[9px] text-slate-400 font-bold">Pulihkan dari file backup lokal</p>
+              </div>
+            </div>
+            <label class="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-black text-[11px] flex items-center justify-center gap-2 cursor-pointer transition-all">
+              <i class="fas fa-file-arrow-up"></i> PILIH FILE JSON
+              <input type="file" accept=".json" onchange="doImportJSON(event)" class="hidden">
+            </label>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL SIDEBAR: TENTANG ===== -->
+    <div id="modal-sidebar-tentang" class="modal-overlay">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <h4 class="text-lg font-black">Tentang Aplikasi</h4>
+          <button onclick="closeModal('modal-sidebar-tentang')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-5">
+          <!-- App identity -->
+          <div class="text-center py-4">
+            <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-3xl flex items-center justify-center text-4xl shadow-xl shadow-blue-200 mx-auto mb-4 rotate-3">
+              <i class="fas fa-cloud text-white"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-800">KonterKU <span class="text-blue-600">Cloud</span></h3>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Premium Cloud POS System</p>
+            <span class="inline-block mt-2 px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100">Versi 2.0.0</span>
+          </div>
+
+          <!-- Feature list -->
+          <div class="space-y-2">
+            ${['Kasir Digital & Fisik','Manajemen Stok Produk','Multi-Dompet & Mutasi','Hutang/Piutang Pelanggan','Laporan Laba Rugi Harian','Sinkronisasi Google Sheet Cloud'].map(f => `
+              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-check text-blue-600 text-[9px]"></i>
+                </div>
+                <p class="text-[11px] font-bold text-slate-700">${f}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Contact -->
+          <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-4 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center">
+              <i class="fab fa-whatsapp text-green-400 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Developer / Admin</p>
+              <p class="text-xs font-black text-white">0895621263666</p>
+              <a href="https://wa.me/62895621263666" target="_blank" class="text-[9px] text-green-400 font-bold hover:text-green-300">Hubungi via WhatsApp →</a>
+            </div>
+          </div>
+
+          <p class="text-center text-[9px] text-slate-400 font-bold">© 2024 KonterKU Cloud. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+
+    <header class="header-gradient text-white">
+
+      <!-- Ornamen blur background -->
+      <div class="absolute -right-10 -top-10 w-52 h-52 rounded-full pointer-events-none"
+        style="background:radial-gradient(circle, rgba(56,189,248,0.18) 0%, transparent 70%)"></div>
+      <div class="absolute -left-8 bottom-0 w-40 h-40 rounded-full pointer-events-none"
+        style="background:radial-gradient(circle, rgba(99,179,237,0.12) 0%, transparent 70%)"></div>
+
+      <!-- TOP BAR -->
+      <div class="relative z-10 flex justify-between items-center px-5 pt-12 pb-4">
+
+        <!-- Hamburger -->
+        <button onclick="openSidebar()"
+          class="w-10 h-10 bg-white/10 hover:bg-white/18 active:scale-90 rounded-2xl flex items-center justify-center cursor-pointer border border-white/10 transition-all">
+          <i class="fas fa-bars text-white text-sm"></i>
+        </button>
+
+        <!-- Salam + nama toko -->
+        <div class="flex-1 px-4">
+          <p class="text-[9px] text-white/50 font-bold uppercase tracking-widest">Premium POS</p>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <i class="fas fa-store text-white/70 text-[9px]"></i>
+            <p class="text-[13px] font-black text-white leading-none" id="display-store-name">TOKO DEMO</p>
+          </div>
+        </div>
+
+        <!-- Status badge -->
+        <div id="connection-status"
+          class="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white/10 border border-white/15 text-[9px] font-black text-emerald-300 transition-all">
+          <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" id="status-dot"></span>
+          <span id="status-text">ONLINE</span>
+        </div>
+      </div>
+
+      <!-- CARD SALDO GLASS — floating di atas header biru -->
+      <div class="relative z-10 mx-4 mb-0">
+        <div class="relative overflow-hidden rounded-[24px] p-5"
+          style="background: linear-gradient(135deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.05) 100%);
+                 border: 1px solid rgba(255,255,255,0.15);
+                 box-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.18);">
+
+          <!-- Shimmer top line -->
+          <div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></div>
+          <!-- Glow kanan -->
+          <div class="absolute -right-6 -top-6 w-32 h-32 pointer-events-none"
+            style="background:radial-gradient(circle, rgba(56,189,248,0.15) 0%, transparent 70%)"></div>
+
+          <!-- Row 1: Label + chip icon -->
+          <div class="flex justify-between items-center mb-3">
+            <div>
+              <p class="text-[9px] font-bold text-white/50 uppercase tracking-widest">Total Saldo Terpusat</p>
+            </div>
+            <!-- Chip kartu kredit ala referensi -->
+            <div class="w-11 h-8 rounded-lg flex items-center justify-center"
+              style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 2px 8px rgba(245,158,11,0.4);">
+              <i class="fas fa-microchip text-yellow-100 text-sm"></i>
+            </div>
+          </div>
+
+          <!-- Saldo besar -->
+          <p id="header-saldo" class="text-[34px] font-black text-white tracking-tight leading-none mb-4">Rp 0</p>
+
+          <!-- Row bawah: TRX hari ini + Kelola Saldo -->
+          <div class="flex items-center justify-between gap-3">
+            <!-- TRX badge -->
+            <div class="flex items-center gap-2 px-3 py-2 rounded-xl" style="background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.10);">
+              <i class="fas fa-arrow-trend-up text-emerald-400 text-[10px]"></i>
+              <span class="text-[10px] font-black text-white/80">+<span id="header-trx-count">0</span> Trx</span>
+            </div>
+
+            <!-- Piutang + Hutang pill -->
+            <div class="flex gap-2 flex-1 justify-end">
+              <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/20">
+                <i class="fas fa-arrow-up text-emerald-400 text-[8px]"></i>
+                <div>
+                  <p class="text-[6px] font-black text-emerald-400/70 uppercase leading-none">Piutang</p>
+                  <p id="stat-piutang" class="text-[10px] font-black text-emerald-300 leading-none">Rp 0</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-400/20">
+                <i class="fas fa-arrow-down text-amber-400 text-[8px]"></i>
+                <div>
+                  <p class="text-[6px] font-black text-amber-400/70 uppercase leading-none">Hutang</p>
+                  <p id="stat-hutang" class="text-[10px] font-black text-amber-300 leading-none">Rp 0</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
     </header>
 
-    <main class="px-6 mt-20">
+    <main class="px-6 pt-6">
 
       <!-- ===== VIEW: DASHBOARD ===== -->
       <section id="view-dashboard" class="view-section active space-y-6">
@@ -362,8 +779,8 @@
             <button onclick="setTrFilter('FIS')" id="fltr-FIS" class="filter-chip">FISIK</button>
           </div>
           <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-            <button onclick="setTimeFilter('all')" id="time-fltr-all" class="filter-chip active">SEMUA WAKTU</button>
-            <button onclick="setTimeFilter('today')" id="time-fltr-today" class="filter-chip">HARI INI</button>
+            <button onclick="setTimeFilter('all')" id="time-fltr-all" class="filter-chip">SEMUA WAKTU</button>
+            <button onclick="setTimeFilter('today')" id="time-fltr-today" class="filter-chip active">HARI INI</button>
             <button onclick="setTimeFilter('yesterday')" id="time-fltr-yesterday" class="filter-chip">KEMARIN</button>
             <button onclick="setTimeFilter('week')" id="time-fltr-week" class="filter-chip">MINGGU INI</button>
           </div>
@@ -768,9 +1185,9 @@
 
     let activeHutangTab = 'pelanggan';
     let currentTrFilter = 'all';
-    let currentTimeFilter = 'all';
+    let currentTimeFilter = 'today';
     let currentTrPage = 1;
-    const trPerPage = 10;
+    const trPerPage = 6;
     let currentManualHutangType = 'pelanggan';
     let profitChartInstance = null;
 
@@ -826,13 +1243,13 @@
       const box = document.getElementById('connection-status');
       if (!dot || !txt || !box) return;
       if (navigator.onLine) {
-        dot.className = "w-2 h-2 bg-emerald-500 rounded-full animate-pulse";
+        dot.className = "w-2 h-2 bg-emerald-400 rounded-full animate-pulse";
         txt.innerText = "ONLINE";
-        box.className = "flex items-center gap-1.5 px-3 py-2 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[10px] font-black transition-all";
+        box.className = "flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[9px] font-black transition-all backdrop-blur-md";
       } else {
-        dot.className = "w-2 h-2 bg-rose-500 rounded-full animate-bounce";
+        dot.className = "w-2 h-2 bg-rose-400 rounded-full animate-bounce";
         txt.innerText = "OFFLINE";
-        box.className = "flex items-center gap-1.5 px-3 py-2 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[10px] font-black transition-all";
+        box.className = "flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[9px] font-black transition-all backdrop-blur-md";
       }
     }
     window.addEventListener('online', updateConnectionStatus);
@@ -1215,7 +1632,10 @@
     function initApp() {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-content').classList.remove('hidden');
-      document.getElementById('display-store-name').innerText = localStorage.getItem('k_sid') || 'DEMO';
+      const _sid = localStorage.getItem('k_sid') || 'DEMO';
+      document.getElementById('display-store-name').innerText = _sid;
+      const _sbn = document.getElementById('sidebar-store-name');
+      if (_sbn) _sbn.innerText = _sid;
       loadLocalData();
       updateConnectionStatus();
       resetKasirForms();
@@ -1256,6 +1676,7 @@
       showSync(true);
       try {
         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save', storeId: sid, data: db }) });
+        localStorage.setItem('k_last_sync', new Date().toLocaleString('id-ID'));
         renderAll();
       } catch(e) { console.error(e); } finally { showSync(false); }
     }
@@ -1267,6 +1688,8 @@
       document.getElementById('stat-omset-today').innerText = `Rp ${fmt(trxToday.reduce((a,b)=>a+Number(b.jual||0),0))}`;
       document.getElementById('stat-laba-today').innerText = `Rp ${fmt(trxToday.reduce((a,b)=>a+(Number(b.jual||0)-Number(b.modal||0)),0))}`;
       document.getElementById('stat-trx-today').innerText = trxToday.length;
+      const hTrx = document.getElementById('header-trx-count');
+      if (hTrx) hTrx.innerText = trxToday.length;
       document.getElementById('header-saldo').innerText = `Rp ${fmt(db.dompet.reduce((a,b)=>a+Number(b.saldo||0),0))}`;
       document.getElementById('stat-piutang').innerText = `Rp ${fmt(db.hutang.filter(h=>h.tipe==='pelanggan').reduce((a,b)=>a+Number(b.jumlah||0),0))}`;
       document.getElementById('stat-hutang').innerText = `Rp ${fmt(db.hutang.filter(h=>h.tipe==='toko').reduce((a,b)=>a+Number(b.jumlah||0),0))}`;
@@ -2286,6 +2709,224 @@
         if (res.isConfirmed) { localStorage.removeItem('k_logged'); location.reload(); }
       });
     }
+
+    // ============================================================
+    // SIDEBAR FUNCTIONS
+    // ============================================================
+    function openSidebar() {
+      const sid = localStorage.getItem('k_sid') || 'DEMO';
+      document.getElementById('sidebar-store-name').innerText = sid;
+
+      // Badge catatan
+      const noteCount = (db.notes||[]).length;
+      const badge = document.getElementById('sidebar-note-badge');
+      if (badge) { badge.innerText = noteCount; badge.classList.toggle('hidden', noteCount === 0); }
+
+      // Status online
+      const dot  = document.getElementById('sidebar-dot');
+      const stxt = document.getElementById('sidebar-status-text');
+      if (navigator.onLine) {
+        dot.className  = 'w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse';
+        stxt.innerText = 'ONLINE';
+        stxt.className = 'text-[8px] font-black text-emerald-300';
+      } else {
+        dot.className  = 'w-1.5 h-1.5 bg-rose-400 rounded-full';
+        stxt.innerText = 'OFFLINE';
+        stxt.className = 'text-[8px] font-black text-rose-300';
+      }
+
+      document.getElementById('sidebar-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar(e) {
+      if (e && e.target !== document.getElementById('sidebar-overlay')) return;
+      document.getElementById('sidebar-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function openSidebarMenu(menu) {
+      document.getElementById('sidebar-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+
+      if (menu === 'akun') {
+        const sid = localStorage.getItem('k_sid') || '—';
+        document.getElementById('akun-store-id').innerText = sid;
+        document.getElementById('akun-stat-trx').innerText    = db.transaksi.length;
+        document.getElementById('akun-stat-produk').innerText = db.inventory.length;
+        document.getElementById('akun-stat-plg').innerText    = db.pelanggan.length;
+        document.getElementById('akun-total-saldo').innerText =
+          'Rp ' + fmt(db.dompet.reduce((a,b) => a + Number(b.saldo||0), 0));
+        const isOnline = navigator.onLine;
+        document.getElementById('akun-status-badge').innerText = isOnline ? '● ONLINE' : '● OFFLINE';
+        document.getElementById('akun-status-badge').className =
+          'text-[9px] font-bold ' + (isOnline ? 'text-emerald-500' : 'text-rose-500');
+        openModal('modal-sidebar-akun');
+      }
+
+      else if (menu === 'catatan') {
+        renderSidebarNotes();
+        openModal('modal-sidebar-catatan');
+      }
+
+      else if (menu === 'backup') {
+        const lastSync = localStorage.getItem('k_last_sync') || 'Belum pernah';
+        document.getElementById('backup-last-sync').innerText = 'Terakhir sync: ' + lastSync;
+        openModal('modal-sidebar-backup');
+      }
+
+      else if (menu === 'tentang') {
+        openModal('modal-sidebar-tentang');
+      }
+    }
+
+    function renderSidebarNotes() {
+      const list = document.getElementById('sidebar-notes-list');
+      const lbl  = document.getElementById('catatan-count-label');
+      if (!db.notes) db.notes = [];
+      const sorted = [...db.notes].sort((a,b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return (b.id||'').localeCompare(a.id||'');
+      });
+      if (lbl) lbl.innerText = sorted.length + ' catatan';
+      if (sorted.length === 0) {
+        list.innerHTML = `<div class="text-center py-10">
+          <i class="fas fa-sticky-note text-3xl text-slate-200 mb-3 block"></i>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Belum ada catatan</p>
+        </div>`;
+        return;
+      }
+      list.innerHTML = sorted.map(n => `
+        <div class="bg-white border border-slate-100 rounded-2xl p-4 relative border-l-4 ${n.pinned ? 'border-amber-400' : 'border-slate-200'}">
+          <div class="flex justify-between items-start mb-2">
+            <div class="flex-1 min-w-0 pr-2">
+              <h5 class="text-[11px] font-black uppercase text-slate-700 flex items-center gap-1.5 truncate">
+                ${n.pinned ? '<i class="fas fa-thumbtack text-amber-400 text-[9px] flex-shrink-0"></i>' : ''}
+                ${n.title||''}
+              </h5>
+              <p class="text-[8px] text-slate-400 font-bold mt-0.5">${n.tgl||''}</p>
+            </div>
+            <div class="flex gap-1.5 flex-shrink-0">
+              <button onclick="togglePinNote('${n.id}'); renderSidebarNotes();" class="${n.pinned ? 'text-amber-400' : 'text-slate-300'} text-[10px] p-1.5 bg-transparent border-0 cursor-pointer hover:text-amber-400 transition-colors">
+                <i class="fas fa-thumbtack"></i>
+              </button>
+              <button onclick="editNoteFromSidebar('${n.id}')" class="text-blue-400 text-[10px] p-1.5 bg-transparent border-0 cursor-pointer hover:text-blue-600 transition-colors">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteNoteFromSidebar('${n.id}')" class="text-red-400 text-[10px] p-1.5 bg-transparent border-0 cursor-pointer hover:text-red-600 transition-colors">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-[10px] font-medium text-slate-500 leading-relaxed whitespace-pre-wrap">${n.body||''}</p>
+        </div>
+      `).join('');
+    }
+
+    function openAddNoteFromSidebar() {
+      closeModal('modal-sidebar-catatan');
+      setTimeout(() => openAddNoteModal(), 100);
+    }
+
+    function editNoteFromSidebar(id) {
+      closeModal('modal-sidebar-catatan');
+      setTimeout(() => editNote(id), 100);
+    }
+
+    async function deleteNoteFromSidebar(id) {
+      const res = await Swal.fire({ title: 'Hapus Catatan?', text: 'Catatan ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      if (res.isConfirmed) {
+        db.notes = (db.notes||[]).filter(n => n.id !== id);
+        await sync();
+        renderSidebarNotes();
+        const lbl = document.getElementById('catatan-count-label');
+        if (lbl) lbl.innerText = db.notes.length + ' catatan';
+      }
+    }
+
+    // ---- BACKUP & RESTORE ----
+    async function doBackup() {
+      showSync(true);
+      try {
+        const sid = localStorage.getItem('k_sid');
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save', storeId: sid, data: db }) });
+        const now = new Date().toLocaleString('id-ID');
+        localStorage.setItem('k_last_sync', now);
+        document.getElementById('backup-last-sync').innerText = 'Terakhir sync: ' + now;
+        Swal.fire({ title: 'Backup Berhasil!', text: 'Data berhasil disimpan ke Google Sheet Cloud.', icon: 'success', timer: 2500, showConfirmButton: false });
+      } catch(e) {
+        Swal.fire('Gagal', 'Koneksi gagal. Pastikan Anda online.', 'error');
+      } finally { showSync(false); }
+    }
+
+    async function doRestore() {
+      const res = await Swal.fire({ title: 'Restore dari Cloud?', text: 'Data lokal akan DITIMPA dengan data dari cloud. Lanjutkan?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Restore', cancelButtonText: 'Batal', confirmButtonColor: '#f59e0b' });
+      if (!res.isConfirmed) return;
+      showSync(true);
+      try {
+        const sid = localStorage.getItem('k_sid');
+        const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'load', storeId: sid }) });
+        const data = await resp.json();
+        if (data.status === 'success' && data.data) {
+          const d = data.data;
+          db = { dompet: d.dompet||[], transaksi: d.transaksi||[], inventory: d.inventory||[], hutang: d.hutang||[], hutang_lunas: d.hutang_lunas||[], pelanggan: d.pelanggan||[], mutasi: d.mutasi||[], notes: d.notes||[], riwayat_hutang: d.riwayat_hutang||[] };
+          saveLocalData();
+          renderAll();
+          const now = new Date().toLocaleString('id-ID');
+          localStorage.setItem('k_last_sync', now);
+          document.getElementById('backup-last-sync').innerText = 'Terakhir sync: ' + now;
+          Swal.fire({ title: 'Restore Berhasil!', text: 'Data berhasil dipulihkan dari cloud.', icon: 'success', timer: 2500, showConfirmButton: false });
+        } else {
+          Swal.fire('Gagal', 'Data tidak ditemukan di cloud.', 'error');
+        }
+      } catch(e) {
+        Swal.fire('Gagal', 'Koneksi gagal. Pastikan Anda online.', 'error');
+      } finally { showSync(false); }
+    }
+
+    function doExportJSON() {
+      const sid = localStorage.getItem('k_sid') || 'toko';
+      const json = JSON.stringify(db, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `backup_${sid}_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      Swal.fire({ title: 'Export Berhasil!', text: 'File JSON berhasil diunduh.', icon: 'success', timer: 2000, showConfirmButton: false });
+    }
+
+    async function doImportJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const res = await Swal.fire({ title: 'Import File Ini?', text: `"${file.name}" — Semua data lokal akan DITIMPA. Lanjutkan?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Import', cancelButtonText: 'Batal', confirmButtonColor: '#7c3aed' });
+      if (!res.isConfirmed) { event.target.value = ''; return; }
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          db = {
+            dompet: parsed.dompet||[], transaksi: parsed.transaksi||[],
+            inventory: parsed.inventory||[], hutang: parsed.hutang||[],
+            hutang_lunas: parsed.hutang_lunas||[], pelanggan: parsed.pelanggan||[],
+            mutasi: parsed.mutasi||[], notes: parsed.notes||[],
+            riwayat_hutang: parsed.riwayat_hutang||[]
+          };
+          saveLocalData();
+          renderAll();
+          Swal.fire({ title: 'Import Berhasil!', text: 'Data berhasil dipulihkan dari file JSON.', icon: 'success', timer: 2500, showConfirmButton: false });
+        } catch(err) {
+          Swal.fire('Gagal', 'File tidak valid atau rusak.', 'error');
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    // Sync timestamp on every cloud save
+    const _origSync = sync;
 
     // ---- AUTO LOGIN ----
     if (localStorage.getItem('k_logged') === 'true') {
