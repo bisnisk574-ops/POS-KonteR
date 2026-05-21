@@ -241,20 +241,63 @@
       <aside class="sidebar-panel" onclick="event.stopPropagation()">
 
         <!-- Sidebar Header -->
-        <div class="relative overflow-hidden bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 px-5 pt-14 pb-6">
-          <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full pointer-events-none"></div>
-          <div class="absolute right-4 bottom-0 w-16 h-16 bg-white/5 rounded-full pointer-events-none"></div>
-          <!-- Avatar toko -->
-          <div class="w-14 h-14 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center text-2xl mb-3 shadow-xl backdrop-blur-sm">
-            <i class="fas fa-store text-white"></i>
+        <div class="relative overflow-hidden px-5 pt-12 pb-5"
+          style="background:linear-gradient(160deg,#060e1f 0%,#0b1e42 60%,#0a3272 100%);">
+
+          <!-- Dot pattern bg -->
+          <div class="absolute inset-0 pointer-events-none" style="opacity:0.035;background-image:radial-gradient(circle,#7dd3fc 1px,transparent 1px);background-size:20px 20px;"></div>
+          <!-- Glow kanan atas -->
+          <div class="absolute right-0 top-0 w-32 h-32 pointer-events-none" style="background:radial-gradient(circle at 100% 0%,rgba(56,189,248,0.22) 0%,transparent 70%)"></div>
+          <!-- Glow kiri bawah -->
+          <div class="absolute left-0 bottom-0 w-24 h-24 pointer-events-none" style="background:radial-gradient(circle at 0% 100%,rgba(99,102,241,0.15) 0%,transparent 70%)"></div>
+
+          <!-- ── BARIS UTAMA: Nama Toko (kiri) + Jam Kecil (kanan) ── -->
+          <div class="flex items-start justify-between gap-3 mb-4" style="position:relative;z-index:1;">
+
+            <!-- Kiri: Avatar + Nama Toko -->
+            <div class="flex items-center gap-3" style="flex:1;min-width:0;overflow:hidden;">
+              <div class="rounded-2xl flex items-center justify-center"
+                style="width:48px;height:48px;min-width:48px;background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 16px rgba(0,97,194,0.5);">
+                <i class="fas fa-store text-white" style="font-size:16px;"></i>
+              </div>
+              <div style="min-width:0;overflow:hidden;">
+                <p class="font-black uppercase" style="font-size:8px;color:rgba(56,189,248,0.65);letter-spacing:0.15em;margin-bottom:4px;">ID TOKO</p>
+                <p id="sidebar-store-name" class="font-black text-white" style="font-size:16px;line-height:1.2;word-break:break-word;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
+                <!-- Status badge -->
+                <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="margin-top:6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
+                  <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
+                  <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kanan: Jam Digital Kecil -->
+            <div style="flex-shrink:0;background:rgba(0,0,0,0.28);border:1px solid rgba(56,189,248,0.14);border-radius:16px;padding:9px 11px;backdrop-filter:blur(10px);text-align:right;">
+              <div class="flex items-baseline justify-end" style="gap:1px;line-height:1;">
+                <span id="sb-clock-h" class="font-black text-white" style="font-size:26px;letter-spacing:-2px;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(56,189,248,0.5);">00</span>
+                <span id="sb-clock-colon" class="font-black" style="font-size:20px;color:rgba(56,189,248,0.85);margin:0 1px 1px;">:</span>
+                <span id="sb-clock-m" class="font-black text-white" style="font-size:26px;letter-spacing:-2px;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(56,189,248,0.5);">00</span>
+                <span id="sb-clock-s" class="font-black" style="font-size:12px;color:rgba(56,189,248,0.7);font-variant-numeric:tabular-nums;align-self:flex-end;margin-bottom:3px;margin-left:3px;">00</span>
+              </div>
+              <div class="flex items-center justify-end" style="gap:5px;margin-top:4px;">
+                <span id="sb-day-name" class="font-black uppercase" style="font-size:7px;color:rgba(255,255,255,0.4);letter-spacing:0.08em;">SENIN</span>
+                <span style="font-size:7px;color:rgba(255,255,255,0.2);">·</span>
+                <span class="font-black uppercase" style="font-size:7px;color:rgba(56,189,248,0.65);letter-spacing:0.1em;">WIB</span>
+              </div>
+            </div>
+
           </div>
-          <p class="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-0.5">ID TOKO</p>
-          <p class="text-base font-black text-white" id="sidebar-store-name">DEMO</p>
-          <!-- Status online -->
-          <div id="sidebar-status" class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-emerald-500/15 border border-emerald-400/25 rounded-full">
-            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
-            <span class="text-[8px] font-black text-emerald-300" id="sidebar-status-text">ONLINE</span>
+
+          <!-- ── BARIS BAWAH: Tanggal + Pekan ── -->
+          <div class="h-px mb-3" style="background:rgba(255,255,255,0.06);"></div>
+          <div class="flex items-center justify-between" style="position:relative;z-index:1;">
+            <p id="sb-date-full" class="font-black text-white" style="font-size:12px;">1 Januari 2024</p>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.14);">
+              <i class="fas fa-calendar-week text-cyan-400" style="font-size:8px;"></i>
+              <span id="sb-week-num" class="font-black uppercase" style="font-size:7.5px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;">Pekan —</span>
+            </div>
           </div>
+
         </div>
 
         <!-- Menu Items -->
@@ -502,51 +545,238 @@
 
     <!-- ===== MODAL SIDEBAR: TENTANG ===== -->
     <div id="modal-sidebar-tentang" class="modal-overlay">
-      <div class="modal-content">
-        <div class="flex justify-between items-center mb-6">
-          <h4 class="text-lg font-black">Tentang Aplikasi</h4>
-          <button onclick="closeModal('modal-sidebar-tentang')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+      <div class="modal-content" style="max-height:92vh;overflow-y:auto;padding:0;border-radius:32px 32px 0 0;">
+
+        <!-- ── HERO BANNER ── -->
+        <div class="relative overflow-hidden text-white text-center px-6 pt-10 pb-7"
+          style="background:linear-gradient(150deg,#030c1e 0%,#081630 45%,#0a3272 100%);">
+          <div class="absolute inset-0 pointer-events-none" style="opacity:0.04;background-image:radial-gradient(circle,#7dd3fc 1px,transparent 1px);background-size:18px 18px;"></div>
+          <div class="absolute right-0 top-0 w-44 h-44 pointer-events-none" style="background:radial-gradient(circle at 100% 0%,rgba(56,189,248,0.22) 0%,transparent 70%)"></div>
+          <div class="absolute left-0 bottom-0 w-32 h-32 pointer-events-none" style="background:radial-gradient(circle at 0% 100%,rgba(99,102,241,0.18) 0%,transparent 70%)"></div>
+
+          <!-- Tombol Tutup -->
+          <button onclick="closeModal('modal-sidebar-tentang')"
+            class="absolute right-4 top-4 flex items-center justify-center cursor-pointer border-0 transition-all"
+            style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:12px;backdrop-filter:blur(8px);">
+            <i class="fas fa-times text-white" style="font-size:13px;opacity:0.7;"></i>
+          </button>
+
+          <!-- Logo -->
+          <div class="relative mx-auto mb-4 flex items-center justify-center"
+            style="width:88px;height:88px;border-radius:24px;background:linear-gradient(135deg,#0051a8,#0061C2 45%,#38BDF8);box-shadow:0 16px 40px rgba(0,97,194,0.65),0 4px 12px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.22);">
+            <div class="absolute inset-0" style="border-radius:24px;border:1px solid rgba(56,189,248,0.3);"></div>
+            <i class="fas fa-cloud text-white" style="font-size:36px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));"></i>
+          </div>
+
+          <h3 class="font-black text-white" style="font-size:23px;letter-spacing:-0.8px;text-shadow:0 2px 12px rgba(0,0,0,0.3);">
+            KonterKU <span style="color:#38BDF8;text-shadow:0 0 20px rgba(56,189,248,0.5);">Cloud</span>
+          </h3>
+          <p class="font-black uppercase mt-1" style="font-size:8px;color:rgba(255,255,255,0.35);letter-spacing:0.22em;">Premium Cloud POS System</p>
+
+          <!-- Badge Versi + Status -->
+          <div class="flex items-center justify-center gap-2.5 mt-4">
+            <span class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-black"
+              style="font-size:9px;background:rgba(56,189,248,0.13);border:1px solid rgba(56,189,248,0.28);color:#7dd3fc;">
+              <i class="fas fa-code-branch" style="font-size:7px;"></i> v2.0.0
+            </span>
+            <span class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-black"
+              style="font-size:9px;background:rgba(16,185,129,0.13);border:1px solid rgba(16,185,129,0.28);color:#6ee7b7;">
+              <span style="width:6px;height:6px;background:#34d399;border-radius:50%;display:inline-block;animation:ping 1s cubic-bezier(0,0,0.2,1) infinite;"></span>
+              Aktif &amp; Bergaransi
+            </span>
+          </div>
+
+          <!-- Stats Strip -->
+          <div class="flex justify-center mt-6">
+            <div class="px-5 py-3 text-center" style="border-right:1px solid rgba(255,255,255,0.08);">
+              <p class="font-black text-white" style="font-size:18px;letter-spacing:-0.5px;">6+</p>
+              <p class="font-bold uppercase" style="font-size:7px;color:rgba(255,255,255,0.32);letter-spacing:0.12em;">Fitur</p>
+            </div>
+            <div class="px-5 py-3 text-center" style="border-right:1px solid rgba(255,255,255,0.08);">
+              <p class="font-black text-white" style="font-size:18px;letter-spacing:-0.5px;">PWA</p>
+              <p class="font-bold uppercase" style="font-size:7px;color:rgba(255,255,255,0.32);letter-spacing:0.12em;">Platform</p>
+            </div>
+            <div class="px-5 py-3 text-center">
+              <p class="font-black text-white" style="font-size:18px;">☁️</p>
+              <p class="font-bold uppercase" style="font-size:7px;color:rgba(255,255,255,0.32);letter-spacing:0.12em;">Cloud</p>
+            </div>
+          </div>
         </div>
-        <div class="space-y-5">
-          <!-- App identity -->
-          <div class="text-center py-4">
-            <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-3xl flex items-center justify-center text-4xl shadow-xl shadow-blue-200 mx-auto mb-4 rotate-3">
-              <i class="fas fa-cloud text-white"></i>
-            </div>
-            <h3 class="text-xl font-black text-slate-800">KonterKU <span class="text-blue-600">Cloud</span></h3>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Premium Cloud POS System</p>
-            <span class="inline-block mt-2 px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-full border border-blue-100">Versi 2.0.0</span>
-          </div>
 
-          <!-- Feature list -->
-          <div class="space-y-2">
-            ${['Kasir Digital & Fisik','Manajemen Stok Produk','Multi-Dompet & Mutasi','Hutang/Piutang Pelanggan','Laporan Laba Rugi Harian','Sinkronisasi Google Sheet Cloud'].map(f => `
-              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-check text-blue-600 text-[9px]"></i>
-                </div>
-                <p class="text-[11px] font-bold text-slate-700">${f}</p>
+        <!-- ── BODY ── -->
+        <div class="px-5 py-5 space-y-4" style="background:#f8fafc;">
+
+          <!-- FITUR UNGGULAN - grid 2 kolom plain HTML -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="flex items-center justify-center" style="width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#0061C2,#38BDF8);">
+                <i class="fas fa-star text-white" style="font-size:8px;"></i>
               </div>
-            `).join('')}
+              <p class="font-black uppercase" style="font-size:9px;color:#94a3b8;letter-spacing:0.12em;">Fitur Unggulan</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+
+              <!-- Kasir Digital -->
+              <div class="flex items-start gap-2.5 p-3 rounded-2xl" style="background:#eff6ff;border:1px solid #bfdbfe;">
+                <div class="flex items-center justify-center flex-shrink-0 rounded-xl" style="width:32px;height:32px;min-width:32px;background:rgba(29,78,216,0.1);margin-top:2px;">
+                  <i class="fas fa-cash-register" style="color:#1d4ed8;font-size:11px;"></i>
+                </div>
+                <div>
+                  <p class="font-black" style="font-size:10px;color:#1e293b;line-height:1.3;">Kasir Digital</p>
+                  <p class="font-bold" style="font-size:8px;color:#94a3b8;margin-top:2px;">Transaksi multi-produk</p>
+                </div>
+              </div>
+
+              <!-- Manajemen Stok -->
+              <div class="flex items-start gap-2.5 p-3 rounded-2xl" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                <div class="flex items-center justify-center flex-shrink-0 rounded-xl" style="width:32px;height:32px;min-width:32px;background:rgba(21,128,61,0.1);margin-top:2px;">
+                  <i class="fas fa-box-open" style="color:#15803d;font-size:11px;"></i>
+                </div>
+                <div>
+                  <p class="font-black" style="font-size:10px;color:#1e293b;line-height:1.3;">Manajemen Stok</p>
+                  <p class="font-bold" style="font-size:8px;color:#94a3b8;margin-top:2px;">Pantau stok real-time</p>
+                </div>
+              </div>
+
+              <!-- Multi Dompet -->
+              <div class="flex items-start gap-2.5 p-3 rounded-2xl" style="background:#f5f3ff;border:1px solid #ddd6fe;">
+                <div class="flex items-center justify-center flex-shrink-0 rounded-xl" style="width:32px;height:32px;min-width:32px;background:rgba(124,58,237,0.1);margin-top:2px;">
+                  <i class="fas fa-wallet" style="color:#7c3aed;font-size:11px;"></i>
+                </div>
+                <div>
+                  <p class="font-black" style="font-size:10px;color:#1e293b;line-height:1.3;">Multi-Dompet</p>
+                  <p class="font-bold" style="font-size:8px;color:#94a3b8;margin-top:2px;">Kelola banyak dompet</p>
+                </div>
+              </div>
+
+              <!-- Hutang & Piutang -->
+              <div class="flex items-start gap-2.5 p-3 rounded-2xl" style="background:#fff1f2;border:1px solid #fecdd3;">
+                <div class="flex items-center justify-center flex-shrink-0 rounded-xl" style="width:32px;height:32px;min-width:32px;background:rgba(190,18,60,0.1);margin-top:2px;">
+                  <i class="fas fa-file-invoice-dollar" style="color:#be123c;font-size:11px;"></i>
+                </div>
+                <div>
+                  <p class="font-black" style="font-size:10px;color:#1e293b;line-height:1.3;">Hutang &amp; Piutang</p>
+                  <p class="font-bold" style="font-size:8px;color:#94a3b8;margin-top:2px;">Cicilan &amp; pelunasan</p>
+                </div>
+              </div>
+
+              <!-- Laporan Keuangan -->
+              <div class="flex items-start gap-2.5 p-3 rounded-2xl" style="background:#fffbeb;border:1px solid #fde68a;">
+                <div class="flex items-center justify-center flex-shrink-0 rounded-xl" style="width:32px;height:32px;min-width:32px;background:rgba(180,83,9,0.1);margin-top:2px;">
+                  <i class="fas fa-chart-line" style="color:#b45309;font-size:11px;"></i>
+                </div>
+                <div>
+                  <p class="font-black" style="font-size:10px;color:#1e293b;line-height:1.3;">Laporan Keuangan</p>
+                  <p class="font-bold" style="font-size:8px;color:#94a3b8;margin-top:2px;">Grafik tren 7 hari</p>
+                </div>
+              </div>
+
+              <!-- Cloud Sync -->
+              <div class="flex items-start gap-2.5 p-3 rounded-2xl" style="background:#ecfeff;border:1px solid #a5f3fc;">
+                <div class="flex items-center justify-center flex-shrink-0 rounded-xl" style="width:32px;height:32px;min-width:32px;background:rgba(14,116,144,0.1);margin-top:2px;">
+                  <i class="fas fa-cloud-arrow-up" style="color:#0e7490;font-size:11px;"></i>
+                </div>
+                <div>
+                  <p class="font-black" style="font-size:10px;color:#1e293b;line-height:1.3;">Cloud Sync</p>
+                  <p class="font-bold" style="font-size:8px;color:#94a3b8;margin-top:2px;">Backup &amp; restore otomatis</p>
+                </div>
+              </div>
+
+            </div>
           </div>
 
-          <!-- Contact -->
-          <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-4 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center">
-              <i class="fab fa-whatsapp text-green-400 text-xl"></i>
+          <!-- INFO TEKNIS -->
+          <div class="rounded-2xl overflow-hidden" style="background:white;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+            <div class="flex items-center gap-2 px-4 py-3" style="background:linear-gradient(90deg,#0f172a,#1e293b);">
+              <i class="fas fa-microchip text-cyan-400" style="font-size:9px;"></i>
+              <p class="font-black uppercase" style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.12em;">Info Teknis</p>
             </div>
-            <div>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Developer / Admin</p>
-              <p class="text-xs font-black text-white">0895621263666</p>
-              <a href="https://wa.me/62895621263666" target="_blank" class="text-[9px] text-green-400 font-bold hover:text-green-300">Hubungi via WhatsApp →</a>
+            <div class="px-4 py-2" style="divide-y:1px solid #f8fafc;">
+
+              <div class="flex items-center justify-between py-2.5" style="border-bottom:1px solid #f8fafc;">
+                <div class="flex items-center gap-2.5">
+                  <div class="flex items-center justify-center" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#60a5fa);">
+                    <i class="fas fa-code-branch text-white" style="font-size:8px;"></i>
+                  </div>
+                  <span class="font-bold text-slate-500" style="font-size:10px;">Versi Aplikasi</span>
+                </div>
+                <span class="font-black text-slate-700" style="font-size:10px;">2.0.0</span>
+              </div>
+
+              <div class="flex items-center justify-between py-2.5" style="border-bottom:1px solid #f8fafc;">
+                <div class="flex items-center gap-2.5">
+                  <div class="flex items-center justify-center" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#10b981,#34d399);">
+                    <i class="fas fa-database text-white" style="font-size:8px;"></i>
+                  </div>
+                  <span class="font-bold text-slate-500" style="font-size:10px;">Database</span>
+                </div>
+                <span class="font-black text-slate-700" style="font-size:10px;">Google Sheet Cloud</span>
+              </div>
+
+              <div class="flex items-center justify-between py-2.5" style="border-bottom:1px solid #f8fafc;">
+                <div class="flex items-center gap-2.5">
+                  <div class="flex items-center justify-center" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#a78bfa);">
+                    <i class="fas fa-globe text-white" style="font-size:8px;"></i>
+                  </div>
+                  <span class="font-bold text-slate-500" style="font-size:10px;">Platform</span>
+                </div>
+                <span class="font-black text-slate-700" style="font-size:10px;">Web App (PWA)</span>
+              </div>
+
+              <div class="flex items-center justify-between py-2.5">
+                <div class="flex items-center gap-2.5">
+                  <div class="flex items-center justify-center" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#fbbf24);">
+                    <i class="fas fa-calendar-check text-white" style="font-size:8px;"></i>
+                  </div>
+                  <span class="font-bold text-slate-500" style="font-size:10px;">Update Terakhir</span>
+                </div>
+                <span class="font-black text-slate-700" style="font-size:10px;">Mei 2025</span>
+              </div>
+
             </div>
           </div>
 
-          <p class="text-center text-[9px] text-slate-400 font-bold">© 2024 KonterKU Cloud. All rights reserved.</p>
+          <!-- DEVELOPER & SUPPORT -->
+          <div class="rounded-2xl overflow-hidden" style="border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+            <div class="flex items-center gap-2 px-4 py-3" style="background:linear-gradient(90deg,#064e3b,#065f46);">
+              <i class="fab fa-whatsapp text-emerald-300" style="font-size:10px;"></i>
+              <p class="font-black uppercase" style="font-size:9px;color:rgba(255,255,255,0.55);letter-spacing:0.12em;">Developer &amp; Support</p>
+            </div>
+            <div class="bg-white p-4">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center justify-center flex-shrink-0 rounded-2xl"
+                  style="width:54px;height:54px;background:linear-gradient(135deg,#25D366,#128C7E);box-shadow:0 6px 18px rgba(37,211,102,0.35);">
+                  <i class="fab fa-whatsapp text-white" style="font-size:24px;"></i>
+                </div>
+                <div>
+                  <p class="font-black text-slate-800" style="font-size:12px;">Admin KonterKU Cloud</p>
+                  <p class="font-bold text-slate-400" style="font-size:9px;margin-top:2px;">+62 895-6212-63666</p>
+                  <div class="flex items-center gap-1.5" style="margin-top:6px;">
+                    <span style="width:6px;height:6px;background:#34d399;border-radius:50%;display:inline-block;"></span>
+                    <span class="font-black uppercase text-emerald-600" style="font-size:8px;letter-spacing:0.08em;">Siap Membantu</span>
+                  </div>
+                </div>
+              </div>
+              <a href="https://wa.me/62895621263666" target="_blank"
+                class="flex items-center justify-center gap-2 w-full font-black no-underline transition-all"
+                style="padding:14px;border-radius:16px;background:linear-gradient(135deg,#25D366,#128C7E);color:white;font-size:12px;box-shadow:0 6px 18px rgba(37,211,102,0.4);">
+                <i class="fab fa-whatsapp" style="font-size:15px;"></i> Chat via WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="text-center pb-3">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-2" style="background:#f1f5f9;">
+              <i class="fas fa-heart text-rose-400" style="font-size:9px;"></i>
+              <p class="font-bold text-slate-500" style="font-size:9px;">Dibuat untuk para pejuang konter</p>
+            </div>
+            <p class="font-bold text-slate-400" style="font-size:8px;">&copy; 2025 KonterKU Cloud &middot; All rights reserved</p>
+          </div>
+
         </div>
       </div>
     </div>
-
     <header class="header-gradient text-white">
 
       <!-- Ornamen blur background -->
@@ -2713,7 +2943,51 @@
     // ============================================================
     // SIDEBAR FUNCTIONS
     // ============================================================
+    // ── JAM DIGITAL SIDEBAR ──────────────────────────────────────────────────
+    let _clockInterval = null;
+    let _colonVisible  = true;
+
+    function tickSidebarClock() {
+      const now   = new Date();
+      // Konversi ke WIB (UTC+7)
+      const utc   = now.getTime() + now.getTimezoneOffset() * 60000;
+      const wib   = new Date(utc + 3600000 * 7);
+
+      const hh    = String(wib.getHours()).padStart(2,'0');
+      const mm    = String(wib.getMinutes()).padStart(2,'0');
+      const ss    = String(wib.getSeconds()).padStart(2,'0');
+
+      const elH = document.getElementById('sb-clock-h');
+      const elM = document.getElementById('sb-clock-m');
+      const elS = document.getElementById('sb-clock-s');
+      const elC = document.getElementById('sb-clock-colon');
+      if (elH) elH.textContent = hh;
+      if (elM) elM.textContent = mm;
+      if (elS) elS.textContent = ss;
+      // Titik dua berkedip setiap detik
+      _colonVisible = !_colonVisible;
+      if (elC) elC.style.opacity = _colonVisible ? '1' : '0.2';
+
+      // Tanggal & hari
+      const days   = ['MINGGU','SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU'];
+      const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const elDay  = document.getElementById('sb-day-name');
+      const elDate = document.getElementById('sb-date-full');
+      const elWeek = document.getElementById('sb-week-num');
+      if (elDay)  elDay.textContent  = days[wib.getDay()];
+      if (elDate) elDate.textContent = `${wib.getDate()} ${months[wib.getMonth()]} ${wib.getFullYear()}`;
+      // Hitung pekan ke- dalam tahun
+      const startOfYear = new Date(wib.getFullYear(), 0, 1);
+      const weekNum = Math.ceil(((wib - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+      if (elWeek) elWeek.textContent = `Pekan ${weekNum}`;
+    }
+
     function openSidebar() {
+      // Mulai/update jam saat sidebar dibuka
+      tickSidebarClock();
+      if (_clockInterval) clearInterval(_clockInterval);
+      _clockInterval = setInterval(tickSidebarClock, 1000);
+
       const sid = localStorage.getItem('k_sid') || 'DEMO';
       document.getElementById('sidebar-store-name').innerText = sid;
 
@@ -2743,6 +3017,7 @@
       if (e && e.target !== document.getElementById('sidebar-overlay')) return;
       document.getElementById('sidebar-overlay').classList.remove('open');
       document.body.style.overflow = '';
+      if (_clockInterval) { clearInterval(_clockInterval); _clockInterval = null; }
     }
 
     function openSidebarMenu(menu) {
