@@ -241,8 +241,8 @@
       <aside class="sidebar-panel" onclick="event.stopPropagation()">
 
         <!-- Sidebar Header -->
-        <div class="relative overflow-hidden px-5 pt-12 pb-5"
-          style="background:linear-gradient(160deg,#060e1f 0%,#0b1e42 60%,#0a3272 100%);">
+        <div class="relative overflow-hidden px-5 pb-5"
+          style="padding-top: env(safe-area-inset-top, 16px); padding-top: max(16px, env(safe-area-inset-top)); background:linear-gradient(160deg,#060e1f 0%,#0b1e42 60%,#0a3272 100%);">
 
           <!-- Dot pattern bg -->
           <div class="absolute inset-0 pointer-events-none" style="opacity:0.035;background-image:radial-gradient(circle,#7dd3fc 1px,transparent 1px);background-size:20px 20px;"></div>
@@ -251,32 +251,20 @@
           <!-- Glow kiri bawah -->
           <div class="absolute left-0 bottom-0 w-24 h-24 pointer-events-none" style="background:radial-gradient(circle at 0% 100%,rgba(99,102,241,0.15) 0%,transparent 70%)"></div>
 
-          <!-- ── BARIS ATAS: Avatar + Nama Toko (full width) ── -->
-          <div class="flex items-center gap-3 mb-4" style="position:relative;z-index:1;">
+          <!-- ── BARIS: Avatar + Nama Toko + Jam Digital ── -->
+          <div class="flex items-center gap-3" style="position:relative;z-index:1;">
+            <!-- Avatar -->
             <div class="rounded-2xl flex items-center justify-center flex-shrink-0"
               style="width:48px;height:48px;background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 16px rgba(0,97,194,0.5);">
               <i class="fas fa-store text-white" style="font-size:16px;"></i>
             </div>
+            <!-- Nama Toko + Status -->
             <div style="flex:1;min-width:0;">
               <p class="font-black uppercase" style="font-size:8px;color:rgba(56,189,248,0.65);letter-spacing:0.15em;margin-bottom:4px;">ID TOKO</p>
               <p id="sidebar-store-name" class="font-black text-white" style="font-size:18px;line-height:1.2;word-break:break-all;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
-              <!-- Status badge -->
               <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="margin-top:6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
                 <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
                 <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── BARIS BAWAH: Jam + Tanggal ── -->
-          <div class="h-px mb-3" style="background:rgba(255,255,255,0.06);"></div>
-          <div class="flex items-center justify-between" style="position:relative;z-index:1;">
-            <!-- Tanggal + Pekan -->
-            <div>
-              <p id="sb-date-full" class="font-black text-white" style="font-size:12px;">1 Januari 2024</p>
-              <div class="flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-xl" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.14);display:inline-flex;">
-                <i class="fas fa-calendar-week text-cyan-400" style="font-size:8px;"></i>
-                <span id="sb-week-num" class="font-black uppercase" style="font-size:7.5px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;">Pekan —</span>
               </div>
             </div>
             <!-- Jam Digital -->
@@ -1166,13 +1154,57 @@
 
       <!-- ===== VIEW: STOK ===== -->
       <section id="view-stok" class="view-section">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-black">Stok Produk</h3>
-          <button onclick="openAddProdukModal()" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center cursor-pointer border-0">
-            <i class="fas fa-plus"></i>
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h3 class="text-xl font-black leading-none">Stok Produk</h3>
+            <p class="text-[10px] text-slate-400 font-bold mt-0.5" id="stok-subtitle">Semua produk</p>
+          </div>
+          <button onclick="openAddProdukModal()" class="flex items-center gap-2 px-4 py-2.5 text-white rounded-2xl font-black text-[11px] cursor-pointer border-0 shadow-lg"
+            style="background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 6px 18px rgba(0,97,194,0.35);">
+            <i class="fas fa-plus text-[10px]"></i> TAMBAH
           </button>
         </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="rounded-2xl p-4 relative overflow-hidden" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);">
+            <div class="absolute right-2 top-2 w-14 h-14 rounded-full" style="background:rgba(56,189,248,0.1);"></div>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center mb-2" style="background:rgba(56,189,248,0.15);">
+              <i class="fas fa-bolt text-cyan-400 text-xs"></i>
+            </div>
+            <p class="text-[8px] font-black text-cyan-400/70 uppercase tracking-widest">Digital</p>
+            <p class="text-2xl font-black text-white mt-0.5" id="stok-count-digital">0</p>
+            <p class="text-[8px] text-slate-500 font-bold">produk</p>
+          </div>
+          <div class="rounded-2xl p-4 relative overflow-hidden" style="background:linear-gradient(135deg,#1a0f2e,#2d1b69);">
+            <div class="absolute right-2 top-2 w-14 h-14 rounded-full" style="background:rgba(167,139,250,0.1);"></div>
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center mb-2" style="background:rgba(167,139,250,0.15);">
+              <i class="fas fa-box text-violet-400 text-xs"></i>
+            </div>
+            <p class="text-[8px] font-black text-violet-400/70 uppercase tracking-widest">Fisik</p>
+            <p class="text-2xl font-black text-white mt-0.5" id="stok-count-fisik">0</p>
+            <p class="text-[8px] text-slate-500 font-bold">produk</p>
+          </div>
+        </div>
+
+        <!-- Switch Toggle -->
+        <div class="flex bg-slate-100 p-1 rounded-2xl mb-5 gap-1">
+          <button id="stok-switch-digital" onclick="setStokTab('digital')"
+            class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[11px] transition-all duration-200 cursor-pointer border-0"
+            style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 14px rgba(0,97,194,0.35);">
+            <i class="fas fa-bolt text-[10px]"></i> DIGITAL
+          </button>
+          <button id="stok-switch-fisik" onclick="setStokTab('fisik')"
+            class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[11px] transition-all duration-200 cursor-pointer border-0 bg-transparent text-slate-400">
+            <i class="fas fa-box text-[10px]"></i> FISIK
+          </button>
+        </div>
+
+        <!-- List -->
         <div id="stok-list" class="space-y-3"></div>
+
       </section>
 
       <!-- ===== VIEW: DOMPET ===== -->
@@ -1347,20 +1379,47 @@
     <!-- Modal: Produk -->
     <div id="modal-produk" class="modal-overlay">
       <div class="modal-content">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-5">
           <h4 class="text-lg font-black" id="p-modal-title">Tambah Produk</h4>
           <button onclick="closeModal('modal-produk')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
         </div>
         <div class="space-y-4">
           <input type="hidden" id="p-id">
-          <div><label>Nama Produk</label><input type="text" id="p-nama" class="input-premium"></div>
-          <div><label>Tipe</label><select id="p-tipe" class="input-premium"><option value="digital">Digital</option><option value="fisik">Fisik</option></select></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label>Modal</label><input type="number" id="p-modal" class="input-premium" value="0"></div>
-            <div><label>Jual</label><input type="number" id="p-jual" class="input-premium" value="0"></div>
+          <input type="hidden" id="p-tipe" value="digital">
+
+          <!-- Tipe Switch -->
+          <div>
+            <label>Tipe Produk</label>
+            <div class="flex bg-slate-100 p-1 rounded-2xl gap-1 mt-1">
+              <button id="modal-switch-digital" onclick="setModalTipe('digital')"
+                class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[11px] cursor-pointer border-0 transition-all duration-200"
+                style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);">
+                <i class="fas fa-bolt"></i> DIGITAL
+              </button>
+              <button id="modal-switch-fisik" onclick="setModalTipe('fisik')"
+                class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[11px] cursor-pointer border-0 transition-all duration-200 bg-transparent text-slate-400">
+                <i class="fas fa-box"></i> FISIK
+              </button>
+            </div>
           </div>
-          <div><label>Stok (Hanya Fisik)</label><input type="number" id="p-stok" class="input-premium" value="0"></div>
-          <button onclick="saveProduk()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">SIMPAN</button>
+
+          <div><label>Nama Produk</label><input type="text" id="p-nama" class="input-premium" placeholder="Contoh: Pulsa 10rb, Casing iPhone..."></div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div><label>Harga Modal</label><input type="number" id="p-modal" class="input-premium" value="0"></div>
+            <div><label>Harga Jual</label><input type="number" id="p-jual" class="input-premium" value="0"></div>
+          </div>
+
+          <!-- Stok (hanya tampil jika fisik) -->
+          <div id="p-stok-wrap">
+            <label>Jumlah Stok</label>
+            <input type="number" id="p-stok" class="input-premium" value="0" placeholder="0">
+          </div>
+
+          <button onclick="saveProduk()" class="w-full py-4 text-white rounded-2xl font-black cursor-pointer border-0 mt-2"
+            style="background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 6px 18px rgba(0,97,194,0.35);">
+            <i class="fas fa-save mr-2"></i>SIMPAN PRODUK
+          </button>
         </div>
       </div>
     </div>
@@ -2358,28 +2417,48 @@
 
       // ===== TAB RIWAYAT BAYAR =====
       if (tipe === 'riwayat') {
-        const data = [...(db.riwayat_hutang||[])].reverse();
-        if (data.length === 0) {
-          list.innerHTML = '<div class="text-center py-20"><i class="fas fa-file-invoice text-4xl text-slate-200 mb-3 block"></i><p class="text-[10px] opacity-40 tracking-widest uppercase font-bold">Belum ada riwayat pembayaran</p></div>';
+        const activeFilter = window._riwayatFilter || 'semua';
+        let allData = [...(db.riwayat_hutang||[])].reverse();
+        const totalSemua = allData.length;
+        const totalLunas = allData.filter(h => h.sisa_sekarang === 0).length;
+        const totalCicilan = allData.filter(h => h.sisa_sekarang > 0).length;
+        if (activeFilter === 'lunas') allData = allData.filter(h => h.sisa_sekarang === 0);
+        else if (activeFilter === 'cicilan') allData = allData.filter(h => h.sisa_sekarang > 0);
+
+        let html = `<div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
+            <button onclick="setRiwayatFilter('semua')" class="filter-chip flex-shrink-0 ${activeFilter==='semua'?'active':''}">Semua (${totalSemua})</button>
+            <button onclick="setRiwayatFilter('lunas')" class="filter-chip flex-shrink-0 ${activeFilter==='lunas'?'active':''}"><i class="fas fa-check-circle mr-1"></i>Lunas (${totalLunas})</button>
+            <button onclick="setRiwayatFilter('cicilan')" class="filter-chip flex-shrink-0 ${activeFilter==='cicilan'?'active':''}"><i class="fas fa-clock mr-1"></i>Cicilan (${totalCicilan})</button>
+          </div>`;
+
+        if (allData.length === 0) {
+          html += '<div class="text-center py-16"><i class="fas fa-file-invoice text-4xl text-slate-200 mb-3 block"></i><p class="text-[10px] opacity-40 tracking-widest uppercase font-bold">Belum ada riwayat</p></div>';
+          list.innerHTML = html;
           return;
         }
-        list.innerHTML = data.map(h => `
-          <div class="card-premium p-4 border-l-4 ${h.tipe==='pelanggan' ? 'border-emerald-500' : 'border-amber-500'} flex flex-col gap-2">
+
+        html += allData.map(h => {
+          const lunas = h.sisa_sekarang === 0;
+          return `
+          <div class="card-premium p-4 flex flex-col gap-2 ${lunas ? 'border-l-4 border-emerald-400 bg-emerald-50/20' : 'border-l-4 ' + (h.tipe==='pelanggan' ? 'border-cyan-400' : 'border-amber-400')}">
             <div class="flex justify-between items-start">
-              <div>
-                <p class="text-xs font-black uppercase text-slate-800">${h.nama||''}</p>
-                <p class="text-[8px] font-bold text-slate-400 mt-0.5 uppercase">${h.tgl||''} • DOMPET: ${h.dompet||''}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 text-[8px] font-black uppercase rounded-full ${h.tipe==='pelanggan' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+              <div class="flex-1 min-w-0 pr-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <p class="text-xs font-black uppercase text-slate-800">${h.nama||''}</p>
+                  ${lunas ? '<span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0"><i class="fas fa-check-circle mr-0.5"></i>LUNAS</span>' : '<span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full bg-orange-100 text-orange-700 flex-shrink-0"><i class="fas fa-clock mr-0.5"></i>CICILAN</span>'}
+                </div>
+                <p class="text-[8px] font-bold text-slate-400 mt-0.5 uppercase">${h.tgl||''} • ${h.dompet||''}</p>
+                <span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full mt-1 inline-block ${h.tipe==='pelanggan' ? 'bg-cyan-100 text-cyan-800' : 'bg-amber-100 text-amber-800'}">
                   ${h.tipe==='pelanggan' ? 'PIUTANG' : 'HUTANG TOKO'}
                 </span>
-                <button onclick="deleteRiwayatHutang('${h.id}')" class="w-6 h-6 flex items-center justify-center bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 rounded-lg cursor-pointer border-0 transition-all" title="Hapus riwayat ini">
-                  <i class="fas fa-trash-alt text-[9px]"></i>
-                </button>
               </div>
+              <button onclick="deleteRiwayatHutang('${h.id}', ${lunas})"
+                class="w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-400 rounded-lg cursor-pointer border-0 transition-all flex-shrink-0 mt-0.5"
+                title="Hapus riwayat ini">
+                <i class="fas fa-trash-alt text-[9px]"></i>
+              </button>
             </div>
-            <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-1">
+            <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
               <div>
                 <p class="text-[7px] text-slate-400 font-black uppercase">DIBAYAR</p>
                 <p class="text-emerald-600 font-black text-xs">Rp ${fmt(h.jumlah_bayar)}</p>
@@ -2387,14 +2466,16 @@
               <i class="fas fa-arrow-right text-slate-300 text-[10px]"></i>
               <div class="text-right">
                 <p class="text-[7px] text-slate-400 font-black uppercase">SISA HUTANG</p>
-                <p class="font-black text-xs ${h.sisa_sekarang === 0 ? 'text-emerald-600' : 'text-red-500'}">
-                  ${h.sisa_sekarang === 0 ? '<i class="fas fa-check-circle mr-1"></i>LUNAS' : 'Rp ' + fmt(h.sisa_sekarang)}
+                <p class="font-black text-xs ${lunas ? 'text-emerald-600' : 'text-red-500'}">
+                  ${lunas ? '<i class="fas fa-check-circle mr-1"></i>LUNAS' : 'Rp ' + fmt(h.sisa_sekarang)}
                 </p>
               </div>
             </div>
-            ${h.ket ? `<p class="text-[9px] text-slate-400 font-semibold italic">Ket: ${h.ket}</p>` : ''}
-          </div>
-        `).join('');
+            ${h.ket ? `<p class="text-[9px] text-slate-400 font-semibold italic px-0.5">Ket: ${h.ket}</p>` : ''}
+          </div>`;
+        }).join('');
+
+        list.innerHTML = html;
         return;
       }
 
@@ -2476,23 +2557,128 @@
     }
 
     // ---- RENDER STOK ----
+    let activeStokTab = 'digital';
+
+    function setStokTab(tab) {
+      activeStokTab = tab;
+      const btnDig = document.getElementById('stok-switch-digital');
+      const btnFis = document.getElementById('stok-switch-fisik');
+      if (tab === 'digital') {
+        btnDig.style.cssText = 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 14px rgba(0,97,194,0.35);';
+        btnFis.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+      } else {
+        btnFis.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 14px rgba(124,58,237,0.35);';
+        btnDig.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+      }
+      renderStok();
+    }
+
+    function setModalTipe(tipe) {
+      document.getElementById('p-tipe').value = tipe;
+      const btnDig = document.getElementById('modal-switch-digital');
+      const btnFis = document.getElementById('modal-switch-fisik');
+      const stokWrap = document.getElementById('p-stok-wrap');
+      if (tipe === 'digital') {
+        btnDig.style.cssText = 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);';
+        btnFis.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+        stokWrap.style.display = 'none';
+      } else {
+        btnFis.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 12px rgba(124,58,237,0.3);';
+        btnDig.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+        stokWrap.style.display = 'block';
+      }
+    }
+
     function renderStok() {
       const list = document.getElementById('stok-list');
-      list.innerHTML = db.inventory.map(p => `
-        <div class="card-premium p-4 flex justify-between items-center">
-          <div>
-            <p class="text-xs font-black uppercase text-slate-700">${p.nama||''}</p>
-            <p class="text-[9px] font-bold text-slate-400">Modal: Rp ${fmt(p.modal)} • Jual: Rp ${fmt(p.jual)}</p>
+      const digital = db.inventory.filter(p => p.tipe === 'digital');
+      const fisik   = db.inventory.filter(p => p.tipe === 'fisik');
+
+      // Update summary cards
+      const cntDig = document.getElementById('stok-count-digital');
+      const cntFis = document.getElementById('stok-count-fisik');
+      const sub    = document.getElementById('stok-subtitle');
+      if (cntDig) cntDig.innerText = digital.length;
+      if (cntFis) cntFis.innerText = fisik.length;
+
+      const produk = activeStokTab === 'digital' ? digital : fisik;
+      if (sub) sub.innerText = `${produk.length} produk ${activeStokTab}`;
+
+      if (produk.length === 0) {
+        const isDigital = activeStokTab === 'digital';
+        list.innerHTML = `
+          <div class="text-center py-16">
+            <div class="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4"
+              style="background:${isDigital ? 'rgba(56,189,248,0.08)' : 'rgba(167,139,250,0.08)'};">
+              <i class="fas ${isDigital ? 'fa-bolt' : 'fa-box'} text-2xl" style="color:${isDigital ? '#38bdf8' : '#a78bfa'}; opacity:0.5;"></i>
+            </div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-300">Belum ada produk ${activeStokTab}</p>
+            <button onclick="openAddProdukModal('${activeStokTab}')" class="mt-4 px-5 py-2.5 rounded-xl font-black text-[10px] text-white cursor-pointer border-0"
+              style="background:${isDigital ? 'linear-gradient(135deg,#0061C2,#38BDF8)' : 'linear-gradient(135deg,#7c3aed,#a78bfa)'};">
+              + Tambah Produk ${isDigital ? 'Digital' : 'Fisik'}
+            </button>
+          </div>`;
+        return;
+      }
+
+      const isDigital = activeStokTab === 'digital';
+      const accentColor = isDigital ? '#38bdf8' : '#a78bfa';
+      const gradBg = isDigital
+        ? 'linear-gradient(135deg,#0061C2,#38BDF8)'
+        : 'linear-gradient(135deg,#7c3aed,#a78bfa)';
+      const iconName = isDigital ? 'fa-bolt' : 'fa-box';
+
+      list.innerHTML = produk.map(p => {
+        const laba = (p.jual||0) - (p.modal||0);
+        const labaColor = laba >= 0 ? '#10b981' : '#ef4444';
+        const stokBadge = !isDigital
+          ? `<div class="flex items-center gap-1 px-2 py-1 rounded-xl" style="background:${(p.stok||0) < 5 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)'};">
+              <i class="fas fa-cubes text-[8px]" style="color:${(p.stok||0) < 5 ? '#ef4444' : '#10b981'};"></i>
+              <span class="font-black text-[9px]" style="color:${(p.stok||0) < 5 ? '#ef4444' : '#10b981'};">${p.stok||0} unit</span>
+             </div>`
+          : `<div class="flex items-center gap-1 px-2 py-1 rounded-xl" style="background:rgba(56,189,248,0.08);">
+              <i class="fas fa-infinity text-[8px] text-cyan-400"></i>
+              <span class="font-black text-[9px] text-cyan-500">Tak terbatas</span>
+             </div>`;
+
+        return `
+        <div class="card-premium p-4 flex items-center gap-3" style="border-left:3px solid ${accentColor}20;">
+          <!-- Icon -->
+          <div class="rounded-2xl flex items-center justify-center flex-shrink-0"
+            style="width:44px;height:44px;background:${isDigital ? 'rgba(56,189,248,0.08)' : 'rgba(167,139,250,0.08)'};">
+            <i class="fas ${iconName}" style="font-size:16px;color:${accentColor};"></i>
           </div>
-          <div class="flex items-center gap-3">
-            <p class="text-[10px] font-black ${p.stok < 5 && p.tipe==='fisik' ? 'text-red-500' : 'text-blue-500'}">${p.tipe==='fisik' ? (p.stok||0)+' UNIT' : 'DIGITAL'}</p>
-            <div class="flex gap-1">
-              <button onclick="editProduk('${p.id}')" class="text-blue-500 hover:text-blue-700 text-[10px] p-1.5 bg-blue-50 rounded-lg cursor-pointer border-0"><i class="fas fa-edit"></i></button>
-              <button onclick="deleteProduk('${p.id}')" class="text-red-500 hover:text-red-700 text-[10px] p-1.5 bg-red-50 rounded-lg cursor-pointer border-0"><i class="fas fa-trash-alt"></i></button>
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-black text-slate-800 truncate">${p.nama||''}</p>
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+              <span class="text-[9px] font-bold text-slate-400">Modal <span class="text-slate-600 font-black">Rp ${fmt(p.modal)}</span></span>
+              <span class="text-slate-200">•</span>
+              <span class="text-[9px] font-bold text-slate-400">Jual <span class="font-black" style="color:${accentColor};">Rp ${fmt(p.jual)}</span></span>
+            </div>
+            <div class="flex items-center gap-2 mt-1.5">
+              ${stokBadge}
+              <div class="flex items-center gap-1 px-2 py-1 rounded-xl" style="background:${laba>=0?'rgba(16,185,129,0.08)':'rgba(239,68,68,0.08)'};">
+                <i class="fas fa-chart-line text-[7px]" style="color:${labaColor};"></i>
+                <span class="font-black text-[9px]" style="color:${labaColor};">+Rp ${fmt(laba)}</span>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('') || '<p class="text-center py-10 text-[10px] opacity-30">Belum ada produk</p>';
+          <!-- Actions -->
+          <div class="flex flex-col gap-1.5 flex-shrink-0">
+            <button onclick="editProduk('${p.id}')"
+              class="w-8 h-8 flex items-center justify-center rounded-xl cursor-pointer border-0 transition-all"
+              style="background:rgba(0,97,194,0.08);color:#0061C2;">
+              <i class="fas fa-edit text-[10px]"></i>
+            </button>
+            <button onclick="deleteProduk('${p.id}')"
+              class="w-8 h-8 flex items-center justify-center rounded-xl cursor-pointer border-0 transition-all"
+              style="background:rgba(239,68,68,0.08);color:#ef4444;">
+              <i class="fas fa-trash-alt text-[10px]"></i>
+            </button>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     // ---- RENDER CUSTOMERS ----
@@ -2749,15 +2935,16 @@
     }
 
     // ---- PRODUK CRUD ----
-    function openAddProdukModal() {
+    function openAddProdukModal(tipe) {
+      const t = tipe || activeStokTab || 'digital';
       document.getElementById('p-modal-title').innerText = "Tambah Produk";
       document.getElementById('p-id').value = "";
       document.getElementById('p-nama').value = "";
-      document.getElementById('p-tipe').value = "digital";
       document.getElementById('p-modal').value = 0;
       document.getElementById('p-jual').value = 0;
       document.getElementById('p-stok').value = 0;
       openModal('modal-produk');
+      setTimeout(() => setModalTipe(t), 50);
     }
 
     function editProduk(id) {
@@ -2766,11 +2953,11 @@
       document.getElementById('p-modal-title').innerText = "Edit Produk";
       document.getElementById('p-id').value = p.id;
       document.getElementById('p-nama').value = p.nama||'';
-      document.getElementById('p-tipe').value = p.tipe||'digital';
       document.getElementById('p-modal').value = p.modal||0;
       document.getElementById('p-jual').value = p.jual||0;
       document.getElementById('p-stok').value = p.stok||0;
       openModal('modal-produk');
+      setTimeout(() => setModalTipe(p.tipe||'digital'), 50);
     }
 
     async function saveProduk() {
@@ -2917,12 +3104,29 @@
       }
     }
 
-    async function deleteRiwayatHutang(id) {
-      const res = await Swal.fire({ title: 'Hapus Riwayat Ini?', text: 'Entri riwayat bayar ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+    async function deleteRiwayatHutang(id, isLunas) {
+      const title = isLunas ? 'Hapus Riwayat LUNAS?' : 'Hapus Riwayat Ini?';
+      const text = isLunas
+        ? 'Riwayat hutang yang sudah LUNAS ini akan dihapus permanen. Yakin ingin menghapus?'
+        : 'Entri riwayat bayar ini akan dihapus permanen.';
+      const confirmColor = isLunas ? '#dc2626' : '#ef4444';
+      const res = await Swal.fire({
+        title, text, icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: confirmColor,
+        confirmButtonText: isLunas ? 'Ya, Hapus Permanen' : 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+      });
       if (res.isConfirmed) {
         db.riwayat_hutang = (db.riwayat_hutang||[]).filter(h => h.id !== id);
         await sync();
+        renderHutang('riwayat');
       }
+    }
+
+    function setRiwayatFilter(filter) {
+      window._riwayatFilter = filter;
+      renderHutang('riwayat');
     }
 
     function openEditHutang(id) {
