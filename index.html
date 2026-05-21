@@ -241,8 +241,8 @@
       <aside class="sidebar-panel" onclick="event.stopPropagation()">
 
         <!-- Sidebar Header -->
-        <div class="relative overflow-hidden px-5 pt-12 pb-5"
-          style="background:linear-gradient(160deg,#060e1f 0%,#0b1e42 60%,#0a3272 100%);">
+        <div class="relative overflow-hidden px-5 pb-5"
+          style="padding-top: env(safe-area-inset-top, 16px); padding-top: max(16px, env(safe-area-inset-top)); background:linear-gradient(160deg,#060e1f 0%,#0b1e42 60%,#0a3272 100%);">
 
           <!-- Dot pattern bg -->
           <div class="absolute inset-0 pointer-events-none" style="opacity:0.035;background-image:radial-gradient(circle,#7dd3fc 1px,transparent 1px);background-size:20px 20px;"></div>
@@ -251,50 +251,47 @@
           <!-- Glow kiri bawah -->
           <div class="absolute left-0 bottom-0 w-24 h-24 pointer-events-none" style="background:radial-gradient(circle at 0% 100%,rgba(99,102,241,0.15) 0%,transparent 70%)"></div>
 
-          <!-- ── BARIS UTAMA: Nama Toko (kiri) + Jam Kecil (kanan) ── -->
-          <div class="flex items-start justify-between gap-3 mb-4" style="position:relative;z-index:1;">
-
-            <!-- Kiri: Avatar + Nama Toko -->
-            <div class="flex items-center gap-3" style="flex:1;min-width:0;overflow:hidden;">
-              <div class="rounded-2xl flex items-center justify-center"
-                style="width:48px;height:48px;min-width:48px;background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 16px rgba(0,97,194,0.5);">
-                <i class="fas fa-store text-white" style="font-size:16px;"></i>
-              </div>
-              <div style="min-width:0;overflow:hidden;">
-                <p class="font-black uppercase" style="font-size:8px;color:rgba(56,189,248,0.65);letter-spacing:0.15em;margin-bottom:4px;">ID TOKO</p>
-                <p id="sidebar-store-name" class="font-black text-white" style="font-size:16px;line-height:1.2;word-break:break-word;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
-                <!-- Status badge -->
-                <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="margin-top:6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
-                  <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
-                  <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
-                </div>
+          <!-- ── BARIS ATAS: Avatar + Nama Toko (full width) ── -->
+          <div class="flex items-center gap-3 mb-4" style="position:relative;z-index:1;">
+            <div class="rounded-2xl flex items-center justify-center flex-shrink-0"
+              style="width:48px;height:48px;background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 16px rgba(0,97,194,0.5);">
+              <i class="fas fa-store text-white" style="font-size:16px;"></i>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <p class="font-black uppercase" style="font-size:8px;color:rgba(56,189,248,0.65);letter-spacing:0.15em;margin-bottom:4px;">ID TOKO</p>
+              <p id="sidebar-store-name" class="font-black text-white" style="font-size:18px;line-height:1.2;word-break:break-all;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
+              <!-- Status badge -->
+              <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="margin-top:6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
+                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
+                <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
               </div>
             </div>
+          </div>
 
-            <!-- Kanan: Jam Digital Kecil -->
-            <div style="flex-shrink:0;background:rgba(0,0,0,0.28);border:1px solid rgba(56,189,248,0.14);border-radius:16px;padding:9px 11px;backdrop-filter:blur(10px);text-align:right;">
-              <div class="flex items-baseline justify-end" style="gap:1px;line-height:1;">
-                <span id="sb-clock-h" class="font-black text-white" style="font-size:26px;letter-spacing:-2px;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(56,189,248,0.5);">00</span>
-                <span id="sb-clock-colon" class="font-black" style="font-size:20px;color:rgba(56,189,248,0.85);margin:0 1px 1px;">:</span>
-                <span id="sb-clock-m" class="font-black text-white" style="font-size:26px;letter-spacing:-2px;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(56,189,248,0.5);">00</span>
-                <span id="sb-clock-s" class="font-black" style="font-size:12px;color:rgba(56,189,248,0.7);font-variant-numeric:tabular-nums;align-self:flex-end;margin-bottom:3px;margin-left:3px;">00</span>
+          <!-- ── BARIS BAWAH: Jam + Tanggal ── -->
+          <div class="h-px mb-3" style="background:rgba(255,255,255,0.06);"></div>
+          <div class="flex items-center justify-between" style="position:relative;z-index:1;">
+            <!-- Tanggal + Pekan -->
+            <div>
+              <p id="sb-date-full" class="font-black text-white" style="font-size:12px;">1 Januari 2024</p>
+              <div class="flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-xl" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.14);display:inline-flex;">
+                <i class="fas fa-calendar-week text-cyan-400" style="font-size:8px;"></i>
+                <span id="sb-week-num" class="font-black uppercase" style="font-size:7.5px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;">Pekan —</span>
               </div>
-              <div class="flex items-center justify-end" style="gap:5px;margin-top:4px;">
+            </div>
+            <!-- Jam Digital -->
+            <div style="flex-shrink:0;background:rgba(0,0,0,0.28);border:1px solid rgba(56,189,248,0.14);border-radius:14px;padding:7px 10px;backdrop-filter:blur(10px);text-align:right;">
+              <div class="flex items-baseline justify-end" style="gap:1px;line-height:1;">
+                <span id="sb-clock-h" class="font-black text-white" style="font-size:22px;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(56,189,248,0.5);">00</span>
+                <span id="sb-clock-colon" class="font-black" style="font-size:17px;color:rgba(56,189,248,0.85);margin:0 1px 1px;">:</span>
+                <span id="sb-clock-m" class="font-black text-white" style="font-size:22px;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(56,189,248,0.5);">00</span>
+                <span id="sb-clock-s" class="font-black" style="font-size:10px;color:rgba(56,189,248,0.7);font-variant-numeric:tabular-nums;align-self:flex-end;margin-bottom:2px;margin-left:2px;">00</span>
+              </div>
+              <div class="flex items-center justify-end" style="gap:4px;margin-top:3px;">
                 <span id="sb-day-name" class="font-black uppercase" style="font-size:7px;color:rgba(255,255,255,0.4);letter-spacing:0.08em;">SENIN</span>
                 <span style="font-size:7px;color:rgba(255,255,255,0.2);">·</span>
                 <span class="font-black uppercase" style="font-size:7px;color:rgba(56,189,248,0.65);letter-spacing:0.1em;">WIB</span>
               </div>
-            </div>
-
-          </div>
-
-          <!-- ── BARIS BAWAH: Tanggal + Pekan ── -->
-          <div class="h-px mb-3" style="background:rgba(255,255,255,0.06);"></div>
-          <div class="flex items-center justify-between" style="position:relative;z-index:1;">
-            <p id="sb-date-full" class="font-black text-white" style="font-size:12px;">1 Januari 2024</p>
-            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.14);">
-              <i class="fas fa-calendar-week text-cyan-400" style="font-size:8px;"></i>
-              <span id="sb-week-num" class="font-black uppercase" style="font-size:7.5px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;">Pekan —</span>
             </div>
           </div>
 
@@ -328,6 +325,33 @@
             </div>
             <div class="flex items-center gap-1.5">
               <span id="sidebar-note-badge" class="hidden px-2 py-0.5 bg-amber-500 text-white text-[8px] font-black rounded-full">0</span>
+              <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+            </div>
+          </button>
+
+          <!-- Laporan & Stats -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('laporan')">
+            <div class="sidebar-icon-wrap bg-cyan-500/15">
+              <i class="fas fa-chart-line text-cyan-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Laporan & Stats</p>
+              <p class="text-[9px] text-slate-500 font-bold">Grafik omset & analisis</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+          </button>
+
+          <!-- Pelanggan -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('pelanggan')">
+            <div class="sidebar-icon-wrap bg-rose-500/15">
+              <i class="fas fa-users text-rose-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Pelanggan</p>
+              <p class="text-[9px] text-slate-500 font-bold">Kelola data pelanggan</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="sidebar-cust-badge" class="hidden px-2 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded-full">0</span>
               <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
             </div>
           </button>
@@ -451,6 +475,85 @@
           </div>
         </div>
         <div id="sidebar-notes-list" class="space-y-3 overflow-y-auto" style="max-height:60vh"></div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL SIDEBAR: LAPORAN & STATS ===== -->
+    <div id="modal-sidebar-laporan" class="modal-overlay">
+      <div class="modal-content" style="max-height:90vh">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h4 class="text-lg font-black">Laporan & Stats</h4>
+            <p class="text-[9px] text-slate-400 font-bold">Analisis omset & laba toko</p>
+          </div>
+          <button onclick="closeModal('modal-sidebar-laporan')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Stat cards ringkas -->
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="bg-blue-50 rounded-2xl p-3 text-center border border-blue-100">
+            <p class="text-base font-black text-blue-600" id="lap-omset-today">Rp 0</p>
+            <p class="text-[7px] font-black text-slate-400 uppercase mt-0.5">Omset Hari Ini</p>
+          </div>
+          <div class="bg-emerald-50 rounded-2xl p-3 text-center border border-emerald-100">
+            <p class="text-base font-black text-emerald-600" id="lap-laba-today">Rp 0</p>
+            <p class="text-[7px] font-black text-slate-400 uppercase mt-0.5">Laba Bersih</p>
+          </div>
+          <div class="bg-violet-50 rounded-2xl p-3 text-center border border-violet-100">
+            <p class="text-base font-black text-violet-600" id="lap-trx-today">0</p>
+            <p class="text-[7px] font-black text-slate-400 uppercase mt-0.5">Total TRX</p>
+          </div>
+        </div>
+
+        <!-- Grafik 7 hari -->
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-4">
+          <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3">Tren Keuangan 7 Hari Terakhir</p>
+          <div class="relative w-full" style="height:180px">
+            <canvas id="laporan-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Stats tambahan -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-amber-50 rounded-2xl p-3 border border-amber-100">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="fas fa-arrow-up text-emerald-500 text-[10px]"></i>
+              <p class="text-[8px] font-black text-slate-400 uppercase">Total Piutang</p>
+            </div>
+            <p class="text-sm font-black text-amber-700" id="lap-piutang">Rp 0</p>
+          </div>
+          <div class="bg-red-50 rounded-2xl p-3 border border-red-100">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="fas fa-arrow-down text-red-500 text-[10px]"></i>
+              <p class="text-[8px] font-black text-slate-400 uppercase">Total Hutang</p>
+            </div>
+            <p class="text-sm font-black text-red-700" id="lap-hutang">Rp 0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL SIDEBAR: PELANGGAN ===== -->
+    <div id="modal-sidebar-pelanggan" class="modal-overlay">
+      <div class="modal-content" style="max-height:90vh">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h4 class="text-lg font-black">Pelanggan</h4>
+            <p class="text-[9px] text-slate-400 font-bold" id="sidebar-cust-count-label">0 pelanggan terdaftar</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openAddCustomerFromSidebar()" class="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-md cursor-pointer border-0">
+              <i class="fas fa-plus text-sm"></i>
+            </button>
+            <button onclick="closeModal('modal-sidebar-pelanggan')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+        <!-- Search -->
+        <div class="relative mb-4">
+          <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[11px]"></i>
+          <input type="text" id="sidebar-cust-search" oninput="renderSidebarCustomers()" class="input-premium pl-9 !py-2.5 text-[12px]" placeholder="Cari nama atau nomor HP...">
+        </div>
+        <div id="sidebar-cust-list" class="space-y-3 overflow-y-auto" style="max-height:55vh"></div>
       </div>
     </div>
 
@@ -949,53 +1052,26 @@
           </div>
         </div>
 
-        <!-- Grafik -->
-        <div class="card-premium p-5 space-y-3">
-          <div class="flex justify-between items-center border-b border-slate-50 pb-2">
+        <!-- Shortcut Menu -->
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="openSidebarMenu('laporan')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer text-left w-full">
+            <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-chart-line text-cyan-500 text-sm"></i>
+            </div>
             <div>
-              <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest">Tren Keuangan</h4>
-              <p class="text-[8px] font-bold text-slate-400">Analisis Omset & Laba 7 Hari Terakhir</p>
+              <p class="text-[11px] font-black text-slate-700">Laporan</p>
+              <p class="text-[8px] text-slate-400 font-bold">Grafik & analisis</p>
             </div>
-            <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-              <i class="fas fa-chart-line text-xs"></i>
+          </button>
+          <button onclick="openSidebarMenu('pelanggan')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer text-left w-full">
+            <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-users text-rose-500 text-sm"></i>
             </div>
-          </div>
-          <div class="relative w-full h-[180px]">
-            <canvas id="profitReportChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Pelanggan -->
-        <div>
-          <div class="flex justify-between items-center mb-4">
             <div>
-              <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Pelanggan</h4>
-              <p class="text-[8px] font-bold text-slate-400 mt-0.5" id="customer-count-label">0 pelanggan terdaftar</p>
+              <p class="text-[11px] font-black text-slate-700">Pelanggan</p>
+              <p class="text-[8px] text-slate-400 font-bold" id="customer-count-label">0 terdaftar</p>
             </div>
-            <button onclick="openAddCustomerModal()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black cursor-pointer border-0 shadow-md shadow-blue-200 hover:bg-blue-700 transition-all">
-              <i class="fas fa-plus text-[9px]"></i> TAMBAH
-            </button>
-          </div>
-          <!-- Search pelanggan -->
-          <div class="relative mb-3">
-            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[11px]"></i>
-            <input type="text" id="customer-search" oninput="searchCustomer()" class="input-premium pl-9 !py-2.5 text-[12px]" placeholder="Cari nama atau nomor HP...">
-          </div>
-          <!-- Grid list pelanggan -->
-          <div id="customer-list-horizontal" class="flex flex-col gap-3"></div>
-          <!-- Pagination pelanggan -->
-          <div id="customer-pagination" class="flex justify-between items-center mt-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-            <button onclick="prevCustPage()" id="btn-cust-prev" class="flex items-center gap-1.5 px-4 py-2.5 bg-blue-50 hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed text-[10px] font-black text-blue-600 rounded-xl transition-all cursor-pointer border-0">
-              <i class="fas fa-chevron-left text-[9px]"></i> SEBELUMNYA
-            </button>
-            <div class="text-center">
-              <p class="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider" id="customer-page-indicator">1 / 1</p>
-              <p class="text-[7px] text-slate-400 font-bold" id="customer-count-info"></p>
-            </div>
-            <button onclick="nextCustPage()" id="btn-cust-next" class="flex items-center gap-1.5 px-4 py-2.5 bg-blue-50 hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed text-[10px] font-black text-blue-600 rounded-xl transition-all cursor-pointer border-0">
-              BERIKUTNYA <i class="fas fa-chevron-right text-[9px]"></i>
-            </button>
-          </div>
+          </button>
         </div>
 
         <!-- Transaksi Terakhir -->
@@ -2282,28 +2358,48 @@
 
       // ===== TAB RIWAYAT BAYAR =====
       if (tipe === 'riwayat') {
-        const data = [...(db.riwayat_hutang||[])].reverse();
-        if (data.length === 0) {
-          list.innerHTML = '<div class="text-center py-20"><i class="fas fa-file-invoice text-4xl text-slate-200 mb-3 block"></i><p class="text-[10px] opacity-40 tracking-widest uppercase font-bold">Belum ada riwayat pembayaran</p></div>';
+        const activeFilter = window._riwayatFilter || 'semua';
+        let allData = [...(db.riwayat_hutang||[])].reverse();
+        const totalSemua = allData.length;
+        const totalLunas = allData.filter(h => h.sisa_sekarang === 0).length;
+        const totalCicilan = allData.filter(h => h.sisa_sekarang > 0).length;
+        if (activeFilter === 'lunas') allData = allData.filter(h => h.sisa_sekarang === 0);
+        else if (activeFilter === 'cicilan') allData = allData.filter(h => h.sisa_sekarang > 0);
+
+        let html = `<div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
+            <button onclick="setRiwayatFilter('semua')" class="filter-chip flex-shrink-0 ${activeFilter==='semua'?'active':''}">Semua (${totalSemua})</button>
+            <button onclick="setRiwayatFilter('lunas')" class="filter-chip flex-shrink-0 ${activeFilter==='lunas'?'active':''}"><i class="fas fa-check-circle mr-1"></i>Lunas (${totalLunas})</button>
+            <button onclick="setRiwayatFilter('cicilan')" class="filter-chip flex-shrink-0 ${activeFilter==='cicilan'?'active':''}"><i class="fas fa-clock mr-1"></i>Cicilan (${totalCicilan})</button>
+          </div>`;
+
+        if (allData.length === 0) {
+          html += '<div class="text-center py-16"><i class="fas fa-file-invoice text-4xl text-slate-200 mb-3 block"></i><p class="text-[10px] opacity-40 tracking-widest uppercase font-bold">Belum ada riwayat</p></div>';
+          list.innerHTML = html;
           return;
         }
-        list.innerHTML = data.map(h => `
-          <div class="card-premium p-4 border-l-4 ${h.tipe==='pelanggan' ? 'border-emerald-500' : 'border-amber-500'} flex flex-col gap-2">
+
+        html += allData.map(h => {
+          const lunas = h.sisa_sekarang === 0;
+          return `
+          <div class="card-premium p-4 flex flex-col gap-2 ${lunas ? 'border-l-4 border-emerald-400 bg-emerald-50/20' : 'border-l-4 ' + (h.tipe==='pelanggan' ? 'border-cyan-400' : 'border-amber-400')}">
             <div class="flex justify-between items-start">
-              <div>
-                <p class="text-xs font-black uppercase text-slate-800">${h.nama||''}</p>
-                <p class="text-[8px] font-bold text-slate-400 mt-0.5 uppercase">${h.tgl||''} • DOMPET: ${h.dompet||''}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 text-[8px] font-black uppercase rounded-full ${h.tipe==='pelanggan' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+              <div class="flex-1 min-w-0 pr-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <p class="text-xs font-black uppercase text-slate-800">${h.nama||''}</p>
+                  ${lunas ? '<span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0"><i class="fas fa-check-circle mr-0.5"></i>LUNAS</span>' : '<span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full bg-orange-100 text-orange-700 flex-shrink-0"><i class="fas fa-clock mr-0.5"></i>CICILAN</span>'}
+                </div>
+                <p class="text-[8px] font-bold text-slate-400 mt-0.5 uppercase">${h.tgl||''} • ${h.dompet||''}</p>
+                <span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full mt-1 inline-block ${h.tipe==='pelanggan' ? 'bg-cyan-100 text-cyan-800' : 'bg-amber-100 text-amber-800'}">
                   ${h.tipe==='pelanggan' ? 'PIUTANG' : 'HUTANG TOKO'}
                 </span>
-                <button onclick="deleteRiwayatHutang('${h.id}')" class="w-6 h-6 flex items-center justify-center bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 rounded-lg cursor-pointer border-0 transition-all" title="Hapus riwayat ini">
-                  <i class="fas fa-trash-alt text-[9px]"></i>
-                </button>
               </div>
+              <button onclick="deleteRiwayatHutang('${h.id}', ${lunas})"
+                class="w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-400 rounded-lg cursor-pointer border-0 transition-all flex-shrink-0 mt-0.5"
+                title="Hapus riwayat ini">
+                <i class="fas fa-trash-alt text-[9px]"></i>
+              </button>
             </div>
-            <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-1">
+            <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
               <div>
                 <p class="text-[7px] text-slate-400 font-black uppercase">DIBAYAR</p>
                 <p class="text-emerald-600 font-black text-xs">Rp ${fmt(h.jumlah_bayar)}</p>
@@ -2311,14 +2407,16 @@
               <i class="fas fa-arrow-right text-slate-300 text-[10px]"></i>
               <div class="text-right">
                 <p class="text-[7px] text-slate-400 font-black uppercase">SISA HUTANG</p>
-                <p class="font-black text-xs ${h.sisa_sekarang === 0 ? 'text-emerald-600' : 'text-red-500'}">
-                  ${h.sisa_sekarang === 0 ? '<i class="fas fa-check-circle mr-1"></i>LUNAS' : 'Rp ' + fmt(h.sisa_sekarang)}
+                <p class="font-black text-xs ${lunas ? 'text-emerald-600' : 'text-red-500'}">
+                  ${lunas ? '<i class="fas fa-check-circle mr-1"></i>LUNAS' : 'Rp ' + fmt(h.sisa_sekarang)}
                 </p>
               </div>
             </div>
-            ${h.ket ? `<p class="text-[9px] text-slate-400 font-semibold italic">Ket: ${h.ket}</p>` : ''}
-          </div>
-        `).join('');
+            ${h.ket ? `<p class="text-[9px] text-slate-400 font-semibold italic px-0.5">Ket: ${h.ket}</p>` : ''}
+          </div>`;
+        }).join('');
+
+        list.innerHTML = html;
         return;
       }
 
@@ -2426,7 +2524,8 @@
     let custSearchQuery = '';
 
     function searchCustomer() {
-      custSearchQuery = (document.getElementById('customer-search').value || '').toLowerCase().trim();
+      const el = document.getElementById('customer-search');
+      custSearchQuery = (el ? el.value : '').toLowerCase().trim();
       currentCustPage = 1;
       renderCustomers();
     }
@@ -2474,7 +2573,7 @@
 
       // Update label count
       const countEl = document.getElementById('customer-count-label');
-      if (countEl) countEl.innerText = total + ' pelanggan terdaftar' + (custSearchQuery ? ' — hasil pencarian' : '');
+      if (countEl) countEl.innerText = total + ' terdaftar' + (custSearchQuery ? ' — pencarian' : '');
 
       // Update pagination controls
       const pageEl = document.getElementById('customer-page-indicator');
@@ -2493,6 +2592,8 @@
       // Show/hide pagination bar
       const pagBar = document.getElementById('customer-pagination');
       if (pagBar) pagBar.classList.toggle('hidden', total <= custPerPage && !custSearchQuery);
+
+      if (!list) return;
 
       if (items.length === 0) {
         list.innerHTML = `
@@ -2838,12 +2939,29 @@
       }
     }
 
-    async function deleteRiwayatHutang(id) {
-      const res = await Swal.fire({ title: 'Hapus Riwayat Ini?', text: 'Entri riwayat bayar ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+    async function deleteRiwayatHutang(id, isLunas) {
+      const title = isLunas ? 'Hapus Riwayat LUNAS?' : 'Hapus Riwayat Ini?';
+      const text = isLunas
+        ? 'Riwayat hutang yang sudah LUNAS ini akan dihapus permanen. Yakin ingin menghapus?'
+        : 'Entri riwayat bayar ini akan dihapus permanen.';
+      const confirmColor = isLunas ? '#dc2626' : '#ef4444';
+      const res = await Swal.fire({
+        title, text, icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: confirmColor,
+        confirmButtonText: isLunas ? 'Ya, Hapus Permanen' : 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+      });
       if (res.isConfirmed) {
         db.riwayat_hutang = (db.riwayat_hutang||[]).filter(h => h.id !== id);
         await sync();
+        renderHutang('riwayat');
       }
+    }
+
+    function setRiwayatFilter(filter) {
+      window._riwayatFilter = filter;
+      renderHutang('riwayat');
     }
 
     function openEditHutang(id) {
@@ -2996,6 +3114,11 @@
       const badge = document.getElementById('sidebar-note-badge');
       if (badge) { badge.innerText = noteCount; badge.classList.toggle('hidden', noteCount === 0); }
 
+      // Badge pelanggan
+      const custCount = (db.pelanggan||[]).length;
+      const custBadge = document.getElementById('sidebar-cust-badge');
+      if (custBadge) { custBadge.innerText = custCount; custBadge.classList.toggle('hidden', custCount === 0); }
+
       // Status online
       const dot  = document.getElementById('sidebar-dot');
       const stxt = document.getElementById('sidebar-status-text');
@@ -3044,6 +3167,16 @@
         openModal('modal-sidebar-catatan');
       }
 
+      else if (menu === 'laporan') {
+        renderSidebarLaporan();
+        openModal('modal-sidebar-laporan');
+      }
+
+      else if (menu === 'pelanggan') {
+        renderSidebarCustomers();
+        openModal('modal-sidebar-pelanggan');
+      }
+
       else if (menu === 'backup') {
         const lastSync = localStorage.getItem('k_last_sync') || 'Belum pernah';
         document.getElementById('backup-last-sync').innerText = 'Terakhir sync: ' + lastSync;
@@ -3053,6 +3186,99 @@
       else if (menu === 'tentang') {
         openModal('modal-sidebar-tentang');
       }
+    }
+
+    function renderSidebarLaporan() {
+      const today = getWIBDate();
+      const todayTrx = (db.transaksi||[]).filter(t => t.tgl === today);
+      const omset = todayTrx.reduce((a,b) => a + Number(b.jual||0), 0);
+      const laba  = todayTrx.reduce((a,b) => a + (Number(b.jual||0) - Number(b.modal||0)), 0);
+      const trxCount = todayTrx.length;
+      const piutang = (db.hutang||[]).filter(h => h.tipe === 'pelanggan').reduce((a,b) => a + Number(b.jumlah||0), 0);
+      const hutang  = (db.hutang||[]).filter(h => h.tipe === 'toko').reduce((a,b) => a + Number(b.jumlah||0), 0);
+
+      const el = (id, v) => { const e = document.getElementById(id); if (e) e.innerText = v; };
+      el('lap-omset-today', 'Rp ' + fmt(omset));
+      el('lap-laba-today',  'Rp ' + fmt(laba));
+      el('lap-trx-today',   trxCount);
+      el('lap-piutang',     'Rp ' + fmt(piutang));
+      el('lap-hutang',      'Rp ' + fmt(hutang));
+
+      // Render chart
+      const canvas = document.getElementById('laporan-chart');
+      if (!canvas) return;
+      const daysRange = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        daysRange.push(getWIBDate(d));
+      }
+      const labels = daysRange.map(d => { const p = d.split('-'); return p[2]+'/'+p[1]; });
+      const omsetData = daysRange.map(d => (db.transaksi||[]).filter(t => t.tgl === d).reduce((a,b) => a+Number(b.jual||0), 0));
+      const labaData  = daysRange.map(d => (db.transaksi||[]).filter(t => t.tgl === d).reduce((a,b) => a+(Number(b.jual||0)-Number(b.modal||0)), 0));
+
+      if (window._lapoChart) window._lapoChart.destroy();
+      window._lapoChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Omset', data: omsetData, borderColor: '#0061C2', backgroundColor: 'rgba(0,97,194,0.1)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 3 },
+            { label: 'Laba',  data: labaData,  borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 3 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { size: 9, weight: '800' }, boxWidth: 10 } } }, scales: { x: { ticks: { font: { size: 8 } } }, y: { ticks: { font: { size: 8 }, callback: v => 'Rp '+fmt(v) } } } }
+      });
+    }
+
+    function renderSidebarCustomers() {
+      const q = (document.getElementById('sidebar-cust-search')?.value || '').toLowerCase();
+      const customers = (db.pelanggan||[]).filter(c =>
+        (c.nama||'').toLowerCase().includes(q) || (c.phone||'').includes(q)
+      );
+      const lbl = document.getElementById('sidebar-cust-count-label');
+      if (lbl) lbl.innerText = db.pelanggan.length + ' pelanggan terdaftar';
+
+      const badge = document.getElementById('sidebar-cust-badge');
+      if (badge) { badge.innerText = db.pelanggan.length; badge.classList.toggle('hidden', db.pelanggan.length === 0); }
+
+      const list = document.getElementById('sidebar-cust-list');
+      if (!list) return;
+      if (customers.length === 0) {
+        list.innerHTML = `<div class="text-center py-10">
+          <i class="fas fa-users text-3xl text-slate-200 mb-3 block"></i>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Belum ada pelanggan</p>
+        </div>`;
+        return;
+      }
+      list.innerHTML = customers.map(c => {
+        const initials = (c.nama||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        const trxCount = (db.transaksi||[]).filter(t => t.pelanggan === c.nama).length;
+        return `
+        <div class="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <span class="text-blue-700 font-black text-[11px]">${initials}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-black text-slate-700 truncate">${c.nama||''}</p>
+            <p class="text-[9px] text-slate-400 font-bold">${c.phone ? '📱 '+c.phone : 'Tanpa nomor'} &nbsp;·&nbsp; ${trxCount} transaksi</p>
+          </div>
+          <div class="flex gap-1.5 flex-shrink-0">
+            <button onclick="editCustomerFromSidebar('${c.id}')" class="w-8 h-8 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center cursor-pointer border-0 hover:bg-blue-100 transition-colors">
+              <i class="fas fa-edit text-[10px]"></i>
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function openAddCustomerFromSidebar() {
+      closeModal('modal-sidebar-pelanggan');
+      setTimeout(() => openAddCustomerModal(), 100);
+    }
+
+    function editCustomerFromSidebar(id) {
+      closeModal('modal-sidebar-pelanggan');
+      setTimeout(() => editCustomer(id), 100);
     }
 
     function renderSidebarNotes() {
