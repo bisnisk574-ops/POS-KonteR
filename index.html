@@ -2846,7 +2846,18 @@
         const firestore = window._fbFirestore;
         if (!firestore) { setTimeout(bridge, 50); return; }
         // Emulasikan API yang sama dengan modul ES sebelumnya
-        window._fbDoc = (storeId) => firestore.collection('stores').doc(storeId.toUpperCase());
+        // PENTING: JANGAN gunakan toUpperCase() — Firebase UID bersifat case-sensitive
+        window._fbDoc = (storeId) => {
+          // Gunakan UID dari Firebase Auth yang sedang login sebagai prioritas utama
+          // agar path Firestore selalu cocok dengan request.auth.uid di Security Rules
+          const authUid = (window._fbAuth && window._fbAuth.currentUser)
+            ? window._fbAuth.currentUser.uid
+            : null;
+          // Jika storeId adalah UID yang valid (bukan 'DEMO'), gunakan apa adanya
+          // Jika authUid tersedia dan cocok atau storeId tampak seperti UID Firebase, pakai authUid
+          const docId = authUid || storeId;
+          return firestore.collection('stores').doc(docId);
+        };
         window._fbSetDoc = async (ref, data, opts) => {
           if (opts && opts.merge) return ref.set(data, { merge: true });
           return ref.set(data);
@@ -3470,12 +3481,23 @@
       localStorage.setItem('k_sync_version', String(_syncVersion));
     }
 
+    // ---- FIREBASE: Resolve UID yang benar ----
+    // Selalu gunakan UID dari Firebase Auth yang aktif agar cocok dengan Security Rules.
+    // Fallback ke storeId hanya jika tidak ada user yang login (mode demo/offline).
+    function _resolveStoreId(storeId) {
+      if (window._fbAuth && window._fbAuth.currentUser) {
+        return window._fbAuth.currentUser.uid;
+      }
+      return storeId; // fallback ke storeId dari localStorage (bisa 'DEMO')
+    }
+
     // ---- FIREBASE: Load data toko ----
     async function fetchFirebaseData(storeId) {
       await waitFirebase();
-      const docRef = window._fbDoc(storeId);
-      const snap = await window._fbGetDoc(docRef);
-      if (snap.exists()) {
+      const uid    = _resolveStoreId(storeId);
+      const docRef = window._fbFirestore.collection('stores').doc(uid);
+      const snap   = await docRef.get();
+      if (snap.exists) {
         return { status: 'success', data: snap.data() };
       }
       return { status: 'error', message: 'not found' };
@@ -3484,8 +3506,9 @@
     // ---- FIREBASE: Simpan data toko ----
     async function saveFirebaseData(storeId, data) {
       await waitFirebase();
-      const docRef = window._fbDoc(storeId);
-      await window._fbSetDoc(docRef, data);
+      const uid    = _resolveStoreId(storeId);
+      const docRef = window._fbFirestore.collection('stores').doc(uid);
+      await docRef.set(data);
       return { status: 'success' };
     }
 
