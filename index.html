@@ -968,9 +968,10 @@
             </div>
             <!-- Nama Toko + Status -->
             <div style="flex:1;min-width:0;">
-              <p class="font-black uppercase" style="font-size:8px;color:rgba(56,189,248,0.65);letter-spacing:0.15em;margin-bottom:4px;">ID TOKO</p>
-              <p id="sidebar-store-name" class="font-black text-white" style="font-size:18px;line-height:1.2;word-break:break-all;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
-              <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="margin-top:6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
+              <p class="font-black uppercase" style="font-size:8px;color:rgba(56,189,248,0.65);letter-spacing:0.15em;margin-bottom:2px;">NAMA TOKO</p>
+              <p id="sidebar-store-name" class="font-black text-white" style="font-size:16px;line-height:1.2;word-break:break-all;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
+              <p id="sidebar-store-email" class="font-bold truncate" style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:1px;margin-bottom:4px;"></p>
+              <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="margin-top:2px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
                 <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
                 <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
               </div>
@@ -1117,17 +1118,39 @@
           <button onclick="closeModal('modal-sidebar-akun')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
         </div>
         <div class="space-y-4">
-          <!-- Info ID -->
+          <!-- Info Nama & Email -->
           <div class="bg-blue-50 rounded-2xl p-4 flex items-center gap-4 border border-blue-100">
-            <div class="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-200">
+            <div class="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-200 flex-shrink-0">
               <i class="fas fa-store"></i>
             </div>
-            <div>
-              <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest">ID Toko</p>
-              <p class="text-lg font-black text-blue-800" id="akun-store-id">—</p>
-              <p class="text-[9px] text-blue-500 font-bold" id="akun-status-badge">● ONLINE</p>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest">Nama Toko</p>
+              <p class="text-base font-black text-blue-800 truncate" id="akun-store-name-display">—</p>
+              <p class="text-[9px] font-bold text-blue-500 truncate" id="akun-email-display">—</p>
+              <p class="text-[9px] font-bold mt-1" id="akun-status-badge">● ONLINE</p>
             </div>
           </div>
+
+          <!-- UID Akun -->
+          <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">UID Firebase (ID Unik Akun)</p>
+            <p class="text-[10px] font-black text-slate-600 break-all leading-relaxed" id="akun-store-id">—</p>
+          </div>
+
+          <!-- Expired Akun -->
+          <div id="akun-expired-wrap" class="rounded-2xl p-3 border" style="background:rgba(245,158,11,0.06);border-color:rgba(245,158,11,0.2);">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[8px] font-black uppercase tracking-widest" style="color:#b45309;">MASA AKTIF AKUN</p>
+                <p class="text-[12px] font-black mt-0.5" id="akun-expired-date" style="color:#92400e;">—</p>
+                <p class="text-[9px] font-bold mt-0.5" id="akun-expired-sisa" style="color:#b45309;"></p>
+              </div>
+              <div id="akun-expired-icon" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(245,158,11,0.12);">
+                <i class="fas fa-calendar-check" style="color:#d97706;font-size:16px;"></i>
+              </div>
+            </div>
+          </div>
+
           <!-- Statistik -->
           <div class="grid grid-cols-3 gap-3">
             <div class="bg-slate-50 rounded-2xl p-3 text-center border border-slate-100">
@@ -4564,8 +4587,13 @@
       if (_clockInterval) clearInterval(_clockInterval);
       _clockInterval = setInterval(tickSidebarClock, 1000);
 
-      const sid = localStorage.getItem('k_sid') || 'DEMO';
-      document.getElementById('sidebar-store-name').innerText = sid;
+      const sid       = localStorage.getItem('k_sid') || 'DEMO';
+      const email     = localStorage.getItem('k_email') || '';
+      const storeName = localStorage.getItem('k_store_name') || '';
+      const _displayName = storeName || (email ? email.split('@')[0].toUpperCase() : sid);
+      document.getElementById('sidebar-store-name').innerText = _displayName;
+      const emailEl = document.getElementById('sidebar-store-email');
+      if (emailEl) emailEl.innerText = email || '';
 
       // Badge catatan
       const noteCount = (db.notes||[]).length;
@@ -4609,10 +4637,65 @@
         const sid       = localStorage.getItem('k_sid') || '—';
         const email     = localStorage.getItem('k_email') || '';
         const storeName = localStorage.getItem('k_store_name') || '';
-        document.getElementById('akun-store-id').innerText = storeName || email || sid;
-        // Show email in label if available
-        const idLabel = document.getElementById('akun-store-id')?.previousElementSibling;
-        if (idLabel && email) idLabel.innerText = email;
+        const _displayName = storeName || (email ? email.split('@')[0].toUpperCase() : sid);
+
+        // Nama toko & email
+        const nameEl = document.getElementById('akun-store-name-display');
+        if (nameEl) nameEl.innerText = _displayName;
+        const emailEl = document.getElementById('akun-email-display');
+        if (emailEl) emailEl.innerText = email || 'Mode Demo';
+
+        // UID
+        document.getElementById('akun-store-id').innerText = sid;
+
+        // Expired date — ambil dari localStorage, default 1 tahun dari tgl registrasi
+        let expiredDate = localStorage.getItem('k_expired_date');
+        if (!expiredDate && sid !== 'DEMO' && sid !== '—') {
+          // Buat expired 1 tahun dari sekarang dan simpan
+          const exp = new Date();
+          exp.setFullYear(exp.getFullYear() + 1);
+          expiredDate = exp.toISOString().split('T')[0];
+          localStorage.setItem('k_expired_date', expiredDate);
+        }
+        const expWrap = document.getElementById('akun-expired-wrap');
+        const expDateEl = document.getElementById('akun-expired-date');
+        const expSisaEl = document.getElementById('akun-expired-sisa');
+        const expIconEl = document.getElementById('akun-expired-icon');
+        if (expiredDate && expDateEl) {
+          const expObj  = new Date(expiredDate);
+          const today   = new Date(); today.setHours(0,0,0,0);
+          const diffMs  = expObj - today;
+          const diffDay = Math.ceil(diffMs / 86400000);
+          const months  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+          const tgl     = expObj.getDate() + ' ' + months[expObj.getMonth()] + ' ' + expObj.getFullYear();
+          expDateEl.innerText = tgl;
+          if (diffDay > 30) {
+            expSisaEl.innerText  = 'Sisa ' + diffDay + ' hari lagi';
+            expWrap.style.background   = 'rgba(16,185,129,0.06)';
+            expWrap.style.borderColor  = 'rgba(16,185,129,0.2)';
+            expDateEl.style.color      = '#065f46';
+            expSisaEl.style.color      = '#059669';
+            if (expIconEl) { expIconEl.style.background='rgba(16,185,129,0.12)'; expIconEl.querySelector('i').style.color='#10b981'; expIconEl.querySelector('i').className='fas fa-calendar-check'; }
+          } else if (diffDay > 0) {
+            expSisaEl.innerText  = '⚠️ Segera habis! Sisa ' + diffDay + ' hari';
+            expWrap.style.background   = 'rgba(245,158,11,0.08)';
+            expWrap.style.borderColor  = 'rgba(245,158,11,0.3)';
+            expDateEl.style.color      = '#92400e';
+            expSisaEl.style.color      = '#b45309';
+            if (expIconEl) { expIconEl.style.background='rgba(245,158,11,0.12)'; expIconEl.querySelector('i').style.color='#d97706'; expIconEl.querySelector('i').className='fas fa-calendar-exclamation'; }
+          } else {
+            expSisaEl.innerText  = '❌ Akun sudah expired!';
+            expWrap.style.background   = 'rgba(239,68,68,0.06)';
+            expWrap.style.borderColor  = 'rgba(239,68,68,0.2)';
+            expDateEl.style.color      = '#7f1d1d';
+            expSisaEl.style.color      = '#dc2626';
+            if (expIconEl) { expIconEl.style.background='rgba(239,68,68,0.12)'; expIconEl.querySelector('i').style.color='#ef4444'; expIconEl.querySelector('i').className='fas fa-calendar-times'; }
+          }
+        } else if (expDateEl) {
+          expDateEl.innerText = sid === 'DEMO' ? 'Mode Demo (tidak ada expired)' : 'Belum diatur';
+          if (expSisaEl) expSisaEl.innerText = '';
+        }
+
         document.getElementById('akun-stat-trx').innerText    = db.transaksi.length;
         document.getElementById('akun-stat-produk').innerText = db.inventory.length;
         document.getElementById('akun-stat-plg').innerText    = db.pelanggan.length;
