@@ -11,6 +11,35 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ===== FIREBASE SDK ===== -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+  <script>
+    // ===== FIREBASE CONFIG =====
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBgVPVwYJudzAMNmR011PlWZC0_P0SnK8w",
+      authDomain:        "konterkupro.firebaseapp.com",
+      projectId:         "konterkupro",
+      storageBucket:     "konterkupro.firebasestorage.app",
+      messagingSenderId: "819746888017",
+      appId:             "1:819746888017:web:437b6e5b4cbaf1aa821b70",
+      measurementId:     "G-W8E39FLYKP"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const fbAuth      = firebase.auth();
+    const fbFirestore = firebase.firestore();
+    const fbAnalytics = firebase.analytics();
+
+    // Expose ke window agar fungsi login bisa akses
+    window.FIREBASE_API_KEY = firebaseConfig.apiKey;
+    window._fbAuth      = fbAuth;
+    window._fbFirestore = fbFirestore;
+  </script>
   <style>
     :root { --primary: #0061C2; --bg: #F8FAFC; --slate-800: #1e293b; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--slate-800); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
@@ -124,6 +153,124 @@
     }
     .animate-float { animation: float 4s ease-in-out infinite; }
     select.input-premium { appearance: auto; }
+    @keyframes spin360 {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ===== KASIR UI ===== */
+    .kasir-header {
+      background: linear-gradient(135deg, #0a1628 0%, #0d2550 50%, #0061C2 100%);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kasir-header::before {
+      content:'';
+      position:absolute;inset:0;
+      background: radial-gradient(ellipse 80% 60% at 90% 10%, rgba(56,189,248,0.25) 0%, transparent 60%),
+                  radial-gradient(ellipse 50% 50% at 5% 90%, rgba(99,102,241,0.2) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    .kasir-tab-pill {
+      display:flex; background:rgba(255,255,255,0.08); border-radius:16px;
+      padding:4px; gap:4px; border:1px solid rgba(255,255,255,0.1);
+    }
+    .kasir-tab-btn {
+      flex:1; padding:10px 0; border-radius:12px; font-size:10px; font-weight:900;
+      border:none; cursor:pointer; transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      letter-spacing:0.06em; text-transform:uppercase;
+    }
+    .kasir-tab-btn.k-active-dig {
+      background:linear-gradient(135deg,#0ea5e9,#38bdf8);
+      color:white; box-shadow:0 4px 16px rgba(14,165,233,0.5);
+      transform:scale(1.02);
+    }
+    .kasir-tab-btn.k-active-fis {
+      background:linear-gradient(135deg,#059669,#34d399);
+      color:white; box-shadow:0 4px 16px rgba(5,150,105,0.5);
+      transform:scale(1.02);
+    }
+    .kasir-tab-btn.k-inactive {
+      background:transparent; color:rgba(255,255,255,0.45);
+    }
+    .kasir-field-card {
+      background:white; border-radius:20px;
+      border:1.5px solid #f1f5f9;
+      overflow:hidden;
+      box-shadow:0 2px 12px rgba(0,0,0,0.04);
+    }
+    .kasir-field-row {
+      display:flex; align-items:center; gap:12px;
+      padding:13px 16px; border-bottom:1px solid #f8fafc;
+      transition:background 0.15s;
+    }
+    .kasir-field-row:last-child { border-bottom:none; }
+    .kasir-field-row:focus-within { background:#fafcff; }
+    .kasir-field-icon {
+      width:34px; height:34px; border-radius:11px;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; font-size:13px;
+    }
+    .kasir-field-label {
+      font-size:9px; font-weight:900; text-transform:uppercase;
+      letter-spacing:0.08em; color:#94a3b8; margin-bottom:2px;
+    }
+    .kasir-field-input {
+      width:100%; background:transparent; border:none; outline:none;
+      font-size:13px; font-weight:700; color:#1e293b;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      padding:0;
+    }
+    .kasir-field-input::placeholder { color:#cbd5e1; font-weight:600; }
+    .kasir-field-input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+    select.kasir-field-input { appearance:auto; cursor:pointer; }
+    .kasir-price-badge {
+      background:linear-gradient(135deg,#f0f9ff,#e0f2fe);
+      border:1.5px solid #bae6fd; border-radius:14px; padding:12px 14px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .kasir-laba-badge {
+      background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+      border:1.5px solid #bbf7d0; border-radius:14px; padding:10px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .kasir-submit-btn {
+      width:100%; border:none; cursor:pointer; border-radius:20px;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-size:13px; font-weight:900; letter-spacing:0.05em;
+      padding:18px 0; position:relative; overflow:hidden;
+      transition:transform 0.15s, box-shadow 0.15s;
+    }
+    .kasir-submit-btn:active { transform:scale(0.97); }
+    .kasir-submit-dig {
+      background:linear-gradient(135deg,#0061C2 0%,#0ea5e9 50%,#38bdf8 100%);
+      color:white; box-shadow:0 8px 28px rgba(0,97,194,0.45);
+    }
+    .kasir-submit-fis {
+      background:linear-gradient(135deg,#059669 0%,#10b981 50%,#34d399 100%);
+      color:white; box-shadow:0 8px 28px rgba(5,150,105,0.45);
+    }
+    .kasir-submit-btn::after {
+      content:'';
+      position:absolute; top:0; left:-100%; width:60%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+      transform:skewX(-20deg);
+      animation:shimmer-btn 3s ease-in-out infinite;
+    }
+    @keyframes shimmer-btn {
+      0%   { left:-100%; }
+      60%  { left:200%; }
+      100% { left:200%; }
+    }
+    .kasir-status-lunas {
+      background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+      border:1.5px solid #86efac; color:#166534;
+    }
+    .kasir-status-hutang {
+      background:linear-gradient(135deg,#fff7ed,#ffedd5);
+      border:1.5px solid #fdba74; color:#9a3412;
+    }
 
     /* ===== SIDEBAR ===== */
     .sidebar-overlay {
@@ -196,43 +343,604 @@
 </head>
 <body class="pb-32" style="background:#F8FAFC;">
 
-  <!-- Loading Pill -->
-  <div id="sync-pill" class="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-5 py-2.5 rounded-full text-[10px] font-black z-[3000] hidden flex items-center gap-3">
-    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
-    SINKRONISASI...
+  <!-- Sync Status Toast -->
+  <div id="sync-toast" class="fixed top-5 left-1/2 z-[3100] transition-all duration-300 opacity-0 pointer-events-none" style="transform:translateX(-50%) translateY(-8px);">
+    <div id="sync-toast-inner" class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-[10px] font-black text-white shadow-xl whitespace-nowrap" style="background:rgba(15,23,42,0.93);">
+      <span id="sync-toast-icon"></span>
+      <span id="sync-toast-text">MENYIMPAN...</span>
+    </div>
   </div>
 
   <!-- ==================== LOGIN SCREEN ==================== -->
-  <div id="login-screen" class="fixed inset-0 bg-white z-[2000] flex items-center justify-center p-10 overflow-y-auto">
-    <div class="w-full max-w-sm text-center my-auto">
-      <div class="w-20 h-20 bg-blue-600 text-white rounded-3xl flex items-center justify-center text-3xl shadow-xl mx-auto mb-8 rotate-3">
-        <i class="fas fa-cloud"></i>
-      </div>
-      <h2 class="font-black text-2xl mb-2 tracking-tight">KonterKU <span class="text-blue-600">Cloud</span></h2>
-      <p class="text-[10px] text-slate-400 font-bold mb-8 uppercase tracking-widest">Premium Cloud POS System</p>
-      <div class="space-y-4">
-        <input type="text" id="store-id-input" class="input-premium text-center uppercase tracking-widest" placeholder="MASUKKAN ID TOKO">
-        <button onclick="handleLogin()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black shadow-lg shadow-blue-100 transition-all">MASUK KE TOKO</button>
-        <div class="flex items-center my-4">
-          <hr class="flex-grow border-slate-200">
-          <span class="px-3 text-[10px] text-slate-400 font-bold">ATAU</span>
-          <hr class="flex-grow border-slate-200">
-        </div>
-        <button onclick="loginDemo()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 mb-6">
-          <i class="fas fa-eye"></i> MASUK SEBAGAI TOKO DEMO
-        </button>
-        <div class="text-left bg-blue-50/70 border border-blue-100 rounded-2xl p-4 space-y-2">
-          <div class="flex items-center gap-2 text-blue-700 font-black text-[11px] uppercase tracking-wider">
-            <i class="fas fa-info-circle text-xs text-blue-600"></i> Pendaftaran ID Toko
+  <div id="login-screen" class="fixed inset-0 z-[2000] overflow-hidden" style="background:#050c1a;">
+    <!-- Animated BG particles -->
+    <canvas id="login-canvas" class="absolute inset-0 w-full h-full pointer-events-none" style="opacity:0.5;"></canvas>
+
+    <!-- Glow orbs -->
+    <div class="absolute pointer-events-none" style="top:-20%;left:-15%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(0,97,194,0.4) 0%,transparent 70%);border-radius:50%;filter:blur(60px);animation:orbFloat1 9s ease-in-out infinite;"></div>
+    <div class="absolute pointer-events-none" style="bottom:-15%;right:-10%;width:50vw;height:50vw;background:radial-gradient(circle,rgba(56,189,248,0.28) 0%,transparent 70%);border-radius:50%;filter:blur(70px);animation:orbFloat2 11s ease-in-out infinite;"></div>
+    <div class="absolute pointer-events-none" style="top:35%;left:55%;width:35vw;height:35vw;background:radial-gradient(circle,rgba(255,120,0,0.15) 0%,transparent 70%);border-radius:50%;filter:blur(55px);animation:orbFloat3 13s ease-in-out infinite;"></div>
+
+    <!-- Dot grid bg -->
+    <div class="absolute inset-0 pointer-events-none" style="opacity:0.025;background-image:radial-gradient(circle,#7dd3fc 1px,transparent 1px);background-size:28px 28px;"></div>
+
+    <style>
+      @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(5%,10%) scale(1.12);} }
+      @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-8%,-6%) scale(1.08);} }
+      @keyframes orbFloat3 { 0%,100%{transform:translate(0,0);} 33%{transform:translate(-6%,9%);} 66%{transform:translate(6%,-6%);} }
+      @keyframes loginSlideUp { from{opacity:0;transform:translateY(40px);} to{opacity:1;transform:translateY(0);} }
+      @keyframes logoFloat { 0%,100%{transform:translateY(0px) rotate(-4deg);} 50%{transform:translateY(-8px) rotate(-2deg);} }
+      @keyframes firebaseGlow { 0%,100%{box-shadow:0 0 30px rgba(255,160,0,0.35),0 0 60px rgba(255,100,0,0.18);} 50%{box-shadow:0 0 55px rgba(255,160,0,0.6),0 0 110px rgba(255,100,0,0.3);} }
+      @keyframes shimmerLoginBtn { 0%{left:-100%;} 60%{left:200%;} 100%{left:200%;} }
+      @keyframes dotPulse { 0%,80%,100%{transform:scale(0);opacity:0;} 40%{transform:scale(1);opacity:1;} }
+      @keyframes tabSlide { from{opacity:0;transform:translateX(10px);} to{opacity:1;transform:translateX(0);} }
+      @keyframes shakeInput { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-6px);} 40%,80%{transform:translateX(6px);} }
+      .shake { animation:shakeInput 0.4s ease; }
+
+      .login-card-anim { animation: loginSlideUp 0.9s cubic-bezier(0.34,1.1,0.64,1) forwards; }
+      .firebase-icon-anim { animation: logoFloat 5s ease-in-out infinite, firebaseGlow 3s ease-in-out infinite; }
+
+      /* Tab toggle */
+      .auth-tab-wrap { display:flex; background:rgba(255,255,255,0.05); border-radius:14px; padding:4px; gap:4px; border:1px solid rgba(255,255,255,0.08); }
+      .auth-tab { flex:1; padding:10px 0; border-radius:10px; font-size:10px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; border:none; cursor:pointer; transition:all 0.25s cubic-bezier(0.34,1.2,0.64,1); font-family:'Plus Jakarta Sans',sans-serif; }
+      .auth-tab.active { background:linear-gradient(135deg,#0061C2,#38bdf8); color:white; box-shadow:0 4px 16px rgba(0,97,194,0.55); }
+      .auth-tab.inactive { background:transparent; color:rgba(255,255,255,0.35); }
+
+      /* Inputs */
+      .login-input-wrap { position:relative; }
+      .login-input {
+        width:100%; background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.1);
+        padding:14px 44px 14px 48px; border-radius:14px;
+        color:white; font-weight:600; outline:none; font-size:14px;
+        font-family:'Plus Jakarta Sans',sans-serif;
+        transition:all 0.3s; backdrop-filter:blur(10px);
+        box-sizing:border-box;
+      }
+      .login-input::placeholder { color:rgba(255,255,255,0.28); font-weight:500; }
+      .login-input:focus { border-color:rgba(56,189,248,0.65); background:rgba(56,189,248,0.07); box-shadow:0 0 0 4px rgba(56,189,248,0.13), 0 8px 24px rgba(0,0,0,0.3); }
+      .login-input.error { border-color:rgba(248,113,113,0.7)!important; background:rgba(248,113,113,0.06)!important; box-shadow:0 0 0 4px rgba(248,113,113,0.12)!important; }
+      .login-input-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.3); font-size:13px; pointer-events:none; transition:color 0.3s; }
+      .login-input-wrap:focus-within .login-input-icon { color:rgba(56,189,248,0.85); }
+      .login-input-eye { position:absolute; right:14px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer; transition:color 0.2s; border:none; background:transparent; padding:4px; }
+      .login-input-eye:hover { color:rgba(56,189,248,0.85); }
+
+      /* Main button */
+      .login-btn-main {
+        width:100%; border:none; cursor:pointer; border-radius:14px;
+        padding:16px 0; font-family:'Plus Jakarta Sans',sans-serif;
+        font-size:13px; font-weight:900; letter-spacing:0.07em; text-transform:uppercase;
+        background:linear-gradient(135deg,#0061C2 0%,#0ea5e9 55%,#38bdf8 100%);
+        color:white; position:relative; overflow:hidden;
+        box-shadow:0 10px 32px rgba(0,97,194,0.5), 0 4px 14px rgba(56,189,248,0.28);
+        transition:transform 0.15s, box-shadow 0.15s;
+      }
+      .login-btn-main:active { transform:scale(0.97); }
+      .login-btn-main:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
+      .login-btn-main::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent); transform:skewX(-20deg); animation:shimmerLoginBtn 3.5s ease-in-out infinite; }
+
+      /* Demo button */
+      .login-btn-ghost {
+        width:100%; border:1.5px solid rgba(255,255,255,0.1); cursor:pointer; border-radius:14px;
+        padding:13px 0; font-family:'Plus Jakarta Sans',sans-serif;
+        font-size:11px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase;
+        background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5);
+        transition:all 0.2s; backdrop-filter:blur(8px);
+      }
+      .login-btn-ghost:hover { background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.75); border-color:rgba(255,255,255,0.2); }
+
+      /* Forgot pass link */
+      .login-link { background:none; border:none; color:rgba(56,189,248,0.7); font-size:11px; font-weight:700; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; transition:color 0.2s; }
+      .login-link:hover { color:#38bdf8; }
+
+      /* Divider */
+      .login-divider { display:flex; align-items:center; gap:12px; }
+      .login-divider::before, .login-divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.08); }
+
+      /* Error message */
+      .login-error-msg { display:none; padding:10px 14px; border-radius:12px; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); color:#fca5a5; font-size:11px; font-weight:700; }
+      .login-error-msg.show { display:flex; align-items:center; gap:8px; animation:tabSlide 0.2s ease; }
+
+      /* Loading dots */
+      .loading-dots span { display:inline-block; width:6px; height:6px; background:#38bdf8; border-radius:50%; margin:0 2px; animation:dotPulse 1.4s infinite ease-in-out; }
+      .loading-dots span:nth-child(2) { animation-delay:0.2s; }
+      .loading-dots span:nth-child(3) { animation-delay:0.4s; }
+
+      /* Password strength bar */
+      .pwd-strength-bar { height:3px; border-radius:999px; transition:all 0.4s; }
+
+      /* Form panel transition */
+      .login-panel { transition:opacity 0.2s,transform 0.2s; }
+      .login-panel.hidden-panel { display:none; }
+    </style>
+
+    <!-- Main card -->
+    <div class="login-card-anim absolute inset-0 flex items-center justify-center p-5 overflow-y-auto">
+      <div class="w-full max-w-sm my-auto">
+
+        <!-- ── LOGO AREA ── -->
+        <div class="text-center mb-7">
+          <div class="relative inline-flex items-center justify-center mb-5">
+            <!-- Firebase icon -->
+            <div class="firebase-icon-anim w-20 h-20 rounded-[28px] flex items-center justify-center relative"
+              style="background:linear-gradient(145deg,#FF6D00,#FFA000,#FFD54F);">
+              <svg width="36" height="36" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M37 155.5L59.5 32L103 107.5L37 155.5Z" fill="white" fill-opacity="0.9"/>
+                <path d="M103 107.5L125.5 55L155 155.5L103 107.5Z" fill="white" fill-opacity="0.7"/>
+                <path d="M37 155.5L96 125L155 155.5L96 172L37 155.5Z" fill="white"/>
+                <path d="M59.5 32L96 125L37 155.5L59.5 32Z" fill="white" fill-opacity="0.5"/>
+              </svg>
+            </div>
+            <!-- KonterKU badge -->
+            <div class="absolute -right-2 -bottom-2 w-9 h-9 rounded-[14px] flex items-center justify-center"
+              style="background:linear-gradient(135deg,#0061C2,#38bdf8);box-shadow:0 4px 16px rgba(0,97,194,0.65);">
+              <i class="fas fa-store text-white" style="font-size:13px;"></i>
+            </div>
           </div>
-          <p class="text-[11px] text-slate-600 leading-relaxed font-medium">Untuk mendapatkan ID Toko, silakan hubungi Admin melalui WhatsApp:</p>
-          <a href="http://wa.me/62895621263666" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-600 bg-white border border-blue-200 px-3 py-1.5 rounded-xl hover:bg-blue-50 transition-all shadow-sm mt-1">
-            <i class="fab fa-whatsapp text-emerald-500 font-bold"></i> Hubungi Admin via WhatsApp
+          <h1 class="font-black text-[28px] text-white mb-1 tracking-tight" style="text-shadow:0 2px 24px rgba(56,189,248,0.35);">
+            KonterKU <span style="background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Cloud</span>
+          </h1>
+          <p class="text-[9px] font-black uppercase tracking-[0.22em]" style="color:rgba(255,255,255,0.28);">
+            <span style="color:rgba(255,160,0,0.8);">🔥</span> Secured by Firebase Authentication
+          </p>
+        </div>
+
+        <!-- ── GLASS CARD ── -->
+        <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:28px;padding:24px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 24px 64px rgba(0,0,0,0.55);">
+
+          <!-- Tab: Login / Daftar -->
+          <div class="auth-tab-wrap mb-6">
+            <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">
+              <i class="fas fa-right-to-bracket mr-1.5"></i>Masuk
+            </button>
+            <button id="tab-register" class="auth-tab inactive" onclick="switchAuthTab('register')">
+              <i class="fas fa-user-plus mr-1.5"></i>Daftar
+            </button>
+          </div>
+
+          <!-- Error message -->
+          <div id="login-error" class="login-error-msg mb-4">
+            <i class="fas fa-circle-exclamation flex-shrink-0"></i>
+            <span id="login-error-text">Terjadi kesalahan</span>
+          </div>
+
+          <!-- ── PANEL LOGIN ── -->
+          <div id="panel-login" class="login-panel space-y-3">
+            <!-- Email -->
+            <div class="login-input-wrap">
+              <input type="email" id="login-email" class="login-input" placeholder="Email aktif Anda" autocomplete="email">
+              <i class="login-input-icon fas fa-envelope"></i>
+            </div>
+            <!-- Password -->
+            <div class="login-input-wrap">
+              <input type="password" id="login-password" class="login-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+              <i class="login-input-icon fas fa-lock"></i>
+              <button class="login-input-eye" type="button" onclick="togglePwd('login-password',this)"><i class="fas fa-eye-slash"></i></button>
+            </div>
+            <!-- Lupa password -->
+            <div class="text-right">
+              <button class="login-link" onclick="doForgotPassword()"><i class="fas fa-key mr-1"></i>Lupa Password?</button>
+            </div>
+            <!-- Tombol masuk -->
+            <button id="btn-login" class="login-btn-main mt-1" onclick="doLogin()">
+              <span id="btn-login-text"><i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK</span>
+            </button>
+
+            <div class="login-divider my-1">
+              <span class="text-[9px] font-black uppercase tracking-widest" style="color:rgba(255,255,255,0.18);">atau</span>
+            </div>
+
+            <button onclick="loginDemo()" class="login-btn-ghost">
+              <i class="fas fa-circle-play mr-2"></i>Coba Mode Demo
+            </button>
+          </div>
+
+          <!-- ── PANEL REGISTER ── -->
+          <div id="panel-register" class="login-panel hidden-panel space-y-3">
+            <!-- Nama Toko -->
+            <div class="login-input-wrap">
+              <input type="text" id="reg-store-name" class="login-input" placeholder="Nama Toko (contoh: KonterKU)" autocomplete="off">
+              <i class="login-input-icon fas fa-store"></i>
+            </div>
+            <!-- Email -->
+            <div class="login-input-wrap">
+              <input type="email" id="reg-email" class="login-input" placeholder="Email aktif Anda" autocomplete="email">
+              <i class="login-input-icon fas fa-envelope"></i>
+            </div>
+            <!-- Password -->
+            <div class="login-input-wrap">
+              <input type="password" id="reg-password" class="login-input" placeholder="Buat password (min. 6 karakter)" autocomplete="new-password" oninput="checkPwdStrength(this.value)" onkeydown="if(event.key==='Enter')doRegister()">
+              <i class="login-input-icon fas fa-lock"></i>
+              <button class="login-input-eye" type="button" onclick="togglePwd('reg-password',this)"><i class="fas fa-eye-slash"></i></button>
+            </div>
+            <!-- Strength bar -->
+            <div style="padding:0 2px;">
+              <div style="background:rgba(255,255,255,0.07);border-radius:999px;height:3px;overflow:hidden;">
+                <div id="pwd-strength-bar" class="pwd-strength-bar" style="width:0%;background:#ef4444;"></div>
+              </div>
+              <p id="pwd-strength-label" class="text-[9px] font-bold mt-1" style="color:rgba(255,255,255,0.3);">Masukkan password</p>
+            </div>
+            <!-- Tombol daftar -->
+            <button id="btn-register" class="login-btn-main" onclick="doRegister()">
+              <span id="btn-register-text"><i class="fas fa-user-plus mr-2"></i>BUAT AKUN</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ── BOTTOM INFO ── -->
+        <div class="mt-5 text-center">
+          <p class="text-[10px] mb-2.5" style="color:rgba(255,255,255,0.22);">Butuh bantuan setup akun?</p>
+          <a href="https://wa.me/62895621263666" target="_blank"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-black"
+            style="background:rgba(37,211,102,0.1);border:1.5px solid rgba(37,211,102,0.22);color:#4ade80;text-decoration:none;transition:all 0.2s;">
+            <i class="fab fa-whatsapp text-sm"></i> Hubungi Admin WA
           </a>
         </div>
+
+        <!-- Firebase badge -->
+        <div class="mt-5 flex items-center justify-center gap-2">
+          <div class="h-px flex-1" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07));"></div>
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style="background:rgba(255,160,0,0.09);border:1px solid rgba(255,160,0,0.18);">
+            <svg width="10" height="10" viewBox="0 0 192 192" fill="none"><path d="M37 155.5L59.5 32L103 107.5L37 155.5Z" fill="#FFA000"/><path d="M103 107.5L125.5 55L155 155.5L103 107.5Z" fill="#FF6D00"/><path d="M37 155.5L96 125L155 155.5L96 172L37 155.5Z" fill="#FFCA28"/></svg>
+            <span class="text-[9px] font-black uppercase tracking-widest" style="color:rgba(255,160,0,0.7);">Firebase Auth + Firestore</span>
+          </div>
+          <div class="h-px flex-1" style="background:linear-gradient(90deg,rgba(255,255,255,0.07),transparent);"></div>
+        </div>
+
       </div>
     </div>
   </div>
+
+  <script>
+  // === CANVAS PARTICLE ANIMATION FOR LOGIN ===
+  (function() {
+    const canvas = document.getElementById('login-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    for (let i = 0; i < 65; i++) {
+      particles.push({
+        x: Math.random() * 1000, y: Math.random() * 1000,
+        r: Math.random() * 1.6 + 0.3,
+        dx: (Math.random() - 0.5) * 0.35,
+        dy: (Math.random() - 0.5) * 0.35,
+        a: Math.random() * 0.55 + 0.08,
+        color: Math.random() > 0.7 ? [255,160,0] : [56,189,248]
+      });
+    }
+    function frame() {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of particles) {
+        p.x += p.dx; p.y += p.dy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.a})`;
+        ctx.fill();
+      }
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 110) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(56,189,248,${0.1 * (1 - dist/110)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+    frame();
+  })();
+
+  // === FIREBASE AUTH LOGIC ===
+  // ─── TAB SWITCHER ───
+  function switchAuthTab(tab) {
+    const panelLogin    = document.getElementById('panel-login');
+    const panelRegister = document.getElementById('panel-register');
+    const tabLogin      = document.getElementById('tab-login');
+    const tabRegister   = document.getElementById('tab-register');
+    hideLoginError();
+    if (tab === 'login') {
+      panelLogin.classList.remove('hidden-panel');
+      panelRegister.classList.add('hidden-panel');
+      tabLogin.className    = 'auth-tab active';
+      tabRegister.className = 'auth-tab inactive';
+    } else {
+      panelLogin.classList.add('hidden-panel');
+      panelRegister.classList.remove('hidden-panel');
+      tabLogin.className    = 'auth-tab inactive';
+      tabRegister.className = 'auth-tab active';
+    }
+  }
+
+  // ─── SHOW/HIDE PASSWORD ───
+  function togglePwd(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      icon.className = 'fas fa-eye';
+    } else {
+      inp.type = 'password';
+      icon.className = 'fas fa-eye-slash';
+    }
+  }
+
+  // ─── PASSWORD STRENGTH ───
+  function checkPwdStrength(val) {
+    const bar   = document.getElementById('pwd-strength-bar');
+    const label = document.getElementById('pwd-strength-label');
+    if (!bar || !label) return;
+    let score = 0;
+    if (val.length >= 6)  score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const configs = [
+      { w:'0%',   color:'#ef4444', text:'Masukkan password' },
+      { w:'25%',  color:'#ef4444', text:'🔴 Sangat lemah' },
+      { w:'45%',  color:'#f97316', text:'🟠 Lemah' },
+      { w:'65%',  color:'#eab308', text:'🟡 Cukup kuat' },
+      { w:'85%',  color:'#22c55e', text:'🟢 Kuat' },
+      { w:'100%', color:'#10b981', text:'✅ Sangat kuat!' },
+    ];
+    const cfg = configs[score] || configs[0];
+    bar.style.width  = cfg.w;
+    bar.style.background = cfg.color;
+    label.textContent = cfg.text;
+    label.style.color = cfg.color;
+  }
+
+  // ─── ERROR DISPLAY ───
+  function showLoginError(msg) {
+    const el   = document.getElementById('login-error');
+    const text = document.getElementById('login-error-text');
+    if (!el) return;
+    text.textContent = msg;
+    el.classList.add('show');
+  }
+  function hideLoginError() {
+    const el = document.getElementById('login-error');
+    if (el) el.classList.remove('show');
+  }
+
+  // ─── BUTTON LOADING STATE ───
+  function setLoginBtnLoading(btnId, textId, loading, label='') {
+    const btn  = document.getElementById(btnId);
+    const text = document.getElementById(textId);
+    if (!btn || !text) return;
+    btn.disabled = loading;
+    if (loading) {
+      text.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+    } else {
+      text.innerHTML = label;
+    }
+  }
+
+  // ─── GET FIREBASE AUTH INSTANCE ───
+  // Menggunakan Firebase SDK yang sudah diinisialisasi di <head>
+  async function firebaseSignIn(email, password) {
+    try {
+      const authPromise = window._fbAuth.signInWithEmailAndPassword(email, password);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('auth/network-request-failed')), 12000)
+      );
+      const result = await Promise.race([authPromise, timeoutPromise]);
+      return {
+        localId: result.user.uid,
+        email:   result.user.email,
+        idToken: await result.user.getIdToken()
+      };
+    } catch(err) {
+      throw new Error(firebaseAuthError(err.code || err.message));
+    }
+  }
+
+  async function firebaseSignUp(email, password) {
+    try {
+      const signupPromise = window._fbAuth.createUserWithEmailAndPassword(email, password);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('auth/network-request-failed')), 12000)
+      );
+      const result = await Promise.race([signupPromise, timeoutPromise]);
+      return {
+        localId: result.user.uid,
+        email:   result.user.email,
+        idToken: await result.user.getIdToken()
+      };
+    } catch(err) {
+      throw new Error(firebaseAuthError(err.code || err.message));
+    }
+  }
+
+  async function firebaseSendPasswordReset(email) {
+    try {
+      await window._fbAuth.sendPasswordResetEmail(email);
+    } catch(err) {
+      throw new Error(firebaseAuthError(err.code || err.message));
+    }
+  }
+
+  // ─── ERROR MESSAGE MAPPING ───
+  function firebaseAuthError(code) {
+    const map = {
+      'auth/user-not-found':          'Email tidak terdaftar. Silakan daftar terlebih dahulu.',
+      'auth/wrong-password':          'Password salah. Periksa kembali dan coba lagi.',
+      'auth/invalid-credential':      'Email atau password salah.',
+      'auth/user-disabled':           'Akun dinonaktifkan. Hubungi admin.',
+      'auth/email-already-in-use':    'Email sudah terdaftar. Coba masuk atau gunakan email lain.',
+      'auth/weak-password':           'Password terlalu lemah. Minimal 6 karakter.',
+      'auth/invalid-email':           'Format email tidak valid.',
+      'auth/too-many-requests':       'Terlalu banyak percobaan. Coba lagi beberapa saat.',
+      'auth/operation-not-allowed':   'Login dengan email/password belum diaktifkan di Firebase console.',
+      'auth/network-request-failed':  'Koneksi gagal. Periksa koneksi internet Anda.',
+      'auth/popup-closed-by-user':    'Login dibatalkan.',
+      // Legacy REST API codes
+      'EMAIL_NOT_FOUND':              'Email tidak terdaftar.',
+      'INVALID_PASSWORD':             'Password salah.',
+      'EMAIL_EXISTS':                 'Email sudah terdaftar.',
+      'WEAK_PASSWORD':                'Password terlalu lemah.',
+      'INVALID_LOGIN_CREDENTIALS':    'Email atau password salah.',
+      'TOO_MANY_ATTEMPTS_TRY_LATER':  'Terlalu banyak percobaan. Coba lagi nanti.',
+    };
+    if (!code) return 'Terjadi kesalahan tidak diketahui.';
+    for (const key in map) {
+      if (code.includes(key)) return map[key];
+    }
+    return 'Terjadi kesalahan: ' + code;
+  }
+
+  // ─── MAIN LOGIN ───
+  async function doLogin() {
+    hideLoginError();
+    const email    = (document.getElementById('login-email')?.value || '').trim();
+    const password = (document.getElementById('login-password')?.value || '');
+
+    if (!email) {
+      showLoginError('Masukkan email Anda.');
+      const el = document.getElementById('login-email');
+      el?.classList.add('error','shake');
+      setTimeout(() => el?.classList.remove('shake'), 400);
+      return;
+    }
+    if (!password) {
+      showLoginError('Masukkan password Anda.');
+      const el = document.getElementById('login-password');
+      el?.classList.add('error','shake');
+      setTimeout(() => el?.classList.remove('shake'), 400);
+      return;
+    }
+
+    document.getElementById('login-email')?.classList.remove('error');
+    document.getElementById('login-password')?.classList.remove('error');
+    setLoginBtnLoading('btn-login', 'btn-login-text', true);
+
+    // Pastikan Firebase Auth sudah siap, tunggu max 5 detik
+    const authReady = await new Promise(resolve => {
+      if (window._fbAuth) { resolve(true); return; }
+      let waited = 0;
+      const iv = setInterval(() => {
+        waited += 100;
+        if (window._fbAuth) { clearInterval(iv); resolve(true); }
+        else if (waited >= 5000) { clearInterval(iv); resolve(false); }
+      }, 100);
+    });
+
+    if (!authReady) {
+      showLoginError('Firebase belum siap. Coba muat ulang halaman.');
+      setLoginBtnLoading('btn-login', 'btn-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK');
+      return;
+    }
+
+    try {
+      const result = await firebaseSignIn(email, password);
+      const uid   = result.localId;
+      const token = result.idToken || '';
+      localStorage.setItem('k_logged', 'true');
+      localStorage.setItem('k_sid', uid);
+      localStorage.setItem('k_email', email);
+      if (token) localStorage.setItem('k_token', token);
+      // skipCloudFetch=false agar data langsung diambil dari Firestore setelah login
+      initApp(false);
+    } catch(err) {
+      showLoginError(err.message || 'Login gagal. Periksa email dan password.');
+      setLoginBtnLoading('btn-login', 'btn-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK');
+      document.getElementById('login-email')?.classList.add('error');
+      document.getElementById('login-password')?.classList.add('error');
+    }
+  }
+
+  // ─── REGISTER ───
+  async function doRegister() {
+    hideLoginError();
+    const storeName = (document.getElementById('reg-store-name')?.value || '').trim();
+    const email     = (document.getElementById('reg-email')?.value || '').trim();
+    const password  = (document.getElementById('reg-password')?.value || '');
+
+    if (!storeName) { showLoginError('Masukkan nama toko Anda.'); return; }
+    if (!email)     { showLoginError('Masukkan email Anda.'); return; }
+    if (password.length < 6) { showLoginError('Password minimal 6 karakter.'); return; }
+
+    setLoginBtnLoading('btn-register', 'btn-register-text', true);
+
+    // Pastikan Firebase Auth siap
+    const authReady = await new Promise(resolve => {
+      if (window._fbAuth) { resolve(true); return; }
+      let waited = 0;
+      const iv = setInterval(() => {
+        waited += 100;
+        if (window._fbAuth) { clearInterval(iv); resolve(true); }
+        else if (waited >= 5000) { clearInterval(iv); resolve(false); }
+      }, 100);
+    });
+
+    if (!authReady) {
+      showLoginError('Firebase belum siap. Coba muat ulang halaman.');
+      setLoginBtnLoading('btn-register', 'btn-register-text', false, '<i class="fas fa-user-plus mr-2"></i>BUAT AKUN');
+      return;
+    }
+
+    try {
+      const result = await firebaseSignUp(email, password);
+      const uid    = result.localId;
+      const token  = result.idToken || '';
+      localStorage.setItem('k_logged', 'true');
+      localStorage.setItem('k_sid', uid);
+      localStorage.setItem('k_email', email);
+      localStorage.setItem('k_store_name', storeName);
+      if (token) localStorage.setItem('k_token', token);
+      Swal.fire({
+        title: '🎉 Akun Berhasil Dibuat!',
+        html: `<b>${storeName}</b> siap digunakan.<br><small style="color:#94a3b8;">UID: ${uid}</small>`,
+        icon: 'success', timer: 2500, showConfirmButton: false
+      }).then(() => initApp(false));
+    } catch(err) {
+      showLoginError(err.message || 'Pendaftaran gagal.');
+      setLoginBtnLoading('btn-register', 'btn-register-text', false, '<i class="fas fa-user-plus mr-2"></i>BUAT AKUN');
+    }
+  }
+
+  // ─── FORGOT PASSWORD ───
+  async function doForgotPassword() {
+    const email = (document.getElementById('login-email')?.value || '').trim();
+    const { value: inputEmail } = await Swal.fire({
+      title: '🔑 Reset Password',
+      input: 'email',
+      inputLabel: 'Masukkan email yang terdaftar',
+      inputValue: email,
+      inputPlaceholder: 'email@contoh.com',
+      confirmButtonText: 'Kirim Link Reset',
+      cancelButtonText: 'Batal',
+      showCancelButton: true,
+      confirmButtonColor: '#0061C2',
+      inputAttributes: { autocomplete: 'email' }
+    });
+    if (!inputEmail) return;
+    try {
+      await firebaseSendPasswordReset(inputEmail);
+      Swal.fire({ title: '📧 Email Terkirim!', text: `Link reset password dikirim ke ${inputEmail}. Cek inbox atau folder spam.`, icon: 'success', confirmButtonColor: '#0061C2' });
+    } catch(err) {
+      Swal.fire('Gagal', err.message || 'Email tidak ditemukan.', 'error');
+    }
+  }
+
+  // ─── LEGACY handleLogin (kept for auto-login compatibility) ───
+  function handleLogin() { doLogin(); }
+  </script>
 
   <!-- ==================== APP CONTENT ==================== -->
   <div id="app-content" class="hidden">
@@ -1104,51 +1812,304 @@
 
       <!-- ===== VIEW: KASIR ===== -->
       <section id="view-kasir" class="view-section">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-black">Kasir</h3>
-          <div class="flex bg-blue-50 p-1.5 rounded-2xl gap-1 flex-1 ml-4 border border-blue-100">
-            <button onclick="setKasirTab('digital')" id="btn-k-digital" class="tab-btn active">DIGITAL</button>
-            <button onclick="setKasirTab('fisik')" id="btn-k-fisik" class="tab-btn inactive">FISIK</button>
+
+        <!-- KASIR HEADER -->
+        <div class="kasir-header p-5 mb-5">
+          <div style="position:relative;z-index:1;">
+            <!-- Title row -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);">
+                  <i class="fas fa-cash-register text-white text-sm"></i>
+                </div>
+                <div>
+                  <p class="font-black text-white text-base leading-tight">Kasir</p>
+                  <p class="text-[9px] font-bold" style="color:rgba(56,189,248,0.8);">TRANSAKSI BARU</p>
+                </div>
+              </div>
+              <!-- Live laba preview -->
+              <div id="kasir-laba-preview" class="text-right hidden">
+                <p class="text-[8px] font-black uppercase" style="color:rgba(255,255,255,0.45);">Estimasi Laba</p>
+                <p id="kasir-laba-val" class="text-base font-black text-emerald-400">Rp 0</p>
+              </div>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="kasir-tab-pill">
+              <button onclick="setKasirTab('digital')" id="btn-k-digital" class="kasir-tab-btn k-active-dig">
+                <i class="fas fa-bolt mr-1.5"></i>DIGITAL
+              </button>
+              <button onclick="setKasirTab('fisik')" id="btn-k-fisik" class="kasir-tab-btn k-inactive">
+                <i class="fas fa-box mr-1.5"></i>FISIK
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Form Digital -->
-        <div id="form-k-digital" class="card-premium p-6 space-y-4">
-          <div><label>Tanggal</label><input type="date" id="kd-tgl" class="input-premium"></div>
-          <div><label>Pilih Pelanggan</label><select id="kd-customer" class="input-premium"></select></div>
-          <div>
-            <label>Produk Digital</label>
-            <select id="kd-produk" class="input-premium" onchange="autoFillPrices('digital')"></select>
-            <input type="text" id="kd-produk-manual" class="input-premium mt-2 hidden" placeholder="Masukkan Nama Produk Digital Manual...">
+        <!-- ===== FORM DIGITAL ===== -->
+        <div id="form-k-digital" class="space-y-3">
+
+          <!-- Produk & Harga -->
+          <div class="kasir-field-card">
+            <!-- Produk -->
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(56,189,248,0.1);">
+                <i class="fas fa-bolt" style="color:#0ea5e9;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label">Produk Digital</p>
+                <select id="kd-produk" class="kasir-field-input" onchange="autoFillPrices('digital')"></select>
+              </div>
+            </div>
+            <!-- Manual input (hidden by default) -->
+            <div id="kd-produk-manual-row" class="kasir-field-row hidden">
+              <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
+                <i class="fas fa-pencil" style="color:#6366f1;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Nama Produk Manual</p>
+                <input type="text" id="kd-produk-manual" class="kasir-field-input" placeholder="Ketik nama produk...">
+              </div>
+            </div>
           </div>
+
+          <!-- Harga row -->
           <div class="grid grid-cols-2 gap-3">
-            <div><label>Harga Modal</label><input type="number" id="kd-modal" class="input-premium" placeholder="0"></div>
-            <div><label>Harga Jual</label><input type="number" id="kd-jual" class="input-premium" placeholder="0"></div>
+            <div class="kasir-price-badge">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(14,165,233,0.15);">
+                <i class="fas fa-arrow-down-to-bracket text-[11px]" style="color:#0ea5e9;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label" style="color:#0369a1;">MODAL</p>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] font-black text-slate-400">Rp</span>
+                  <input type="number" id="kd-modal" class="kasir-field-input text-sky-700" placeholder="0" oninput="updateKasirLaba('digital')">
+                </div>
+              </div>
+            </div>
+            <div style="background:linear-gradient(135deg,#fef9c3,#fef08a);border:1.5px solid #fde047;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(234,179,8,0.2);">
+                <i class="fas fa-tag text-[11px]" style="color:#b45309;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label" style="color:#92400e;">JUAL</p>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] font-black text-amber-600">Rp</span>
+                  <input type="number" id="kd-jual" class="kasir-field-input text-amber-800" style="background:transparent;" placeholder="0" oninput="updateKasirLaba('digital')">
+                </div>
+              </div>
+            </div>
           </div>
-          <div><label>Dompet (Sumber Modal)</label><select id="kd-w-modal" class="input-premium"></select></div>
+
+          <!-- Laba estimasi -->
+          <div class="kasir-laba-badge" id="kd-laba-row">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-chart-line text-emerald-500 text-[11px]"></i>
+              <span class="text-[10px] font-black text-emerald-700 uppercase tracking-wide">Estimasi Laba</span>
+            </div>
+            <span id="kd-laba-display" class="text-[13px] font-black text-emerald-700">Rp 0</span>
+          </div>
+
+          <!-- Detail transaksi -->
+          <div class="kasir-field-card">
+            <!-- Tanggal -->
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
+                <i class="fas fa-calendar-day" style="color:#6366f1;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Tanggal</p>
+                <input type="date" id="kd-tgl" class="kasir-field-input">
+              </div>
+            </div>
+            <!-- Pelanggan -->
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(168,85,247,0.1);">
+                <i class="fas fa-user" style="color:#a855f7;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Pelanggan</p>
+                <select id="kd-customer" class="kasir-field-input"></select>
+              </div>
+            </div>
+            <!-- Dompet Modal -->
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(239,68,68,0.08);">
+                <i class="fas fa-wallet" style="color:#ef4444;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Dompet Modal Keluar</p>
+                <select id="kd-w-modal" class="kasir-field-input"></select>
+              </div>
+            </div>
+            <!-- Keterangan -->
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(148,163,184,0.1);">
+                <i class="fas fa-note-sticky" style="color:#94a3b8;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Keterangan / No HP / SN</p>
+                <input type="text" id="kd-note" class="kasir-field-input" placeholder="Opsional...">
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Bayar -->
           <div class="grid grid-cols-2 gap-3">
-            <div><label>Status Bayar</label><select id="kd-status" class="input-premium"><option>Lunas</option><option>Hutang</option></select></div>
-            <div><label>Penerima Dana</label><select id="kd-w-penerima" class="input-premium"></select></div>
+            <!-- Status toggle -->
+            <div class="kasir-field-card">
+              <div class="kasir-field-row" style="border:none;">
+                <div class="kasir-field-icon" style="background:rgba(16,185,129,0.1);">
+                  <i class="fas fa-circle-check" style="color:#10b981;"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="kasir-field-label">Status</p>
+                  <select id="kd-status" class="kasir-field-input" onchange="updateKasirStatus('digital')">
+                    <option value="Lunas">✅ Lunas</option>
+                    <option value="Hutang">⏳ Hutang</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <!-- Dompet penerima -->
+            <div class="kasir-field-card">
+              <div class="kasir-field-row" style="border:none;">
+                <div class="kasir-field-icon" style="background:rgba(16,185,129,0.1);">
+                  <i class="fas fa-money-bill-wave" style="color:#10b981;"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="kasir-field-label">Dana Masuk ke</p>
+                  <select id="kd-w-penerima" class="kasir-field-input"></select>
+                </div>
+              </div>
+            </div>
           </div>
-          <div><label>Keterangan</label><input type="text" id="kd-note" class="input-premium" placeholder="No HP / SN"></div>
-          <button onclick="prosesKasir('digital')" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-200 cursor-pointer border-0">PROSES TRANSAKSI</button>
+
+          <!-- Submit -->
+          <button onclick="prosesKasir('digital')" class="kasir-submit-btn kasir-submit-dig mt-1">
+            <i class="fas fa-bolt mr-2"></i>PROSES TRANSAKSI DIGITAL
+          </button>
+
         </div>
 
-        <!-- Form Fisik -->
-        <div id="form-k-fisik" class="hidden card-premium p-6 space-y-4">
-          <div><label>Tanggal</label><input type="date" id="kf-tgl" class="input-premium"></div>
-          <div><label>Pilih Pelanggan</label><select id="kf-customer" class="input-premium"></select></div>
-          <div><label>Produk Fisik</label><select id="kf-produk" class="input-premium" onchange="autoFillPrices('fisik')"></select></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label>Harga Modal</label><input type="number" id="kf-modal" class="input-premium" placeholder="0" readonly></div>
-            <div><label>Harga Jual</label><input type="number" id="kf-jual" class="input-premium" placeholder="0"></div>
+        <!-- ===== FORM FISIK ===== -->
+        <div id="form-k-fisik" class="hidden space-y-3">
+
+          <!-- Produk -->
+          <div class="kasir-field-card">
+            <div class="kasir-field-row" style="border:none;">
+              <div class="kasir-field-icon" style="background:rgba(167,139,250,0.1);">
+                <i class="fas fa-box" style="color:#a78bfa;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Produk Fisik</p>
+                <select id="kf-produk" class="kasir-field-input" onchange="autoFillPrices('fisik')"></select>
+              </div>
+            </div>
           </div>
+
+          <!-- Harga row -->
           <div class="grid grid-cols-2 gap-3">
-            <div><label>Status Bayar</label><select id="kf-status" class="input-premium"><option>Lunas</option><option>Hutang</option></select></div>
-            <div><label>Penerima Dana</label><select id="kf-w-penerima" class="input-premium"></select></div>
+            <div style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #ddd6fe;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(167,139,250,0.2);">
+                <i class="fas fa-arrow-down-to-bracket text-[11px]" style="color:#7c3aed;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label" style="color:#5b21b6;">MODAL</p>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] font-black text-violet-400">Rp</span>
+                  <input type="number" id="kf-modal" class="kasir-field-input text-violet-800" style="background:transparent;" placeholder="0" readonly oninput="updateKasirLaba('fisik')">
+                </div>
+              </div>
+            </div>
+            <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(16,185,129,0.15);">
+                <i class="fas fa-tag text-[11px]" style="color:#059669;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label" style="color:#166534;">JUAL</p>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] font-black text-emerald-600">Rp</span>
+                  <input type="number" id="kf-jual" class="kasir-field-input text-emerald-800" style="background:transparent;" placeholder="0" oninput="updateKasirLaba('fisik')">
+                </div>
+              </div>
+            </div>
           </div>
-          <div><label>Keterangan</label><input type="text" id="kf-note" class="input-premium" placeholder="Catatan tambahan"></div>
-          <button onclick="prosesKasir('fisik')" class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black shadow-lg shadow-emerald-200 cursor-pointer border-0">PROSES TRANSAKSI</button>
+
+          <!-- Laba estimasi -->
+          <div class="kasir-laba-badge" id="kf-laba-row">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-chart-line text-emerald-500 text-[11px]"></i>
+              <span class="text-[10px] font-black text-emerald-700 uppercase tracking-wide">Estimasi Laba</span>
+            </div>
+            <span id="kf-laba-display" class="text-[13px] font-black text-emerald-700">Rp 0</span>
+          </div>
+
+          <!-- Detail -->
+          <div class="kasir-field-card">
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
+                <i class="fas fa-calendar-day" style="color:#6366f1;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Tanggal</p>
+                <input type="date" id="kf-tgl" class="kasir-field-input">
+              </div>
+            </div>
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(168,85,247,0.1);">
+                <i class="fas fa-user" style="color:#a855f7;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Pelanggan</p>
+                <select id="kf-customer" class="kasir-field-input"></select>
+              </div>
+            </div>
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(148,163,184,0.1);">
+                <i class="fas fa-note-sticky" style="color:#94a3b8;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Keterangan</p>
+                <input type="text" id="kf-note" class="kasir-field-input" placeholder="Catatan tambahan...">
+              </div>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="kasir-field-card">
+              <div class="kasir-field-row" style="border:none;">
+                <div class="kasir-field-icon" style="background:rgba(16,185,129,0.1);">
+                  <i class="fas fa-circle-check" style="color:#10b981;"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="kasir-field-label">Status</p>
+                  <select id="kf-status" class="kasir-field-input" onchange="updateKasirStatus('fisik')">
+                    <option value="Lunas">✅ Lunas</option>
+                    <option value="Hutang">⏳ Hutang</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="kasir-field-card">
+              <div class="kasir-field-row" style="border:none;">
+                <div class="kasir-field-icon" style="background:rgba(16,185,129,0.1);">
+                  <i class="fas fa-money-bill-wave" style="color:#10b981;"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="kasir-field-label">Dana Masuk ke</p>
+                  <select id="kf-w-penerima" class="kasir-field-input"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button onclick="prosesKasir('fisik')" class="kasir-submit-btn kasir-submit-fis mt-1">
+            <i class="fas fa-box mr-2"></i>PROSES TRANSAKSI FISIK
+          </button>
+
         </div>
       </section>
 
@@ -1543,8 +2504,38 @@
   </div><!-- end #app-content -->
 
   <!-- ==================== JAVASCRIPT ==================== -->
+  <!-- Firebase sudah diinisialisasi di <head> via compat SDK -->
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvat0C4aqitYiaEWWlcYx_C2BfUL65ODh1kNJtxvumbG90avcTLnc5rp7bXlHB6-FwAA/exec";
+    // Hubungkan Firestore compat ke fungsi global yang dipakai app
+    // (menggantikan modul ES import sebelumnya)
+    (function waitAndBridge() {
+      function bridge() {
+        const firestore = window._fbFirestore;
+        if (!firestore) { setTimeout(bridge, 50); return; }
+        // Emulasikan API yang sama dengan modul ES sebelumnya
+        window._fbDoc = (storeId) => firestore.collection('stores').doc(storeId.toUpperCase());
+        window._fbSetDoc = async (ref, data, opts) => {
+          if (opts && opts.merge) return ref.set(data, { merge: true });
+          return ref.set(data);
+        };
+        window._fbGetDoc = async (ref) => {
+          const snap = await ref.get();
+          return { exists: () => snap.exists, data: () => snap.data() };
+        };
+        window._fbReady = true;
+        window.dispatchEvent(new Event('firebaseReady'));
+      }
+      bridge();
+    })();
+  </script>
+  <script>
+    // Wait for Firebase to be ready
+    function waitFirebase() {
+      return new Promise(resolve => {
+        if (window._fbReady) { resolve(); return; }
+        window.addEventListener('firebaseReady', resolve, { once: true });
+      });
+    }
 
     let db = { dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
 
@@ -1582,11 +2573,8 @@
       }
     });
 
-    // ---- SYNC PILL ----
-    function showSync(s) {
-      const pill = document.getElementById('sync-pill');
-      if (pill) pill.classList.toggle('hidden', !s);
-    }
+    // ---- SYNC PILL (legacy stub — digantikan sync engine v3) ----
+    function showSync(s) { /* digantikan showSyncToast */ }
 
     // ---- TANGGAL WIB ----
     function getWIBDate(dateObj = new Date()) {
@@ -1617,14 +2605,9 @@
         box.className = "flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-rose-500/10 text-rose-300 border border-rose-500/20 text-[9px] font-black transition-all backdrop-blur-md";
       }
     }
-    window.addEventListener('online', updateConnectionStatus);
     window.addEventListener('offline', updateConnectionStatus);
 
-    // ---- LOCAL STORAGE ----
-    const saveLocalData = () => {
-      const sid = localStorage.getItem('k_sid');
-      if (sid) localStorage.setItem('konterku_db_' + sid, JSON.stringify(db));
-    };
+    // ---- LOCAL STORAGE ---- (saveLocalData didefinisikan di Sync Engine v3 di bawah)
 
     const loadLocalData = () => {
       const sid = localStorage.getItem('k_sid');
@@ -1750,25 +2733,54 @@
     // ---- TAB SWITCHES ----
     function setKasirTab(tab) {
       const isDig = tab === 'digital';
-      document.getElementById('btn-k-digital').className = `tab-btn ${isDig ? 'active' : 'inactive'}`;
-      document.getElementById('btn-k-fisik').className = `tab-btn ${!isDig ? 'active' : 'inactive'}`;
+      const btnDig = document.getElementById('btn-k-digital');
+      const btnFis = document.getElementById('btn-k-fisik');
+      btnDig.className = 'kasir-tab-btn ' + (isDig  ? 'k-active-dig' : 'k-inactive');
+      btnFis.className = 'kasir-tab-btn ' + (!isDig ? 'k-active-fis' : 'k-inactive');
       document.getElementById('form-k-digital').classList.toggle('hidden', !isDig);
       document.getElementById('form-k-fisik').classList.toggle('hidden', isDig);
       if (isDig) toggleManualProductInput();
     }
 
+    function updateKasirLaba(tipe) {
+      const isDig = tipe === 'digital';
+      const modal = Number(document.getElementById(isDig ? 'kd-modal' : 'kf-modal').value) || 0;
+      const jual  = Number(document.getElementById(isDig ? 'kd-jual'  : 'kf-jual' ).value) || 0;
+      const laba  = jual - modal;
+      const el    = document.getElementById(isDig ? 'kd-laba-display' : 'kf-laba-display');
+      const row   = document.getElementById(isDig ? 'kd-laba-row' : 'kf-laba-row');
+      if (!el || !row) return;
+      if (jual > 0 || modal > 0) {
+        row.style.display = 'flex';
+        el.textContent = (laba >= 0 ? '+' : '') + 'Rp ' + fmt(laba);
+        el.style.color = laba >= 0 ? '#166534' : '#dc2626';
+        row.style.background = laba >= 0
+          ? 'linear-gradient(135deg,#f0fdf4,#dcfce7)'
+          : 'linear-gradient(135deg,#fff1f2,#ffe4e6)';
+        row.style.borderColor = laba >= 0 ? '#86efac' : '#fca5a5';
+      } else {
+        row.style.display = 'none';
+      }
+    }
+
+    function updateKasirStatus(tipe) {
+      // Bisa digunakan untuk animasi visual status di masa depan
+    }
+
     function toggleManualProductInput() {
       const sel = document.getElementById('kd-produk');
+      const manRow = document.getElementById('kd-produk-manual-row');
       const man = document.getElementById('kd-produk-manual');
-      if (!sel || !man) return;
+      if (!sel || !manRow || !man) return;
       if (sel.value === 'manual') {
-        man.classList.remove('hidden');
+        manRow.classList.remove('hidden');
         document.getElementById('kd-modal').value = '';
         document.getElementById('kd-jual').value = '';
         document.getElementById('kd-modal').readOnly = false;
         document.getElementById('kd-jual').readOnly = false;
+        updateKasirLaba('digital');
       } else {
-        man.classList.add('hidden');
+        manRow.classList.add('hidden');
         man.value = '';
         document.getElementById('kd-modal').readOnly = false;
         document.getElementById('kd-jual').readOnly = false;
@@ -1962,50 +2974,98 @@
     async function handleLogin() {
       const sid = document.getElementById('store-id-input').value.trim().toUpperCase();
       if (!sid) return Swal.fire('Error', 'Masukkan ID Toko terlebih dahulu!', 'warning');
-      showSync(true);
+
+      // Update button state
+      const btn = document.getElementById('login-btn');
+      const btnText = document.getElementById('login-btn-text');
+      if (btn) btn.disabled = true;
+      if (btnText) btnText.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+
+      showSyncToast('saving', 'MEMVERIFIKASI ID TOKO...');
       try {
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'load', storeId: sid }) });
-        const response = await res.json();
+        const response = await fetchFirebaseData(sid);
         if (response && response.status === "success" && response.data) {
           localStorage.setItem('k_logged', 'true');
           localStorage.setItem('k_sid', sid);
+          localStorage.setItem('k_pending_sync', '');
           const data = response.data;
           db = { dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] };
           saveLocalData();
-          initApp();
+          _syncedVersion = _syncVersion;
+          showSyncToast('ok', 'LOGIN BERHASIL ✓');
+          initApp(true); // skip fetchCloud, data sudah fresh dari login
+        } else if (response && response.status === 'error' && response.message === 'not found') {
+          // ID toko baru — buat dokumen baru di Firebase
+          showSyncToast('saving', 'MEMBUAT AKUN BARU...');
+          localStorage.setItem('k_logged', 'true');
+          localStorage.setItem('k_sid', sid);
+          localStorage.setItem('k_pending_sync', '');
+          db = { dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
+          await saveFirebaseData(sid, db);
+          saveLocalData();
+          showSyncToast('ok', 'AKUN TOKO DIBUAT ✓');
+          initApp(true);
         } else {
-          Swal.fire({ title: 'Akses Ditolak', text: 'ID Toko tidak terdaftar. Hubungi Admin untuk mendaftarkan ID baru.', icon: 'error', confirmButtonText: 'Tutup' });
+          if (btn) btn.disabled = false;
+          if (btnText) btnText.innerHTML = '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK KE TOKO';
+          showSyncToast('hide');
+          Swal.fire({ title: 'Gagal Login', text: 'Tidak dapat terhubung ke Firebase. Coba lagi.', icon: 'error', confirmButtonText: 'Tutup' });
         }
       } catch(e) {
-        console.error(e);
+        showSyncToast('offline', 'MODE OFFLINE');
         const saved = localStorage.getItem('konterku_db_' + sid);
         if (saved && localStorage.getItem('k_sid') === sid) {
           localStorage.setItem('k_logged', 'true');
           loadLocalData();
           initApp();
         } else {
-          Swal.fire('Error', 'Gagal memvalidasi ID Toko. Pastikan Anda online untuk login pertama kali.', 'error');
+          if (btn) btn.disabled = false;
+          if (btnText) btnText.innerHTML = '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK KE TOKO';
+          showSyncToast('error', 'GAGAL LOGIN');
+          Swal.fire('Error', 'Gagal terhubung ke Firebase. Pastikan Anda online untuk login pertama kali.', 'error');
         }
-      } finally { showSync(false); }
+      }
     }
 
     function loginDemo() {
-      document.getElementById('store-id-input').value = 'ADMIN123';
-      handleLogin();
+      // Langsung set data demo tanpa perlu Firebase Auth
+      localStorage.setItem('k_logged', 'true');
+      localStorage.setItem('k_sid', 'DEMO');
+      localStorage.setItem('k_email', 'demo@konterkupro.com');
+      localStorage.setItem('k_store_name', 'Toko Demo');
+      initApp(true); // skip cloud fetch untuk demo
     }
 
-    function initApp() {
-      document.getElementById('login-screen').style.display = 'none';
+    function initApp(skipCloudFetch = false) {
+      const loginScreen = document.getElementById('login-screen');
+      loginScreen.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      loginScreen.style.opacity = '0';
+      loginScreen.style.transform = 'scale(1.04)';
+      setTimeout(() => { loginScreen.style.display = 'none'; }, 500);
       document.getElementById('app-content').classList.remove('hidden');
-      const _sid = localStorage.getItem('k_sid') || 'DEMO';
-      document.getElementById('display-store-name').innerText = _sid;
-      const _sbn = document.getElementById('sidebar-store-name');
-      if (_sbn) _sbn.innerText = _sid;
+
+      // Tampilkan nama toko atau bagian email sebelum @
+      const _sid       = localStorage.getItem('k_sid') || 'DEMO';
+      const _email     = localStorage.getItem('k_email') || '';
+      const _storeName = localStorage.getItem('k_store_name') || '';
+      const _displayName = _storeName || (_email ? _email.split('@')[0].toUpperCase() : _sid);
+
+      const headerName = document.getElementById('display-store-name');
+      if (headerName) headerName.innerText = _displayName;
+      const sidebarName = document.getElementById('sidebar-store-name');
+      if (sidebarName) sidebarName.innerText = _displayName;
+
+      // Init sync version dari storage
+      _syncVersion   = parseInt(localStorage.getItem('k_sync_version') || '0');
+      _syncedVersion = _syncVersion;
       loadLocalData();
       updateConnectionStatus();
       resetKasirForms();
       renderAll();
-      fetchCloudData();
+      // Hanya fetch cloud kalau auto-login (buka ulang), bukan setelah login manual (sudah fresh)
+      if (!skipCloudFetch) {
+        setTimeout(fetchCloudData, 1500);
+      }
     }
 
     function resetKasirForms() {
@@ -2014,37 +3074,247 @@
       ['kd-modal','kd-jual','kf-modal','kf-jual'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
       ['kd-note','kf-note'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
       ['kd-status','kf-status'].forEach(id => { const el = document.getElementById(id); if(el) el.value = "Lunas"; });
+      const manRow = document.getElementById('kd-produk-manual-row');
+      if (manRow) manRow.classList.add('hidden');
       const man = document.getElementById('kd-produk-manual');
-      if (man) { man.value = ""; man.classList.add('hidden'); }
+      if (man) man.value = "";
+      // Reset laba display
+      ['kd-laba-row','kf-laba-row'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
     }
 
-    async function fetchCloudData() {
+    // ============================================================
+    // FIREBASE SYNC ENGINE — Menggantikan Google Apps Script
+    // ============================================================
+
+    let _syncTimer     = null;
+    let _syncRunning   = false;
+    let _syncQueued    = false;
+    let _syncVersion   = 0;
+    let _syncedVersion = 0;
+    const SYNC_DEBOUNCE_MS = 500;
+
+    let _toastTimer = null;
+
+    function showSyncToast(state, msg) {
+      const toast  = document.getElementById('sync-toast');
+      const inner  = document.getElementById('sync-toast-inner');
+      const iconEl = document.getElementById('sync-toast-icon');
+      const textEl = document.getElementById('sync-toast-text');
+      if (!toast) return;
+
+      if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+
+      if (state === 'hide') {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-8px)';
+        toast.style.pointerEvents = 'none';
+        return;
+      }
+
+      const themes = {
+        saving: { bg: 'rgba(15,23,42,0.93)',  icon: '⟳', spin: true  },
+        ok:     { bg: 'rgba(5,150,105,0.93)', icon: '✓', spin: false },
+        error:  { bg: 'rgba(220,38,38,0.93)', icon: '!', spin: false },
+        offline:{ bg: 'rgba(180,83,9,0.93)',  icon: '⚡', spin: false },
+      };
+      const t = themes[state] || themes.saving;
+      inner.style.background = t.bg;
+      iconEl.innerHTML = t.spin
+        ? '<span style="display:inline-block;animation:spin360 0.7s linear infinite;">⟳</span>'
+        : t.icon;
+      textEl.textContent = msg;
+
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      toast.style.pointerEvents = 'none';
+
+      if (state === 'ok') {
+        _toastTimer = setTimeout(() => showSyncToast('hide'), 2000);
+      }
+    }
+
+    // Simpan ke localStorage + tandai versi naik
+    function saveLocalData() {
       const sid = localStorage.getItem('k_sid');
       if (!sid) return;
-      showSync(true);
-      try {
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'load', storeId: sid }) });
-        const response = await res.json();
-        if (response && response.status === "success" && response.data) {
-          const data = response.data;
-          db = { dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] };
-          saveLocalData();
-          renderAll();
-        }
-      } catch(e) { console.error(e); } finally { showSync(false); }
+      _syncVersion++;
+      localStorage.setItem('konterku_db_' + sid, JSON.stringify(db));
+      localStorage.setItem('k_sync_version', String(_syncVersion));
     }
 
+    // ---- FIREBASE: Load data toko ----
+    async function fetchFirebaseData(storeId) {
+      await waitFirebase();
+      const docRef = window._fbDoc(storeId);
+      const snap = await window._fbGetDoc(docRef);
+      if (snap.exists()) {
+        return { status: 'success', data: snap.data() };
+      }
+      return { status: 'error', message: 'not found' };
+    }
+
+    // ---- FIREBASE: Simpan data toko ----
+    async function saveFirebaseData(storeId, data) {
+      await waitFirebase();
+      const docRef = window._fbDoc(storeId);
+      await window._fbSetDoc(docRef, data);
+      return { status: 'success' };
+    }
+
+    // --- FUNGSI UTAMA: dipanggil setiap ada perubahan data ---
+    // Mengembalikan Promise yang resolve saat cloud sync selesai (atau gagal)
     async function sync() {
       const sid = localStorage.getItem('k_sid');
-      if (!sid) return;
+      if (!sid) return false;
+
+      // 1. Simpan lokal DULU
       saveLocalData();
-      showSync(true);
-      try {
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save', storeId: sid, data: db }) });
-        localStorage.setItem('k_last_sync', new Date().toLocaleString('id-ID'));
-        renderAll();
-      } catch(e) { console.error(e); } finally { showSync(false); }
+      renderAll();
+
+      // 2. Debounce untuk panggilan biasa (non-kasir)
+      if (_syncTimer) clearTimeout(_syncTimer);
+      return new Promise((resolve) => {
+        _syncTimer = setTimeout(async () => {
+          const ok = await _doCloudSync();
+          resolve(ok);
+        }, SYNC_DEBOUNCE_MS);
+      });
     }
+
+    // Sync langsung tanpa debounce — dipakai oleh kasir agar tidak ada delay
+    async function syncImmediate() {
+      const sid = localStorage.getItem('k_sid');
+      if (!sid) return false;
+      saveLocalData();
+      renderAll();
+      if (_syncTimer) { clearTimeout(_syncTimer); _syncTimer = null; }
+      return await _doCloudSync();
+    }
+
+    async function _doCloudSync() {
+      const sid = localStorage.getItem('k_sid');
+      if (!sid) return false;
+
+      if (!navigator.onLine) {
+        showSyncToast('offline', 'OFFLINE — Data tersimpan lokal');
+        localStorage.setItem('k_pending_sync', 'true');
+        _toastTimer = setTimeout(() => showSyncToast('hide'), 3000);
+        return false;
+      }
+
+      if (_syncRunning) {
+        _syncQueued = true;
+        return new Promise((resolve) => {
+          const check = setInterval(() => {
+            if (!_syncRunning) { clearInterval(check); resolve(true); }
+          }, 200);
+          setTimeout(() => { clearInterval(check); resolve(false); }, 25000);
+        });
+      }
+
+      _syncRunning = true;
+      _syncQueued  = false;
+      const versionToSync = _syncVersion;
+
+      showSyncToast('saving', 'MENYIMPAN KE FIREBASE...');
+
+      let success = false;
+      let lastErr  = '';
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await saveFirebaseData(sid, db);
+          success = true;
+          break;
+        } catch(e) {
+          lastErr = e.message;
+          console.warn('[Firebase Sync] Attempt ' + attempt + ' gagal:', lastErr);
+          if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 1500));
+        }
+      }
+
+      _syncRunning = false;
+
+      if (success) {
+        _syncedVersion = versionToSync;
+        const now = new Date().toLocaleString('id-ID');
+        localStorage.setItem('k_last_sync', now);
+        localStorage.setItem('k_pending_sync', '');
+        showSyncToast('ok', 'TERSIMPAN ✓');
+        const el = document.getElementById('backup-last-sync');
+        if (el) el.innerText = 'Terakhir sync: ' + now;
+      } else {
+        localStorage.setItem('k_pending_sync', 'true');
+        console.warn('[Firebase Sync] Semua attempt gagal:', lastErr);
+        showSyncToast('error', 'CLOUD GAGAL — Data lokal aman ✓ Tap retry');
+        const toast = document.getElementById('sync-toast');
+        if (toast) {
+          toast.style.pointerEvents = 'auto';
+          toast.style.cursor = 'pointer';
+          toast.onclick = () => {
+            toast.onclick = null;
+            toast.style.pointerEvents = 'none';
+            toast.style.cursor = '';
+            showSyncToast('saving', 'MENCOBA ULANG...');
+            setTimeout(_doCloudSync, 300);
+          };
+        }
+      }
+
+      if (_syncQueued) {
+        _syncQueued = false;
+        setTimeout(_doCloudSync, 400);
+      }
+
+      return success;
+    }
+
+    // Load data dari Firebase tanpa menimpa data lokal yang lebih baru
+    async function fetchCloudData() {
+      const sid = localStorage.getItem('k_sid');
+      if (!sid || !navigator.onLine) return;
+
+      const pendingSync = localStorage.getItem('k_pending_sync') === 'true';
+      if (pendingSync || _syncRunning || _syncQueued) return;
+
+      showSyncToast('saving', 'MEMUAT DATA FIREBASE...');
+      try {
+        const response = await fetchFirebaseData(sid);
+
+        if (response && response.status === 'success' && response.data && !_syncRunning && !_syncQueued) {
+          const data = response.data;
+          db = {
+            dompet: data.dompet||[], transaksi: data.transaksi||[],
+            inventory: data.inventory||[], hutang: data.hutang||[],
+            hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[],
+            mutasi: data.mutasi||[], notes: data.notes||[],
+            riwayat_hutang: data.riwayat_hutang||[]
+          };
+          _syncVersion   = parseInt(localStorage.getItem('k_sync_version') || '0');
+          _syncedVersion = _syncVersion;
+          saveLocalData();
+          renderAll();
+          showSyncToast('ok', 'DATA DIPERBARUI ✓');
+        } else {
+          showSyncToast('hide');
+        }
+      } catch(e) {
+        console.warn('[fetchFirebase] Gagal:', e.message);
+        showSyncToast('hide');
+      }
+    }
+
+    // Saat kembali online: kirim data pending atau refresh dari cloud
+    window.addEventListener('online', async () => {
+      updateConnectionStatus();
+      showSyncToast('hide');
+      const pending = localStorage.getItem('k_pending_sync') === 'true';
+      if (pending) {
+        await _doCloudSync();
+      } else {
+        setTimeout(fetchCloudData, 800);
+      }
+    });
 
     // ---- RENDER ALL ----
     function renderAll() {
@@ -2871,13 +4141,21 @@
       if (tipe === 'digital') {
         toggleManualProductInput();
         const sel = document.getElementById('kd-produk');
-        if (!sel || sel.value === 'manual' || sel.value === '') return;
+        if (!sel || sel.value === 'manual' || sel.value === '') { updateKasirLaba('digital'); return; }
         const item = db.inventory.find(p => p.id === sel.value);
-        if (item) { document.getElementById('kd-modal').value = item.modal; document.getElementById('kd-jual').value = item.jual; }
+        if (item) {
+          document.getElementById('kd-modal').value = item.modal;
+          document.getElementById('kd-jual').value = item.jual;
+        }
+        updateKasirLaba('digital');
       } else {
         const pid = document.getElementById('kf-produk').value;
         const item = db.inventory.find(p => p.id === pid);
-        if (item) { document.getElementById('kf-modal').value = item.modal; document.getElementById('kf-jual').value = item.jual; }
+        if (item) {
+          document.getElementById('kf-modal').value = item.modal;
+          document.getElementById('kf-jual').value = item.jual;
+        }
+        updateKasirLaba('fisik');
       }
     }
 
@@ -3211,15 +4489,30 @@
       }
 
       resetKasirForms();
-      await sync();
+
+      // Navigasi ke dashboard dan tampilkan sukses lokal segera
       showView('dashboard');
       Swal.fire({ title: 'Sukses! 🎉', text: `Transaksi ${productName} berhasil disimpan!`, icon: 'success', timer: 2000, showConfirmButton: false });
+
+      // Sync ke cloud tanpa debounce (langsung kirim) di background
+      // Data sudah aman di localStorage, cloud sync di background
+      syncImmediate().then(ok => {
+        if (!ok && navigator.onLine) {
+          console.warn('[Kasir] Cloud sync gagal, data pending di localStorage');
+        }
+      });
     }
 
     // ---- LOGOUT ----
     function logout() {
       Swal.fire({ title: 'Keluar?', text: 'Anda akan keluar dari sesi ini.', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal' }).then(res => {
-        if (res.isConfirmed) { localStorage.removeItem('k_logged'); location.reload(); }
+        if (res.isConfirmed) {
+          // Sign out dari Firebase Auth
+          if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
+          localStorage.removeItem('k_logged');
+          localStorage.removeItem('k_token');
+          location.reload();
+        }
       });
     }
 
@@ -3313,8 +4606,13 @@
       document.body.style.overflow = '';
 
       if (menu === 'akun') {
-        const sid = localStorage.getItem('k_sid') || '—';
-        document.getElementById('akun-store-id').innerText = sid;
+        const sid       = localStorage.getItem('k_sid') || '—';
+        const email     = localStorage.getItem('k_email') || '';
+        const storeName = localStorage.getItem('k_store_name') || '';
+        document.getElementById('akun-store-id').innerText = storeName || email || sid;
+        // Show email in label if available
+        const idLabel = document.getElementById('akun-store-id')?.previousElementSibling;
+        if (idLabel && email) idLabel.innerText = email;
         document.getElementById('akun-stat-trx').innerText    = db.transaksi.length;
         document.getElementById('akun-stat-produk').innerText = db.inventory.length;
         document.getElementById('akun-stat-plg').innerText    = db.pelanggan.length;
@@ -3513,42 +4811,53 @@
 
     // ---- BACKUP & RESTORE ----
     async function doBackup() {
-      showSync(true);
+      showSyncToast('saving', 'BACKUP KE FIREBASE...');
+      const sid = localStorage.getItem('k_sid');
+      if (!sid) return;
       try {
-        const sid = localStorage.getItem('k_sid');
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save', storeId: sid, data: db }) });
+        await saveFirebaseData(sid, db);
         const now = new Date().toLocaleString('id-ID');
         localStorage.setItem('k_last_sync', now);
-        document.getElementById('backup-last-sync').innerText = 'Terakhir sync: ' + now;
-        Swal.fire({ title: 'Backup Berhasil!', text: 'Data berhasil disimpan ke Google Sheet Cloud.', icon: 'success', timer: 2500, showConfirmButton: false });
+        localStorage.setItem('k_pending_sync', '');
+        _syncedVersion = _syncVersion;
+        const el = document.getElementById('backup-last-sync');
+        if (el) el.innerText = 'Terakhir sync: ' + now;
+        showSyncToast('ok', 'BACKUP BERHASIL ✓');
+        Swal.fire({ title: 'Backup Berhasil!', text: 'Data berhasil disimpan ke Firebase Cloud.', icon: 'success', timer: 2500, showConfirmButton: false });
       } catch(e) {
-        Swal.fire('Gagal', 'Koneksi gagal. Pastikan Anda online.', 'error');
-      } finally { showSync(false); }
+        showSyncToast('error', 'BACKUP GAGAL');
+        Swal.fire('Gagal', 'Koneksi gagal atau Firebase error. Coba lagi.', 'error');
+      }
     }
 
     async function doRestore() {
-      const res = await Swal.fire({ title: 'Restore dari Cloud?', text: 'Data lokal akan DITIMPA dengan data dari cloud. Lanjutkan?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Restore', cancelButtonText: 'Batal', confirmButtonColor: '#f59e0b' });
+      const res = await Swal.fire({ title: 'Restore dari Firebase?', text: 'Data lokal akan DITIMPA dengan data dari Firebase Cloud. Lanjutkan?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Restore', cancelButtonText: 'Batal', confirmButtonColor: '#f59e0b' });
       if (!res.isConfirmed) return;
-      showSync(true);
+      showSyncToast('saving', 'MEMUAT DATA FIREBASE...');
       try {
         const sid = localStorage.getItem('k_sid');
-        const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'load', storeId: sid }) });
-        const data = await resp.json();
-        if (data.status === 'success' && data.data) {
-          const d = data.data;
+        const response = await fetchFirebaseData(sid);
+        if (response.status === 'success' && response.data) {
+          const d = response.data;
           db = { dompet: d.dompet||[], transaksi: d.transaksi||[], inventory: d.inventory||[], hutang: d.hutang||[], hutang_lunas: d.hutang_lunas||[], pelanggan: d.pelanggan||[], mutasi: d.mutasi||[], notes: d.notes||[], riwayat_hutang: d.riwayat_hutang||[] };
           saveLocalData();
+          _syncedVersion = _syncVersion;
+          localStorage.setItem('k_pending_sync', '');
           renderAll();
           const now = new Date().toLocaleString('id-ID');
           localStorage.setItem('k_last_sync', now);
-          document.getElementById('backup-last-sync').innerText = 'Terakhir sync: ' + now;
-          Swal.fire({ title: 'Restore Berhasil!', text: 'Data berhasil dipulihkan dari cloud.', icon: 'success', timer: 2500, showConfirmButton: false });
+          const el = document.getElementById('backup-last-sync');
+          if (el) el.innerText = 'Terakhir sync: ' + now;
+          showSyncToast('ok', 'RESTORE BERHASIL ✓');
+          Swal.fire({ title: 'Restore Berhasil!', text: 'Data berhasil dipulihkan dari Firebase.', icon: 'success', timer: 2500, showConfirmButton: false });
         } else {
-          Swal.fire('Gagal', 'Data tidak ditemukan di cloud.', 'error');
+          showSyncToast('hide');
+          Swal.fire('Gagal', 'Data tidak ditemukan di Firebase.', 'error');
         }
       } catch(e) {
+        showSyncToast('error', 'RESTORE GAGAL');
         Swal.fire('Gagal', 'Koneksi gagal. Pastikan Anda online.', 'error');
-      } finally { showSync(false); }
+      }
     }
 
     function doExportJSON() {
@@ -3591,12 +4900,9 @@
       reader.readAsText(file);
     }
 
-    // Sync timestamp on every cloud save
-    const _origSync = sync;
-
     // ---- AUTO LOGIN ----
     if (localStorage.getItem('k_logged') === 'true') {
-      initApp();
+      initApp(); // skipCloudFetch=false → akan fetch Firebase setelah 1.5s
     }
   </script>
 </body>
