@@ -915,10 +915,19 @@
       localStorage.setItem('k_email', email);
       localStorage.setItem('k_store_name', storeName);
       if (token) localStorage.setItem('k_token', token);
+
+      // ── OTOMATIS BUAT SUBSCRIPTION TRIAL 30 HARI ──
+      // Berjalan di background, tidak menghambat alur login
+      createSubscription(uid, email, storeName);
+
       Swal.fire({
         title: '🎉 Akun Berhasil Dibuat!',
-        html: `<b>${storeName}</b> siap digunakan.<br><small style="color:#94a3b8;">UID: ${uid}</small>`,
-        icon: 'success', timer: 2500, showConfirmButton: false
+        html: `<b>${storeName}</b> siap digunakan.<br>
+               <span style="font-size:11px;color:#059669;font-weight:700;">
+                 ✅ Trial 30 hari aktif secara otomatis
+               </span><br>
+               <small style="color:#94a3b8;">UID: ${uid}</small>`,
+        icon: 'success', timer: 3000, showConfirmButton: false
       }).then(() => initApp(false));
     } catch(err) {
       showLoginError(err.message || 'Pendaftaran gagal.');
@@ -952,6 +961,61 @@
 
   // ─── LEGACY handleLogin (kept for auto-login compatibility) ───
   function handleLogin() { doLogin(); }
+
+  // ─── AUTO-CREATE SUBSCRIPTION (Trial 30 hari) ───
+  // Dipanggil saat user baru berhasil daftar.
+  // Menulis dokumen ke: subscriptions/{uid}
+  async function createSubscription(uid, email, storeName) {
+    try {
+      // Tunggu Firestore siap
+      await new Promise(resolve => {
+        if (window._fbFirestore) { resolve(); return; }
+        let w = 0;
+        const iv = setInterval(() => {
+          w += 100;
+          if (window._fbFirestore) { clearInterval(iv); resolve(); }
+          else if (w >= 8000) { clearInterval(iv); resolve(); } // timeout 8 detik
+        }, 100);
+      });
+
+      if (!window._fbFirestore) {
+        console.warn('[Subscription] Firestore tidak siap, skip buat subscription.');
+        return;
+      }
+
+      // Hitung tanggal trial: 30 hari dari sekarang
+      const now      = new Date();
+      const expired  = new Date(now);
+      expired.setDate(expired.getDate() + 30);
+
+      const subData = {
+        uid         : uid,
+        email       : email,
+        store_name  : storeName,
+        plan        : 'trial',          // trial → basic → pro → unlimited
+        status      : 'active',         // active | expired | suspended
+        expired_at  : expired,          // Timestamp Firestore
+        created_at  : now,
+        trial_days  : 30,
+        payment_ref : ''                // diisi admin saat perpanjang
+      };
+
+      await window._fbFirestore
+        .collection('subscriptions')
+        .doc(uid)
+        .set(subData);
+
+      // Simpan expired ke localStorage agar bisa dibaca offline
+      localStorage.setItem('k_expired_date', expired.toISOString().split('T')[0]);
+      localStorage.setItem('k_plan', 'trial');
+      console.log('[Subscription] Trial 30 hari berhasil dibuat untuk UID:', uid);
+
+    } catch(e) {
+      // Gagal buat subscription tidak stop proses login
+      // User tetap bisa masuk, admin bisa set manual nanti
+      console.warn('[Subscription] Gagal buat subscription otomatis:', e.message);
+    }
+  }
   </script>
 
   <!-- ==================== APP CONTENT ==================== -->
@@ -4758,53 +4822,113 @@
         // UID
         document.getElementById('akun-store-id').innerText = sid;
 
-        // Expired date — ambil dari localStorage, default 1 tahun dari tgl registrasi
-        let expiredDate = localStorage.getItem('k_expired_date');
-        if (!expiredDate && sid !== 'DEMO' && sid !== '—') {
-          // Buat expired 1 tahun dari sekarang dan simpan
-          const exp = new Date();
-          exp.setFullYear(exp.getFullYear() + 1);
-          expiredDate = exp.toISOString().split('T')[0];
-          localStorage.setItem('k_expired_date', expiredDate);
-        }
-        const expWrap = document.getElementById('akun-expired-wrap');
-        const expDateEl = document.getElementById('akun-expired-date');
-        const expSisaEl = document.getElementById('akun-expired-sisa');
-        const expIconEl = document.getElementById('akun-expired-icon');
-        if (expiredDate && expDateEl) {
-          const expObj  = new Date(expiredDate);
-          const today   = new Date(); today.setHours(0,0,0,0);
-          const diffMs  = expObj - today;
-          const diffDay = Math.ceil(diffMs / 86400000);
-          const months  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-          const tgl     = expObj.getDate() + ' ' + months[expObj.getMonth()] + ' ' + expObj.getFullYear();
-          expDateEl.innerText = tgl;
-          if (diffDay > 30) {
-            expSisaEl.innerText  = 'Sisa ' + diffDay + ' hari lagi';
-            expWrap.style.background   = 'rgba(16,185,129,0.06)';
-            expWrap.style.borderColor  = 'rgba(16,185,129,0.2)';
-            expDateEl.style.color      = '#065f46';
-            expSisaEl.style.color      = '#059669';
-            if (expIconEl) { expIconEl.style.background='rgba(16,185,129,0.12)'; expIconEl.querySelector('i').style.color='#10b981'; expIconEl.querySelector('i').className='fas fa-calendar-check'; }
-          } else if (diffDay > 0) {
-            expSisaEl.innerText  = '⚠️ Segera habis! Sisa ' + diffDay + ' hari';
-            expWrap.style.background   = 'rgba(245,158,11,0.08)';
-            expWrap.style.borderColor  = 'rgba(245,158,11,0.3)';
-            expDateEl.style.color      = '#92400e';
-            expSisaEl.style.color      = '#b45309';
-            if (expIconEl) { expIconEl.style.background='rgba(245,158,11,0.12)'; expIconEl.querySelector('i').style.color='#d97706'; expIconEl.querySelector('i').className='fas fa-calendar-exclamation'; }
-          } else {
-            expSisaEl.innerText  = '❌ Akun sudah expired!';
-            expWrap.style.background   = 'rgba(239,68,68,0.06)';
-            expWrap.style.borderColor  = 'rgba(239,68,68,0.2)';
-            expDateEl.style.color      = '#7f1d1d';
-            expSisaEl.style.color      = '#dc2626';
-            if (expIconEl) { expIconEl.style.background='rgba(239,68,68,0.12)'; expIconEl.querySelector('i').style.color='#ef4444'; expIconEl.querySelector('i').className='fas fa-calendar-times'; }
+        // ── BACA SUBSCRIPTION DARI FIRESTORE (real-time, fallback ke localStorage) ──
+        (async () => {
+          let expiredDate = localStorage.getItem('k_expired_date');
+          let planLabel   = localStorage.getItem('k_plan') || 'trial';
+
+          // Coba ambil dari Firestore jika online
+          if (navigator.onLine && window._fbFirestore && sid && sid !== 'DEMO' && sid !== '—') {
+            try {
+              const snap = await window._fbFirestore
+                .collection('subscriptions')
+                .doc(sid)
+                .get();
+              if (snap.exists) {
+                const sub = snap.data();
+                // expired_at bisa Timestamp Firestore atau string ISO
+                let expTs = sub.expired_at;
+                if (expTs && expTs.toDate) expTs = expTs.toDate(); // Firestore Timestamp
+                else if (expTs) expTs = new Date(expTs);
+                if (expTs) {
+                  expiredDate = expTs.toISOString().split('T')[0];
+                  localStorage.setItem('k_expired_date', expiredDate); // update cache
+                }
+                planLabel = sub.plan || planLabel;
+                localStorage.setItem('k_plan', planLabel);
+              }
+            } catch(e) {
+              // Offline / error → pakai localStorage
+              console.warn('[Akun] Gagal baca subscription dari Firestore:', e.message);
+            }
           }
-        } else if (expDateEl) {
-          expDateEl.innerText = sid === 'DEMO' ? 'Mode Demo (tidak ada expired)' : 'Belum diatur';
-          if (expSisaEl) expSisaEl.innerText = '';
-        }
+
+          // Fallback: jika belum ada, buat default 1 tahun (mode lama)
+          if (!expiredDate && sid !== 'DEMO' && sid !== '—') {
+            const exp = new Date();
+            exp.setFullYear(exp.getFullYear() + 1);
+            expiredDate = exp.toISOString().split('T')[0];
+            localStorage.setItem('k_expired_date', expiredDate);
+          }
+
+          // ── TAMPILKAN BADGE PLAN ──
+          const planColors = {
+            trial     : { bg:'rgba(99,102,241,0.08)', border:'rgba(99,102,241,0.25)', color:'#4338ca', label:'TRIAL' },
+            basic     : { bg:'rgba(14,165,233,0.08)', border:'rgba(14,165,233,0.25)', color:'#0369a1', label:'BASIC' },
+            pro       : { bg:'rgba(5,150,105,0.08)',  border:'rgba(5,150,105,0.25)',  color:'#065f46', label:'PRO ⭐' },
+            unlimited : { bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.3)',  color:'#92400e', label:'UNLIMITED 🔥' },
+          };
+          const pc = planColors[planLabel] || planColors['trial'];
+
+          // Sisipkan badge plan di atas wrap expired (jika belum ada)
+          let planBadgeEl = document.getElementById('akun-plan-badge');
+          if (!planBadgeEl) {
+            planBadgeEl = document.createElement('div');
+            planBadgeEl.id = 'akun-plan-badge';
+            planBadgeEl.className = 'rounded-2xl p-3 border flex items-center justify-between';
+            const expWrapEl = document.getElementById('akun-expired-wrap');
+            expWrapEl.parentNode.insertBefore(planBadgeEl, expWrapEl);
+          }
+          planBadgeEl.style.cssText = `background:${pc.bg};border-color:${pc.border};`;
+          planBadgeEl.innerHTML = `
+            <div>
+              <p class="text-[8px] font-black uppercase tracking-widest" style="color:${pc.color};">PAKET LANGGANAN</p>
+              <p class="text-[14px] font-black mt-0.5" style="color:${pc.color};">${pc.label}</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${pc.border};">
+              <i class="fas fa-crown" style="color:${pc.color};font-size:16px;"></i>
+            </div>`;
+
+          // ── TAMPILKAN EXPIRED DATE ──
+          const expWrap   = document.getElementById('akun-expired-wrap');
+          const expDateEl = document.getElementById('akun-expired-date');
+          const expSisaEl = document.getElementById('akun-expired-sisa');
+          const expIconEl = document.getElementById('akun-expired-icon');
+          if (expiredDate && expDateEl) {
+            const expObj  = new Date(expiredDate);
+            const today   = new Date(); today.setHours(0,0,0,0);
+            const diffMs  = expObj - today;
+            const diffDay = Math.ceil(diffMs / 86400000);
+            const months  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            const tgl     = expObj.getDate() + ' ' + months[expObj.getMonth()] + ' ' + expObj.getFullYear();
+            expDateEl.innerText = tgl;
+            if (diffDay > 30) {
+              expSisaEl.innerText              = 'Sisa ' + diffDay + ' hari lagi';
+              expWrap.style.background         = 'rgba(16,185,129,0.06)';
+              expWrap.style.borderColor        = 'rgba(16,185,129,0.2)';
+              expDateEl.style.color            = '#065f46';
+              expSisaEl.style.color            = '#059669';
+              if (expIconEl) { expIconEl.style.background='rgba(16,185,129,0.12)'; expIconEl.querySelector('i').style.color='#10b981'; expIconEl.querySelector('i').className='fas fa-calendar-check'; }
+            } else if (diffDay > 0) {
+              expSisaEl.innerText              = '⚠️ Segera habis! Sisa ' + diffDay + ' hari';
+              expWrap.style.background         = 'rgba(245,158,11,0.08)';
+              expWrap.style.borderColor        = 'rgba(245,158,11,0.3)';
+              expDateEl.style.color            = '#92400e';
+              expSisaEl.style.color            = '#b45309';
+              if (expIconEl) { expIconEl.style.background='rgba(245,158,11,0.12)'; expIconEl.querySelector('i').style.color='#d97706'; expIconEl.querySelector('i').className='fas fa-calendar-exclamation'; }
+            } else {
+              expSisaEl.innerText              = '❌ Akun sudah expired! Hubungi admin.';
+              expWrap.style.background         = 'rgba(239,68,68,0.06)';
+              expWrap.style.borderColor        = 'rgba(239,68,68,0.2)';
+              expDateEl.style.color            = '#7f1d1d';
+              expSisaEl.style.color            = '#dc2626';
+              if (expIconEl) { expIconEl.style.background='rgba(239,68,68,0.12)'; expIconEl.querySelector('i').style.color='#ef4444'; expIconEl.querySelector('i').className='fas fa-calendar-times'; }
+            }
+          } else if (expDateEl) {
+            expDateEl.innerText = sid === 'DEMO' ? 'Mode Demo' : 'Belum diatur';
+            if (expSisaEl) expSisaEl.innerText = '';
+          }
+        })();
 
         document.getElementById('akun-stat-trx').innerText    = db.transaksi.length;
         document.getElementById('akun-stat-produk').innerText = db.inventory.length;
