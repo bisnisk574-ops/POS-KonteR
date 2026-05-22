@@ -29,16 +29,28 @@
       measurementId:     "G-W8E39FLYKP"
     };
 
-    // Inisialisasi Firebase
-    firebase.initializeApp(firebaseConfig);
-    const fbAuth      = firebase.auth();
-    const fbFirestore = firebase.firestore();
-    const fbAnalytics = firebase.analytics();
-
-    // Expose ke window agar fungsi login bisa akses
-    window.FIREBASE_API_KEY = firebaseConfig.apiKey;
-    window._fbAuth      = fbAuth;
-    window._fbFirestore = fbFirestore;
+    // ===== INISIALISASI FIREBASE (safe — tunggu SDK siap) =====
+    function _initFirebase() {
+      if (typeof firebase === 'undefined') {
+        // SDK belum selesai dimuat, coba lagi 50ms kemudian
+        setTimeout(_initFirebase, 50);
+        return;
+      }
+      try {
+        // Hindari double-init kalau sudah ada app
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        window._fbAuth      = firebase.auth();
+        window._fbFirestore = firebase.firestore();
+        window.FIREBASE_API_KEY = firebaseConfig.apiKey;
+        // Analytics hanya di browser (bukan localhost)
+        try { window._fbAnalytics = firebase.analytics(); } catch(e) {}
+      } catch(e) {
+        console.error('[Firebase Init] Gagal:', e.message);
+      }
+    }
+    _initFirebase();
   </script>
   <style>
     :root { --primary: #0061C2; --bg: #F8FAFC; --slate-800: #1e293b; }
@@ -2242,20 +2254,53 @@
 
       <!-- ===== VIEW: HUTANG ===== -->
       <section id="view-hutang" class="view-section">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-black">Hutang</h3>
-          <div class="flex bg-blue-50 p-1.5 rounded-2xl gap-1 flex-1 ml-4 border border-blue-100">
-            <button onclick="setHutangTab('pelanggan')" id="btn-h-plg" class="tab-btn active text-[10px]">PELANGGAN</button>
-            <button onclick="setHutangTab('toko')" id="btn-h-toko" class="tab-btn inactive text-[10px]">TOKO KITA</button>
-            <button onclick="setHutangTab('riwayat')" id="btn-h-riwayat" class="tab-btn inactive text-[10px]">RIWAYAT BAYAR</button>
+
+        <!-- Header Card Hutang -->
+        <div class="rounded-3xl mb-5 overflow-hidden" style="background:linear-gradient(135deg,#0a1628 0%,#1a1040 50%,#2d1b69 100%);position:relative;">
+          <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse 70% 60% at 90% 0%,rgba(167,139,250,0.25) 0%,transparent 65%),radial-gradient(ellipse 50% 50% at 5% 100%,rgba(239,68,68,0.15) 0%,transparent 60%);"></div>
+          <div class="px-5 pt-5 pb-4" style="position:relative;z-index:1;">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="font-black uppercase" style="font-size:8px;color:rgba(167,139,250,0.7);letter-spacing:0.18em;">MANAJEMEN</p>
+                <h3 class="text-xl font-black text-white leading-tight">Hutang & Piutang</h3>
+              </div>
+              <button onclick="openModalManualHutang()" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-black cursor-pointer border-0" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-size:10px;box-shadow:0 4px 16px rgba(124,58,237,0.5);">
+                <i class="fas fa-plus"></i> CATAT
+              </button>
+            </div>
+            <!-- Summary cards -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl p-3" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);">
+                <p class="font-black uppercase" style="font-size:7px;color:rgba(252,165,165,0.85);letter-spacing:0.1em;margin-bottom:4px;"><i class="fas fa-user-clock mr-1"></i>PIUTANG PELANGGAN</p>
+                <p class="font-black text-white" style="font-size:14px;" id="hutang-summary-plg">Rp 0</p>
+              </div>
+              <div class="rounded-2xl p-3" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);">
+                <p class="font-black uppercase" style="font-size:7px;color:rgba(253,230,138,0.85);letter-spacing:0.1em;margin-bottom:4px;"><i class="fas fa-store mr-1"></i>HUTANG TOKO</p>
+                <p class="font-black text-white" style="font-size:14px;" id="hutang-summary-toko">Rp 0</p>
+              </div>
+            </div>
+          </div>
+          <!-- Tab Pills -->
+          <div class="flex px-4 pb-4 gap-2" style="position:relative;z-index:1;">
+            <button onclick="setHutangTab('pelanggan')" id="btn-h-plg"
+              class="flex-1 py-2.5 rounded-2xl font-black border-0 cursor-pointer"
+              style="background:rgba(239,68,68,0.85);color:white;font-size:9px;letter-spacing:0.05em;box-shadow:0 4px 12px rgba(239,68,68,0.35);">
+              <i class="fas fa-user-clock mr-1"></i>PELANGGAN
+            </button>
+            <button onclick="setHutangTab('toko')" id="btn-h-toko"
+              class="flex-1 py-2.5 rounded-2xl font-black border-0 cursor-pointer"
+              style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);font-size:9px;letter-spacing:0.05em;">
+              <i class="fas fa-store mr-1"></i>TOKO
+            </button>
+            <button onclick="setHutangTab('riwayat')" id="btn-h-riwayat"
+              class="flex-1 py-2.5 rounded-2xl font-black border-0 cursor-pointer"
+              style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);font-size:9px;letter-spacing:0.05em;">
+              <i class="fas fa-history mr-1"></i>RIWAYAT
+            </button>
           </div>
         </div>
-        <div class="mb-4">
-          <button onclick="openModalManualHutang()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-3 cursor-pointer border-0">
-            <i class="fas fa-plus-circle"></i> Catat Hutang Baru
-          </button>
-        </div>
-        <div id="hutang-list" class="space-y-4"></div>
+
+        <div id="hutang-list" class="space-y-3"></div>
       </section>
 
     </main>
@@ -2812,11 +2857,6 @@
 
     function setHutangTab(tab) {
       activeHutangTab = tab;
-      ['pelanggan','toko','riwayat'].forEach(t => {
-        const map = { pelanggan: 'plg', toko: 'toko', riwayat: 'riwayat' };
-        const btn = document.getElementById('btn-h-' + map[t]);
-        if (btn) btn.className = `tab-btn ${t === tab ? 'active' : 'inactive'} text-[10px]`;
-      });
       renderHutang(tab);
     }
 
@@ -3708,63 +3748,98 @@
     function renderHutang(tipe) {
       const list = document.getElementById('hutang-list');
 
+      // Update summary di header
+      const sumPlg  = (db.hutang||[]).filter(h=>h.tipe==='pelanggan').reduce((a,b)=>a+Number(b.jumlah||0),0);
+      const sumToko = (db.hutang||[]).filter(h=>h.tipe==='toko').reduce((a,b)=>a+Number(b.jumlah||0),0);
+      const elPlg  = document.getElementById('hutang-summary-plg');
+      const elToko = document.getElementById('hutang-summary-toko');
+      if (elPlg)  elPlg.innerText  = 'Rp ' + fmt(sumPlg);
+      if (elToko) elToko.innerText = 'Rp ' + fmt(sumToko);
+
+      // Update tab aktif style
+      const tabCfg = {
+        pelanggan: { el:'btn-h-plg',     on:'background:rgba(239,68,68,0.85);color:white;font-size:9px;letter-spacing:0.05em;box-shadow:0 4px 12px rgba(239,68,68,0.35);',    off:'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);font-size:9px;letter-spacing:0.05em;' },
+        toko:      { el:'btn-h-toko',    on:'background:rgba(245,158,11,0.85);color:white;font-size:9px;letter-spacing:0.05em;box-shadow:0 4px 12px rgba(245,158,11,0.35);',  off:'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);font-size:9px;letter-spacing:0.05em;' },
+        riwayat:   { el:'btn-h-riwayat', on:'background:rgba(167,139,250,0.85);color:white;font-size:9px;letter-spacing:0.05em;box-shadow:0 4px 12px rgba(167,139,250,0.35);',off:'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);font-size:9px;letter-spacing:0.05em;' },
+      };
+      Object.entries(tabCfg).forEach(([key, cfg]) => {
+        const btn = document.getElementById(cfg.el);
+        if (btn) btn.style.cssText = (key === tipe) ? cfg.on : cfg.off;
+      });
+
       // ===== TAB RIWAYAT BAYAR =====
       if (tipe === 'riwayat') {
         const activeFilter = window._riwayatFilter || 'semua';
         let allData = [...(db.riwayat_hutang||[])].reverse();
-        const totalSemua = allData.length;
-        const totalLunas = allData.filter(h => h.sisa_sekarang === 0).length;
+        const totalSemua   = allData.length;
+        const totalLunas   = allData.filter(h => h.sisa_sekarang === 0).length;
         const totalCicilan = allData.filter(h => h.sisa_sekarang > 0).length;
-        if (activeFilter === 'lunas') allData = allData.filter(h => h.sisa_sekarang === 0);
+        if (activeFilter === 'lunas')   allData = allData.filter(h => h.sisa_sekarang === 0);
         else if (activeFilter === 'cicilan') allData = allData.filter(h => h.sisa_sekarang > 0);
 
+        const chipStyle = (key) => activeFilter===key
+          ? 'display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:999px;font-size:10px;font-weight:800;background:#0061C2;color:white;border:1.5px solid #0061C2;cursor:pointer;white-space:nowrap;'
+          : 'display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:999px;font-size:10px;font-weight:800;background:white;color:#94A3B8;border:1.5px solid #F1F5F9;cursor:pointer;white-space:nowrap;';
+
         let html = `<div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
-            <button onclick="setRiwayatFilter('semua')" class="filter-chip flex-shrink-0 ${activeFilter==='semua'?'active':''}">Semua (${totalSemua})</button>
-            <button onclick="setRiwayatFilter('lunas')" class="filter-chip flex-shrink-0 ${activeFilter==='lunas'?'active':''}"><i class="fas fa-check-circle mr-1"></i>Lunas (${totalLunas})</button>
-            <button onclick="setRiwayatFilter('cicilan')" class="filter-chip flex-shrink-0 ${activeFilter==='cicilan'?'active':''}"><i class="fas fa-clock mr-1"></i>Cicilan (${totalCicilan})</button>
-          </div>`;
+          <button onclick="setRiwayatFilter('semua')" style="${chipStyle('semua')}">Semua (${totalSemua})</button>
+          <button onclick="setRiwayatFilter('lunas')" style="${chipStyle('lunas')}"><i class="fas fa-check-circle"></i> Lunas (${totalLunas})</button>
+          <button onclick="setRiwayatFilter('cicilan')" style="${chipStyle('cicilan')}"><i class="fas fa-clock"></i> Cicilan (${totalCicilan})</button>
+        </div>`;
 
         if (allData.length === 0) {
-          html += '<div class="text-center py-16"><i class="fas fa-file-invoice text-4xl text-slate-200 mb-3 block"></i><p class="text-[10px] opacity-40 tracking-widest uppercase font-bold">Belum ada riwayat</p></div>';
+          html += `<div class="text-center py-16">
+            <div class="w-16 h-16 rounded-3xl mx-auto mb-4 flex items-center justify-center" style="background:rgba(167,139,250,0.08);">
+              <i class="fas fa-file-invoice text-2xl" style="color:#a78bfa;opacity:0.5;"></i>
+            </div>
+            <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Belum ada riwayat</p>
+          </div>`;
           list.innerHTML = html;
           return;
         }
 
         html += allData.map(h => {
           const lunas = h.sisa_sekarang === 0;
+          const isPlg = h.tipe === 'pelanggan';
+          const accentColor = lunas ? '#10b981' : (isPlg ? '#06b6d4' : '#f59e0b');
+          const badgeBg     = lunas ? '#d1fae5' : (isPlg ? '#cffafe' : '#fef3c7');
+          const badgeText   = lunas ? '#065f46' : (isPlg ? '#164e63' : '#78350f');
+          const badgeLabel  = lunas ? 'LUNAS' : (isPlg ? 'PIUTANG' : 'HUTANG TOKO');
+          const badgeIcon   = lunas ? 'fa-check-circle' : (isPlg ? 'fa-user-clock' : 'fa-store');
           return `
-          <div class="card-premium p-4 flex flex-col gap-2 ${lunas ? 'border-l-4 border-emerald-400 bg-emerald-50/20' : 'border-l-4 ' + (h.tipe==='pelanggan' ? 'border-cyan-400' : 'border-amber-400')}">
-            <div class="flex justify-between items-start">
-              <div class="flex-1 min-w-0 pr-2">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <p class="text-xs font-black uppercase text-slate-800">${h.nama||''}</p>
-                  ${lunas ? '<span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0"><i class="fas fa-check-circle mr-0.5"></i>LUNAS</span>' : '<span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full bg-orange-100 text-orange-700 flex-shrink-0"><i class="fas fa-clock mr-0.5"></i>CICILAN</span>'}
+          <div class="bg-white rounded-2xl overflow-hidden shadow-sm" style="border:1px solid #f1f5f9;border-left:4px solid ${accentColor};">
+            <div class="p-4">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <p class="text-[12px] font-black uppercase text-slate-800">${h.nama||''}</p>
+                    <span class="px-2 py-0.5 rounded-full text-[7px] font-black uppercase flex items-center gap-1" style="background:${badgeBg};color:${badgeText};">
+                      <i class="fas ${badgeIcon}"></i>${badgeLabel}
+                    </span>
+                    ${!lunas ? `<span class="px-2 py-0.5 rounded-full text-[7px] font-black uppercase" style="background:#fff7ed;color:#9a3412;"><i class="fas fa-clock mr-0.5"></i>CICILAN</span>` : ''}
+                  </div>
+                  <p class="text-[9px] font-bold text-slate-400 uppercase">${h.tgl||''} · ${h.dompet||''}</p>
                 </div>
-                <p class="text-[8px] font-bold text-slate-400 mt-0.5 uppercase">${h.tgl||''} • ${h.dompet||''}</p>
-                <span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded-full mt-1 inline-block ${h.tipe==='pelanggan' ? 'bg-cyan-100 text-cyan-800' : 'bg-amber-100 text-amber-800'}">
-                  ${h.tipe==='pelanggan' ? 'PIUTANG' : 'HUTANG TOKO'}
-                </span>
+                <button onclick="deleteRiwayatHutang('${h.id}', ${lunas})"
+                  class="w-8 h-8 flex items-center justify-center rounded-xl cursor-pointer border-0 flex-shrink-0"
+                  style="background:#fef2f2;color:#f87171;">
+                  <i class="fas fa-trash-alt" style="font-size:10px;"></i>
+                </button>
               </div>
-              <button onclick="deleteRiwayatHutang('${h.id}', ${lunas})"
-                class="w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-400 rounded-lg cursor-pointer border-0 transition-all flex-shrink-0 mt-0.5"
-                title="Hapus riwayat ini">
-                <i class="fas fa-trash-alt text-[9px]"></i>
-              </button>
+              <div class="grid grid-cols-2 gap-2 mt-3">
+                <div class="rounded-xl p-2.5" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                  <p class="text-[7px] font-black text-emerald-500 uppercase mb-0.5">DIBAYAR</p>
+                  <p class="text-[13px] font-black text-emerald-700">Rp ${fmt(h.jumlah_bayar)}</p>
+                </div>
+                <div class="rounded-xl p-2.5" style="background:${lunas?'#f0fdf4':'#fff1f2'};border:1px solid ${lunas?'#bbf7d0':'#fecdd3'};">
+                  <p class="text-[7px] font-black uppercase mb-0.5" style="color:${lunas?'#16a34a':'#e11d48'};">SISA HUTANG</p>
+                  <p class="text-[13px] font-black" style="color:${lunas?'#15803d':'#be123c'};">
+                    ${lunas ? '<i class="fas fa-check-circle mr-1"></i>LUNAS' : 'Rp ' + fmt(h.sisa_sekarang)}
+                  </p>
+                </div>
+              </div>
+              ${h.ket ? `<p class="text-[9px] text-slate-400 font-semibold italic mt-2 px-0.5"><i class="fas fa-sticky-note mr-1"></i>${h.ket}</p>` : ''}
             </div>
-            <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <div>
-                <p class="text-[7px] text-slate-400 font-black uppercase">DIBAYAR</p>
-                <p class="text-emerald-600 font-black text-xs">Rp ${fmt(h.jumlah_bayar)}</p>
-              </div>
-              <i class="fas fa-arrow-right text-slate-300 text-[10px]"></i>
-              <div class="text-right">
-                <p class="text-[7px] text-slate-400 font-black uppercase">SISA HUTANG</p>
-                <p class="font-black text-xs ${lunas ? 'text-emerald-600' : 'text-red-500'}">
-                  ${lunas ? '<i class="fas fa-check-circle mr-1"></i>LUNAS' : 'Rp ' + fmt(h.sisa_sekarang)}
-                </p>
-              </div>
-            </div>
-            ${h.ket ? `<p class="text-[9px] text-slate-400 font-semibold italic px-0.5">Ket: ${h.ket}</p>` : ''}
           </div>`;
         }).join('');
 
@@ -3773,77 +3848,112 @@
       }
 
       // ===== TAB PELANGGAN / TOKO KITA =====
+      const isPelanggan = tipe === 'pelanggan';
+      const accentMain  = isPelanggan ? '#ef4444' : '#f59e0b';
       const aktif = db.hutang.filter(h => h.tipe === tipe);
       const lunas = (db.hutang_lunas||[]).filter(h => h.tipe === tipe);
 
       let html = '';
 
-      // Section: Hutang Aktif
+      // ── Section Aktif ──
       if (aktif.length > 0) {
-        html += aktif.map(h => `
-          <div class="card-premium p-5 flex flex-col gap-4 border-l-4 ${tipe==='pelanggan' ? 'border-red-400' : 'border-amber-400'}">
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="flex items-center gap-2 mb-0.5">
-                  <span class="w-2 h-2 rounded-full ${tipe==='pelanggan' ? 'bg-red-400' : 'bg-amber-400'} animate-pulse"></span>
-                  <p class="text-xs font-black uppercase tracking-tight text-slate-800">${h.nama||''}</p>
+        html += `<div class="space-y-3">`;
+        html += aktif.map(h => {
+          const initials = (h.nama||'?').trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+          return `
+          <div class="bg-white rounded-2xl overflow-hidden shadow-sm" style="border:1px solid #f1f5f9;border-left:4px solid ${accentMain};">
+            <div class="p-4">
+              <div class="flex items-center gap-3">
+                <!-- Avatar -->
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-[11px]"
+                  style="background:linear-gradient(135deg,${isPelanggan?'#ef4444,#f87171':'#f59e0b,#fbbf24'});">
+                  ${initials}
                 </div>
-                <p class="text-[9px] font-bold text-slate-400 uppercase ml-4">${h.tgl||''} • ${h.ket||'Manual'}</p>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[12px] font-black uppercase text-slate-800 truncate">${h.nama||''}</p>
+                  <p class="text-[9px] font-bold text-slate-400 uppercase">${h.tgl||''} · ${h.ket||'Manual'}</p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-[7px] font-black text-slate-400 uppercase">SISA</p>
+                  <p class="text-[14px] font-black" style="color:${accentMain};">Rp ${fmt(h.jumlah)}</p>
+                </div>
               </div>
-              <div class="text-right">
-                <p class="text-[7px] font-black text-slate-400 uppercase">SISA HUTANG</p>
-                <p class="text-base font-black ${tipe==='pelanggan' ? 'text-red-600' : 'text-amber-600'}">Rp ${fmt(h.jumlah)}</p>
+              <!-- Tombol aksi -->
+              <div class="grid grid-cols-3 gap-2 mt-3">
+                <button onclick="openPayHutang('${h.id}')"
+                  class="py-2.5 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"
+                  style="background:linear-gradient(135deg,#10b981,#34d399);color:white;box-shadow:0 3px 10px rgba(16,185,129,0.35);">
+                  <i class="fas fa-money-bill-wave"></i> BAYAR
+                </button>
+                <button onclick="openEditHutang('${h.id}')"
+                  class="py-2.5 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"
+                  style="background:#eff6ff;color:#2563eb;">
+                  <i class="fas fa-edit"></i> EDIT
+                </button>
+                <button onclick="deleteHutang('${h.id}')"
+                  class="py-2.5 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"
+                  style="background:#fef2f2;color:#ef4444;">
+                  <i class="fas fa-trash-alt"></i> HAPUS
+                </button>
               </div>
             </div>
-            <div class="grid grid-cols-3 gap-2">
-              <button onclick="openPayHutang('${h.id}')" class="py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"><i class="fas fa-money-bill-wave text-[8px]"></i> BAYAR</button>
-              <button onclick="openEditHutang('${h.id}')" class="py-2 bg-blue-50 text-blue-600 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"><i class="fas fa-edit text-[8px]"></i> EDIT</button>
-              <button onclick="deleteHutang('${h.id}')" class="py-2 bg-red-50 text-red-500 rounded-xl text-[9px] font-black uppercase cursor-pointer border-0 flex items-center justify-center gap-1"><i class="fas fa-trash-alt text-[8px]"></i> HAPUS</button>
-            </div>
-          </div>
-        `).join('');
+          </div>`;
+        }).join('');
+        html += `</div>`;
       } else {
-        html += `<div class="text-center py-8"><i class="fas fa-check-circle text-3xl text-emerald-300 mb-2 block"></i><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tidak ada hutang aktif</p></div>`;
+        html += `<div class="text-center py-10">
+          <div class="w-14 h-14 rounded-3xl mx-auto mb-3 flex items-center justify-center" style="background:rgba(16,185,129,0.08);">
+            <i class="fas fa-check-circle text-2xl text-emerald-400"></i>
+          </div>
+          <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Tidak ada hutang aktif</p>
+        </div>`;
       }
 
-      // Section: Hutang Lunas
+      // ── Section Lunas — TIDAK menghilang, selalu tampil ──
       if (lunas.length > 0) {
         html += `
-          <div class="mt-4">
-            <div class="flex items-center gap-2 mb-3 px-1">
-              <div class="h-px flex-1 bg-emerald-100"></div>
-              <span class="text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1">
-                <i class="fas fa-check-circle"></i> SUDAH LUNAS (${lunas.length})
-              </span>
-              <div class="h-px flex-1 bg-emerald-100"></div>
-            </div>
-            <div class="space-y-3">
-              ${lunas.map(h => `
-                <div class="card-premium p-4 border-l-4 border-emerald-400 bg-emerald-50/30 flex flex-col gap-2">
-                  <div class="flex justify-between items-center">
+        <div class="mt-5">
+          <div class="flex items-center gap-3 mb-3 px-1">
+            <div class="h-px flex-1" style="background:linear-gradient(90deg,#d1fae5,transparent);"></div>
+            <span class="text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 rounded-full" style="background:#d1fae5;color:#065f46;">
+              <i class="fas fa-check-circle"></i> SUDAH LUNAS (${lunas.length})
+            </span>
+            <div class="h-px flex-1" style="background:linear-gradient(90deg,transparent,#d1fae5);"></div>
+          </div>
+          <div class="space-y-2">
+            ${lunas.map(h => {
+              const initials2 = (h.nama||'?').trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+              return `
+              <div class="bg-white rounded-2xl overflow-hidden" style="border:1px solid #d1fae5;border-left:4px solid #10b981;">
+                <div class="p-3.5 flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-[10px]"
+                    style="background:linear-gradient(135deg,#10b981,#34d399);">
+                    ${initials2}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                      <p class="text-[11px] font-black uppercase text-slate-700 truncate">${h.nama||''}</p>
+                      <span class="px-1.5 py-0.5 rounded-full text-[6px] font-black uppercase flex-shrink-0" style="background:#d1fae5;color:#065f46;"><i class="fas fa-check"></i> LUNAS</span>
+                    </div>
+                    <p class="text-[8px] font-bold text-slate-400 uppercase">${h.lunas_tgl||''} · ${h.lunas_dompet||''}</p>
+                    ${h.ket ? `<p class="text-[8px] text-slate-400 italic">${h.ket}</p>` : ''}
+                  </div>
+                  <div class="text-right flex-shrink-0 flex items-center gap-2">
                     <div>
-                      <div class="flex items-center gap-2 mb-0.5">
-                        <i class="fas fa-check-circle text-emerald-500 text-[10px]"></i>
-                        <p class="text-xs font-black uppercase text-slate-700">${h.nama||''}</p>
-                      </div>
-                      <p class="text-[8px] font-bold text-slate-400 uppercase ml-5">LUNAS ${h.lunas_tgl||''} • ${h.lunas_dompet||''}</p>
-                      ${h.ket ? `<p class="text-[8px] text-slate-400 italic ml-5">${h.ket}</p>` : ''}
+                      <p class="text-[7px] font-black text-slate-400 uppercase">JUMLAH</p>
+                      <p class="text-[12px] font-black text-emerald-600">Rp ${fmt(h.jumlah_awal||h.jumlah)}</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <div class="text-right">
-                        <p class="text-[7px] text-slate-400 font-black uppercase">JUMLAH</p>
-                        <p class="text-sm font-black text-emerald-600">Rp ${fmt(h.jumlah_awal||h.jumlah)}</p>
-                      </div>
-                      <button onclick="deleteHutangLunas('${h.id}')" class="w-8 h-8 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-xl cursor-pointer border-0 transition-all" title="Hapus riwayat lunas">
-                        <i class="fas fa-trash-alt text-[10px]"></i>
-                      </button>
-                    </div>
+                    <button onclick="deleteHutangLunas('${h.id}')"
+                      class="w-7 h-7 flex items-center justify-center rounded-xl cursor-pointer border-0 flex-shrink-0"
+                      style="background:#fef2f2;color:#f87171;">
+                      <i class="fas fa-trash-alt" style="font-size:9px;"></i>
+                    </button>
                   </div>
                 </div>
-              `).join('')}
-            </div>
+              </div>`;
+            }).join('')}
           </div>
-        `;
+        </div>`;
       }
 
       list.innerHTML = html;
