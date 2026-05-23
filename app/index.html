@@ -565,13 +565,16 @@
         <!-- ── GLASS CARD ── -->
         <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:28px;padding:24px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 24px 64px rgba(0,0,0,0.55);">
 
-          <!-- Tab: Login / Daftar -->
+          <!-- Tab: Login / Daftar / Kasir -->
           <div class="auth-tab-wrap mb-6">
             <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">
               <i class="fas fa-right-to-bracket mr-1.5"></i>Masuk
             </button>
             <button id="tab-register" class="auth-tab inactive" onclick="switchAuthTab('register')">
               <i class="fas fa-user-plus mr-1.5"></i>Daftar
+            </button>
+            <button id="tab-kasir" class="auth-tab inactive" onclick="switchAuthTab('kasir')" style="background:transparent;color:rgba(255,255,255,0.35);">
+              <i class="fas fa-cash-register mr-1.5"></i>Kasir
             </button>
           </div>
 
@@ -643,7 +646,36 @@
             </button>
           </div>
 
-        </div>
+          <!-- ── PANEL KASIR ── -->
+          <div id="panel-kasir" class="login-panel hidden-panel space-y-3">
+            <!-- Info banner -->
+            <div style="background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-cash-register" style="color:#a78bfa;font-size:14px;flex-shrink:0;"></i>
+              <p style="font-size:10px;font-weight:700;color:rgba(196,181,253,0.9);line-height:1.4;">Login sebagai kasir — akses terbatas sesuai izin pemilik toko.</p>
+            </div>
+            <!-- Nama Toko / Kode Toko -->
+            <div class="login-input-wrap">
+              <input type="text" id="kasir-store-code" class="login-input" placeholder="Kode Toko (dari pemilik)" autocomplete="off" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+              <i class="login-input-icon fas fa-store"></i>
+            </div>
+            <!-- Username kasir -->
+            <div class="login-input-wrap">
+              <input type="text" id="kasir-username" class="login-input" placeholder="Username kasir" autocomplete="off" oninput="this.value=this.value.toLowerCase().replace(/\s/g,'')">
+              <i class="login-input-icon fas fa-user"></i>
+            </div>
+            <!-- Password kasir -->
+            <div class="login-input-wrap">
+              <input type="password" id="kasir-password" class="login-input" placeholder="Password kasir" autocomplete="current-password" onkeydown="if(event.key==='Enter')doKasirLogin()">
+              <i class="login-input-icon fas fa-key"></i>
+              <button class="login-input-eye" type="button" onclick="togglePwd('kasir-password',this)"><i class="fas fa-eye-slash"></i></button>
+            </div>
+            <!-- Tombol masuk kasir -->
+            <button id="btn-kasir-login" class="login-btn-main mt-1" onclick="doKasirLogin()" style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 55%,#c084fc 100%);box-shadow:0 10px 32px rgba(124,58,237,0.5);">
+              <span id="btn-kasir-login-text"><i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK SEBAGAI KASIR</span>
+            </button>
+          </div>
+
+        </div><!-- end glass card -->
 
         <!-- ── BOTTOM INFO ── -->
         <div class="mt-5 text-center">
@@ -660,7 +692,7 @@
           <div class="h-px flex-1" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07));"></div>
           <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style="background:rgba(255,160,0,0.09);border:1px solid rgba(255,160,0,0.18);">
             <svg width="10" height="10" viewBox="0 0 192 192" fill="none"><path d="M37 155.5L59.5 32L103 107.5L37 155.5Z" fill="#FFA000"/><path d="M103 107.5L125.5 55L155 155.5L103 107.5Z" fill="#FF6D00"/><path d="M37 155.5L96 125L155 155.5L96 172L37 155.5Z" fill="#FFCA28"/></svg>
-            <span class="text-[9px] font-black uppercase tracking-widest" style="color:rgba(255,160,0,0.7);">Firebase Auth + Firestore</span>
+            <span class="text-[9px] font-black uppercase tracking-widest" style="color:rgba(255,160,0,0.7);">KonterkuCloud.my.id</span>
           </div>
           <div class="h-px flex-1" style="background:linear-gradient(90deg,rgba(255,255,255,0.07),transparent);"></div>
         </div>
@@ -1240,6 +1272,18 @@
 
           <p class="sidebar-section-label">DATA</p>
 
+          <!-- Kelola Kasir (hanya untuk pemilik toko) -->
+          <button id="sidebar-kasir-menu" class="sidebar-menu-item" onclick="openSidebarMenu('kelola-kasir')">
+            <div class="sidebar-icon-wrap bg-violet-500/15">
+              <i class="fas fa-users-gear text-violet-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Kelola Kasir</p>
+              <p class="text-[9px] text-slate-500 font-bold">Tambah & atur akun kasir</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+          </button>
+
           <!-- Backup & Restore -->
           <button class="sidebar-menu-item" onclick="openSidebarMenu('backup')">
             <div class="sidebar-icon-wrap bg-emerald-500/15">
@@ -1435,6 +1479,86 @@
         <div id="pilih-toko-list" class="space-y-2 max-h-[55vh] overflow-y-auto"></div>
       </div>
     </div>
+
+    <!-- ===== MODAL: KELOLA KASIR ===== -->
+    <div id="modal-kelola-kasir" class="modal-overlay" style="z-index:3200;">
+      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:90vh;overflow-y:auto;">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h4 class="text-lg font-black">Kelola Kasir</h4>
+            <p class="text-[9px] text-slate-400 font-bold" id="kasir-list-subtitle">Akun kasir toko Anda</p>
+          </div>
+          <button onclick="closeModal('modal-kelola-kasir')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Kode Toko -->
+        <div class="mb-4 p-3 rounded-2xl" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;">
+          <p class="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1">Kode Toko (bagikan ke kasir)</p>
+          <div class="flex items-center gap-2">
+            <p class="text-[13px] font-black text-blue-800 tracking-widest flex-1" id="kasir-kode-toko">—</p>
+            <button onclick="copyKodeToko()" class="px-3 py-1.5 rounded-xl text-[9px] font-black text-white border-0 cursor-pointer" style="background:#0061C2;">
+              <i class="fas fa-copy mr-1"></i>Salin
+            </button>
+          </div>
+          <p class="text-[8px] text-blue-500 font-bold mt-1">* Kasir wajib memasukkan kode ini saat login</p>
+        </div>
+
+        <!-- Daftar kasir -->
+        <div id="kasir-list-container" class="space-y-2 mb-4">
+          <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin text-violet-300 text-lg block mb-2"></i>
+            <p class="text-[9px] text-slate-400 font-bold">Memuat daftar kasir...</p>
+          </div>
+        </div>
+
+        <!-- Tambah kasir baru -->
+        <div class="rounded-2xl overflow-hidden border border-violet-100" style="background:linear-gradient(135deg,#faf5ff,#f5f3ff);">
+          <div class="px-4 py-3 border-b border-violet-100" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
+            <p class="text-[10px] font-black text-white uppercase tracking-wide"><i class="fas fa-user-plus mr-2"></i>Tambah Kasir Baru</p>
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <label style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px;"><i class="fas fa-user mr-1"></i>Nama Kasir</label>
+              <input type="text" id="new-kasir-nama" class="input-premium" placeholder="Contoh: Budi" style="font-size:13px;">
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px;"><i class="fas fa-at mr-1"></i>Username</label>
+              <input type="text" id="new-kasir-username" class="input-premium" placeholder="tanpa spasi, huruf kecil" style="font-size:13px;" oninput="this.value=this.value.toLowerCase().replace(/\s/g,'')">
+              <p class="text-[8px] text-slate-400 font-bold mt-1">* Huruf kecil, tanpa spasi</p>
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px;"><i class="fas fa-key mr-1"></i>Password</label>
+              <input type="password" id="new-kasir-password" class="input-premium" placeholder="Min. 4 karakter" style="font-size:13px;">
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px;"><i class="fas fa-shield-halved mr-1"></i>Izin Akses</label>
+              <div class="space-y-2">
+                <label class="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer" style="background:white;border:1.5px solid #f1f5f9;">
+                  <input type="checkbox" id="izin-kasir-digital" checked style="width:16px;height:16px;accent-color:#7c3aed;">
+                  <div><p class="text-[11px] font-black text-slate-700">Kasir Digital & E-Wallet</p><p class="text-[8px] text-slate-400 font-bold">Input transaksi digital & ewallet</p></div>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer" style="background:white;border:1.5px solid #f1f5f9;">
+                  <input type="checkbox" id="izin-kasir-fisik" checked style="width:16px;height:16px;accent-color:#7c3aed;">
+                  <div><p class="text-[11px] font-black text-slate-700">Kasir Fisik (HP & Aksesoris)</p><p class="text-[8px] text-slate-400 font-bold">Input penjualan produk fisik</p></div>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer" style="background:white;border:1.5px solid #f1f5f9;">
+                  <input type="checkbox" id="izin-lihat-transaksi" style="width:16px;height:16px;accent-color:#7c3aed;">
+                  <div><p class="text-[11px] font-black text-slate-700">Lihat Riwayat Transaksi</p><p class="text-[8px] text-slate-400 font-bold">Bisa melihat daftar transaksi</p></div>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer" style="background:white;border:1.5px solid #f1f5f9;">
+                  <input type="checkbox" id="izin-lihat-stok" style="width:16px;height:16px;accent-color:#7c3aed;">
+                  <div><p class="text-[11px] font-black text-slate-700">Lihat Stok Produk</p><p class="text-[8px] text-slate-400 font-bold">Bisa melihat daftar stok</p></div>
+                </label>
+              </div>
+            </div>
+            <button onclick="doTambahKasir()" class="w-full py-3 rounded-xl font-black text-[12px] text-white cursor-pointer border-0 flex items-center justify-center gap-2" style="background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 6px 18px rgba(124,58,237,0.4);">
+              <i class="fas fa-plus-circle"></i> TAMBAH KASIR
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END MODAL KELOLA KASIR -->
 
     <!-- ===== MODAL: ADMIN MONITOR TOKO ===== -->
     <div id="modal-admin-toko-monitor" class="modal-overlay" style="z-index:3500;">
@@ -7759,6 +7883,481 @@
   })();
 
   console.log('[MultiToko] Modul v2 dimuat. Limits:', PLAN_STORE_LIMIT);
+
+  // ============================================================
+  // ===== MODUL KASIR STAFF - OPSI B (username/password) =======
+  // ============================================================
+
+  // Prefix kode toko dari UID admin (6 karakter pertama, uppercase)
+  function getKodeToko(uid) {
+    if (!uid || uid === 'DEMO') return '—';
+    return uid.substring(0, 6).toUpperCase();
+  }
+
+  // Tampilkan kode toko di modal kelola kasir
+  function refreshKodeToko() {
+    const uid = localStorage.getItem('k_sid') || '';
+    const kode = getKodeToko(uid);
+    const el = document.getElementById('kasir-kode-toko');
+    if (el) el.textContent = kode;
+  }
+
+  function copyKodeToko() {
+    const uid = localStorage.getItem('k_sid') || '';
+    const kode = getKodeToko(uid);
+    if (kode === '—') return;
+    navigator.clipboard.writeText(kode).then(() => {
+      Swal.fire({ title: 'Tersalin!', text: 'Kode toko ' + kode + ' disalin ke clipboard.', icon: 'success', timer: 1500, showConfirmButton: false });
+    }).catch(() => {
+      Swal.fire({ title: 'Kode Toko', text: kode, icon: 'info' });
+    });
+  }
+
+  // ─── LOAD & RENDER DAFTAR KASIR ───
+  async function loadKasirList() {
+    const uid = localStorage.getItem('k_sid');
+    if (!uid || uid === 'DEMO') return;
+
+    const container = document.getElementById('kasir-list-container');
+    const subtitle  = document.getElementById('kasir-list-subtitle');
+
+    if (container) container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-violet-300 text-lg block mb-2"></i><p class="text-[9px] text-slate-400 font-bold">Memuat...</p></div>';
+
+    try {
+      await waitMTFirebase(8000);
+      const snap = await window._fbFirestore
+        .collection('kasir_accounts')
+        .where('owner_uid', '==', uid)
+        .get();
+
+      const kasirs = [];
+      snap.forEach(doc => kasirs.push({ id: doc.id, ...doc.data() }));
+
+      if (subtitle) subtitle.textContent = kasirs.length + ' akun kasir terdaftar';
+
+      if (!kasirs.length) {
+        if (container) container.innerHTML = `
+          <div class="text-center py-5 rounded-2xl" style="background:#faf5ff;border:1px dashed #ddd6fe;">
+            <i class="fas fa-users-slash text-2xl text-violet-200 block mb-2"></i>
+            <p class="text-[10px] font-black text-violet-300">Belum ada kasir</p>
+            <p class="text-[9px] text-slate-400 font-bold mt-1">Tambah kasir pertama di bawah ini</p>
+          </div>`;
+        return;
+      }
+
+      if (container) container.innerHTML = kasirs.map(k => `
+        <div class="flex items-center gap-3 p-3 rounded-2xl" style="background:white;border:1.5px solid #f1f5f9;">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-[13px]"
+               style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
+            ${(k.nama||'?').charAt(0).toUpperCase()}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[12px] font-black text-slate-800">${k.nama || '—'}</p>
+            <p class="text-[9px] text-slate-400 font-bold">@${k.username} &nbsp;·&nbsp; ${_izinLabel(k.izin)}</p>
+          </div>
+          <div class="flex gap-1.5 flex-shrink-0">
+            <button onclick="editKasir('${k.id}')"
+              class="w-8 h-8 rounded-xl text-blue-500 border-0 cursor-pointer flex items-center justify-center"
+              style="background:#eff6ff;" title="Edit"><i class="fas fa-pen text-[10px]"></i></button>
+            <button onclick="deleteKasir('${k.id}','${(k.nama||'').replace(/'/g,"\\'")}') "
+              class="w-8 h-8 rounded-xl text-red-400 border-0 cursor-pointer flex items-center justify-center"
+              style="background:#fef2f2;" title="Hapus"><i class="fas fa-trash-alt text-[9px]"></i></button>
+          </div>
+        </div>`).join('');
+
+    } catch(e) {
+      if (container) container.innerHTML = '<p class="text-[9px] text-red-400 font-bold text-center py-3">Gagal memuat: ' + (e.message||'Error') + '</p>';
+    }
+  }
+
+  function _izinLabel(izin) {
+    if (!izin) return 'Tidak ada izin';
+    const labels = [];
+    if (izin.kasir_digital) labels.push('Digital');
+    if (izin.kasir_fisik)   labels.push('Fisik');
+    if (izin.lihat_transaksi) labels.push('Lihat TRX');
+    if (izin.lihat_stok)    labels.push('Lihat Stok');
+    return labels.length ? labels.join(' · ') : 'Hanya kasir';
+  }
+
+  // ─── BUKA MODAL KELOLA KASIR ───
+  async function openKelolaKasirModal() {
+    refreshKodeToko();
+    openModal('modal-kelola-kasir');
+    await loadKasirList();
+  }
+
+  // ─── TAMBAH KASIR BARU ───
+  async function doTambahKasir() {
+    const uid      = localStorage.getItem('k_sid');
+    const nama     = (document.getElementById('new-kasir-nama')?.value || '').trim();
+    const username = (document.getElementById('new-kasir-username')?.value || '').trim().toLowerCase();
+    const password = (document.getElementById('new-kasir-password')?.value || '');
+
+    if (!nama)     return Swal.fire('Error', 'Nama kasir harus diisi!', 'warning');
+    if (!username) return Swal.fire('Error', 'Username harus diisi!', 'warning');
+    if (!/^[a-z0-9_]+$/.test(username)) return Swal.fire('Error', 'Username hanya boleh huruf kecil, angka, dan underscore!', 'warning');
+    if (password.length < 4) return Swal.fire('Error', 'Password minimal 4 karakter!', 'warning');
+
+    const izin = {
+      kasir_digital   : document.getElementById('izin-kasir-digital')?.checked || false,
+      kasir_fisik     : document.getElementById('izin-kasir-fisik')?.checked || false,
+      lihat_transaksi : document.getElementById('izin-lihat-transaksi')?.checked || false,
+      lihat_stok      : document.getElementById('izin-lihat-stok')?.checked || false,
+    };
+
+    try {
+      await waitMTFirebase(8000);
+
+      // Cek duplikat username di toko ini
+      const dupSnap = await window._fbFirestore
+        .collection('kasir_accounts')
+        .where('owner_uid', '==', uid)
+        .where('username', '==', username)
+        .get();
+      if (!dupSnap.empty) return Swal.fire('Error', 'Username "' + username + '" sudah digunakan di toko ini!', 'warning');
+
+      const storeId = localStorage.getItem('k_active_store_id') || '';
+      // Hash sederhana password (bukan kriptografi kuat, cukup untuk use case ini)
+      const pwHash = _simpleHash(password);
+
+      await window._fbFirestore.collection('kasir_accounts').add({
+        owner_uid    : uid,
+        store_id     : storeId,
+        kode_toko    : getKodeToko(uid),
+        nama         : nama,
+        username     : username,
+        pw_hash      : pwHash,
+        izin         : izin,
+        is_active    : true,
+        created_at   : new Date(),
+      });
+
+      // Reset form
+      ['new-kasir-nama','new-kasir-username','new-kasir-password'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['izin-kasir-digital','izin-kasir-fisik','izin-lihat-transaksi','izin-lihat-stok'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.checked = (id==='izin-kasir-digital'||id==='izin-kasir-fisik');
+      });
+
+      Swal.fire({ title: '✅ Kasir Ditambahkan!', html: '<b>' + nama + '</b> (@' + username + ') berhasil didaftarkan.', icon: 'success', timer: 2000, showConfirmButton: false });
+      await loadKasirList();
+
+    } catch(e) {
+      Swal.fire('Gagal', e.message || 'Error tambah kasir', 'error');
+    }
+  }
+
+  // ─── HAPUS KASIR ───
+  async function deleteKasir(id, nama) {
+    const res = await Swal.fire({
+      title: 'Hapus Kasir "' + nama + '"?',
+      text: 'Akun kasir ini akan dihapus permanen.',
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Ya, Hapus',
+      cancelButtonText: 'Batal'
+    });
+    if (!res.isConfirmed) return;
+    try {
+      await waitMTFirebase(5000);
+      await window._fbFirestore.collection('kasir_accounts').doc(id).delete();
+      Swal.fire({ title: 'Dihapus', icon: 'success', timer: 1500, showConfirmButton: false });
+      await loadKasirList();
+    } catch(e) {
+      Swal.fire('Gagal', e.message || 'Error', 'error');
+    }
+  }
+
+  // ─── EDIT KASIR (reset password / ubah izin) ───
+  let _editKasirId = null;
+  async function editKasir(id) {
+    _editKasirId = id;
+    try {
+      await waitMTFirebase(5000);
+      const doc = await window._fbFirestore.collection('kasir_accounts').doc(id).get();
+      if (!doc.exists) return Swal.fire('Error', 'Data kasir tidak ditemukan.', 'error');
+      const k = doc.data();
+      const { value: formValues } = await Swal.fire({
+        title: '✏️ Edit Kasir: ' + (k.nama||''),
+        html: `
+          <div style="text-align:left;space-y:12px;">
+            <label style="font-size:10px;font-weight:800;color:#94a3b8;display:block;margin-bottom:4px;">Password Baru (kosongkan jika tidak diubah)</label>
+            <input id="edit-kasir-pwd" class="swal2-input" type="password" placeholder="Min. 4 karakter" style="margin:0 0 12px;width:100%;box-sizing:border-box;">
+            <label style="font-size:10px;font-weight:800;color:#94a3b8;display:block;margin-bottom:8px;">Izin Akses</label>
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;">
+              <input type="checkbox" id="edit-izin-digital" ${k.izin?.kasir_digital?'checked':''} style="width:16px;height:16px;accent-color:#7c3aed;">
+              <span style="font-size:12px;font-weight:700;">Kasir Digital & E-Wallet</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;">
+              <input type="checkbox" id="edit-izin-fisik" ${k.izin?.kasir_fisik?'checked':''} style="width:16px;height:16px;accent-color:#7c3aed;">
+              <span style="font-size:12px;font-weight:700;">Kasir Fisik</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;">
+              <input type="checkbox" id="edit-izin-trx" ${k.izin?.lihat_transaksi?'checked':''} style="width:16px;height:16px;accent-color:#7c3aed;">
+              <span style="font-size:12px;font-weight:700;">Lihat Riwayat Transaksi</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="edit-izin-stok" ${k.izin?.lihat_stok?'checked':''} style="width:16px;height:16px;accent-color:#7c3aed;">
+              <span style="font-size:12px;font-weight:700;">Lihat Stok Produk</span>
+            </label>
+          </div>`,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan',
+        confirmButtonColor: '#7c3aed',
+        cancelButtonText: 'Batal',
+        preConfirm: () => {
+          const pwd = document.getElementById('edit-kasir-pwd')?.value || '';
+          return {
+            pwd,
+            izin: {
+              kasir_digital   : document.getElementById('edit-izin-digital')?.checked || false,
+              kasir_fisik     : document.getElementById('edit-izin-fisik')?.checked || false,
+              lihat_transaksi : document.getElementById('edit-izin-trx')?.checked || false,
+              lihat_stok      : document.getElementById('edit-izin-stok')?.checked || false,
+            }
+          };
+        }
+      });
+      if (!formValues) return;
+      const updateData = { izin: formValues.izin, updated_at: new Date() };
+      if (formValues.pwd && formValues.pwd.length >= 4) {
+        updateData.pw_hash = _simpleHash(formValues.pwd);
+      } else if (formValues.pwd && formValues.pwd.length > 0) {
+        return Swal.fire('Error', 'Password minimal 4 karakter!', 'warning');
+      }
+      await window._fbFirestore.collection('kasir_accounts').doc(id).update(updateData);
+      Swal.fire({ title: 'Tersimpan!', icon: 'success', timer: 1500, showConfirmButton: false });
+      await loadKasirList();
+    } catch(e) {
+      Swal.fire('Gagal', e.message || 'Error', 'error');
+    }
+  }
+
+  // ─── SIMPLE HASH (untuk password kasir) ───
+  // Bukan kriptografi kuat, tapi cukup untuk menyembunyikan password di Firestore
+  function _simpleHash(str) {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash |= 0; // Convert to 32-bit integer
+    }
+    return 'kh_' + Math.abs(hash).toString(36) + '_' + str.length;
+  }
+
+  function _verifyHash(plain, hash) {
+    return _simpleHash(plain) === hash;
+  }
+
+  // ─── LOGIN KASIR (dari login screen) ───
+  async function doKasirLogin() {
+    const storeCode = (document.getElementById('kasir-store-code')?.value || '').trim().toUpperCase();
+    const username  = (document.getElementById('kasir-username')?.value || '').trim().toLowerCase();
+    const password  = (document.getElementById('kasir-password')?.value || '');
+
+    if (!storeCode) return showLoginError('Masukkan Kode Toko terlebih dahulu.');
+    if (!username)  return showLoginError('Masukkan username kasir.');
+    if (!password)  return showLoginError('Masukkan password.');
+
+    setLoginBtnLoading('btn-kasir-login', 'btn-kasir-login-text', true);
+
+    try {
+      // Tunggu Firebase siap
+      await waitMTFirebase(8000);
+      if (!window._fbFirestore) throw new Error('Firebase tidak siap. Cek koneksi internet.');
+
+      // Cari akun kasir berdasarkan kode_toko + username
+      const snap = await window._fbFirestore
+        .collection('kasir_accounts')
+        .where('kode_toko', '==', storeCode)
+        .where('username', '==', username)
+        .get();
+
+      if (snap.empty) throw new Error('Kode toko atau username tidak ditemukan.');
+
+      const kasirDoc = snap.docs[0];
+      const kasir    = kasirDoc.data();
+
+      if (!kasir.is_active) throw new Error('Akun kasir ini telah dinonaktifkan.');
+      if (!_verifyHash(password, kasir.pw_hash)) throw new Error('Password salah.');
+
+      // Login berhasil — set session kasir
+      const ownerUid = kasir.owner_uid;
+      const storeId  = kasir.store_id;
+
+      localStorage.setItem('k_logged', 'true');
+      localStorage.setItem('k_sid', ownerUid);               // data toko milik owner
+      localStorage.setItem('k_kasir_mode', 'true');          // flag mode kasir
+      localStorage.setItem('k_kasir_id', kasirDoc.id);
+      localStorage.setItem('k_kasir_nama', kasir.nama || username);
+      localStorage.setItem('k_kasir_username', username);
+      localStorage.setItem('k_kasir_izin', JSON.stringify(kasir.izin || {}));
+      localStorage.setItem('k_active_store_id', storeId);
+      localStorage.setItem('k_store_name', kasir.store_name || '');
+
+      // Ambil nama toko dari user_stores
+      try {
+        if (storeId) {
+          const storeSnap = await window._fbFirestore.collection('user_stores').doc(storeId).get();
+          if (storeSnap.exists) {
+            const sName = storeSnap.data().store_name || '';
+            if (sName) localStorage.setItem('k_store_name', sName);
+          }
+        }
+        // Ambil plan dari subscriptions owner
+        const subSnap = await window._fbFirestore.collection('subscriptions').doc(ownerUid).get();
+        if (subSnap.exists) {
+          const sub = subSnap.data();
+          if (sub.plan)        localStorage.setItem('k_plan', sub.plan);
+          if (sub.expired_at)  {
+            let exp = sub.expired_at;
+            if (exp && exp.toDate) exp = exp.toDate();
+            else exp = new Date(exp);
+            localStorage.setItem('k_expired_date', exp.toISOString().split('T')[0]);
+          }
+        }
+      } catch(e2) {
+        console.warn('[KasirLogin] Gagal ambil info toko/plan:', e2.message);
+      }
+
+      // Masuk ke app
+      initApp(false);
+
+      // Setelah app tampil, terapkan batasan UI kasir
+      setTimeout(applyKasirRestrictions, 1200);
+
+    } catch(e) {
+      showLoginError(e.message || 'Login kasir gagal.');
+      setLoginBtnLoading('btn-kasir-login', 'btn-kasir-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK SEBAGAI KASIR');
+    }
+  }
+
+  // ─── TERAPKAN BATASAN UI UNTUK MODE KASIR ───
+  function applyKasirRestrictions() {
+    const isKasir = localStorage.getItem('k_kasir_mode') === 'true';
+    if (!isKasir) return;
+
+    const izin = JSON.parse(localStorage.getItem('k_kasir_izin') || '{}');
+    const kasirNama = localStorage.getItem('k_kasir_nama') || 'Kasir';
+
+    // Sembunyikan sidebar menu yang tidak boleh diakses kasir
+    const hiddenMenus = ['sidebar-kasir-menu', 'sidebar-admin-section'];
+    hiddenMenus.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+
+    // Sembunyikan tab nav yang tidak diizinkan
+    if (!izin.lihat_transaksi) {
+      // Sembunyikan tombol ke halaman transaksi/riwayat jika ada
+      const navTrx = document.querySelector('[onclick*="riwayat"]');
+      if (navTrx) navTrx.style.opacity = '0.3';
+    }
+    if (!izin.lihat_stok) {
+      const navStok = document.querySelector('[onclick*="produk"]');
+      if (navStok) navStok.style.opacity = '0.3';
+    }
+    // Sembunyikan akses ke multi-toko & menu akun sensitif
+    const multitokoSection = document.getElementById('multitoko-section');
+    if (multitokoSection) multitokoSection.style.display = 'none';
+
+    // Sembunyikan menu backup, tentang (kasir tidak perlu ini)
+    // Tampilkan badge kasir di header
+    const headerEl = document.getElementById('display-store-name');
+    if (headerEl) {
+      const storeName = localStorage.getItem('k_store_name') || '';
+      headerEl.innerHTML = (storeName ? storeName + ' · ' : '') + '<span style="color:#a78bfa;font-size:11px;">👤 ' + kasirNama + '</span>';
+    }
+
+    // Tampilkan notif mode kasir
+    Swal.fire({
+      title: '👋 Halo, ' + kasirNama + '!',
+      html: 'Anda masuk sebagai <b>Kasir</b>.<br><small style="color:#94a3b8;">Akses dibatasi sesuai izin dari pemilik toko.</small>',
+      icon: 'success',
+      timer: 2500,
+      showConfirmButton: false
+    });
+  }
+
+  // ─── HOOK: Tambahkan "Kelola Kasir" di openSidebarMenu ───
+  // Extend fungsi openSidebarMenu yang sudah ada agar bisa handle 'kelola-kasir'
+  const _origOpenSidebarMenu = typeof openSidebarMenu === 'function' ? openSidebarMenu : null;
+  window.openSidebarMenu = function(menu) {
+    if (menu === 'kelola-kasir') {
+      // Hanya pemilik toko (bukan kasir) yang boleh buka
+      if (localStorage.getItem('k_kasir_mode') === 'true') {
+        Swal.fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengelola kasir.', 'warning');
+        return;
+      }
+      closeSidebar();
+      openKelolaKasirModal();
+      return;
+    }
+    if (_origOpenSidebarMenu) _origOpenSidebarMenu(menu);
+  };
+
+  // ─── PATCH switchAuthTab untuk support tab 'kasir' ───
+  const _origSwitchAuthTab = typeof switchAuthTab === 'function' ? switchAuthTab : null;
+  window.switchAuthTab = function(tab) {
+    hideLoginError();
+    const panelKasir = document.getElementById('panel-kasir');
+    const tabKasir   = document.getElementById('tab-kasir');
+
+    if (tab === 'kasir') {
+      // Sembunyikan panel lain
+      const panelLogin    = document.getElementById('panel-login');
+      const panelRegister = document.getElementById('panel-register');
+      const tabLogin      = document.getElementById('tab-login');
+      const tabRegister   = document.getElementById('tab-register');
+      if (panelLogin)    panelLogin.classList.add('hidden-panel');
+      if (panelRegister) panelRegister.classList.add('hidden-panel');
+      if (panelKasir)    panelKasir.classList.remove('hidden-panel');
+      if (tabLogin)      tabLogin.className = 'auth-tab inactive';
+      if (tabRegister)   tabRegister.className = 'auth-tab inactive';
+      if (tabKasir)      tabKasir.className = 'auth-tab active';
+      // Override warna tab kasir ke ungu
+      if (tabKasir) tabKasir.style.background = 'linear-gradient(135deg,#7c3aed,#a855f7)';
+      return;
+    }
+
+    // Reset tab kasir
+    if (panelKasir)  panelKasir.classList.add('hidden-panel');
+    if (tabKasir) {
+      tabKasir.className = 'auth-tab inactive';
+      tabKasir.style.background = 'transparent';
+    }
+    if (_origSwitchAuthTab) _origSwitchAuthTab(tab);
+  };
+
+  // ─── PATCH LOGOUT untuk bersihkan session kasir ───
+  const _origLogout = typeof logout === 'function' ? logout : null;
+  window.logout = function() {
+    Swal.fire({
+      title: 'Keluar?',
+      text: 'Anda akan keluar dari sesi ini.',
+      icon: 'question', showCancelButton: true,
+      confirmButtonText: 'Ya, Keluar',
+      cancelButtonText: 'Batal'
+    }).then(res => {
+      if (res.isConfirmed) {
+        if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
+        // Bersihkan semua data sesi termasuk kasir
+        ['k_logged','k_token','k_kasir_mode','k_kasir_id','k_kasir_nama','k_kasir_username','k_kasir_izin'].forEach(k => localStorage.removeItem(k));
+        location.reload();
+      }
+    });
+  };
+
+  // ─── AUTO-APPLY batasan kasir saat reload ───
+  document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('k_logged') === 'true' && localStorage.getItem('k_kasir_mode') === 'true') {
+      // Sudah login sebagai kasir sebelumnya, terapkan batasan setelah app load
+      setTimeout(applyKasirRestrictions, 1500);
+    }
+  });
+
+  console.log('[KasirStaff] Modul kasir staff v1 dimuat.');
   </script>
 </body>
 </html>
