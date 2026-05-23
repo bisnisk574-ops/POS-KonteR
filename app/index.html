@@ -949,7 +949,7 @@
       localStorage.setItem('k_store_name', storeName);
       if (token) localStorage.setItem('k_token', token);
 
-      // ── OTOMATIS BUAT SUBSCRIPTION TRIAL 7 HARI ──
+      // ── OTOMATIS BUAT SUBSCRIPTION TRIAL 30 HARI ──
       // Berjalan di background, tidak menghambat alur login
       createSubscription(uid, email, storeName);
 
@@ -957,7 +957,7 @@
         title: '🎉 Akun Berhasil Dibuat!',
         html: `<b>${storeName}</b> siap digunakan.<br>
                <span style="font-size:11px;color:#059669;font-weight:700;">
-                 ✅ Trial 7 hari aktif secara otomatis
+                 ✅ Trial 30 hari aktif secara otomatis
                </span><br>
                <small style="color:#94a3b8;">UID: ${uid}</small>`,
         icon: 'success', timer: 3000, showConfirmButton: false
@@ -995,7 +995,7 @@
   // ─── LEGACY handleLogin (kept for auto-login compatibility) ───
   function handleLogin() { doLogin(); }
 
-  // ─── AUTO-CREATE SUBSCRIPTION (Trial 7 hari) ───
+  // ─── AUTO-CREATE SUBSCRIPTION (Trial 30 hari) ───
   // Dipanggil saat user baru berhasil daftar.
   // Menulis dokumen ke: subscriptions/{uid}
   async function createSubscription(uid, email, storeName) {
@@ -1016,10 +1016,10 @@
         return;
       }
 
-      // Hitung tanggal trial: 7 hari dari sekarang
+      // Hitung tanggal trial: 30 hari dari sekarang
       const now      = new Date();
       const expired  = new Date(now);
-      expired.setDate(expired.getDate() + 7);
+      expired.setDate(expired.getDate() + 30);
 
       const subData = {
         uid         : uid,
@@ -1029,7 +1029,7 @@
         status      : 'active',         // active | expired | suspended
         expired_at  : expired,          // Timestamp Firestore
         created_at  : now,
-        trial_days  : 7,
+        trial_days  : 30,
         payment_ref : ''                // diisi admin saat perpanjang
       };
 
@@ -1041,7 +1041,7 @@
       // Simpan expired ke localStorage agar bisa dibaca offline
       localStorage.setItem('k_expired_date', expired.toISOString().split('T')[0]);
       localStorage.setItem('k_plan', 'trial');
-      console.log('[Subscription] Trial 7 hari berhasil dibuat untuk UID:', uid);
+      console.log('[Subscription] Trial 30 hari berhasil dibuat untuk UID:', uid);
 
     } catch(e) {
       // Gagal buat subscription tidak stop proses login
@@ -1145,7 +1145,7 @@
           </button>
 
           <!-- Laporan & Stats -->
-          <button class="sidebar-menu-item" onclick="openSidebarMenu('laporan'); setTimeout(()=>setPdfPeriode('harian'),150);">
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('laporan')">
             <div class="sidebar-icon-wrap bg-cyan-500/15">
               <i class="fas fa-chart-line text-cyan-400"></i>
             </div>
@@ -1154,6 +1154,21 @@
               <p class="text-[9px] text-slate-500 font-bold">Grafik omset & analisis</p>
             </div>
             <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+          </button>
+
+          <!-- Pelanggan -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('pelanggan')">
+            <div class="sidebar-icon-wrap bg-rose-500/15">
+              <i class="fas fa-users text-rose-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Pelanggan</p>
+              <p class="text-[9px] text-slate-500 font-bold">Kelola data pelanggan</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="sidebar-cust-badge" class="hidden px-2 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded-full">0</span>
+              <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+            </div>
           </button>
 
           <!-- ADMIN ONLY SECTION -->
@@ -1290,36 +1305,6 @@
             <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Saldo Semua Dompet</p>
             <p class="text-2xl font-black" id="akun-total-saldo">Rp 0</p>
           </div>
-
-          <!-- ===== MULTI-TOKO SECTION ===== -->
-          <div id="multitoko-section" class="rounded-2xl overflow-hidden border border-blue-100" style="background:linear-gradient(135deg,#eff6ff,#f0f9ff);">
-            <div class="px-4 pt-4 pb-3 flex items-center justify-between border-b border-blue-100">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 12px rgba(0,97,194,0.3);">
-                  <i class="fas fa-store text-white" style="font-size:13px;"></i>
-                </div>
-                <div>
-                  <p class="text-[11px] font-black text-slate-800">Kelola Toko Saya</p>
-                  <p class="text-[8px] font-bold text-slate-400" id="multitoko-plan-label">Paket: —</p>
-                </div>
-              </div>
-              <span id="multitoko-slot-badge" class="px-2 py-1 rounded-full text-[8px] font-black" style="background:rgba(0,97,194,0.1);color:#0061C2;">0/1 Toko</span>
-            </div>
-            <div class="p-4 space-y-2">
-              <div id="multitoko-list" class="space-y-2">
-                <div class="text-center py-4">
-                  <i class="fas fa-spinner fa-spin text-blue-300 text-lg block mb-2"></i>
-                  <p class="text-[9px] text-slate-400 font-bold">Memuat daftar toko...</p>
-                </div>
-              </div>
-              <button id="btn-tambah-toko" onclick="openTambahTokoModal()" class="w-full py-2.5 rounded-xl font-black text-[10px] flex items-center justify-center gap-2 cursor-pointer border-0 transition-all" style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 14px rgba(0,97,194,0.35);">
-                <i class="fas fa-plus"></i> TAMBAH TOKO BARU
-              </button>
-              <p class="text-[8px] text-center text-slate-400 font-bold" id="multitoko-upgrade-hint"></p>
-            </div>
-          </div>
-          <!-- END MULTI-TOKO SECTION -->
-
           <button onclick="closeModal('modal-sidebar-akun'); logout();" class="w-full py-3.5 bg-red-50 text-red-600 rounded-2xl font-black text-sm border-0 cursor-pointer flex items-center justify-center gap-2 hover:bg-red-100 transition-all">
             <i class="fas fa-right-from-bracket"></i> Keluar dari Akun
           </button>
@@ -1327,66 +1312,6 @@
       </div>
     </div>
 
-
-    <!-- ===== MODAL: TAMBAH TOKO BARU ===== -->
-    <div id="modal-tambah-toko" class="modal-overlay" style="z-index:3200;">
-      <div class="modal-content" style="border-radius:28px 28px 0 0;">
-        <div class="flex justify-between items-center mb-5">
-          <div>
-            <h4 class="text-lg font-black">Tambah Toko Baru</h4>
-            <p class="text-[9px] text-slate-400 font-bold" id="tambah-toko-slot-info">Slot tersedia: loading...</p>
-          </div>
-          <button onclick="closeModal('modal-tambah-toko')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="space-y-4">
-          <div>
-            <label style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px;">Nama Toko Baru</label>
-            <div class="relative">
-              <i class="fas fa-store absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[13px]"></i>
-              <input type="text" id="input-nama-toko-baru" class="input-premium pl-10" placeholder="Contoh: KonterKU Cabang 2" style="font-size:13px;">
-            </div>
-          </div>
-          <div class="bg-blue-50 rounded-2xl p-3 border border-blue-100">
-            <p class="text-[9px] text-blue-600 font-bold leading-relaxed"><i class="fas fa-circle-info text-blue-400 mr-1"></i>Toko baru memiliki data terpisah (kasir, produk, transaksi). Bisa berpindah toko kapan saja dari menu Akun.</p>
-          </div>
-          <button onclick="doTambahToko()" class="w-full py-3.5 rounded-xl font-black text-[12px] text-white cursor-pointer border-0 flex items-center justify-center gap-2 transition-all" style="background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 6px 18px rgba(0,97,194,0.4);">
-            <i class="fas fa-plus-circle"></i> BUAT TOKO BARU
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== MODAL: PILIH TOKO (SWITCH STORE) ===== -->
-    <div id="modal-pilih-toko" class="modal-overlay" style="z-index:3200;">
-      <div class="modal-content" style="border-radius:28px 28px 0 0;">
-        <div class="flex justify-between items-center mb-5">
-          <div>
-            <h4 class="text-lg font-black">Pilih Toko Aktif</h4>
-            <p class="text-[9px] text-slate-400 font-bold">Tap toko untuk berpindah</p>
-          </div>
-          <button onclick="closeModal('modal-pilih-toko')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="pilih-toko-list" class="space-y-2 max-h-[55vh] overflow-y-auto"></div>
-      </div>
-    </div>
-
-    <!-- ===== MODAL: ADMIN MONITOR TOKO ===== -->
-    <div id="modal-admin-toko-monitor" class="modal-overlay" style="z-index:3500;">
-      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:90vh;overflow-y:auto;padding:0;">
-        <div class="sticky top-0 bg-white px-5 pt-5 pb-3 border-b border-slate-100 z-10">
-          <div class="flex justify-between items-center">
-            <div>
-              <h4 class="text-base font-black">Monitor Semua Toko</h4>
-              <p class="text-[9px] text-slate-400 font-bold" id="admin-monitor-sub-label">Loading...</p>
-            </div>
-            <button onclick="closeModal('modal-admin-toko-monitor')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
-          </div>
-        </div>
-        <div id="admin-monitor-toko-list" class="px-4 py-4 space-y-3">
-          <div class="text-center py-6"><i class="fas fa-spinner fa-spin text-amber-400 text-xl"></i></div>
-        </div>
-      </div>
-    </div>
     <!-- ===== MODAL SIDEBAR: CATATAN ===== -->
     <div id="modal-sidebar-catatan" class="modal-overlay">
       <div class="modal-content" style="max-height:85vh">
@@ -1442,7 +1367,7 @@
         </div>
 
         <!-- Stats tambahan -->
-        <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="grid grid-cols-2 gap-3">
           <div class="bg-amber-50 rounded-2xl p-3 border border-amber-100">
             <div class="flex items-center gap-2 mb-1">
               <i class="fas fa-arrow-up text-emerald-500 text-[10px]"></i>
@@ -1458,60 +1383,6 @@
             <p class="text-sm font-black text-red-700" id="lap-hutang">Rp 0</p>
           </div>
         </div>
-
-        <!-- Export PDF Section -->
-        <div class="rounded-2xl overflow-hidden border border-cyan-100" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);">
-          <div class="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-cyan-100">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 12px rgba(0,97,194,0.3);">
-              <i class="fas fa-file-pdf text-white" style="font-size:13px;"></i>
-            </div>
-            <div>
-              <p class="text-[11px] font-black text-slate-800">Export Laporan PDF</p>
-              <p class="text-[8px] font-bold text-slate-400">Unduh laporan keuangan toko</p>
-            </div>
-          </div>
-          <div class="p-4 space-y-3">
-            <!-- Pilih Periode -->
-            <div>
-              <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2">Pilih Periode</p>
-              <div class="grid grid-cols-4 gap-1.5">
-                <button onclick="setPdfPeriode('harian')" id="pdf-btn-harian"
-                  class="pdf-periode-btn py-2 rounded-xl text-[9px] font-black border-2 transition-all cursor-pointer"
-                  style="background:#0061C2;color:white;border-color:#0061C2;box-shadow:0 4px 12px rgba(0,97,194,0.35);">
-                  Harian
-                </button>
-                <button onclick="setPdfPeriode('mingguan')" id="pdf-btn-mingguan"
-                  class="pdf-periode-btn py-2 rounded-xl text-[9px] font-black border-2 transition-all cursor-pointer"
-                  style="background:white;color:#64748b;border-color:#e2e8f0;">
-                  Mingguan
-                </button>
-                <button onclick="setPdfPeriode('bulanan')" id="pdf-btn-bulanan"
-                  class="pdf-periode-btn py-2 rounded-xl text-[9px] font-black border-2 transition-all cursor-pointer"
-                  style="background:white;color:#64748b;border-color:#e2e8f0;">
-                  Bulanan
-                </button>
-                <button onclick="setPdfPeriode('tahunan')" id="pdf-btn-tahunan"
-                  class="pdf-periode-btn py-2 rounded-xl text-[9px] font-black border-2 transition-all cursor-pointer"
-                  style="background:white;color:#64748b;border-color:#e2e8f0;">
-                  Tahunan
-                </button>
-              </div>
-            </div>
-            <!-- Info Periode Terpilih -->
-            <div id="pdf-periode-info" class="flex items-center gap-2 px-3 py-2 rounded-xl" style="background:rgba(0,97,194,0.07);border:1px solid rgba(0,97,194,0.15);">
-              <i class="fas fa-calendar-days text-blue-500" style="font-size:10px;"></i>
-              <p class="text-[9px] font-black text-blue-700" id="pdf-periode-label">Hari ini: <span id="pdf-periode-range">—</span></p>
-            </div>
-            <!-- Tombol Export -->
-            <button onclick="doExportPDF()" id="btn-export-pdf"
-              class="w-full py-3 rounded-xl font-black text-[11px] flex items-center justify-center gap-2 cursor-pointer border-0 transition-all"
-              style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 6px 20px rgba(0,97,194,0.4);">
-              <i class="fas fa-file-arrow-down"></i>
-              <span id="btn-export-pdf-text">UNDUH LAPORAN PDF</span>
-            </button>
-          </div>
-        </div>
-
       </div>
     </div>
 
@@ -1916,7 +1787,7 @@
                 <div>
                   <label style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:4px;">Paket</label>
                   <select id="admin-input-plan" class="input-premium" style="font-size:12px;">
-                    <option value="trial">Trial (7 hari)</option>
+                    <option value="trial">Trial (30 hari)</option>
                     <option value="basic">Basic</option>
                     <option value="pro">Pro</option>
                     <option value="unlimited">Unlimited</option>
@@ -2612,55 +2483,6 @@
           </div>
         </div>
 
-        <!-- Pantau Stok Banner -->
-        <div id="pantau-stok-banner" class="rounded-2xl p-4 mb-4 cursor-pointer" onclick="togglePantauStok()"
-          style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(251,191,36,0.15);">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(251,191,36,0.12);">
-                <i class="fas fa-satellite-dish text-amber-400 text-xs"></i>
-              </div>
-              <div>
-                <p class="font-black text-white flex items-center gap-1.5" style="font-size:11px;">
-                  Pantau Stok Realtime
-                  <span id="pantau-lock-badge" class="px-1.5 py-0.5 rounded-md font-black" style="font-size:7px;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25);display:none;">PRO</span>
-                </p>
-                <p class="text-amber-400/70 font-bold" style="font-size:9px;" id="pantau-status-txt">Tap untuk lihat status stok</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span id="pantau-alert-badge" class="hidden px-2 py-0.5 rounded-xl font-black" style="font-size:9px;background:rgba(239,68,68,0.15);color:#ef4444;">
-                <i class="fas fa-exclamation-triangle mr-1"></i><span id="pantau-alert-count">0</span> menipis
-              </span>
-              <i class="fas fa-chevron-down text-slate-500 text-xs transition-transform" id="pantau-chevron"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pantau Stok Panel (collapsed by default) -->
-        <div id="pantau-stok-panel" class="hidden mb-4 space-y-2">
-          <!-- Status summary row -->
-          <div class="grid grid-cols-3 gap-2 mb-3">
-            <div class="rounded-xl p-3 text-center" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);">
-              <p class="text-xl font-black text-emerald-500" id="ps-aman">0</p>
-              <p class="font-black text-emerald-500/70 uppercase tracking-wider" style="font-size:8px;">Aman</p>
-            </div>
-            <div class="rounded-xl p-3 text-center" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.15);">
-              <p class="text-xl font-black text-amber-400" id="ps-tipis">0</p>
-              <p class="font-black text-amber-400/70 uppercase tracking-wider" style="font-size:8px;">Menipis</p>
-            </div>
-            <div class="rounded-xl p-3 text-center" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);">
-              <p class="text-xl font-black text-red-500" id="ps-habis">0</p>
-              <p class="font-black text-red-500/70 uppercase tracking-wider" style="font-size:8px;">Habis</p>
-            </div>
-          </div>
-          <!-- Stok warning list -->
-          <div id="pantau-stok-list" class="space-y-2"></div>
-          <div class="text-center pt-1">
-            <p class="text-slate-400 font-bold" style="font-size:9px;"><i class="fas fa-sync-alt mr-1"></i>Update otomatis setiap 30 detik</p>
-          </div>
-        </div>
-
         <!-- Switch Toggle -->
         <div class="flex bg-slate-100 p-1 rounded-2xl mb-5 gap-1">
           <button id="stok-switch-digital" onclick="setStokTab('digital')"
@@ -2916,25 +2738,9 @@
           </div>
 
           <!-- Stok (hanya tampil jika fisik) -->
-          <div id="p-stok-wrap" class="space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label>Jumlah Stok</label>
-                <input type="number" id="p-stok" class="input-premium" value="0" placeholder="0">
-              </div>
-              <div>
-                <label style="display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-bell text-amber-400" style="font-size:10px;"></i>
-                  Batas Stok Minimum
-                </label>
-                <input type="number" id="p-batas-stok" class="input-premium" value="5" placeholder="5"
-                  style="border:1.5px solid rgba(251,191,36,0.4);">
-              </div>
-            </div>
-            <div class="rounded-xl p-2.5 flex items-start gap-2" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);">
-              <i class="fas fa-info-circle text-amber-400 mt-0.5" style="font-size:10px;flex-shrink:0;"></i>
-              <p style="font-size:9px;color:#92400e;font-weight:700;line-height:1.4;">Notifikasi peringatan akan muncul saat stok mencapai atau di bawah batas minimum.</p>
-            </div>
+          <div id="p-stok-wrap">
+            <label>Jumlah Stok</label>
+            <input type="number" id="p-stok" class="input-premium" value="0" placeholder="0">
           </div>
 
           <button onclick="saveProduk()" class="w-full py-4 text-white rounded-2xl font-black cursor-pointer border-0 mt-2"
@@ -3242,17 +3048,6 @@
 
     // ---- NAVIGASI ----
     function showView(v) {
-      // ── FEATURE GATE: cek paket sebelum navigasi ──
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      const rank = PLAN_RANK[plan] ?? 0;
-
-      // Hutang Piutang → minimal Basic
-      if (v === 'hutang' && rank < 1) {
-        showUpgradeModal('hutang', 'basic');
-        return;
-      }
-
       document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
       document.getElementById('view-' + v).classList.add('active');
       // Reset & re-trigger animation on nav items
@@ -3268,126 +3063,6 @@
         setWalletViewTab('list');
         renderWallets();
       }
-    }
-
-    // ── UPGRADE MODAL ──
-    const _UPGRADE_INFO = {
-      basic: {
-        color: '#0ea5e9', bg: 'rgba(14,165,233,0.08)', border: 'rgba(14,165,233,0.2)',
-        label: 'BASIC', price: 'Rp29K/bln',
-        icon: 'fa-star', iconColor: '#0ea5e9',
-        desc: 'Untuk konter kecil yang ingin mulai tertata.',
-        fitur: ['Kasir Digital', 'Manajemen Stok', 'Laporan Harian', 'Hutang Piutang'],
-      },
-      pro: {
-        color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)',
-        label: 'PRO ⭐', price: 'Rp59K/bln',
-        icon: 'fa-crown', iconColor: '#10b981',
-        desc: 'Fitur lengkap untuk konter yang berkembang pesat.',
-        fitur: ['Semua fitur Basic', 'Ekspor PDF & Laporan', 'Pantau Stok Realtime', 'Notifikasi Stok Menipis', 'Multi-Device Cloud Sync'],
-        badge: 'TERPOPULER',
-      },
-      unlimited: {
-        color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)',
-        label: 'UNLIMITED 🔥', price: 'Rp99K/bln',
-        icon: 'fa-fire', iconColor: '#f59e0b',
-        desc: 'Untuk konter besar dengan kebutuhan bisnis penuh.',
-        fitur: ['Semua Fitur Pro', 'Multi-Toko / Cabang', 'Laporan Bulanan Lanjutan', 'Ekspor Laporan PDF', 'Support Dedicated WA'],
-      },
-    };
-
-    const _FEATURE_LABEL = {
-      hutang: 'Hutang Piutang',
-      ekspor_pdf: 'Ekspor Laporan PDF',
-      pantau_stok: 'Pantau Stok Realtime',
-      notif_stok: 'Notifikasi Stok Menipis',
-      cloud_sync: 'Multi-Device Cloud Sync',
-    };
-
-    function showUpgradeModal(featureKey, minPlan, onUnlock) {
-      const info = _UPGRADE_INFO[minPlan] || _UPGRADE_INFO.basic;
-      const featureLabel = _FEATURE_LABEL[featureKey] || featureKey;
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      const rank = PLAN_RANK[plan] ?? 0;
-
-      // Buat modal overlay jika belum ada
-      let el = document.getElementById('modal-upgrade-plan');
-      if (!el) {
-        el = document.createElement('div');
-        el.id = 'modal-upgrade-plan';
-        el.className = 'modal-overlay';
-        document.body.appendChild(el);
-      }
-
-      const fiturList = info.fitur.map(f =>
-        `<div class="flex items-center gap-2">
-          <i class="fas fa-check-circle flex-shrink-0" style="color:${info.color};font-size:11px;"></i>
-          <span style="font-size:11px;font-weight:700;color:#334155;">${f}</span>
-        </div>`
-      ).join('');
-
-      const badgeHtml = info.badge
-        ? `<span class="px-2.5 py-1 rounded-full font-black text-white" style="font-size:8px;background:${info.color};">${info.badge}</span>`
-        : '';
-
-      el.innerHTML = `
-        <div class="modal-content" style="padding:0;overflow:hidden;max-width:360px;">
-          <!-- Header gradient -->
-          <div class="p-5 relative" style="background:linear-gradient(135deg,#050c1a,#0f172a);border-radius:24px 24px 0 0;">
-            <button onclick="document.getElementById('modal-upgrade-plan').classList.remove('active')"
-              class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer border-0"
-              style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);">
-              <i class="fas fa-times text-xs"></i>
-            </button>
-            <!-- Lock icon -->
-            <div class="flex flex-col items-center text-center pt-2 pb-1">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-                style="background:${info.bg};border:1.5px solid ${info.border};">
-                <i class="fas fa-lock-open" style="font-size:22px;color:${info.color};"></i>
-              </div>
-              <p class="font-black text-white" style="font-size:14px;">Fitur Terkunci 🔒</p>
-              <p style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;margin-top:4px;">
-                <span style="color:${info.color};font-weight:900;">${featureLabel}</span> membutuhkan paket
-              </p>
-            </div>
-          </div>
-          <!-- Plan card -->
-          <div class="p-4 space-y-4" style="background:#ffffff;">
-            <div class="rounded-2xl p-4" style="background:${info.bg};border:1.5px solid ${info.border};">
-              <div class="flex items-center justify-between mb-1">
-                <div class="flex items-center gap-2">
-                  <i class="fas ${info.icon}" style="color:${info.color};font-size:14px;"></i>
-                  <span class="font-black uppercase tracking-wider" style="font-size:11px;color:${info.color};">${info.label}</span>
-                </div>
-                ${badgeHtml}
-              </div>
-              <p class="font-black" style="font-size:22px;color:#0f172a;">${info.price}</p>
-              <p style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px;">${info.desc}</p>
-              <div class="border-t mt-3 pt-3 space-y-2" style="border-color:${info.border};">
-                ${fiturList}
-              </div>
-            </div>
-            <!-- CTA button -->
-            <button onclick="openUpgradeWA('${minPlan}','${featureLabel}')"
-              class="w-full py-3.5 rounded-2xl font-black flex items-center justify-center gap-2 cursor-pointer border-0"
-              style="background:linear-gradient(135deg,${info.color},${info.color}cc);color:white;font-size:12px;box-shadow:0 8px 20px ${info.bg.replace('0.08','0.35')};">
-              <i class="fab fa-whatsapp"></i> Upgrade ke ${info.label}
-            </button>
-            <p class="text-center font-bold" style="font-size:9px;color:#94a3b8;">
-              <i class="fas fa-shield-halved mr-1"></i>Aktivasi instan setelah konfirmasi admin
-            </p>
-          </div>
-        </div>`;
-      el.classList.add('active');
-    }
-
-    function openUpgradeWA(plan, fitur) {
-      const plan_str = plan.toUpperCase();
-      const storeName = localStorage.getItem('k_store_name') || 'toko saya';
-      const msg = encodeURIComponent(`Halo Admin KonterKU,\n\nSaya ingin upgrade paket ke *${plan_str}* untuk mengakses fitur *${fitur}*.\n\nNama Toko: ${storeName}\nEmail: ${localStorage.getItem('k_email')||'-'}\n\nMohon informasi selanjutnya, terima kasih!`);
-      window.open(`https://wa.me/6281234567890?text=${msg}`, '_blank');
-      document.getElementById('modal-upgrade-plan').classList.remove('active');
     }
 
     // ---- FILTER TRANSAKSI ----
@@ -4068,10 +3743,6 @@
       renderNotes();
       updateSelects();
       renderProfitChart();
-      // Check low stock after data loaded
-      setTimeout(checkLowStockNotif, 1000);
-      // Apply plan-based UI locks
-      setTimeout(applyPlanUI, 200);
     }
 
     // ---- DASHBOARD ----
@@ -4705,18 +4376,10 @@
       list.innerHTML = produk.map(p => {
         const laba = (p.jual||0) - (p.modal||0);
         const labaColor = laba >= 0 ? '#10b981' : '#ef4444';
-        const batas = p.batas_stok !== undefined ? p.batas_stok : 5;
-        const stokVal = p.stok || 0;
-        const isHabis = stokVal === 0;
-        const isTipis = !isHabis && stokVal <= batas;
-        const stokColor = isHabis ? '#ef4444' : (isTipis ? '#f59e0b' : '#10b981');
-        const stokBg = isHabis ? 'rgba(239,68,68,0.1)' : (isTipis ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)');
-        const stokIcon = isHabis ? 'fa-times-circle' : (isTipis ? 'fa-exclamation-triangle' : 'fa-cubes');
         const stokBadge = !isDigital
-          ? `<div class="flex items-center gap-1 px-2 py-1 rounded-xl" style="background:${stokBg};">
-              <i class="fas ${stokIcon} text-[8px]" style="color:${stokColor};"></i>
-              <span class="font-black text-[9px]" style="color:${stokColor};">${stokVal} unit${isTipis ? ' ⚠️' : ''}</span>
-              ${batas > 0 ? `<span style="font-size:7px;color:${stokColor};opacity:0.7;">/ min ${batas}</span>` : ''}
+          ? `<div class="flex items-center gap-1 px-2 py-1 rounded-xl" style="background:${(p.stok||0) < 5 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)'};">
+              <i class="fas fa-cubes text-[8px]" style="color:${(p.stok||0) < 5 ? '#ef4444' : '#10b981'};"></i>
+              <span class="font-black text-[9px]" style="color:${(p.stok||0) < 5 ? '#ef4444' : '#10b981'};">${p.stok||0} unit</span>
              </div>`
           : `<div class="flex items-center gap-1 px-2 py-1 rounded-xl" style="background:rgba(56,189,248,0.08);">
               <i class="fas fa-infinity text-[8px] text-cyan-400"></i>
@@ -5033,7 +4696,6 @@
       document.getElementById('p-modal').value = 0;
       document.getElementById('p-jual').value = 0;
       document.getElementById('p-stok').value = 0;
-      document.getElementById('p-batas-stok').value = 5;
       openModal('modal-produk');
       setTimeout(() => setModalTipe(t), 50);
     }
@@ -5047,7 +4709,6 @@
       document.getElementById('p-modal').value = p.modal||0;
       document.getElementById('p-jual').value = p.jual||0;
       document.getElementById('p-stok').value = p.stok||0;
-      document.getElementById('p-batas-stok').value = p.batas_stok !== undefined ? p.batas_stok : 5;
       openModal('modal-produk');
       setTimeout(() => setModalTipe(p.tipe||'digital'), 50);
     }
@@ -5059,18 +4720,15 @@
       const modal = Number(document.getElementById('p-modal').value);
       const jual = Number(document.getElementById('p-jual').value);
       const stok = Number(document.getElementById('p-stok').value);
-      const batas_stok = tipe === 'fisik' ? Number(document.getElementById('p-batas-stok').value) : 0;
       if (!nama) return Swal.fire('Error', 'Nama produk harus diisi', 'warning');
       if (id) {
         const idx = db.inventory.findIndex(p => p.id === id);
-        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok };
+        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok };
       } else {
-        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok, batas_stok });
+        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok });
       }
       closeModal('modal-produk');
       await sync();
-      // Check for low stock warnings after saving
-      checkLowStockNotif();
     }
 
     async function deleteProduk(id) {
@@ -6048,1117 +5706,6 @@
         initApp(); // skipCloudFetch=false → akan fetch Firebase setelah 1.5s
       }
     });
-
-    // ===== EXPORT PDF - LAPORAN =====
-    let _pdfPeriode = 'harian';
-
-    function setPdfPeriode(periode) {
-      _pdfPeriode = periode;
-      const btns = ['harian','mingguan','bulanan','tahunan'];
-      btns.forEach(p => {
-        const btn = document.getElementById('pdf-btn-'+p);
-        if (!btn) return;
-        if (p === periode) {
-          btn.style.background = '#0061C2';
-          btn.style.color = 'white';
-          btn.style.borderColor = '#0061C2';
-          btn.style.boxShadow = '0 4px 12px rgba(0,97,194,0.35)';
-        } else {
-          btn.style.background = 'white';
-          btn.style.color = '#64748b';
-          btn.style.borderColor = '#e2e8f0';
-          btn.style.boxShadow = 'none';
-        }
-      });
-
-      const now = new Date();
-      const fmt = d => d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
-      let label = '', range = '';
-
-      if (periode === 'harian') {
-        label = 'Hari ini';
-        range = fmt(now);
-      } else if (periode === 'mingguan') {
-        const start = new Date(now); start.setDate(now.getDate() - now.getDay() + 1);
-        const end   = new Date(start); end.setDate(start.getDate() + 6);
-        label = 'Minggu ini';
-        range = fmt(start) + ' – ' + fmt(end);
-      } else if (periode === 'bulanan') {
-        label = 'Bulan ini';
-        range = now.toLocaleDateString('id-ID', { month:'long', year:'numeric' });
-      } else if (periode === 'tahunan') {
-        label = 'Tahun ini';
-        range = now.getFullYear().toString();
-      }
-
-      const labelEl = document.getElementById('pdf-periode-label');
-      const rangeEl = document.getElementById('pdf-periode-range');
-      if (labelEl) labelEl.innerHTML = label + ': <span id="pdf-periode-range">' + range + '</span>';
-    }
-
-    // Inisialisasi label saat modal dibuka
-    document.addEventListener('DOMContentLoaded', function() {
-      setPdfPeriode('harian');
-    });
-
-    function getPdfDateRange(periode) {
-      const now = new Date();
-      let start, end;
-      if (periode === 'harian') {
-        start = new Date(now); start.setHours(0,0,0,0);
-        end   = new Date(now); end.setHours(23,59,59,999);
-      } else if (periode === 'mingguan') {
-        start = new Date(now); start.setDate(now.getDate() - now.getDay() + 1); start.setHours(0,0,0,0);
-        end   = new Date(start); end.setDate(start.getDate() + 6); end.setHours(23,59,59,999);
-      } else if (periode === 'bulanan') {
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-      } else {
-        start = new Date(now.getFullYear(), 0, 1);
-        end   = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-      }
-      return { start, end };
-    }
-
-    function doExportPDF() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      if ((PLAN_RANK[plan] ?? 0) < 2) {
-        showUpgradeModal('ekspor_pdf', 'pro');
-        return;
-      }
-      const btn     = document.getElementById('btn-export-pdf');
-      const btnText = document.getElementById('btn-export-pdf-text');
-      if (btn) { btn.disabled = true; btnText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; }
-
-      try {
-        const storeName = localStorage.getItem('k_store_name') || 'Toko';
-        const { start, end } = getPdfDateRange(_pdfPeriode);
-        const fmtDate = d => d.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
-        const fmtRp   = n => 'Rp ' + (n||0).toLocaleString('id-ID');
-
-        // Filter transaksi sesuai periode
-        const allTrx = (typeof transactions !== 'undefined' ? transactions : (JSON.parse(localStorage.getItem('k_trx')||'[]')));
-        const filtered = allTrx.filter(t => {
-          const d = new Date(t.date || t.createdAt || t.timestamp || 0);
-          return d >= start && d <= end;
-        });
-
-        let omset = 0, laba = 0, piutang = 0, hutang = 0, trxDigital = 0, trxFisik = 0;
-        filtered.forEach(t => {
-          const harga  = Number(t.harga || t.price || 0);
-          const modal  = Number(t.modal || t.cost  || 0);
-          const qty    = Number(t.qty   || t.quantity || 1);
-          omset += harga * qty;
-          laba  += (harga - modal) * qty;
-          if (t.status === 'hutang' || t.paymentStatus === 'hutang') hutang += harga * qty;
-          if (t.type === 'digital' || t.kasirMode === 'digital') trxDigital++; else trxFisik++;
-        });
-
-        const labelPeriode = { harian:'Harian', mingguan:'Mingguan', bulanan:'Bulanan', tahunan:'Tahunan' }[_pdfPeriode];
-
-        // Buat HTML laporan
-        const rows = filtered.slice(0, 50).map((t, i) => {
-          const tgl   = new Date(t.date || t.createdAt || t.timestamp || 0);
-          const nama  = t.nama || t.product || t.productName || t.name || '—';
-          const harga = Number(t.harga || t.price || 0);
-          const qty   = Number(t.qty   || t.quantity || 1);
-          const mode  = t.type === 'digital' || t.kasirMode === 'digital' ? '📱 Digital' : '📦 Fisik';
-          const stat  = t.status === 'hutang' || t.paymentStatus === 'hutang' ? '<span style="color:#ef4444;font-weight:900;">Hutang</span>' : '<span style="color:#10b981;font-weight:900;">Lunas</span>';
-          return `<tr style="border-bottom:1px solid #f1f5f9;${i%2===0?'background:#fafafa':''}">
-            <td style="padding:6px 8px;font-size:9px;color:#64748b;">${tgl.toLocaleDateString('id-ID')}</td>
-            <td style="padding:6px 8px;font-size:9px;font-weight:700;color:#1e293b;">${nama}</td>
-            <td style="padding:6px 8px;font-size:9px;text-align:center;color:#64748b;">${qty}x</td>
-            <td style="padding:6px 8px;font-size:9px;text-align:right;color:#0061C2;font-weight:700;">${fmtRp(harga*qty)}</td>
-            <td style="padding:6px 8px;font-size:9px;text-align:center;">${mode}</td>
-            <td style="padding:6px 8px;font-size:9px;text-align:center;">${stat}</td>
-          </tr>`;
-        }).join('');
-
-        const moreRow = filtered.length > 50
-          ? `<tr><td colspan="6" style="padding:8px;text-align:center;font-size:9px;color:#94a3b8;font-style:italic;">... dan ${filtered.length - 50} transaksi lainnya</td></tr>`
-          : '';
-
-        const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
-        <title>Laporan ${labelPeriode} - ${storeName}</title>
-        <style>
-          * { margin:0; padding:0; box-sizing:border-box; }
-          body { font-family:Arial,sans-serif; background:#fff; color:#1e293b; }
-          .header { background:linear-gradient(135deg,#0a1628,#0061C2); color:white; padding:24px 28px; }
-          .header h1 { font-size:20px; font-weight:900; letter-spacing:-0.5px; }
-          .header p  { font-size:10px; opacity:0.65; margin-top:4px; }
-          .badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:9px; font-weight:900;
-                   background:rgba(56,189,248,0.2); border:1px solid rgba(56,189,248,0.4); color:#7dd3fc; margin-top:8px; }
-          .section { padding:20px 28px; }
-          .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
-          .stat-card { border-radius:12px; padding:14px; border:1px solid #e2e8f0; }
-          .stat-card .lbl { font-size:8px; font-weight:900; text-transform:uppercase; color:#94a3b8; letter-spacing:0.1em; }
-          .stat-card .val { font-size:16px; font-weight:900; margin-top:4px; }
-          .stat-blue  { background:#eff6ff; } .stat-blue  .val { color:#0061C2; }
-          .stat-green { background:#f0fdf4; } .stat-green .val { color:#16a34a; }
-          .stat-violet{ background:#f5f3ff; } .stat-violet .val { color:#7c3aed; }
-          .stat-amber { background:#fffbeb; } .stat-amber .val { color:#b45309; }
-          .stat-red   { background:#fef2f2; } .stat-red   .val { color:#dc2626; }
-          h2 { font-size:11px; font-weight:900; color:#94a3b8; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
-          table { width:100%; border-collapse:collapse; }
-          thead tr { background:#f8fafc; }
-          thead th { padding:8px; font-size:9px; font-weight:900; text-transform:uppercase; color:#94a3b8; letter-spacing:0.08em; text-align:left; border-bottom:2px solid #e2e8f0; }
-          .footer { padding:16px 28px; border-top:1px solid #f1f5f9; text-align:center; font-size:8px; color:#cbd5e1; }
-        </style></head><body>
-        <div class="header">
-          <h1>📊 Laporan ${labelPeriode}</h1>
-          <p>${storeName}</p>
-          <div class="badge">📅 ${fmtDate(start)} – ${fmtDate(end)}</div>
-        </div>
-        <div class="section">
-          <div class="stat-grid">
-            <div class="stat-card stat-blue">
-              <div class="lbl">Total Omset</div>
-              <div class="val">${fmtRp(omset)}</div>
-            </div>
-            <div class="stat-card stat-green">
-              <div class="lbl">Laba Bersih</div>
-              <div class="val">${fmtRp(laba)}</div>
-            </div>
-            <div class="stat-card stat-violet">
-              <div class="lbl">Total TRX</div>
-              <div class="val">${filtered.length}</div>
-            </div>
-            <div class="stat-card stat-amber">
-              <div class="lbl">Piutang</div>
-              <div class="val">${fmtRp(piutang)}</div>
-            </div>
-            <div class="stat-card stat-red">
-              <div class="lbl">Hutang</div>
-              <div class="val">${fmtRp(hutang)}</div>
-            </div>
-            <div class="stat-card" style="background:#f0f9ff;border:1px solid #bae6fd;">
-              <div class="lbl" style="color:#0ea5e9;">Digital/Fisik</div>
-              <div class="val" style="color:#0ea5e9;font-size:13px;">${trxDigital}📱 / ${trxFisik}📦</div>
-            </div>
-          </div>
-
-          <h2>Detail Transaksi ${filtered.length > 50 ? '(50 dari '+filtered.length+')' : ''}</h2>
-          ${filtered.length === 0
-            ? '<p style="text-align:center;color:#94a3b8;font-size:11px;padding:24px 0;">Tidak ada transaksi pada periode ini.</p>'
-            : `<table><thead><tr>
-                <th>Tanggal</th><th>Produk</th><th style="text-align:center;">Qty</th>
-                <th style="text-align:right;">Total</th><th style="text-align:center;">Tipe</th><th style="text-align:center;">Status</th>
-               </tr></thead><tbody>${rows}${moreRow}</tbody></table>`}
-        </div>
-        <div class="footer">
-          Dicetak oleh KonterKU Cloud • ${new Date().toLocaleDateString('id-ID', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}
-        </div>
-        <script>window.onload=function(){window.print();}</scr`+`ipt>
-        </body></html>`;
-
-        const win = window.open('', '_blank');
-        if (!win) {
-          Swal.fire('Popup Diblokir', 'Izinkan popup di browser untuk mencetak laporan PDF.', 'warning');
-        } else {
-          win.document.write(html);
-          win.document.close();
-        }
-      } catch(e) {
-        Swal.fire('Gagal', 'Terjadi kesalahan saat membuat laporan: ' + e.message, 'error');
-      } finally {
-        if (btn) { btn.disabled = false; btnText.innerHTML = '<i class="fas fa-file-arrow-down"></i> UNDUH LAPORAN PDF'; }
-      }
-    }
-
-    // ========== PANTAU STOK REALTIME ==========
-    let _pantauOpen = false;
-    let _pantauInterval = null;
-
-    function togglePantauStok() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      if ((PLAN_RANK[plan] ?? 0) < 2) {
-        showUpgradeModal('pantau_stok', 'pro');
-        return;
-      }
-      _pantauOpen = !_pantauOpen;
-      const panel = document.getElementById('pantau-stok-panel');
-      const chevron = document.getElementById('pantau-chevron');
-      if (_pantauOpen) {
-        panel.classList.remove('hidden');
-        if (chevron) chevron.style.transform = 'rotate(180deg)';
-        renderPantauStok();
-        // Auto-refresh every 30s
-        if (!_pantauInterval) {
-          _pantauInterval = setInterval(() => { if (_pantauOpen) renderPantauStok(); }, 30000);
-        }
-      } else {
-        panel.classList.add('hidden');
-        if (chevron) chevron.style.transform = 'rotate(0deg)';
-      }
-    }
-
-    function renderPantauStok() {
-      const fisikProduk = db.inventory.filter(p => p.tipe === 'fisik');
-      let aman = 0, tipis = 0, habis = 0;
-      const warnings = [];
-
-      fisikProduk.forEach(p => {
-        const stokVal = p.stok || 0;
-        const batas = p.batas_stok !== undefined ? p.batas_stok : 5;
-        if (stokVal === 0) {
-          habis++;
-          warnings.push({ ...p, _level: 'habis' });
-        } else if (stokVal <= batas) {
-          tipis++;
-          warnings.push({ ...p, _level: 'tipis' });
-        } else {
-          aman++;
-        }
-      });
-
-      // Update summary counts
-      const elAman = document.getElementById('ps-aman');
-      const elTipis = document.getElementById('ps-tipis');
-      const elHabis = document.getElementById('ps-habis');
-      if (elAman) elAman.innerText = aman;
-      if (elTipis) elTipis.innerText = tipis;
-      if (elHabis) elHabis.innerText = habis;
-
-      // Update alert badge on banner
-      const alertCount = tipis + habis;
-      const badge = document.getElementById('pantau-alert-badge');
-      const badgeCount = document.getElementById('pantau-alert-count');
-      const statusTxt = document.getElementById('pantau-status-txt');
-      if (badge && badgeCount) {
-        if (alertCount > 0) {
-          badge.classList.remove('hidden');
-          badgeCount.innerText = alertCount;
-        } else {
-          badge.classList.add('hidden');
-        }
-      }
-      if (statusTxt) {
-        const now = new Date();
-        const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        statusTxt.innerText = alertCount > 0
-          ? `⚠️ ${alertCount} produk perlu perhatian · Update ${jam}`
-          : `✅ Semua stok aman · Update ${jam}`;
-      }
-
-      // Render warning list
-      const listEl = document.getElementById('pantau-stok-list');
-      if (!listEl) return;
-
-      if (warnings.length === 0) {
-        listEl.innerHTML = `<div class="rounded-2xl p-4 text-center" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);">
-          <i class="fas fa-check-circle text-emerald-400 text-xl mb-2"></i>
-          <p class="font-black text-emerald-500" style="font-size:11px;">Semua stok produk fisik aman!</p>
-          <p class="text-emerald-400/60 font-bold mt-1" style="font-size:9px;">Tidak ada produk yang perlu direstok.</p>
-        </div>`;
-        return;
-      }
-
-      // Sort: habis first, then tipis
-      warnings.sort((a, b) => {
-        if (a._level === 'habis' && b._level !== 'habis') return -1;
-        if (b._level === 'habis' && a._level !== 'habis') return 1;
-        return (a.stok||0) - (b.stok||0);
-      });
-
-      listEl.innerHTML = warnings.map(p => {
-        const isHabis = p._level === 'habis';
-        const batas = p.batas_stok !== undefined ? p.batas_stok : 5;
-        const pct = batas > 0 ? Math.min(100, Math.round(((p.stok||0) / batas) * 100)) : 0;
-        const barColor = isHabis ? '#ef4444' : '#f59e0b';
-        const bgColor = isHabis ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.06)';
-        const borderColor = isHabis ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)';
-        const textColor = isHabis ? '#ef4444' : '#f59e0b';
-        const icon = isHabis ? 'fa-times-circle' : 'fa-exclamation-triangle';
-        const label = isHabis ? 'HABIS' : 'MENIPIS';
-
-        return `
-        <div class="rounded-2xl p-3" style="background:${bgColor};border:1px solid ${borderColor};">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <i class="fas ${icon} flex-shrink-0" style="color:${textColor};font-size:12px;"></i>
-              <p class="font-black text-slate-800 truncate" style="font-size:11px;">${p.nama||''}</p>
-            </div>
-            <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
-              <span class="px-2 py-0.5 rounded-lg font-black" style="font-size:8px;background:${bgColor};color:${textColor};border:1px solid ${borderColor};">${label}</span>
-              <button onclick="editProduk('${p.id}')" class="w-7 h-7 rounded-xl flex items-center justify-center cursor-pointer border-0" style="background:rgba(0,97,194,0.1);color:#0061C2;">
-                <i class="fas fa-edit" style="font-size:9px;"></i>
-              </button>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="flex-1">
-              <div class="rounded-full overflow-hidden" style="height:5px;background:rgba(0,0,0,0.06);">
-                <div class="h-full rounded-full transition-all" style="width:${pct}%;background:${barColor};"></div>
-              </div>
-            </div>
-            <span class="font-black flex-shrink-0" style="font-size:10px;color:${textColor};">${p.stok||0} / min ${batas}</span>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    function checkLowStockNotif() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      if ((PLAN_RANK[plan] ?? 0) < 2) return; // hanya Pro & Unlimited
-      const fisikProduk = db.inventory.filter(p => p.tipe === 'fisik');
-      const warnings = fisikProduk.filter(p => {
-        const stokVal = p.stok || 0;
-        const batas = p.batas_stok !== undefined ? p.batas_stok : 5;
-        return stokVal <= batas;
-      });
-
-      if (warnings.length === 0) return;
-
-      // Update badge on banner (even if stok page not active)
-      const badge = document.getElementById('pantau-alert-badge');
-      const badgeCount = document.getElementById('pantau-alert-count');
-      if (badge && badgeCount) {
-        badge.classList.remove('hidden');
-        badgeCount.innerText = warnings.length;
-      }
-
-      // Show toast notification
-      const habis = warnings.filter(p => (p.stok||0) === 0);
-      const tipis = warnings.filter(p => (p.stok||0) > 0);
-      let msg = '';
-      if (habis.length) msg += `<b>${habis.length} produk habis</b>`;
-      if (tipis.length) msg += `${habis.length ? ' & ' : ''}<b>${tipis.length} produk menipis</b>`;
-
-      if (typeof Swal !== 'undefined') {
-        const Toast = Swal.mixin({
-          toast: true, position: 'top-end', showConfirmButton: false, timer: 4000,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-          }
-        });
-        Toast.fire({ icon: 'warning', title: `⚠️ Stok Menipis!`, html: msg });
-      }
-
-      // Refresh pantau panel if open
-      if (_pantauOpen) renderPantauStok();
-    }
-
-    // Hook: run checkLowStockNotif after data loaded
-    (function() {
-      const origSync = window.sync;
-      const _origRenderStok = window.renderStok;
-      // Intercept renderStok to also refresh pantau panel
-      window.renderStok = function() {
-        if (_origRenderStok) _origRenderStok.call(this);
-        // Update banner badge always
-        const fisikProduk = db.inventory.filter(p => p.tipe === 'fisik');
-        const alertCount = fisikProduk.filter(p => {
-          const stokVal = p.stok || 0;
-          const batas = p.batas_stok !== undefined ? p.batas_stok : 5;
-          return stokVal <= batas;
-        }).length;
-        const badge = document.getElementById('pantau-alert-badge');
-        const badgeCount = document.getElementById('pantau-alert-count');
-        if (badge && badgeCount) {
-          if (alertCount > 0) { badge.classList.remove('hidden'); badgeCount.innerText = alertCount; }
-          else { badge.classList.add('hidden'); }
-        }
-        if (_pantauOpen) renderPantauStok();
-      };
-    })();
-
-    // ========== APPLY PLAN UI LOCKS ==========
-    function applyPlanUI() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      const rank = PLAN_RANK[plan] ?? 0;
-
-      // ── 1. Nav Hutang: tampilkan lock dot jika < basic ──
-      const navHutang = document.getElementById('nav-hutang');
-      if (navHutang) {
-        let lockDot = navHutang.querySelector('.plan-lock-dot');
-        if (rank < 1) {
-          if (!lockDot) {
-            lockDot = document.createElement('span');
-            lockDot.className = 'plan-lock-dot';
-            lockDot.style.cssText = 'position:absolute;top:2px;right:4px;width:12px;height:12px;background:#ef4444;border-radius:50%;border:1.5px solid white;display:flex;align-items:center;justify-content:center;z-index:5;';
-            lockDot.innerHTML = '<i class="fas fa-lock" style="font-size:5px;color:white;"></i>';
-            navHutang.style.position = 'relative';
-            navHutang.appendChild(lockDot);
-          }
-        } else {
-          if (lockDot) lockDot.remove();
-        }
-      }
-
-      // ── 2. Ekspor PDF: lock overlay jika < pro ──
-      const btnPdf = document.getElementById('btn-export-pdf');
-      if (btnPdf) {
-        if (rank < 2) {
-          btnPdf.style.position = 'relative';
-          btnPdf.style.overflow = 'hidden';
-          let lockLayer = btnPdf.querySelector('.pdf-lock-layer');
-          if (!lockLayer) {
-            lockLayer = document.createElement('div');
-            lockLayer.className = 'pdf-lock-layer';
-            lockLayer.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;cursor:pointer;';
-            lockLayer.innerHTML = '<i class="fas fa-lock" style="color:white;font-size:12px;"></i><span style="color:white;font-size:10px;font-weight:900;">Perlu Paket PRO ⭐</span>';
-            btnPdf.appendChild(lockLayer);
-          }
-        } else {
-          const lockLayer = btnPdf.querySelector('.pdf-lock-layer');
-          if (lockLayer) lockLayer.remove();
-        }
-      }
-
-      // ── 3. Banner pantau stok: badge PRO jika < pro ──
-      const lockBadge = document.getElementById('pantau-lock-badge');
-      const pantauStatusTxt = document.getElementById('pantau-status-txt');
-      if (lockBadge) {
-        if (rank < 2) {
-          lockBadge.style.display = 'inline';
-          if (pantauStatusTxt) pantauStatusTxt.innerText = '🔒 Tersedia di Paket Pro';
-        } else {
-          lockBadge.style.display = 'none';
-          if (pantauStatusTxt && pantauStatusTxt.innerText.includes('Tersedia'))
-            pantauStatusTxt.innerText = 'Tap untuk lihat status stok';
-        }
-      }
-
-      // ── 4. View hutang: paywall blur overlay jika < basic ──
-      const viewHutang = document.getElementById('view-hutang');
-      if (viewHutang) {
-        let hutangWall = document.getElementById('hutang-paywall');
-        if (rank < 1) {
-          if (!hutangWall) {
-            hutangWall = document.createElement('div');
-            hutangWall.id = 'hutang-paywall';
-            hutangWall.style.cssText = 'position:absolute;inset:0;z-index:50;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);background:rgba(5,12,26,0.82);border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;';
-            hutangWall.innerHTML = `
-              <div style="width:64px;height:64px;border-radius:20px;background:rgba(14,165,233,0.12);border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-lock" style="font-size:24px;color:#0ea5e9;"></i>
-              </div>
-              <div style="text-align:center;">
-                <p style="font-size:16px;font-weight:900;color:white;margin-bottom:6px;">Hutang Piutang</p>
-                <p style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;line-height:1.5;">Fitur ini tersedia mulai paket<br><span style="color:#0ea5e9;font-weight:900;">BASIC — Rp29K/bulan</span></p>
-              </div>
-              <button onclick="showUpgradeModal('hutang','basic')"
-                style="padding:14px 32px;border-radius:16px;border:0;background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:white;font-weight:900;font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 24px rgba(14,165,233,0.4);">
-                <i class="fas fa-arrow-up-right-dots mr-2"></i>Upgrade ke Basic
-              </button>
-              <p style="font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;text-align:center;">Aktivasi instan · Bayar via transfer / e-wallet</p>`;
-            viewHutang.style.position = 'relative';
-            viewHutang.appendChild(hutangWall);
-          }
-        } else {
-          if (hutangWall) hutangWall.remove();
-        }
-      }
-    }
-
-  </script>
-
-  <!-- ========================================================
-       MODUL MULTI-TOKO - KonterKU Cloud v2
-       1 UID bisa punya beberapa toko sesuai paket:
-         Trial/Basic : 1 toko | Pro : 3 toko | Unlimited : 10 toko
-  ======================================================== -->
-  <script>
-  // =====================================================
-  // KONFIGURASI PAKET
-  // =====================================================
-  const PLAN_STORE_LIMIT = { trial:1, basic:1, pro:3, unlimited:10 };
-  const PLAN_LABELS = { trial:'Trial', basic:'Basic', pro:'Pro ⭐', unlimited:'Unlimited 🚀' };
-
-  // =====================================================
-  // UTILITAS: Tunggu Firebase benar-benar siap
-  // Menggunakan waitFirebase() bawaan app utama (event-based)
-  // + fallback polling _fbFirestore.collection untuk pastikan query bisa jalan
-  // =====================================================
-  function waitMTFirebase(timeoutMs = 15000) {
-    return new Promise((resolve, reject) => {
-      const deadline = Date.now() + timeoutMs;
-
-      function check() {
-        // Cek flag dari app utama (_fbReady) DAN _fbFirestore tersedia
-        if (window._fbReady && window._fbFirestore && typeof window._fbFirestore.collection === 'function') {
-          resolve();
-          return;
-        }
-        if (Date.now() > deadline) {
-          reject(new Error('Firebase timeout — tidak siap dalam ' + (timeoutMs/1000) + 's'));
-          return;
-        }
-        setTimeout(check, 200);
-      }
-
-      // Jika sudah siap langsung resolve
-      if (window._fbReady && window._fbFirestore && typeof window._fbFirestore.collection === 'function') {
-        resolve();
-      } else {
-        // Dengerin event firebaseReady dari app utama, tapi tetap polling sebagai fallback
-        const onReady = () => { clearTimeout(timer); setTimeout(check, 100); };
-        window.addEventListener('firebaseReady', onReady, { once: true });
-        const timer = setTimeout(() => {
-          window.removeEventListener('firebaseReady', onReady);
-          reject(new Error('Firebase timeout'));
-        }, timeoutMs);
-        // Juga mulai polling sekarang (jaga-jaga event sudah lewat)
-        setTimeout(check, 300);
-      }
-    });
-  }
-
-  // =====================================================
-  // FIRESTORE HELPERS
-  // =====================================================
-  async function getUserStores(uid) {
-    await waitMTFirebase();
-    try {
-      const snap = await window._fbFirestore
-        .collection('user_stores')
-        .where('uid', '==', uid)
-        .orderBy('created_at', 'asc')
-        .get();
-      const stores = [];
-      snap.forEach(doc => stores.push({ id: doc.id, ...doc.data() }));
-      return stores;
-    } catch(e) {
-      // Index mungkin belum ada — coba tanpa orderBy sebagai fallback
-      if (e.code === 'failed-precondition' || e.message.includes('index')) {
-        try {
-          const snap2 = await window._fbFirestore
-            .collection('user_stores')
-            .where('uid', '==', uid)
-            .get();
-          const stores = [];
-          snap2.forEach(doc => stores.push({ id: doc.id, ...doc.data() }));
-          // Sort di client
-          stores.sort((a,b) => {
-            const ta = a.created_at ? (a.created_at.toDate ? a.created_at.toDate().getTime() : new Date(a.created_at).getTime()) : 0;
-            const tb = b.created_at ? (b.created_at.toDate ? b.created_at.toDate().getTime() : new Date(b.created_at).getTime()) : 0;
-            return ta - tb;
-          });
-          return stores;
-        } catch(e2) {
-          console.warn('[MultiToko] getUserStores fallback error:', e2.message);
-          return [];
-        }
-      }
-      console.warn('[MultiToko] getUserStores error:', e.message);
-      return [];
-    }
-  }
-
-  async function createStore(uid, email, storeName) {
-    await waitMTFirebase();
-    const storeId = 'store_' + uid.substring(0,8) + '_' + Date.now();
-    const storeData = {
-      uid, email,
-      store_name : storeName,
-      created_at : new Date(),
-      is_active  : true,
-      last_sync  : null,
-      data       : {
-        dompet:[], transaksi:[], inventory:[],
-        hutang:[], hutang_lunas:[], pelanggan:[],
-        mutasi:[], notes:[], riwayat_hutang:[]
-      }
-    };
-    await window._fbFirestore.collection('user_stores').doc(storeId).set(storeData);
-    return storeId;
-  }
-
-  async function saveCurrentStoreData(storeId, dbData) {
-    if (!storeId || !dbData) return;
-    try {
-      await waitMTFirebase(5000);
-      await window._fbFirestore.collection('user_stores').doc(storeId).update({
-        data      : dbData,
-        last_sync : new Date()
-      });
-    } catch(e) {
-      console.warn('[MultiToko] saveCurrentStoreData error:', e.message);
-    }
-  }
-
-  async function loadStoreData(storeId) {
-    await waitMTFirebase();
-    const doc = await window._fbFirestore.collection('user_stores').doc(storeId).get();
-    if (!doc.exists) return null;
-    return doc.data();
-  }
-
-  // =====================================================
-  // UI: RENDER DAFTAR TOKO DI MODAL AKUN
-  // =====================================================
-  async function renderMultiTokoSection() {
-    const uid  = localStorage.getItem('k_sid');
-    const plan = localStorage.getItem('k_plan') || 'trial';
-    if (!uid) return;
-
-    const maxStore       = PLAN_STORE_LIMIT[plan] || 1;
-    const planLabel      = PLAN_LABELS[plan] || plan;
-    const activeStoreId  = localStorage.getItem('k_active_store_id') || '';
-
-    // Tampilkan loading
-    const listEl = document.getElementById('multitoko-list');
-    if (listEl) listEl.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-blue-300 text-lg block mb-2"></i><p class="text-[9px] text-slate-400 font-bold">Memuat daftar toko...</p></div>';
-
-    let stores = [];
-    try {
-      stores = await getUserStores(uid);
-    } catch(e) {
-      console.warn('[MultiToko] render - gagal load stores:', e.message);
-    }
-
-    // Badge slot & label paket
-    const slotBadge  = document.getElementById('multitoko-slot-badge');
-    const planLbl    = document.getElementById('multitoko-plan-label');
-    const hintEl     = document.getElementById('multitoko-upgrade-hint');
-    const btnTambah  = document.getElementById('btn-tambah-toko');
-
-    if (slotBadge) slotBadge.textContent = stores.length + '/' + maxStore + ' Toko';
-    if (planLbl)   planLbl.textContent   = 'Paket: ' + planLabel;
-
-    const bisaTambah = stores.length < maxStore;
-    if (btnTambah) {
-      btnTambah.style.opacity = bisaTambah ? '1' : '0.55';
-      btnTambah.style.cursor  = bisaTambah ? 'pointer' : 'not-allowed';
-      btnTambah.onclick       = bisaTambah ? openTambahTokoModal : () => showUpgradeHintToko(plan);
-    }
-    if (hintEl) {
-      if (!bisaTambah && plan !== 'unlimited') {
-        const next = (plan === 'trial' || plan === 'basic') ? 'pro' : 'unlimited';
-        hintEl.textContent = '🔒 Upgrade ke ' + next.toUpperCase() + ' untuk ' + PLAN_STORE_LIMIT[next] + ' toko';
-        hintEl.style.color = '#f59e0b';
-      } else {
-        hintEl.textContent = '';
-      }
-    }
-
-    // Render list toko
-    if (!listEl) return;
-    if (!stores.length) {
-      listEl.innerHTML = `
-        <div class="text-center py-5">
-          <i class="fas fa-store-slash text-2xl text-slate-200 block mb-2"></i>
-          <p class="text-[9px] text-slate-400 font-bold">Belum ada toko. Buat toko pertama Anda!</p>
-        </div>`;
-      return;
-    }
-
-    listEl.innerHTML = stores.map(s => {
-      const isActive  = s.id === activeStoreId;
-      const initial   = (s.store_name || '?').charAt(0).toUpperCase();
-      const trxCount  = (s.data && s.data.transaksi)  ? s.data.transaksi.length  : 0;
-      const prodCount = (s.data && s.data.inventory)  ? s.data.inventory.length  : 0;
-      return `
-      <div class="flex items-center gap-3 p-3 rounded-2xl"
-           style="background:${isActive ? 'linear-gradient(135deg,#eff6ff,#dbeafe)' : 'white'};border:${isActive ? '1.5px solid #93c5fd' : '1px solid #f1f5f9'};">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-[11px]"
-             style="background:${isActive ? 'linear-gradient(135deg,#0061C2,#38BDF8)' : 'linear-gradient(135deg,#94a3b8,#64748b)'};">
-          ${initial}
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <p class="text-[12px] font-black text-slate-800 truncate">${s.store_name || '—'}</p>
-            ${isActive ? '<span class="px-1.5 py-0.5 rounded-full text-[7px] font-black text-white flex-shrink-0" style="background:#0061C2;">AKTIF</span>' : ''}
-          </div>
-          <p class="text-[8px] text-slate-400 font-bold">${trxCount} trx &nbsp;·&nbsp; ${prodCount} produk</p>
-        </div>
-        <div class="flex gap-1.5 flex-shrink-0">
-          ${!isActive
-            ? `<button onclick="switchToStore('${s.id}','${s.store_name.replace(/'/g,"\\'")}')"
-                       class="px-2.5 py-1.5 rounded-xl text-[8px] font-black text-white border-0 cursor-pointer"
-                       style="background:#0061C2;">Aktifkan</button>`
-            : ''}
-          <button onclick="confirmDeleteStore('${s.id}','${s.store_name.replace(/'/g,"\\'")}')"
-                  class="w-7 h-7 rounded-xl text-red-400 border-0 cursor-pointer flex items-center justify-center"
-                  style="background:#fef2f2;">
-            <i class="fas fa-trash-alt text-[9px]"></i>
-          </button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  function showUpgradeHintToko(plan) {
-    const next = (plan === 'trial' || plan === 'basic') ? 'Pro' : 'Unlimited';
-    Swal.fire({
-      title : '🔒 Batas Toko Tercapai',
-      html  : 'Paket <b>' + (PLAN_LABELS[plan]||plan) + '</b> hanya untuk <b>' + (PLAN_STORE_LIMIT[plan]||1) + ' toko</b>.<br><br>Upgrade ke <b>' + next + '</b> untuk lebih banyak toko!',
-      icon  : 'info',
-      confirmButtonText : 'Hubungi Admin',
-      confirmButtonColor: '#0061C2',
-      cancelButtonText  : 'Nanti',
-      showCancelButton  : true
-    }).then(r => { if (r.isConfirmed) window.open('https://wa.me/62895621263666','_blank'); });
-  }
-
-  // =====================================================
-  // UI: MODAL TAMBAH TOKO
-  // =====================================================
-  function openTambahTokoModal() {
-    const plan = localStorage.getItem('k_plan') || 'trial';
-    const max  = PLAN_STORE_LIMIT[plan] || 1;
-    const el   = document.getElementById('tambah-toko-slot-info');
-    if (el) el.textContent = 'Paket ' + (PLAN_LABELS[plan]||plan) + ' — maks. ' + max + ' toko';
-    const inp = document.getElementById('input-nama-toko-baru');
-    if (inp) inp.value = '';
-    openModal('modal-tambah-toko');
-  }
-
-  // =====================================================
-  // ACTION: BUAT TOKO BARU
-  // =====================================================
-  async function doTambahToko() {
-    const uid   = localStorage.getItem('k_sid');
-    const email = localStorage.getItem('k_email') || '';
-    const plan  = localStorage.getItem('k_plan') || 'trial';
-    const max   = PLAN_STORE_LIMIT[plan] || 1;
-    const nama  = (document.getElementById('input-nama-toko-baru')?.value || '').trim();
-
-    if (!nama) { Swal.fire('Error','Nama toko harus diisi!','warning'); return; }
-
-    let stores = [];
-    try { stores = await getUserStores(uid); } catch(e) {}
-    if (stores.length >= max) { closeModal('modal-tambah-toko'); showUpgradeHintToko(plan); return; }
-
-    // Simpan data toko aktif saat ini
-    const curId = localStorage.getItem('k_active_store_id');
-    if (curId && typeof window.db !== 'undefined') {
-      try { await saveCurrentStoreData(curId, window.db); } catch(e) {}
-    }
-
-    try {
-      if (typeof showSyncToast === 'function') showSyncToast('saving','MEMBUAT TOKO BARU...');
-      const newId = await createStore(uid, email, nama);
-
-      if (stores.length === 0) {
-        localStorage.setItem('k_active_store_id', newId);
-        localStorage.setItem('k_store_name', nama);
-        ['display-store-name','sidebar-store-name','akun-store-name-display'].forEach(id => {
-          const el = document.getElementById(id); if (el) el.textContent = nama;
-        });
-      }
-
-      if (typeof showSyncToast === 'function') showSyncToast('ok','TOKO DIBUAT ✓');
-      closeModal('modal-tambah-toko');
-      Swal.fire({
-        title:'🎉 Toko Berhasil Dibuat!',
-        html :'<b>' + nama + '</b> siap digunakan.',
-        icon :'success', timer:2500, showConfirmButton:false
-      }).then(() => renderMultiTokoSection());
-    } catch(e) {
-      if (typeof showSyncToast === 'function') showSyncToast('error','GAGAL BUAT TOKO');
-      Swal.fire('Gagal', e.message || 'Error membuat toko.', 'error');
-    }
-  }
-
-  // =====================================================
-  // ACTION: SWITCH / PINDAH TOKO
-  // =====================================================
-  async function switchToStore(storeId, storeName) {
-    const currentId = localStorage.getItem('k_active_store_id');
-    if (storeId === currentId) {
-      Swal.fire({ title:'Toko Sudah Aktif', text: storeName + ' sedang aktif.', icon:'info', timer:1500, showConfirmButton:false });
-      return;
-    }
-
-    const res = await Swal.fire({
-      title :'Pindah ke ' + storeName + '?',
-      html  :'Data toko saat ini akan disimpan, lalu beralih ke <b>' + storeName + '</b>.',
-      icon  :'question',
-      showCancelButton  :true,
-      confirmButtonText :'Ya, Pindah',
-      cancelButtonText  :'Batal',
-      confirmButtonColor:'#0061C2'
-    });
-    if (!res.isConfirmed) return;
-
-    // Simpan toko lama
-    if (currentId && typeof window.db !== 'undefined') {
-      try {
-        if (typeof showSyncToast === 'function') showSyncToast('saving','MENYIMPAN DATA TOKO LAMA...');
-        await saveCurrentStoreData(currentId, window.db);
-      } catch(e) { console.warn('[MultiToko] simpan toko lama gagal:', e.message); }
-    }
-
-    // Load toko baru
-    try {
-      if (typeof showSyncToast === 'function') showSyncToast('saving','MEMUAT ' + storeName.toUpperCase() + '...');
-      const doc = await loadStoreData(storeId);
-      if (!doc) { Swal.fire('Error','Data toko tidak ditemukan.','error'); return; }
-
-      const d = doc.data || {};
-      if (typeof window.db !== 'undefined') {
-        window.db = {
-          dompet        : d.dompet         || [],
-          transaksi     : d.transaksi       || [],
-          inventory     : d.inventory       || [],
-          hutang        : d.hutang          || [],
-          hutang_lunas  : d.hutang_lunas    || [],
-          pelanggan     : d.pelanggan       || [],
-          mutasi        : d.mutasi          || [],
-          notes         : d.notes          || [],
-          riwayat_hutang: d.riwayat_hutang  || []
-        };
-        if (typeof saveLocalData === 'function') saveLocalData();
-        if (typeof renderAll    === 'function') renderAll();
-      }
-
-      localStorage.setItem('k_active_store_id', storeId);
-      localStorage.setItem('k_store_name', storeName);
-      ['display-store-name','sidebar-store-name','akun-store-name-display'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.textContent = storeName;
-      });
-
-      if (typeof showSyncToast === 'function') showSyncToast('ok','TOKO AKTIF: ' + storeName.toUpperCase());
-      closeModal('modal-sidebar-akun');
-      renderMultiTokoSection();
-      Swal.fire({ title:'✅ Toko Aktif: ' + storeName, text:'Data berhasil dimuat.', icon:'success', timer:2000, showConfirmButton:false });
-    } catch(e) {
-      if (typeof showSyncToast === 'function') showSyncToast('error','GAGAL MUAT TOKO');
-      Swal.fire('Gagal','Gagal memuat toko: ' + (e.message || 'Error'),'error');
-    }
-  }
-
-  // =====================================================
-  // ACTION: HAPUS TOKO
-  // =====================================================
-  async function confirmDeleteStore(storeId, storeName) {
-    const activeId = localStorage.getItem('k_active_store_id');
-    if (storeId === activeId) {
-      Swal.fire('Tidak Bisa','Toko aktif tidak bisa dihapus. Pindah ke toko lain dulu.','warning');
-      return;
-    }
-    const res = await Swal.fire({
-      title:'Hapus Toko "' + storeName + '"?',
-      html :'Semua data toko ini akan <b>dihapus permanen</b>!',
-      icon :'warning',
-      showCancelButton  :true,
-      confirmButtonText :'Ya, Hapus Permanen',
-      cancelButtonText  :'Batal',
-      confirmButtonColor:'#ef4444'
-    });
-    if (!res.isConfirmed) return;
-    try {
-      await waitMTFirebase();
-      await window._fbFirestore.collection('user_stores').doc(storeId).delete();
-      Swal.fire({ title:'Toko Dihapus', icon:'success', timer:1800, showConfirmButton:false });
-      renderMultiTokoSection();
-    } catch(e) { Swal.fire('Gagal', e.message || 'Error hapus toko','error'); }
-  }
-
-  // =====================================================
-  // ADMIN: Monitor semua toko semua user
-  // =====================================================
-  async function adminMonitorAllStores() {
-    if (typeof isAdminUser === 'function' && !isAdminUser()) {
-      Swal.fire('Akses Ditolak','Anda bukan admin.','error'); return;
-    }
-    openModal('modal-admin-toko-monitor');
-    const listEl  = document.getElementById('admin-monitor-toko-list');
-    const labelEl = document.getElementById('admin-monitor-sub-label');
-    if (listEl) listEl.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-amber-400 text-2xl"></i><p class="text-[10px] text-slate-400 mt-2 font-bold">Memuat semua toko...</p></div>';
-
-    try {
-      await waitMTFirebase();
-      const snap = await window._fbFirestore.collection('user_stores').get();
-      const allStores = [];
-      snap.forEach(doc => allStores.push({ id: doc.id, ...doc.data() }));
-      allStores.sort((a,b) => {
-        const ta = a.created_at ? (a.created_at.toDate ? a.created_at.toDate().getTime() : 0) : 0;
-        const tb = b.created_at ? (b.created_at.toDate ? b.created_at.toDate().getTime() : 0) : 0;
-        return tb - ta;
-      });
-
-      if (labelEl) labelEl.textContent = 'Total: ' + allStores.length + ' toko dari semua user';
-      if (!allStores.length) {
-        if (listEl) listEl.innerHTML = '<div class="text-center py-8"><p class="text-[10px] text-slate-400 font-bold">Belum ada toko terdaftar.</p></div>';
-        return;
-      }
-
-      // Group by UID
-      const byUid = {};
-      allStores.forEach(s => { if (!byUid[s.uid]) byUid[s.uid] = []; byUid[s.uid].push(s); });
-
-      let html = '';
-      for (const uid in byUid) {
-        const userStores = byUid[uid];
-        const email = userStores[0].email || uid;
-        html += `
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm mb-3">
-          <div class="px-4 py-3 flex items-center gap-2" style="background:rgba(245,158,11,0.06);border-bottom:1px solid #fef3c7;">
-            <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <i class="fas fa-user text-amber-600 text-[10px]"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[11px] font-black text-slate-800 truncate">${email}</p>
-              <p class="text-[8px] font-bold text-slate-400">UID: ${uid} &nbsp;·&nbsp; ${userStores.length} toko</p>
-            </div>
-          </div>
-          <div class="p-3 space-y-2">
-            ${userStores.map(s => {
-              const trx  = (s.data && s.data.transaksi)  ? s.data.transaksi.length  : 0;
-              const prod = (s.data && s.data.inventory)  ? s.data.inventory.length  : 0;
-              const plg  = (s.data && s.data.pelanggan)  ? s.data.pelanggan.length  : 0;
-              const om   = (s.data && s.data.transaksi)  ? s.data.transaksi.reduce((a,t)=>a+(Number(t.jual||0)),0) : 0;
-              const sync = s.last_sync ? (s.last_sync.toDate ? s.last_sync.toDate().toLocaleDateString('id-ID') : '—') : 'Belum sync';
-              return `
-              <div class="flex items-center gap-3 p-3 rounded-xl" style="background:#f8fafc;border:1px solid #f1f5f9;">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-[11px]"
-                     style="background:linear-gradient(135deg,#0061C2,#38BDF8);">${(s.store_name||'?').charAt(0).toUpperCase()}</div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-[11px] font-black text-slate-800 truncate">${s.store_name||'—'}</p>
-                  <p class="text-[8px] text-slate-400 font-bold">${trx} trx &nbsp;·&nbsp; ${prod} produk &nbsp;·&nbsp; ${plg} pelanggan</p>
-                  <p class="text-[8px] text-emerald-600 font-black">Omset: Rp ${om.toLocaleString('id-ID')}</p>
-                  <p class="text-[7px] text-slate-300 font-bold">Sync: ${sync}</p>
-                </div>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>`;
-      }
-      if (listEl) listEl.innerHTML = html;
-    } catch(e) {
-      if (listEl) listEl.innerHTML = '<div class="text-center py-6 text-red-400"><p class="text-[10px] font-bold">Gagal: ' + (e.message||'error') + '</p></div>';
-    }
-  }
-
-  // =====================================================
-  // TAMBAH TOMBOL MONITOR DI ADMIN PANEL
-  // =====================================================
-  function injectAdminMonitorBtn() {
-    if (document.getElementById('btn-admin-monitor-toko')) return;
-    const adminContent = document.querySelector('#modal-admin-panel .px-4.py-4.space-y-4');
-    if (!adminContent) return;
-    const btn = document.createElement('button');
-    btn.id        = 'btn-admin-monitor-toko';
-    btn.onclick   = adminMonitorAllStores;
-    btn.className = 'w-full py-3.5 rounded-xl font-black text-[11px] text-white cursor-pointer border-0 flex items-center justify-center gap-2 transition-all';
-    btn.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 6px 18px rgba(124,58,237,0.4);margin-top:4px;';
-    btn.innerHTML = '<i class="fas fa-store"></i> MONITOR SEMUA TOKO';
-    adminContent.appendChild(btn);
-  }
-
-  // =====================================================
-  // PATCH: openSidebarMenu → load multi-toko saat buka Akun
-  // =====================================================
-  (function() {
-    // Tunggu sampai openSidebarMenu tersedia
-    function patchOpenSidebar() {
-      if (typeof openSidebarMenu !== 'function') { setTimeout(patchOpenSidebar, 100); return; }
-      const _orig = openSidebarMenu;
-      window.openSidebarMenu = function(menu) {
-        _orig(menu);
-        if (menu === 'akun') setTimeout(renderMultiTokoSection, 200);
-        if (menu === 'admin') setTimeout(injectAdminMonitorBtn, 300);
-      };
-    }
-    patchOpenSidebar();
-  })();
-
-  // =====================================================
-  // PATCH: openSidebar → inject admin button jika admin
-  // =====================================================
-  (function() {
-    function patchOpenSidebar() {
-      if (typeof openSidebar !== 'function') { setTimeout(patchOpenSidebar, 100); return; }
-      const _orig = openSidebar;
-      window.openSidebar = function() {
-        _orig();
-        if (typeof isAdminUser === 'function' && isAdminUser()) {
-          setTimeout(injectAdminMonitorBtn, 400);
-        }
-      };
-    }
-    patchOpenSidebar();
-  })();
-
-  // =====================================================
-  // PATCH: sync() → auto-simpan ke user_stores
-  // =====================================================
-  (function() {
-    function patchSync() {
-      if (typeof sync !== 'function') { setTimeout(patchSync, 200); return; }
-      const _origSync = sync;
-      window.sync = async function() {
-        await _origSync();
-        const activeId = localStorage.getItem('k_active_store_id');
-        if (activeId && typeof window.db !== 'undefined') {
-          saveCurrentStoreData(activeId, window.db).catch(() => {});
-        }
-      };
-    }
-    patchSync();
-  })();
-
-  // =====================================================
-  // INISIALISASI: Buat/daftarkan toko pertama setelah login
-  // Dipanggil setelah app siap (delay lebih lama, tunggu Firebase)
-  // =====================================================
-  async function initMultiToko() {
-    const uid = localStorage.getItem('k_sid');
-    if (!uid || uid === 'DEMO') return; // skip untuk mode demo
-
-    try {
-      await waitMTFirebase(20000); // tunggu max 20 detik
-      const storeName = localStorage.getItem('k_store_name') || 'Toko Saya';
-      const email     = localStorage.getItem('k_email') || '';
-      const stores    = await getUserStores(uid);
-
-      if (stores.length === 0) {
-        // Buat toko pertama dari data lokal yang sudah ada
-        console.log('[MultiToko] Toko pertama belum ada, membuat otomatis...');
-        const storeId = await createStore(uid, email, storeName);
-        localStorage.setItem('k_active_store_id', storeId);
-        // Simpan data db yang sudah ada ke toko pertama
-        if (typeof window.db !== 'undefined') {
-          await saveCurrentStoreData(storeId, window.db);
-        }
-        console.log('[MultiToko] Toko pertama berhasil dibuat:', storeId);
-      } else {
-        // Pastikan k_active_store_id terisi
-        if (!localStorage.getItem('k_active_store_id')) {
-          localStorage.setItem('k_active_store_id', stores[0].id);
-          if (!localStorage.getItem('k_store_name')) {
-            localStorage.setItem('k_store_name', stores[0].store_name || storeName);
-          }
-        }
-        console.log('[MultiToko] Ditemukan', stores.length, 'toko untuk UID:', uid);
-      }
-    } catch(e) {
-      // Ini non-fatal — app tetap bisa berjalan normal
-      console.warn('[MultiToko] initMultiToko error (non-fatal):', e.message);
-    }
-  }
-
-  // Jalankan initMultiToko setelah app siap
-  // Menggunakan event firebaseReady + delay untuk pastikan initApp sudah selesai
-  (function() {
-    function tryInit() {
-      const uid = localStorage.getItem('k_sid');
-      const appVisible = document.getElementById('app-content') &&
-                         !document.getElementById('app-content').classList.contains('hidden');
-      if (uid && appVisible) {
-        // App sudah tampil, jalankan init
-        setTimeout(initMultiToko, 1000);
-      } else {
-        // Belum siap, cek lagi
-        setTimeout(tryInit, 500);
-      }
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(tryInit, 1000));
-    } else {
-      setTimeout(tryInit, 1000);
-    }
-  })();
-
-  console.log('[MultiToko] Modul v2 dimuat. Limits:', PLAN_STORE_LIMIT);
   </script>
 </body>
 </html>
