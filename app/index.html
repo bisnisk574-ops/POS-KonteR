@@ -1440,6 +1440,18 @@
             <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
           </button>
 
+          <!-- Absensi Kasir -->
+          <button id="sidebar-absensi-menu" class="sidebar-menu-item" onclick="openSidebarMenu('absensi-kasir')">
+            <div class="sidebar-icon-wrap" style="background:rgba(16,185,129,0.15);">
+              <i class="fas fa-user-clock" style="color:#34d399;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-200">Absensi Kasir</p>
+              <p class="text-[9px] text-slate-500 font-bold">Laporan shift & saldo kas</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
+          </button>
+
           <!-- Backup & Restore -->
           <button class="sidebar-menu-item" onclick="openSidebarMenu('backup')">
             <div class="sidebar-icon-wrap bg-emerald-500/15">
@@ -1745,6 +1757,224 @@
       </div>
     </div>
     <!-- END MODAL KELOLA KASIR -->
+
+    <!-- ===== MODAL: ABSENSI KASIR ===== -->
+    <div id="modal-absensi-kasir" class="modal-overlay" style="z-index:3200;">
+      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:92vh;overflow-y:auto;padding:0;">
+
+        <!-- Sticky Header -->
+        <div class="sticky top-0 z-10 px-5 pt-5 pb-4" style="background:linear-gradient(135deg,#0a1628 0%,#064e3b 100%);border-radius:28px 28px 0 0;">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl flex items-center justify-center" style="background:rgba(52,211,153,0.18);border:1px solid rgba(52,211,153,0.3);">
+                <i class="fas fa-user-clock text-emerald-400 text-sm"></i>
+              </div>
+              <div>
+                <h4 class="text-base font-black text-white leading-tight">Absensi Kasir</h4>
+                <p style="font-size:8px;font-weight:900;color:rgba(52,211,153,0.75);letter-spacing:0.12em;text-transform:uppercase;">LAPORAN SHIFT & SALDO KAS</p>
+              </div>
+            </div>
+            <button onclick="closeModal('modal-absensi-kasir')" class="w-8 h-8 flex items-center justify-center rounded-xl cursor-pointer border-0" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:14px;"><i class="fas fa-times"></i></button>
+          </div>
+
+          <!-- Tab Buka/Tutup shift -->
+          <div class="flex gap-2 mt-4 p-1 rounded-2xl" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
+            <button onclick="setAbsensiTab('buka')" id="absensi-tab-buka"
+              class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-0 cursor-pointer font-black transition-all"
+              style="background:linear-gradient(135deg,#059669,#34d399);color:white;font-size:9px;letter-spacing:0.06em;box-shadow:0 4px 14px rgba(5,150,105,0.5);">
+              <i class="fas fa-door-open" style="font-size:11px;"></i> BUKA SHIFT
+            </button>
+            <button onclick="setAbsensiTab('tutup')" id="absensi-tab-tutup"
+              class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-0 cursor-pointer font-black transition-all"
+              style="background:transparent;color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:0.06em;">
+              <i class="fas fa-door-closed" style="font-size:11px;"></i> TUTUP SHIFT
+            </button>
+            <button onclick="setAbsensiTab('laporan')" id="absensi-tab-laporan"
+              class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-0 cursor-pointer font-black transition-all"
+              style="background:transparent;color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:0.06em;">
+              <i class="fas fa-list-check" style="font-size:11px;"></i> LAPORAN
+            </button>
+          </div>
+        </div>
+
+        <div class="px-5 pt-4 pb-6 space-y-4">
+
+          <!-- ===== PANEL: BUKA SHIFT ===== -->
+          <div id="absensi-panel-buka">
+
+            <!-- Info waktu realtime -->
+            <div class="rounded-2xl p-4 mb-4" style="background:linear-gradient(135deg,#022c22,#064e3b);border:1px solid rgba(52,211,153,0.2);">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-1.5 h-1.5 rounded-full bg-emerald-400" style="animation:pulse 2s infinite;"></div>
+                  <span style="font-size:8px;font-weight:900;color:rgba(52,211,153,0.8);letter-spacing:0.1em;text-transform:uppercase;">Waktu Sekarang</span>
+                </div>
+              </div>
+              <p id="absensi-clock-buka" class="text-2xl font-black text-white tracking-tight">--:--:--</p>
+              <p id="absensi-date-buka" class="text-xs font-bold mt-1" style="color:rgba(255,255,255,0.5);">Memuat...</p>
+            </div>
+
+            <!-- Form Buka Shift -->
+            <div class="space-y-3">
+
+              <!-- Nama Kasir -->
+              <div class="rounded-2xl p-4" style="background:white;border:1.5px solid #f1f5f9;">
+                <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-user mr-1"></i>Nama Kasir</p>
+                <input type="text" id="absensi-buka-nama" class="kasir-field-input" placeholder="Masukkan nama kasir..."
+                  style="font-size:14px;font-weight:700;color:#1e293b;border:none;outline:none;width:100%;background:transparent;">
+              </div>
+
+              <!-- Tanggal & Jam Mulai -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-2xl p-4" style="background:white;border:1.5px solid #f1f5f9;">
+                  <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-calendar-day mr-1"></i>Tanggal</p>
+                  <input type="date" id="absensi-buka-tgl" class="kasir-field-input" style="font-size:12px;font-weight:700;color:#1e293b;border:none;outline:none;width:100%;background:transparent;">
+                </div>
+                <div class="rounded-2xl p-4" style="background:white;border:1.5px solid #f1f5f9;">
+                  <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-clock mr-1"></i>Jam Mulai</p>
+                  <input type="time" id="absensi-buka-jam" class="kasir-field-input" style="font-size:12px;font-weight:700;color:#1e293b;border:none;outline:none;width:100%;background:transparent;">
+                </div>
+              </div>
+
+              <!-- Saldo Awal Kas -->
+              <div class="rounded-2xl p-4 relative overflow-hidden" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;">
+                <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full pointer-events-none" style="background:rgba(16,185,129,0.1);"></div>
+                <p style="font-size:8px;font-weight:900;color:#15803d;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-coins mr-1"></i>Saldo Awal Kas (Rp)</p>
+                <div class="flex items-center gap-2">
+                  <span class="text-lg font-black" style="color:#166534;">Rp</span>
+                  <input type="number" id="absensi-buka-saldo" class="flex-1 text-xl font-black bg-transparent border-none outline-none" style="color:#166534;min-width:0;" placeholder="0">
+                </div>
+                <p style="font-size:8px;color:#86efac;font-weight:700;margin-top:4px;">* Jumlah uang tunai di laci kasir saat mulai shift</p>
+              </div>
+
+              <!-- Keterangan -->
+              <div class="rounded-2xl p-4" style="background:white;border:1.5px solid #f1f5f9;">
+                <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-note-sticky mr-1"></i>Keterangan (Opsional)</p>
+                <input type="text" id="absensi-buka-ket" class="kasir-field-input" placeholder="Catatan tambahan..." style="font-size:13px;font-weight:600;color:#1e293b;border:none;outline:none;width:100%;background:transparent;">
+              </div>
+
+              <!-- Tombol Buka Shift -->
+              <button onclick="prosesAbsensiBuka()" class="w-full py-4 rounded-2xl font-black text-white border-0 cursor-pointer flex items-center justify-center gap-2 mt-2"
+                style="background:linear-gradient(135deg,#059669,#10b981,#34d399);box-shadow:0 8px 28px rgba(5,150,105,0.45);font-size:13px;letter-spacing:0.05em;">
+                <i class="fas fa-door-open"></i> MULAI SHIFT SEKARANG
+              </button>
+            </div>
+          </div>
+
+          <!-- ===== PANEL: TUTUP SHIFT ===== -->
+          <div id="absensi-panel-tutup" style="display:none;">
+
+            <!-- Info waktu realtime tutup -->
+            <div class="rounded-2xl p-4 mb-4" style="background:linear-gradient(135deg,#1e1b4b,#312e81);border:1px solid rgba(167,139,250,0.25);">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-1.5 h-1.5 rounded-full bg-violet-400" style="animation:pulse 2s infinite;"></div>
+                  <span style="font-size:8px;font-weight:900;color:rgba(167,139,250,0.8);letter-spacing:0.1em;text-transform:uppercase;">Waktu Sekarang</span>
+                </div>
+              </div>
+              <p id="absensi-clock-tutup" class="text-2xl font-black text-white tracking-tight">--:--:--</p>
+              <p id="absensi-date-tutup" class="text-xs font-bold mt-1" style="color:rgba(255,255,255,0.5);">Memuat...</p>
+            </div>
+
+            <!-- Pilih Shift yang akan ditutup -->
+            <div class="rounded-2xl p-4 mb-3" style="background:white;border:1.5px solid #f1f5f9;">
+              <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;"><i class="fas fa-list mr-1"></i>Pilih Shift yang Ditutup</p>
+              <select id="absensi-tutup-shift-id" class="input-premium" style="font-size:12px;" onchange="onSelectShiftTutup()">
+                <option value="">-- Pilih shift aktif --</option>
+              </select>
+            </div>
+
+            <!-- Info shift terpilih -->
+            <div id="absensi-tutup-info" class="rounded-2xl p-4 mb-3 hidden" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fde68a;">
+              <p style="font-size:8px;font-weight:900;color:#92400e;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;"><i class="fas fa-circle-info mr-1"></i>Info Shift</p>
+              <div class="space-y-1.5" id="absensi-tutup-info-content"></div>
+            </div>
+
+            <!-- Jam Tutup -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="rounded-2xl p-4" style="background:white;border:1.5px solid #f1f5f9;">
+                <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-calendar-check mr-1"></i>Tanggal Tutup</p>
+                <input type="date" id="absensi-tutup-tgl" class="kasir-field-input" style="font-size:12px;font-weight:700;color:#1e293b;border:none;outline:none;width:100%;background:transparent;">
+              </div>
+              <div class="rounded-2xl p-4" style="background:white;border:1.5px solid #f1f5f9;">
+                <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-clock mr-1"></i>Jam Tutup</p>
+                <input type="time" id="absensi-tutup-jam" class="kasir-field-input" style="font-size:12px;font-weight:700;color:#1e293b;border:none;outline:none;width:100%;background:transparent;">
+              </div>
+            </div>
+
+            <!-- Saldo Akhir Kas -->
+            <div class="rounded-2xl p-4 mb-3 relative overflow-hidden" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #c4b5fd;">
+              <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full pointer-events-none" style="background:rgba(124,58,237,0.1);"></div>
+              <p style="font-size:8px;font-weight:900;color:#6d28d9;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-cash-register mr-1"></i>Saldo Akhir Kas (Rp)</p>
+              <div class="flex items-center gap-2">
+                <span class="text-lg font-black" style="color:#4c1d95;">Rp</span>
+                <input type="number" id="absensi-tutup-saldo" class="flex-1 text-xl font-black bg-transparent border-none outline-none" style="color:#4c1d95;min-width:0;" placeholder="0" oninput="hitungSelisihShift()">
+              </div>
+              <p style="font-size:8px;color:#a78bfa;font-weight:700;margin-top:4px;">* Hitung fisik uang tunai di laci kasir saat tutup shift</p>
+            </div>
+
+            <!-- Selisih Saldo -->
+            <div id="absensi-selisih-row" class="rounded-2xl p-4 mb-3 hidden" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid #bae6fd;">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-scale-balanced text-sky-600 text-sm"></i>
+                  <div>
+                    <p style="font-size:8px;font-weight:900;color:#0369a1;text-transform:uppercase;letter-spacing:0.08em;">Selisih Kas</p>
+                    <p style="font-size:9px;font-weight:700;color:#94a3b8;">(Saldo Akhir - Saldo Awal)</p>
+                  </div>
+                </div>
+                <p id="absensi-selisih-val" class="text-lg font-black" style="color:#0369a1;">Rp 0</p>
+              </div>
+            </div>
+
+            <!-- Keterangan Tutup -->
+            <div class="rounded-2xl p-4 mb-4" style="background:white;border:1.5px solid #f1f5f9;">
+              <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-note-sticky mr-1"></i>Catatan Penutupan (Opsional)</p>
+              <input type="text" id="absensi-tutup-ket" class="kasir-field-input" placeholder="Keterangan tutup shift..." style="font-size:13px;font-weight:600;color:#1e293b;border:none;outline:none;width:100%;background:transparent;">
+            </div>
+
+            <!-- Tombol Tutup Shift -->
+            <button onclick="prosesAbsensiTutup()" class="w-full py-4 rounded-2xl font-black text-white border-0 cursor-pointer flex items-center justify-center gap-2"
+              style="background:linear-gradient(135deg,#7c3aed,#8b5cf6,#a78bfa);box-shadow:0 8px 28px rgba(124,58,237,0.45);font-size:13px;letter-spacing:0.05em;">
+              <i class="fas fa-door-closed"></i> TUTUP SHIFT SEKARANG
+            </button>
+          </div>
+
+          <!-- ===== PANEL: LAPORAN ABSENSI ===== -->
+          <div id="absensi-panel-laporan" style="display:none;">
+
+            <!-- Filter laporan -->
+            <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+              <button onclick="setAbsensiLaporanFilter('semua')" id="abl-chip-semua"
+                class="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-0 cursor-pointer whitespace-nowrap font-black transition-all"
+                style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;font-size:9px;box-shadow:0 4px 12px rgba(0,97,194,0.4);">
+                <i class="fas fa-layer-group" style="font-size:9px;"></i> SEMUA
+              </button>
+              <button onclick="setAbsensiLaporanFilter('aktif')" id="abl-chip-aktif"
+                class="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-0 cursor-pointer whitespace-nowrap font-black transition-all"
+                style="background:#f1f5f9;color:#64748b;font-size:9px;">
+                <i class="fas fa-door-open" style="font-size:9px;"></i> AKTIF
+              </button>
+              <button onclick="setAbsensiLaporanFilter('selesai')" id="abl-chip-selesai"
+                class="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-0 cursor-pointer whitespace-nowrap font-black transition-all"
+                style="background:#f1f5f9;color:#64748b;font-size:9px;">
+                <i class="fas fa-door-closed" style="font-size:9px;"></i> SELESAI
+              </button>
+            </div>
+
+            <!-- List laporan -->
+            <div id="absensi-laporan-list" class="space-y-3">
+              <div class="text-center py-8">
+                <i class="fas fa-spinner fa-spin text-emerald-300 text-xl block mb-2"></i>
+                <p style="font-size:10px;color:#94a3b8;font-weight:700;">Memuat laporan...</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!-- END MODAL ABSENSI KASIR -->
 
     <!-- ===== MODAL: ADMIN MONITOR TOKO ===== -->
     <div id="modal-admin-toko-monitor" class="modal-overlay" style="z-index:3500;">
@@ -8701,7 +8931,430 @@
     }
   });
 
+  // ─── HOOK: Tambahkan handle 'absensi-kasir' di openSidebarMenu ───
+  // (ditambah setelah patch kelola-kasir)
+
   console.log('[KasirStaff] Modul kasir staff v1 dimuat.');
+
+  // ============================================================
+  // ===== MODUL ABSENSI KASIR ==================================
+  // ============================================================
+
+  let _absensiClockInterval = null;
+  let _absensiFilter = 'semua';
+  let _absensiActiveShifts = [];
+
+  // ─── BUKA MODAL ABSENSI ───
+  function openAbsensiKasirModal() {
+    openModal('modal-absensi-kasir');
+    setAbsensiTab('buka');
+    _startAbsensiClock();
+    _prefillAbsensiBuka();
+  }
+
+  // ─── JALANKAN JAM REALTIME ───
+  function _startAbsensiClock() {
+    if (_absensiClockInterval) clearInterval(_absensiClockInterval);
+    const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+    function updateClock() {
+      const now = new Date();
+      const jam = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+      const tgl = `${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()}`;
+      ['buka','tutup'].forEach(t => {
+        const cEl = document.getElementById('absensi-clock-'+t);
+        const dEl = document.getElementById('absensi-date-'+t);
+        if (cEl) cEl.textContent = jam;
+        if (dEl) dEl.textContent = tgl;
+      });
+    }
+    updateClock();
+    _absensiClockInterval = setInterval(updateClock, 1000);
+  }
+
+  // ─── PRE-FILL FORM BUKA SHIFT ───
+  function _prefillAbsensiBuka() {
+    const now = new Date();
+    const tglEl  = document.getElementById('absensi-buka-tgl');
+    const jamEl  = document.getElementById('absensi-buka-jam');
+    const namaEl = document.getElementById('absensi-buka-nama');
+    if (tglEl) tglEl.value = now.toISOString().split('T')[0];
+    if (jamEl) {
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      jamEl.value = hh + ':' + mm;
+    }
+    // Auto-isi nama dari session (kasir atau pemilik)
+    if (namaEl && !namaEl.value) {
+      const kasirNama = localStorage.getItem('k_kasir_nama');
+      namaEl.value = kasirNama || '';
+    }
+  }
+
+  // ─── SWITCH TAB ABSENSI ───
+  function setAbsensiTab(tab) {
+    ['buka','tutup','laporan'].forEach(t => {
+      const panel = document.getElementById('absensi-panel-'+t);
+      const btn   = document.getElementById('absensi-tab-'+t);
+      if (panel) panel.style.display = t === tab ? 'block' : 'none';
+      if (btn) {
+        if (t === tab) {
+          if (t === 'buka')    btn.style.cssText = 'background:linear-gradient(135deg,#059669,#34d399);color:white;font-size:9px;letter-spacing:0.06em;box-shadow:0 4px 14px rgba(5,150,105,0.5);flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0;border-radius:12px;border:0;cursor:pointer;font-weight:900;transition:all 0.25s;';
+          if (t === 'tutup')   btn.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;font-size:9px;letter-spacing:0.06em;box-shadow:0 4px 14px rgba(124,58,237,0.5);flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0;border-radius:12px;border:0;cursor:pointer;font-weight:900;transition:all 0.25s;';
+          if (t === 'laporan') btn.style.cssText = 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;font-size:9px;letter-spacing:0.06em;box-shadow:0 4px 14px rgba(0,97,194,0.5);flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0;border-radius:12px;border:0;cursor:pointer;font-weight:900;transition:all 0.25s;';
+        } else {
+          btn.style.cssText = 'background:transparent;color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:0.06em;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0;border-radius:12px;border:0;cursor:pointer;font-weight:900;transition:all 0.25s;';
+        }
+      }
+    });
+    if (tab === 'tutup')   { _loadShiftAktifUntukTutup(); _prefillAbsensiTutup(); }
+    if (tab === 'laporan') loadAbsensiLaporan();
+  }
+
+  // ─── PRE-FILL FORM TUTUP SHIFT ───
+  function _prefillAbsensiTutup() {
+    const now = new Date();
+    const tglEl = document.getElementById('absensi-tutup-tgl');
+    const jamEl = document.getElementById('absensi-tutup-jam');
+    if (tglEl) tglEl.value = now.toISOString().split('T')[0];
+    if (jamEl) {
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      jamEl.value = hh + ':' + mm;
+    }
+  }
+
+  // ─── LOAD SHIFT AKTIF UNTUK DROPDOWN TUTUP ───
+  async function _loadShiftAktifUntukTutup() {
+    const uid = localStorage.getItem('k_sid');
+    const sel = document.getElementById('absensi-tutup-shift-id');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Memuat... --</option>';
+    try {
+      await waitMTFirebase(5000);
+      const snap = await window._fbFirestore
+        .collection('absensi_kasir')
+        .where('owner_uid','==', uid)
+        .where('status','==','aktif')
+        .orderBy('buka_at','desc')
+        .limit(20)
+        .get();
+      _absensiActiveShifts = [];
+      snap.forEach(d => _absensiActiveShifts.push({ id: d.id, ...d.data() }));
+      if (_absensiActiveShifts.length === 0) {
+        sel.innerHTML = '<option value="">-- Tidak ada shift aktif --</option>';
+      } else {
+        sel.innerHTML = '<option value="">-- Pilih shift aktif --</option>' +
+          _absensiActiveShifts.map(s =>
+            `<option value="${s.id}">${s.nama} — ${s.buka_tgl} ${s.buka_jam}</option>`
+          ).join('');
+      }
+    } catch(e) {
+      sel.innerHTML = '<option value="">-- Gagal memuat --</option>';
+    }
+  }
+
+  // ─── SAAT PILIH SHIFT UNTUK DITUTUP ───
+  function onSelectShiftTutup() {
+    const shiftId = document.getElementById('absensi-tutup-shift-id')?.value;
+    const infoBox = document.getElementById('absensi-tutup-info');
+    const infoContent = document.getElementById('absensi-tutup-info-content');
+    if (!shiftId || !infoBox || !infoContent) { if (infoBox) infoBox.classList.add('hidden'); return; }
+    const s = _absensiActiveShifts.find(x => x.id === shiftId);
+    if (!s) { infoBox.classList.add('hidden'); return; }
+    const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
+    infoContent.innerHTML = `
+      <div class="flex justify-between items-center py-1 border-b border-amber-100">
+        <span style="font-size:9px;font-weight:700;color:#92400e;">Nama Kasir</span>
+        <span style="font-size:10px;font-weight:900;color:#451a03;">${s.nama||'—'}</span>
+      </div>
+      <div class="flex justify-between items-center py-1 border-b border-amber-100">
+        <span style="font-size:9px;font-weight:700;color:#92400e;">Mulai Shift</span>
+        <span style="font-size:10px;font-weight:900;color:#451a03;">${s.buka_tgl||'—'} ${s.buka_jam||'—'}</span>
+      </div>
+      <div class="flex justify-between items-center py-1">
+        <span style="font-size:9px;font-weight:700;color:#92400e;">Saldo Awal</span>
+        <span style="font-size:11px;font-weight:900;color:#059669;">${fmtRp(s.saldo_awal)}</span>
+      </div>
+    `;
+    infoBox.classList.remove('hidden');
+    hitungSelisihShift();
+  }
+
+  // ─── HITUNG SELISIH SALDO ───
+  function hitungSelisihShift() {
+    const shiftId = document.getElementById('absensi-tutup-shift-id')?.value;
+    const saldoAkhirEl = document.getElementById('absensi-tutup-saldo');
+    const selisihRow = document.getElementById('absensi-selisih-row');
+    const selisihVal = document.getElementById('absensi-selisih-val');
+    if (!shiftId || !saldoAkhirEl || !selisihRow || !selisihVal) return;
+    const s = _absensiActiveShifts.find(x => x.id === shiftId);
+    const saldoAkhir = parseFloat(saldoAkhirEl.value) || 0;
+    if (!s) { selisihRow.classList.add('hidden'); return; }
+    const selisih = saldoAkhir - (s.saldo_awal || 0);
+    const fmtRp = v => 'Rp ' + Math.abs(v).toLocaleString('id-ID');
+    selisihVal.textContent = (selisih >= 0 ? '+' : '-') + fmtRp(selisih);
+    selisihVal.style.color = selisih >= 0 ? '#059669' : '#ef4444';
+    selisihRow.classList.remove('hidden');
+  }
+
+  // ─── PROSES BUKA SHIFT ───
+  async function prosesAbsensiBuka() {
+    const uid    = localStorage.getItem('k_sid');
+    const nama   = (document.getElementById('absensi-buka-nama')?.value || '').trim();
+    const tgl    = document.getElementById('absensi-buka-tgl')?.value || '';
+    const jam    = document.getElementById('absensi-buka-jam')?.value || '';
+    const saldo  = parseFloat(document.getElementById('absensi-buka-saldo')?.value) || 0;
+    const ket    = (document.getElementById('absensi-buka-ket')?.value || '').trim();
+    if (!nama) return (_getMySwal()||Swal).fire('Perhatian', 'Nama kasir harus diisi!', 'warning');
+    if (!tgl)  return (_getMySwal()||Swal).fire('Perhatian', 'Tanggal mulai shift harus diisi!', 'warning');
+    if (!jam)  return (_getMySwal()||Swal).fire('Perhatian', 'Jam mulai shift harus diisi!', 'warning');
+    try {
+      await waitMTFirebase(6000);
+      const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const tglObj = new Date(tgl + 'T' + jam);
+      await window._fbFirestore.collection('absensi_kasir').add({
+        owner_uid  : uid,
+        store_id   : localStorage.getItem('k_active_store_id') || '',
+        nama       : nama,
+        buka_tgl   : tgl,
+        buka_jam   : jam,
+        buka_hari  : HARI[tglObj.getDay()],
+        buka_at    : tglObj,
+        saldo_awal : saldo,
+        keterangan_buka: ket,
+        status     : 'aktif',
+        created_at : new Date(),
+      });
+      // Reset form
+      ['absensi-buka-saldo','absensi-buka-ket'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+      (_getMySwal()||Swal).fire({
+        title: '✅ Shift Dibuka!',
+        html: `<b>${nama}</b> mulai shift<br><small style="color:#94a3b8;">${tgl} pukul ${jam} · Saldo Awal: <b>Rp ${saldo.toLocaleString('id-ID')}</b></small>`,
+        icon: 'success', timer: 3000, showConfirmButton: false
+      });
+    } catch(e) {
+      (_getMySwal()||Swal).fire('Gagal', e.message || 'Error menyimpan absensi', 'error');
+    }
+  }
+
+  // ─── PROSES TUTUP SHIFT ───
+  async function prosesAbsensiTutup() {
+    const shiftId     = document.getElementById('absensi-tutup-shift-id')?.value || '';
+    const tglTutup    = document.getElementById('absensi-tutup-tgl')?.value || '';
+    const jamTutup    = document.getElementById('absensi-tutup-jam')?.value || '';
+    const saldoAkhir  = parseFloat(document.getElementById('absensi-tutup-saldo')?.value) || 0;
+    const ket         = (document.getElementById('absensi-tutup-ket')?.value || '').trim();
+    if (!shiftId)   return (_getMySwal()||Swal).fire('Perhatian', 'Pilih shift yang akan ditutup!', 'warning');
+    if (!tglTutup)  return (_getMySwal()||Swal).fire('Perhatian', 'Tanggal tutup shift harus diisi!', 'warning');
+    if (!jamTutup)  return (_getMySwal()||Swal).fire('Perhatian', 'Jam tutup shift harus diisi!', 'warning');
+    const s = _absensiActiveShifts.find(x => x.id === shiftId);
+    if (!s) return (_getMySwal()||Swal).fire('Error', 'Data shift tidak ditemukan.', 'error');
+    const selisih = saldoAkhir - (s.saldo_awal || 0);
+    const fmtRp = v => 'Rp ' + v.toLocaleString('id-ID');
+    const confirm = await (_getMySwal()||Swal).fire({
+      title: 'Tutup Shift?',
+      html: `<b>${s.nama}</b><br>Saldo Akhir: <b>${fmtRp(saldoAkhir)}</b><br><small style="color:${selisih>=0?'#059669':'#ef4444'}">Selisih: ${selisih>=0?'+':''}${fmtRp(selisih)}</small>`,
+      icon: 'question', showCancelButton: true,
+      confirmButtonText: 'Ya, Tutup Shift', cancelButtonText: 'Batal',
+      confirmButtonColor: '#7c3aed'
+    });
+    if (!confirm.isConfirmed) return;
+    try {
+      await waitMTFirebase(6000);
+      const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const tutupObj = new Date(tglTutup + 'T' + jamTutup);
+      // Hitung durasi shift
+      const bukaAt = s.buka_at?.toDate ? s.buka_at.toDate() : new Date(s.buka_at);
+      const durasiMs = tutupObj - bukaAt;
+      const durasiJam = Math.floor(durasiMs / 3600000);
+      const durasiMenit = Math.floor((durasiMs % 3600000) / 60000);
+      await window._fbFirestore.collection('absensi_kasir').doc(shiftId).update({
+        tutup_tgl        : tglTutup,
+        tutup_jam        : jamTutup,
+        tutup_hari       : HARI[tutupObj.getDay()],
+        tutup_at         : tutupObj,
+        saldo_akhir      : saldoAkhir,
+        selisih_saldo    : selisih,
+        durasi_jam       : durasiJam,
+        durasi_menit     : durasiMenit,
+        keterangan_tutup : ket,
+        status           : 'selesai',
+      });
+      // Reset form
+      ['absensi-tutup-saldo','absensi-tutup-ket'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+      const infoBox = document.getElementById('absensi-tutup-info');
+      if (infoBox) infoBox.classList.add('hidden');
+      (_getMySwal()||Swal).fire({
+        title: '✅ Shift Ditutup!',
+        html: `<b>${s.nama}</b> — ${durasiJam}j ${durasiMenit}m<br>Saldo Awal: <b>${fmtRp(s.saldo_awal||0)}</b> → Akhir: <b>${fmtRp(saldoAkhir)}</b>`,
+        icon: 'success', timer: 3500, showConfirmButton: false
+      });
+      await _loadShiftAktifUntukTutup();
+    } catch(e) {
+      (_getMySwal()||Swal).fire('Gagal', e.message || 'Error tutup shift', 'error');
+    }
+  }
+
+  // ─── LOAD LAPORAN ABSENSI ───
+  async function loadAbsensiLaporan() {
+    const uid = localStorage.getItem('k_sid');
+    const listEl = document.getElementById('absensi-laporan-list');
+    if (!listEl) return;
+    listEl.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-emerald-400 text-xl block mb-2"></i><p style="font-size:10px;color:#94a3b8;font-weight:700;">Memuat laporan...</p></div>';
+    try {
+      await waitMTFirebase(6000);
+      let query = window._fbFirestore.collection('absensi_kasir').where('owner_uid','==',uid).orderBy('buka_at','desc').limit(50);
+      const snap = await query.get();
+      let data = [];
+      snap.forEach(d => data.push({ id: d.id, ...d.data() }));
+      // Filter
+      if (_absensiFilter === 'aktif')   data = data.filter(d => d.status === 'aktif');
+      if (_absensiFilter === 'selesai') data = data.filter(d => d.status === 'selesai');
+      if (data.length === 0) {
+        listEl.innerHTML = `<div class="text-center py-12 rounded-2xl" style="background:#f8fafc;border:1.5px dashed #e2e8f0;">
+          <i class="fas fa-clock-rotate-left text-slate-300 text-3xl block mb-3"></i>
+          <p style="font-size:11px;color:#94a3b8;font-weight:800;">Belum ada data absensi</p>
+        </div>`;
+        return;
+      }
+      const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
+      listEl.innerHTML = data.map(s => {
+        const isAktif = s.status === 'aktif';
+        const selisihColor = (s.selisih_saldo||0) >= 0 ? '#059669' : '#ef4444';
+        const selisihStr = s.selisih_saldo !== undefined
+          ? ((s.selisih_saldo>=0?'+':'')+fmtRp(Math.abs(s.selisih_saldo)))
+          : '—';
+        return `
+        <div class="rounded-2xl overflow-hidden" style="background:white;border:1.5px solid ${isAktif ? '#6ee7b7' : '#e2e8f0'};">
+          <!-- Header kartu -->
+          <div class="flex items-center justify-between px-4 py-3" style="background:${isAktif ? 'linear-gradient(135deg,#f0fdf4,#dcfce7)' : 'linear-gradient(135deg,#f8fafc,#f1f5f9)'};">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:${isAktif ? '#10b981' : '#64748b'};">
+                <i class="fas fa-${isAktif ? 'door-open' : 'door-closed'} text-white" style="font-size:11px;"></i>
+              </div>
+              <div>
+                <p style="font-size:12px;font-weight:900;color:#0f172a;">${s.nama||'—'}</p>
+                <span style="font-size:8px;font-weight:900;padding:1px 8px;border-radius:100px;${isAktif ? 'background:rgba(16,185,129,0.15);color:#059669;' : 'background:rgba(100,116,139,0.1);color:#64748b;'}">${isAktif ? '● AKTIF' : '✓ SELESAI'}</span>
+              </div>
+            </div>
+            ${!isAktif ? `<button onclick="deleteAbsensi('${s.id}')" class="w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer border-0 transition-all" style="background:rgba(239,68,68,0.1);color:#ef4444;font-size:10px;"><i class="fas fa-trash-alt"></i></button>` : ''}
+          </div>
+
+          <!-- Body kartu -->
+          <div class="px-4 py-3 space-y-2">
+            <!-- Buka Shift -->
+            <div class="flex items-start gap-3 p-2.5 rounded-xl" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#10b981;">
+                <i class="fas fa-sun text-white" style="font-size:9px;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p style="font-size:8px;font-weight:900;color:#065f46;text-transform:uppercase;letter-spacing:0.08em;">MULAI SHIFT</p>
+                <p style="font-size:11px;font-weight:900;color:#064e3b;">${s.buka_hari||''} ${s.buka_tgl||'—'} · ${s.buka_jam||'—'}</p>
+                <p style="font-size:10px;font-weight:800;color:#059669;">Saldo Awal: <b>${fmtRp(s.saldo_awal)}</b></p>
+              </div>
+            </div>
+
+            <!-- Tutup Shift (jika sudah selesai) -->
+            ${!isAktif ? `
+            <div class="flex items-start gap-3 p-2.5 rounded-xl" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);">
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background:#7c3aed;">
+                <i class="fas fa-moon text-white" style="font-size:9px;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p style="font-size:8px;font-weight:900;color:#4c1d95;text-transform:uppercase;letter-spacing:0.08em;">TUTUP SHIFT</p>
+                <p style="font-size:11px;font-weight:900;color:#3b0764;">${s.tutup_hari||''} ${s.tutup_tgl||'—'} · ${s.tutup_jam||'—'}</p>
+                <p style="font-size:10px;font-weight:800;color:#7c3aed;">Saldo Akhir: <b>${fmtRp(s.saldo_akhir)}</b></p>
+              </div>
+            </div>
+
+            <!-- Ringkasan selisih & durasi -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-xl p-2.5" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Selisih Kas</p>
+                <p style="font-size:13px;font-weight:900;color:${selisihColor};">${selisihStr}</p>
+              </div>
+              <div class="rounded-xl p-2.5" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Durasi Shift</p>
+                <p style="font-size:12px;font-weight:900;color:#1e293b;">${(s.durasi_jam||0)}j ${(s.durasi_menit||0)}m</p>
+              </div>
+            </div>
+            ` : '<p style="font-size:9px;font-weight:700;color:#94a3b8;text-align:center;padding:8px 0;"><i class="fas fa-clock mr-1"></i>Shift masih berjalan...</p>'}
+
+            ${(s.keterangan_buka||s.keterangan_tutup) ? `
+            <div class="rounded-xl px-3 py-2" style="background:#fffbeb;border:1px solid #fde68a;">
+              <p style="font-size:8px;font-weight:900;color:#92400e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;">Keterangan</p>
+              <p style="font-size:10px;font-weight:700;color:#78350f;">${s.keterangan_buka||''} ${s.keterangan_tutup ? '· '+s.keterangan_tutup : ''}</p>
+            </div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      listEl.innerHTML = `<div class="text-center py-8"><p style="font-size:10px;color:#ef4444;font-weight:700;"><i class="fas fa-triangle-exclamation mr-1"></i>Gagal memuat: ${e.message||'Error'}</p></div>`;
+    }
+  }
+
+  // ─── FILTER LAPORAN ───
+  function setAbsensiLaporanFilter(f) {
+    _absensiFilter = f;
+    ['semua','aktif','selesai'].forEach(k => {
+      const el = document.getElementById('abl-chip-'+k);
+      if (!el) return;
+      if (k === f) {
+        el.style.cssText = 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;font-size:9px;font-weight:900;box-shadow:0 4px 12px rgba(0,97,194,0.4);display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:100px;border:0;cursor:pointer;white-space:nowrap;';
+      } else {
+        el.style.cssText = 'background:#f1f5f9;color:#64748b;font-size:9px;font-weight:900;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:100px;border:0;cursor:pointer;white-space:nowrap;';
+      }
+    });
+    loadAbsensiLaporan();
+  }
+
+  // ─── HAPUS RECORD ABSENSI ───
+  async function deleteAbsensi(id) {
+    const res = await (_getMySwal()||Swal).fire({
+      title: 'Hapus Data Absensi?', text: 'Record shift ini akan dihapus permanen.',
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal'
+    });
+    if (!res.isConfirmed) return;
+    try {
+      await waitMTFirebase(5000);
+      await window._fbFirestore.collection('absensi_kasir').doc(id).delete();
+      (_getMySwal()||Swal).fire({ title: 'Dihapus!', icon: 'success', timer: 1500, showConfirmButton: false });
+      loadAbsensiLaporan();
+    } catch(e) {
+      (_getMySwal()||Swal).fire('Gagal', e.message || 'Error', 'error');
+    }
+  }
+
+  // ─── HOOK openSidebarMenu untuk handle 'absensi-kasir' ───
+  (function() {
+    const _prev = typeof openSidebarMenu === 'function' ? openSidebarMenu : null;
+    window.openSidebarMenu = function(menu) {
+      if (menu === 'absensi-kasir') {
+        closeSidebar();
+        openAbsensiKasirModal();
+        return;
+      }
+      if (_prev) _prev(menu);
+    };
+  })();
+
+  // ─── STOP CLOCK saat modal ditutup ───
+  (function() {
+    const origClose = typeof closeModal === 'function' ? closeModal : null;
+    if (origClose) {
+      window.closeModal = function(id) {
+        if (id === 'modal-absensi-kasir' && _absensiClockInterval) {
+          clearInterval(_absensiClockInterval);
+          _absensiClockInterval = null;
+        }
+        origClose(id);
+      };
+    }
+  })();
+
+  console.log('[AbsensiKasir] Modul absensi kasir v1 dimuat.');
 
   // ============================================================
   // ===== MODUL MONITOR CABANG =================================
