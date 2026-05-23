@@ -4562,29 +4562,41 @@
       }
     }
 
+    // ── PLAN LIMITS ──
+    const PLAN_LIMITS = {
+      trial:     { produk: 100,  dompet: 20  },
+      basic:     { produk: 100,  dompet: 20  },
+      pro:       { produk: 300,  dompet: 50  },
+      unlimited: { produk: 1000, dompet: 100 },
+    };
+    function getPlanLimits() {
+      const plan = localStorage.getItem('k_plan') || 'trial';
+      return PLAN_LIMITS[plan] || PLAN_LIMITS.trial;
+    }
+
     // ── UPGRADE MODAL ──
     const _UPGRADE_INFO = {
       basic: {
         color: '#0ea5e9', bg: 'rgba(14,165,233,0.08)', border: 'rgba(14,165,233,0.2)',
-        label: 'BASIC', price: 'Rp29K/bln',
+        label: 'BASIC', price: 'Rp20K/bln',
         icon: 'fa-star', iconColor: '#0ea5e9',
         desc: 'Untuk konter kecil yang ingin mulai tertata.',
-        fitur: ['Kasir Digital', 'Manajemen Stok', 'Laporan Harian', 'Hutang Piutang'],
+        fitur: ['Kasir Digital', 'Manajemen Stok', 'Laporan Harian', 'Hutang Piutang', 'Maks. 100 Produk', 'Maks. 20 Dompet', 'Transaksi Unlimited'],
       },
       pro: {
         color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)',
-        label: 'PRO ⭐', price: 'Rp59K/bln',
+        label: 'PRO ⭐', price: 'Rp50K/bln',
         icon: 'fa-crown', iconColor: '#10b981',
         desc: 'Fitur lengkap untuk konter yang berkembang pesat.',
-        fitur: ['Semua fitur Basic', 'Ekspor PDF & Laporan', 'Pantau Stok Realtime', 'Notifikasi Stok Menipis', 'Multi-Device Cloud Sync'],
+        fitur: ['Semua fitur Basic', 'Ekspor PDF & Laporan', 'Kasir Karyawan', 'Absensi Kasir', 'Hingga 3 Toko', 'Maks. 300 Produk', 'Maks. 50 Dompet'],
         badge: 'TERPOPULER',
       },
       unlimited: {
         color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)',
-        label: 'UNLIMITED 🔥', price: 'Rp99K/bln',
+        label: 'UNLIMITED 🔥', price: 'Rp125K/bln',
         icon: 'fa-fire', iconColor: '#f59e0b',
         desc: 'Untuk konter besar dengan kebutuhan bisnis penuh.',
-        fitur: ['Semua Fitur Pro', 'Multi-Toko / Cabang', 'Laporan Bulanan Lanjutan', 'Ekspor Laporan PDF', 'Support Dedicated WA'],
+        fitur: ['Semua Fitur Pro', 'Hingga 10 Toko / Cabang', 'Maks. 1.000 Produk', 'Maks. 100 Dompet', 'Laporan Bulanan Lanjutan', 'Support Dedicated WA'],
       },
     };
 
@@ -4594,6 +4606,9 @@
       pantau_stok: 'Pantau Stok Realtime',
       notif_stok: 'Notifikasi Stok Menipis',
       cloud_sync: 'Multi-Device Cloud Sync',
+      absensi: 'Absensi Kasir',
+      limit_produk: 'Tambah Produk',
+      limit_dompet: 'Tambah Dompet',
     };
 
     function showUpgradeModal(featureKey, minPlan, onUnlock) {
@@ -6536,6 +6551,22 @@
       const stok = Number(document.getElementById('p-stok').value);
       const batas_stok = tipe === 'fisik' ? Number(document.getElementById('p-batas-stok').value) : 0;
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama produk harus diisi', 'warning');
+
+      // ── GATE: cek limit produk untuk produk baru ──
+      if (!id) {
+        const limits = getPlanLimits();
+        const totalProduk = (db.inventory || []).length;
+        if (totalProduk >= limits.produk) {
+          const plan = localStorage.getItem('k_plan') || 'trial';
+          const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
+          const rank = PLAN_RANK[plan] ?? 0;
+          const nextPlan = rank < 1 ? 'basic' : rank < 2 ? 'pro' : 'unlimited';
+          closeModal('modal-produk');
+          showUpgradeModal('limit_produk', nextPlan);
+          return;
+        }
+      }
+
       if (id) {
         const idx = db.inventory.findIndex(p => p.id === id);
         if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok };
@@ -6559,6 +6590,20 @@
       const tipe = document.getElementById('w-tipe').value;
       const saldo = Number(document.getElementById('w-saldo').value||0);
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama dompet harus diisi!', 'warning');
+
+      // ── GATE: cek limit dompet ──
+      const limits = getPlanLimits();
+      const totalDompet = (db.dompet || []).length;
+      if (totalDompet >= limits.dompet) {
+        const plan = localStorage.getItem('k_plan') || 'trial';
+        const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
+        const rank = PLAN_RANK[plan] ?? 0;
+        const nextPlan = rank < 1 ? 'basic' : rank < 2 ? 'pro' : 'unlimited';
+        closeModal('modal-wallet');
+        showUpgradeModal('limit_dompet', nextPlan);
+        return;
+      }
+
       const w = { id: 'W-'+Date.now(), nama, tipe, saldo };
       db.dompet.push(w);
       addMutasi(w.id, saldo, 'in', 'SALDO AWAL: '+nama);
@@ -8134,7 +8179,7 @@
               </div>
               <div style="text-align:center;">
                 <p style="font-size:16px;font-weight:900;color:white;margin-bottom:6px;">Hutang Piutang</p>
-                <p style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;line-height:1.5;">Fitur ini tersedia mulai paket<br><span style="color:#0ea5e9;font-weight:900;">BASIC — Rp29K/bulan</span></p>
+                <p style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;line-height:1.5;">Fitur ini tersedia mulai paket<br><span style="color:#0ea5e9;font-weight:900;">BASIC — Rp20K/bulan</span></p>
               </div>
               <button onclick="showUpgradeModal('hutang','basic')"
                 style="padding:14px 32px;border-radius:16px;border:0;background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:white;font-weight:900;font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 24px rgba(14,165,233,0.4);">
@@ -8147,6 +8192,48 @@
         } else {
           if (hutangWall) hutangWall.remove();
         }
+      }
+
+      // ── 6. Update label counter produk & dompet di header section ──
+      const limits = getPlanLimits();
+      const totalProduk = (typeof db !== 'undefined' && db.inventory) ? db.inventory.length : 0;
+      const totalDompet = (typeof db !== 'undefined' && db.dompet) ? db.dompet.length : 0;
+
+      // Label counter produk di header stok
+      let produkCounterEl = document.getElementById('plan-produk-counter');
+      if (!produkCounterEl) {
+        const stokHeader = document.querySelector('#view-stok h3');
+        if (stokHeader) {
+          produkCounterEl = document.createElement('span');
+          produkCounterEl.id = 'plan-produk-counter';
+          produkCounterEl.style.cssText = 'font-size:10px;font-weight:800;padding:3px 10px;border-radius:8px;margin-left:8px;vertical-align:middle;';
+          stokHeader.appendChild(produkCounterEl);
+        }
+      }
+      if (produkCounterEl) {
+        const sisa = limits.produk - totalProduk;
+        const pctUsed = totalProduk / limits.produk;
+        produkCounterEl.style.background = pctUsed >= 1 ? 'rgba(239,68,68,0.12)' : pctUsed >= 0.8 ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.10)';
+        produkCounterEl.style.color = pctUsed >= 1 ? '#ef4444' : pctUsed >= 0.8 ? '#f59e0b' : '#10b981';
+        produkCounterEl.textContent = `${totalProduk}/${limits.produk} produk`;
+      }
+
+      // Label counter dompet di header wallet
+      let dompetCounterEl = document.getElementById('plan-dompet-counter');
+      if (!dompetCounterEl) {
+        const walletHeader = document.querySelector('#view-wallets h3');
+        if (walletHeader) {
+          dompetCounterEl = document.createElement('span');
+          dompetCounterEl.id = 'plan-dompet-counter';
+          dompetCounterEl.style.cssText = 'font-size:10px;font-weight:800;padding:3px 10px;border-radius:8px;margin-left:8px;vertical-align:middle;';
+          walletHeader.appendChild(dompetCounterEl);
+        }
+      }
+      if (dompetCounterEl) {
+        const pctUsed = totalDompet / limits.dompet;
+        dompetCounterEl.style.background = pctUsed >= 1 ? 'rgba(239,68,68,0.12)' : pctUsed >= 0.8 ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.10)';
+        dompetCounterEl.style.color = pctUsed >= 1 ? '#ef4444' : pctUsed >= 0.8 ? '#f59e0b' : '#10b981';
+        dompetCounterEl.textContent = `${totalDompet}/${limits.dompet} dompet`;
       }
     }
 
