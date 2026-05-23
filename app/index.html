@@ -692,7 +692,7 @@
           <div class="h-px flex-1" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07));"></div>
           <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style="background:rgba(255,160,0,0.09);border:1px solid rgba(255,160,0,0.18);">
             <svg width="10" height="10" viewBox="0 0 192 192" fill="none"><path d="M37 155.5L59.5 32L103 107.5L37 155.5Z" fill="#FFA000"/><path d="M103 107.5L125.5 55L155 155.5L103 107.5Z" fill="#FF6D00"/><path d="M37 155.5L96 125L155 155.5L96 172L37 155.5Z" fill="#FFCA28"/></svg>
-            <span class="text-[9px] font-black uppercase tracking-widest" style="color:rgba(255,160,0,0.7);">KonterkuCloud.my.id</span>
+            <span class="text-[9px] font-black uppercase tracking-widest" style="color:rgba(255,160,0,0.7);">Firebase Auth + Firestore</span>
           </div>
           <div class="h-px flex-1" style="background:linear-gradient(90deg,rgba(255,255,255,0.07),transparent);"></div>
         </div>
@@ -1227,33 +1227,6 @@
             <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
           </button>
 
-          <!-- Catatan -->
-          <button class="sidebar-menu-item" onclick="openSidebarMenu('catatan')">
-            <div class="sidebar-icon-wrap bg-amber-500/15">
-              <i class="fas fa-sticky-note text-amber-400"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[12px] font-black text-slate-200">Catatan Toko</p>
-              <p class="text-[9px] text-slate-500 font-bold">Kelola catatan & memo</p>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span id="sidebar-note-badge" class="hidden px-2 py-0.5 bg-amber-500 text-white text-[8px] font-black rounded-full">0</span>
-              <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
-            </div>
-          </button>
-
-          <!-- Laporan & Stats -->
-          <button class="sidebar-menu-item" onclick="openSidebarMenu('laporan'); setTimeout(()=>setPdfPeriode('harian'),150);">
-            <div class="sidebar-icon-wrap bg-cyan-500/15">
-              <i class="fas fa-chart-line text-cyan-400"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-[12px] font-black text-slate-200">Laporan & Stats</p>
-              <p class="text-[9px] text-slate-500 font-bold">Grafik omset & analisis</p>
-            </div>
-            <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
-          </button>
-
           <!-- ADMIN ONLY SECTION -->
           <div id="sidebar-admin-section" class="hidden">
             <p class="sidebar-section-label" style="color:#f59e0b;">⚡ ADMIN</p>
@@ -1429,6 +1402,36 @@
             </div>
           </div>
           <!-- END MULTI-TOKO SECTION -->
+
+          <!-- ===== MONITOR CABANG SECTION (hanya pemilik, bukan kasir) ===== -->
+          <div id="monitor-cabang-section" class="rounded-2xl overflow-hidden border border-slate-200" style="background:linear-gradient(135deg,#0a1628,#0d2550);">
+            <div class="px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/10">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 12px rgba(0,97,194,0.4);">
+                  <i class="fas fa-chart-network text-white" style="font-size:13px;"></i>
+                </div>
+                <div>
+                  <p class="text-[11px] font-black text-white">Monitor Cabang</p>
+                  <p class="text-[8px] font-bold text-slate-400" id="cabang-monitor-subtitle">Semua data toko Anda</p>
+                </div>
+              </div>
+              <button onclick="loadMonitorCabang()" class="px-2.5 py-1.5 rounded-xl text-[8px] font-black text-white border-0 cursor-pointer flex items-center gap-1" style="background:rgba(255,255,255,0.1);">
+                <i class="fas fa-rotate-right text-[8px]"></i> Muat
+              </button>
+            </div>
+
+            <!-- Tab Cabang -->
+            <div id="cabang-tab-list" class="flex gap-2 px-3 pt-3 pb-1 overflow-x-auto no-scrollbar"></div>
+
+            <!-- Panel konten per cabang -->
+            <div id="cabang-panel-content" class="px-3 pb-4 pt-2">
+              <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin text-blue-300 text-lg block mb-2"></i>
+                <p class="text-[9px] text-slate-400 font-bold">Memuat data cabang...</p>
+              </div>
+            </div>
+          </div>
+          <!-- END MONITOR CABANG SECTION -->
 
           <button onclick="closeModal('modal-sidebar-akun'); logout();" class="w-full py-3.5 bg-red-50 text-red-600 rounded-2xl font-black text-sm border-0 cursor-pointer flex items-center justify-center gap-2 hover:bg-red-100 transition-all">
             <i class="fas fa-right-from-bracket"></i> Keluar dari Akun
@@ -2402,7 +2405,8 @@
 
         <!-- Shortcut Menu -->
         <div class="grid grid-cols-2 gap-3">
-          <button onclick="openSidebarMenu('laporan')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer text-left w-full">
+          <!-- Laporan -->
+          <button onclick="openSidebarMenu('laporan'); setTimeout(()=>setPdfPeriode('harian'),150);" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm active:scale-95 transition-all cursor-pointer text-left w-full">
             <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-chart-line text-cyan-500 text-sm"></i>
             </div>
@@ -2411,13 +2415,34 @@
               <p class="text-[8px] text-slate-400 font-bold">Grafik & analisis</p>
             </div>
           </button>
-          <button onclick="openSidebarMenu('pelanggan')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer text-left w-full">
+          <!-- Pelanggan -->
+          <button onclick="openSidebarMenu('pelanggan')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm active:scale-95 transition-all cursor-pointer text-left w-full">
             <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-users text-rose-500 text-sm"></i>
             </div>
             <div>
               <p class="text-[11px] font-black text-slate-700">Pelanggan</p>
               <p class="text-[8px] text-slate-400 font-bold" id="customer-count-label">0 terdaftar</p>
+            </div>
+          </button>
+          <!-- Catatan -->
+          <button onclick="openSidebarMenu('catatan')" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm active:scale-95 transition-all cursor-pointer text-left w-full">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-sticky-note text-amber-500 text-sm"></i>
+            </div>
+            <div>
+              <p class="text-[11px] font-black text-slate-700">Catatan</p>
+              <p class="text-[8px] text-slate-400 font-bold" id="note-count-label-dash">0 catatan</p>
+            </div>
+          </button>
+          <!-- Cabang (hanya tampil untuk pemilik/admin, bukan kasir) -->
+          <button id="shortcut-cabang" onclick="openMonitorCabang()" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm active:scale-95 transition-all cursor-pointer text-left w-full" style="background:linear-gradient(135deg,#eff6ff,#f0f9ff);border-color:#bfdbfe;">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,rgba(0,97,194,0.12),rgba(56,189,248,0.1));">
+              <i class="fas fa-store text-blue-500 text-sm"></i>
+            </div>
+            <div>
+              <p class="text-[11px] font-black text-blue-700">Cabang</p>
+              <p class="text-[8px] text-blue-400 font-bold" id="cabang-count-label">Monitor toko</p>
             </div>
           </button>
         </div>
@@ -8358,6 +8383,264 @@
   });
 
   console.log('[KasirStaff] Modul kasir staff v1 dimuat.');
+
+  // ============================================================
+  // ===== MODUL MONITOR CABANG =================================
+  // ============================================================
+
+  // State aktif tab cabang
+  let _activeCabangIdx = 0;
+  let _cabangStores    = [];
+
+  // Buka monitor cabang dari shortcut dashboard
+  function openMonitorCabang() {
+    const isKasir = localStorage.getItem('k_kasir_mode') === 'true';
+    if (isKasir) {
+      Swal.fire('Akses Ditolak', 'Hanya pemilik toko yang bisa melihat monitor cabang.', 'warning');
+      return;
+    }
+    // Buka modal akun lalu scroll ke bagian monitor
+    openSidebarMenu('akun');
+    setTimeout(() => {
+      const el = document.getElementById('monitor-cabang-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      loadMonitorCabang();
+    }, 350);
+  }
+
+  // Load semua toko & render tab + panel
+  async function loadMonitorCabang() {
+    const uid = localStorage.getItem('k_sid');
+    if (!uid || uid === 'DEMO') return;
+
+    const tabEl   = document.getElementById('cabang-tab-list');
+    const panelEl = document.getElementById('cabang-panel-content');
+    const subEl   = document.getElementById('cabang-monitor-subtitle');
+
+    if (panelEl) panelEl.innerHTML = '<div class="text-center py-5"><i class="fas fa-spinner fa-spin text-blue-300 text-lg block mb-2"></i><p class="text-[9px] text-slate-400 font-bold">Memuat...</p></div>';
+    if (tabEl)   tabEl.innerHTML   = '';
+
+    try {
+      await waitMTFirebase(8000);
+      const stores = await getUserStores(uid);
+      _cabangStores = stores;
+
+      // Update label shortcut di dashboard
+      const cabangLbl = document.getElementById('cabang-count-label');
+      if (cabangLbl) cabangLbl.textContent = stores.length + ' cabang aktif';
+      if (subEl) subEl.textContent = stores.length + ' toko terdaftar';
+
+      if (!stores.length) {
+        if (panelEl) panelEl.innerHTML = '<div class="text-center py-5"><i class="fas fa-store-slash text-slate-600 text-2xl block mb-2"></i><p class="text-[9px] text-slate-400 font-bold">Belum ada toko/cabang.</p></div>';
+        return;
+      }
+
+      // Render tabs
+      if (tabEl) {
+        tabEl.innerHTML = stores.map((s, i) => {
+          const initial = (s.store_name||'?').charAt(0).toUpperCase();
+          return `<button onclick="switchCabangTab(${i})" id="cabang-tab-${i}"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black border-0 cursor-pointer flex-shrink-0 transition-all"
+            style="${i===0 ? 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;' : 'background:rgba(255,255,255,0.08);color:#94a3b8;'}">
+            <span class="w-4 h-4 rounded-md flex items-center justify-center text-[8px] font-black"
+              style="${i===0 ? 'background:rgba(255,255,255,0.25);' : 'background:rgba(255,255,255,0.1);'}">${initial}</span>
+            ${s.store_name || 'Toko ' + (i+1)}
+          </button>`;
+        }).join('');
+      }
+
+      _activeCabangIdx = 0;
+      renderCabangPanel(0);
+
+    } catch(e) {
+      if (panelEl) panelEl.innerHTML = '<p class="text-[9px] text-red-400 font-bold text-center py-3">Gagal: ' + (e.message||'Error') + '</p>';
+    }
+  }
+
+  function switchCabangTab(idx) {
+    _activeCabangIdx = idx;
+    // Update tab style
+    _cabangStores.forEach((_, i) => {
+      const btn = document.getElementById('cabang-tab-' + i);
+      if (!btn) return;
+      if (i === idx) {
+        btn.style.background = 'linear-gradient(135deg,#0061C2,#38BDF8)';
+        btn.style.color = 'white';
+      } else {
+        btn.style.background = 'rgba(255,255,255,0.08)';
+        btn.style.color = '#94a3b8';
+      }
+    });
+    renderCabangPanel(idx);
+  }
+
+  function renderCabangPanel(idx) {
+    const panelEl = document.getElementById('cabang-panel-content');
+    if (!panelEl || !_cabangStores[idx]) return;
+
+    const s     = _cabangStores[idx];
+    const d     = s.data || {};
+    const activeId = localStorage.getItem('k_active_store_id') || '';
+    const isActive = s.id === activeId;
+
+    // Hitung statistik dari data toko
+    const transaksi    = d.transaksi    || [];
+    const inventory    = d.inventory    || [];
+    const hutang       = d.hutang       || [];
+    const dompet       = d.dompet       || [];
+    const notes        = d.notes        || [];
+
+    // Omset & laba hari ini
+    const todayStr = new Date().toISOString().split('T')[0];
+    const trxHariIni = transaksi.filter(t => (t.tgl||'').startsWith(todayStr));
+    const omsetHariIni = trxHariIni.reduce((s, t) => s + (t.jual||0), 0);
+    const labaHariIni  = trxHariIni.reduce((s, t) => s + ((t.jual||0) - (t.modal||0)), 0);
+
+    // Total omset
+    const omsetTotal = transaksi.reduce((s, t) => s + (t.jual||0), 0);
+    const labaTotal  = transaksi.reduce((s, t) => s + ((t.jual||0) - (t.modal||0)), 0);
+
+    // Saldo total dompet
+    const totalSaldo = dompet.reduce((s, w) => s + (w.saldo||0), 0);
+
+    // Piutang & hutang
+    const piutang = hutang.filter(h => h.tipe === 'pelanggan').reduce((s, h) => s + (h.jumlah||0), 0);
+    const hutangToko = hutang.filter(h => h.tipe === 'toko').reduce((s, h) => s + (h.jumlah||0), 0);
+
+    // Stok kritis (stok <= batas atau 0)
+    const stokHabis = inventory.filter(p => p.tipe === 'fisik' && (p.stok||0) === 0).length;
+    const stokTipis = inventory.filter(p => p.tipe === 'fisik' && (p.stok||0) > 0 && (p.stok||0) <= (p.batas_stok||5)).length;
+
+    // 5 transaksi terakhir
+    const recentTrx = [...transaksi].sort((a, b) => (b.tgl||'').localeCompare(a.tgl||'')).slice(0, 5);
+
+    const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
+
+    panelEl.innerHTML = `
+      <!-- Status badge -->
+      <div class="flex items-center gap-2 mb-3">
+        <span class="px-2 py-1 rounded-lg text-[8px] font-black" style="${isActive ? 'background:rgba(16,185,129,0.15);color:#34d399;' : 'background:rgba(255,255,255,0.07);color:#94a3b8;'}">
+          ${isActive ? '● AKTIF SEKARANG' : '○ CABANG LAIN'}
+        </span>
+        ${s.last_sync ? `<span class="text-[8px] text-slate-500 font-bold">Sync: ${new Date(s.last_sync.toDate ? s.last_sync.toDate() : s.last_sync).toLocaleDateString('id-ID')}</span>` : ''}
+      </div>
+
+      <!-- Stat grid 2x2 -->
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <div class="rounded-xl p-3" style="background:rgba(0,97,194,0.15);border:1px solid rgba(0,97,194,0.25);">
+          <p class="text-[7px] font-black uppercase tracking-wide" style="color:#93c5fd;">Omset Hari Ini</p>
+          <p class="text-[13px] font-black text-white mt-0.5">${fmtRp(omsetHariIni)}</p>
+          <p class="text-[8px] font-bold mt-0.5" style="color:#60a5fa;">${trxHariIni.length} transaksi</p>
+        </div>
+        <div class="rounded-xl p-3" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);">
+          <p class="text-[7px] font-black uppercase tracking-wide" style="color:#6ee7b7;">Laba Hari Ini</p>
+          <p class="text-[13px] font-black text-white mt-0.5">${fmtRp(labaHariIni)}</p>
+          <p class="text-[8px] font-bold mt-0.5" style="color:#34d399;">Bersih</p>
+        </div>
+        <div class="rounded-xl p-3" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25);">
+          <p class="text-[7px] font-black uppercase tracking-wide" style="color:#fcd34d;">Total Saldo</p>
+          <p class="text-[13px] font-black text-white mt-0.5">${fmtRp(totalSaldo)}</p>
+          <p class="text-[8px] font-bold mt-0.5" style="color:#fbbf24;">${dompet.length} dompet</p>
+        </div>
+        <div class="rounded-xl p-3" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);">
+          <p class="text-[7px] font-black uppercase tracking-wide" style="color:#fca5a5;">Piutang</p>
+          <p class="text-[13px] font-black text-white mt-0.5">${fmtRp(piutang)}</p>
+          <p class="text-[8px] font-bold mt-0.5" style="color:#f87171;">${hutang.filter(h=>h.tipe==='pelanggan').length} pelanggan</p>
+        </div>
+      </div>
+
+      <!-- Omset total & stok alert -->
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <div class="rounded-xl p-3" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.2);">
+          <p class="text-[7px] font-black uppercase tracking-wide" style="color:#c4b5fd;">Omset Total</p>
+          <p class="text-[12px] font-black text-white mt-0.5">${fmtRp(omsetTotal)}</p>
+          <p class="text-[8px] font-bold mt-0.5" style="color:#a78bfa;">${transaksi.length} trx</p>
+        </div>
+        <div class="rounded-xl p-3" style="background:${(stokHabis+stokTipis)>0 ? 'rgba(249,115,22,0.12)' : 'rgba(255,255,255,0.05)'};border:1px solid ${(stokHabis+stokTipis)>0 ? 'rgba(249,115,22,0.25)' : 'rgba(255,255,255,0.08)'};">
+          <p class="text-[7px] font-black uppercase tracking-wide" style="color:${(stokHabis+stokTipis)>0 ? '#fdba74' : '#94a3b8'};">Status Stok</p>
+          <p class="text-[12px] font-black mt-0.5" style="color:${(stokHabis+stokTipis)>0 ? '#fb923c' : '#6ee7b7'};">
+            ${(stokHabis+stokTipis)>0 ? '⚠️ ' + (stokHabis+stokTipis) + ' Alert' : '✅ Aman'}
+          </p>
+          <p class="text-[8px] font-bold mt-0.5" style="color:${stokHabis>0 ? '#f87171' : '#94a3b8'};">${stokHabis} habis · ${stokTipis} tipis</p>
+        </div>
+      </div>
+
+      <!-- 5 Transaksi Terakhir -->
+      <div class="rounded-xl overflow-hidden" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <div class="px-3 py-2 border-b" style="border-color:rgba(255,255,255,0.08);">
+          <p class="text-[8px] font-black uppercase tracking-wider text-slate-400">Transaksi Terakhir</p>
+        </div>
+        ${recentTrx.length === 0
+          ? '<p class="text-center text-[9px] text-slate-500 font-bold py-3">Belum ada transaksi</p>'
+          : recentTrx.map(t => `
+            <div class="flex items-center justify-between px-3 py-2 border-b" style="border-color:rgba(255,255,255,0.05);">
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-black text-white truncate">${t.produk||'—'}</p>
+                <p class="text-[8px] text-slate-500 font-bold">${t.tgl||'—'} · ${t.pelanggan||'Umum'}</p>
+              </div>
+              <div class="text-right flex-shrink-0 ml-2">
+                <p class="text-[10px] font-black" style="color:#34d399;">+${fmtRp(t.jual||0)}</p>
+                <p class="text-[8px] font-bold px-1.5 py-0.5 rounded-md inline-block" style="${t.status==='Lunas' ? 'background:rgba(16,185,129,0.15);color:#34d399;' : 'background:rgba(245,158,11,0.15);color:#fbbf24;'}">${t.status||'—'}</p>
+              </div>
+            </div>`).join('')
+        }
+      </div>
+
+      <!-- Tombol pindah ke toko ini -->
+      ${!isActive ? `
+      <button onclick="closeModal('modal-sidebar-akun'); setTimeout(()=>switchToStore('${s.id}','${(s.store_name||'').replace(/'/g,"\\'")}'),200);"
+        class="w-full mt-3 py-2.5 rounded-xl font-black text-[10px] text-white border-0 cursor-pointer flex items-center justify-center gap-2"
+        style="background:linear-gradient(135deg,#0061C2,#38BDF8);">
+        <i class="fas fa-right-left"></i> PINDAH KE TOKO INI
+      </button>` : ''}
+    `;
+  }
+
+  // Update jumlah catatan di shortcut dashboard
+  function updateDashboardNoteCounts() {
+    // Catatan count
+    const noteEl = document.getElementById('note-count-label-dash');
+    if (noteEl && typeof db !== 'undefined' && db.notes) {
+      noteEl.textContent = db.notes.length + ' catatan';
+    }
+    // Cabang count — refresh setiap kali dashboard render
+    const cabangEl = document.getElementById('cabang-count-label');
+    if (cabangEl) {
+      const uid = localStorage.getItem('k_sid');
+      if (uid && uid !== 'DEMO' && localStorage.getItem('k_kasir_mode') !== 'true') {
+        // Ambil dari cache _cabangStores kalau sudah di-load
+        if (_cabangStores.length > 0) {
+          cabangEl.textContent = _cabangStores.length + ' cabang aktif';
+        } else {
+          // Load ringan di background
+          getUserStores(uid).then(stores => {
+            _cabangStores = stores;
+            if (cabangEl) cabangEl.textContent = stores.length + ' cabang aktif';
+          }).catch(() => {});
+        }
+      } else if (localStorage.getItem('k_kasir_mode') === 'true') {
+        // Kasir tidak perlu lihat cabang — sembunyikan tombol
+        const cabangBtn = document.getElementById('shortcut-cabang');
+        if (cabangBtn) cabangBtn.style.display = 'none';
+      }
+    }
+  }
+
+  // Hook ke renderAll — patch agar ikut diupdate
+  const _origRenderAll = typeof renderAll === 'function' ? renderAll : null;
+  if (_origRenderAll) {
+    window.renderAll = function() {
+      _origRenderAll();
+      setTimeout(updateDashboardNoteCounts, 100);
+    };
+  }
+
+  // Jalankan update pertama kali setelah app siap
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(updateDashboardNoteCounts, 2000);
+  });
+
+  console.log('[MonitorCabang] Modul monitor cabang v1 dimuat.');
   </script>
 </body>
 </html>
