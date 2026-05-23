@@ -1836,15 +1836,39 @@
                 </div>
               </div>
 
-              <!-- Saldo Awal Kas -->
+              <!-- Laporan Saldo Awal (dari Dompet) -->
               <div class="rounded-2xl p-4 relative overflow-hidden" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;">
                 <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full pointer-events-none" style="background:rgba(16,185,129,0.1);"></div>
-                <p style="font-size:8px;font-weight:900;color:#15803d;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-coins mr-1"></i>Saldo Awal Kas (Rp)</p>
-                <div class="flex items-center gap-2">
-                  <span class="text-lg font-black" style="color:#166534;">Rp</span>
-                  <input type="number" id="absensi-buka-saldo" class="flex-1 text-xl font-black bg-transparent border-none outline-none" style="color:#166534;min-width:0;" placeholder="0">
+                <div class="flex items-center justify-between mb-3">
+                  <p style="font-size:8px;font-weight:900;color:#15803d;text-transform:uppercase;letter-spacing:0.1em;"><i class="fas fa-wallet mr-1"></i>Saldo Awal (Dari Dompet)</p>
+                  <button onclick="_refreshSaldoBuka()" style="font-size:8px;font-weight:900;color:#059669;background:rgba(5,150,105,0.12);border:1px solid rgba(5,150,105,0.25);border-radius:8px;padding:3px 8px;cursor:pointer;"><i class="fas fa-rotate mr-1"></i>Refresh</button>
                 </div>
-                <p style="font-size:8px;color:#86efac;font-weight:700;margin-top:4px;">* Jumlah uang tunai di laci kasir saat mulai shift</p>
+                <!-- Kas Tunai -->
+                <div class="flex items-center justify-between mb-2 p-2 rounded-xl" style="background:rgba(255,255,255,0.6);">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#10b981;"><i class="fas fa-coins text-white" style="font-size:9px;"></i></div>
+                    <div>
+                      <p style="font-size:8px;font-weight:900;color:#064e3b;text-transform:uppercase;">Kas Tunai</p>
+                      <p id="absensi-buka-kas-detail" style="font-size:7px;font-weight:700;color:#6b7280;">—</p>
+                    </div>
+                  </div>
+                  <p id="absensi-buka-saldo-kas" class="text-base font-black" style="color:#166534;">Rp 0</p>
+                </div>
+                <!-- Saldo Bank/Digital -->
+                <div class="flex items-center justify-between p-2 rounded-xl" style="background:rgba(255,255,255,0.6);">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#0ea5e9;"><i class="fas fa-building-columns text-white" style="font-size:9px;"></i></div>
+                    <div>
+                      <p style="font-size:8px;font-weight:900;color:#0c4a6e;text-transform:uppercase;">Bank / Digital</p>
+                      <p id="absensi-buka-bank-detail" style="font-size:7px;font-weight:700;color:#6b7280;">—</p>
+                    </div>
+                  </div>
+                  <p id="absensi-buka-saldo-bank" class="text-base font-black" style="color:#0369a1;">Rp 0</p>
+                </div>
+                <!-- Hidden input untuk store nilai -->
+                <input type="hidden" id="absensi-buka-saldo-kas-val" value="0">
+                <input type="hidden" id="absensi-buka-saldo-bank-val" value="0">
+                <p style="font-size:8px;color:#86efac;font-weight:700;margin-top:8px;"><i class="fas fa-circle-info mr-1"></i>Saldo terdeteksi otomatis dari dompet saat buka shift</p>
               </div>
 
               <!-- Keterangan -->
@@ -1902,28 +1926,60 @@
               </div>
             </div>
 
-            <!-- Saldo Akhir Kas -->
+            <!-- Laporan Saldo Akhir (dari Dompet) -->
             <div class="rounded-2xl p-4 mb-3 relative overflow-hidden" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #c4b5fd;">
               <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full pointer-events-none" style="background:rgba(124,58,237,0.1);"></div>
-              <p style="font-size:8px;font-weight:900;color:#6d28d9;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;"><i class="fas fa-cash-register mr-1"></i>Saldo Akhir Kas (Rp)</p>
-              <div class="flex items-center gap-2">
-                <span class="text-lg font-black" style="color:#4c1d95;">Rp</span>
-                <input type="number" id="absensi-tutup-saldo" class="flex-1 text-xl font-black bg-transparent border-none outline-none" style="color:#4c1d95;min-width:0;" placeholder="0" oninput="hitungSelisihShift()">
+              <div class="flex items-center justify-between mb-3">
+                <p style="font-size:8px;font-weight:900;color:#6d28d9;text-transform:uppercase;letter-spacing:0.1em;"><i class="fas fa-wallet mr-1"></i>Saldo Akhir (Dari Dompet)</p>
+                <button onclick="_refreshSaldoTutup()" style="font-size:8px;font-weight:900;color:#7c3aed;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);border-radius:8px;padding:3px 8px;cursor:pointer;"><i class="fas fa-rotate mr-1"></i>Refresh</button>
               </div>
-              <p style="font-size:8px;color:#a78bfa;font-weight:700;margin-top:4px;">* Hitung fisik uang tunai di laci kasir saat tutup shift</p>
+              <!-- Kas Tunai -->
+              <div class="flex items-center justify-between mb-2 p-2 rounded-xl" style="background:rgba(255,255,255,0.6);">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#7c3aed;"><i class="fas fa-coins text-white" style="font-size:9px;"></i></div>
+                  <div>
+                    <p style="font-size:8px;font-weight:900;color:#3b0764;text-transform:uppercase;">Kas Tunai</p>
+                    <p id="absensi-tutup-kas-detail" style="font-size:7px;font-weight:700;color:#6b7280;">—</p>
+                  </div>
+                </div>
+                <p id="absensi-tutup-saldo-kas" class="text-base font-black" style="color:#4c1d95;">Rp 0</p>
+              </div>
+              <!-- Saldo Bank/Digital -->
+              <div class="flex items-center justify-between p-2 rounded-xl" style="background:rgba(255,255,255,0.6);">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#a855f7;"><i class="fas fa-building-columns text-white" style="font-size:9px;"></i></div>
+                  <div>
+                    <p style="font-size:8px;font-weight:900;color:#3b0764;text-transform:uppercase;">Bank / Digital</p>
+                    <p id="absensi-tutup-bank-detail" style="font-size:7px;font-weight:700;color:#6b7280;">—</p>
+                  </div>
+                </div>
+                <p id="absensi-tutup-saldo-bank" class="text-base font-black" style="color:#6d28d9;">Rp 0</p>
+              </div>
+              <!-- Hidden input untuk store nilai (agar hitungSelisihShift bisa baca) -->
+              <input type="hidden" id="absensi-tutup-saldo" value="0">
+              <input type="hidden" id="absensi-tutup-saldo-bank-val" value="0">
+              <p style="font-size:8px;color:#a78bfa;font-weight:700;margin-top:8px;"><i class="fas fa-circle-info mr-1"></i>Saldo terdeteksi otomatis dari dompet saat tutup shift</p>
             </div>
 
             <!-- Selisih Saldo -->
             <div id="absensi-selisih-row" class="rounded-2xl p-4 mb-3 hidden" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid #bae6fd;">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <i class="fas fa-scale-balanced text-sky-600 text-sm"></i>
-                  <div>
-                    <p style="font-size:8px;font-weight:900;color:#0369a1;text-transform:uppercase;letter-spacing:0.08em;">Selisih Kas</p>
-                    <p style="font-size:9px;font-weight:700;color:#94a3b8;">(Saldo Akhir - Saldo Awal)</p>
-                  </div>
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fas fa-scale-balanced text-sky-600 text-sm"></i>
+                <p style="font-size:8px;font-weight:900;color:#0369a1;text-transform:uppercase;letter-spacing:0.08em;">Selisih Saldo (Akhir - Awal)</p>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex justify-between items-center">
+                  <span style="font-size:9px;font-weight:700;color:#64748b;"><i class="fas fa-coins mr-1 text-emerald-500"></i>Selisih Kas</span>
+                  <p id="absensi-selisih-kas-val" class="text-sm font-black" style="color:#0369a1;">Rp 0</p>
                 </div>
-                <p id="absensi-selisih-val" class="text-lg font-black" style="color:#0369a1;">Rp 0</p>
+                <div class="flex justify-between items-center">
+                  <span style="font-size:9px;font-weight:700;color:#64748b;"><i class="fas fa-building-columns mr-1 text-sky-500"></i>Selisih Bank</span>
+                  <p id="absensi-selisih-bank-val" class="text-sm font-black" style="color:#0369a1;">Rp 0</p>
+                </div>
+                <div class="flex justify-between items-center pt-1" style="border-top:1px solid #bae6fd;">
+                  <span style="font-size:9px;font-weight:900;color:#0369a1;">Total Selisih</span>
+                  <p id="absensi-selisih-val" class="text-base font-black" style="color:#0369a1;">Rp 0</p>
+                </div>
               </div>
             </div>
 
@@ -8989,6 +9045,57 @@
       const kasirNama = localStorage.getItem('k_kasir_nama');
       namaEl.value = kasirNama || '';
     }
+    // Refresh saldo dari dompet
+    setTimeout(_refreshSaldoBuka, 300);
+  }
+
+  // ─── HELPER: Baca saldo kas & bank dari db.dompet ───
+  function _getSaldoDompet() {
+    const dompet = (typeof db !== 'undefined' && db.dompet) ? db.dompet : [];
+    const kasList   = dompet.filter(w => w.tipe === 'kas');
+    const bankList  = dompet.filter(w => w.tipe === 'digital' || w.tipe === 'bank');
+    const totalKas  = kasList.reduce((s, w)  => s + (Number(w.saldo)||0), 0);
+    const totalBank = bankList.reduce((s, w) => s + (Number(w.saldo)||0), 0);
+    const kasDetail  = kasList.length  ? kasList.map(w => w.nama).join(', ')  : 'Tidak ada dompet kas';
+    const bankDetail = bankList.length ? bankList.map(w => w.nama).join(', ') : 'Tidak ada dompet bank';
+    return { totalKas, totalBank, kasDetail, bankDetail };
+  }
+
+  // ─── REFRESH TAMPILAN SALDO BUKA SHIFT ───
+  function _refreshSaldoBuka() {
+    const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
+    const { totalKas, totalBank, kasDetail, bankDetail } = _getSaldoDompet();
+    const kasEl    = document.getElementById('absensi-buka-saldo-kas');
+    const bankEl   = document.getElementById('absensi-buka-saldo-bank');
+    const kasDetEl = document.getElementById('absensi-buka-kas-detail');
+    const bankDetEl= document.getElementById('absensi-buka-bank-detail');
+    const kasValEl = document.getElementById('absensi-buka-saldo-kas-val');
+    const bankValEl= document.getElementById('absensi-buka-saldo-bank-val');
+    if (kasEl)     kasEl.textContent     = fmtRp(totalKas);
+    if (bankEl)    bankEl.textContent    = fmtRp(totalBank);
+    if (kasDetEl)  kasDetEl.textContent  = kasDetail;
+    if (bankDetEl) bankDetEl.textContent = bankDetail;
+    if (kasValEl)  kasValEl.value  = totalKas;
+    if (bankValEl) bankValEl.value = totalBank;
+  }
+
+  // ─── REFRESH TAMPILAN SALDO TUTUP SHIFT ───
+  function _refreshSaldoTutup() {
+    const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
+    const { totalKas, totalBank, kasDetail, bankDetail } = _getSaldoDompet();
+    const kasEl    = document.getElementById('absensi-tutup-saldo-kas');
+    const bankEl   = document.getElementById('absensi-tutup-saldo-bank');
+    const kasDetEl = document.getElementById('absensi-tutup-kas-detail');
+    const bankDetEl= document.getElementById('absensi-tutup-bank-detail');
+    const saldoEl  = document.getElementById('absensi-tutup-saldo');
+    const bankValEl= document.getElementById('absensi-tutup-saldo-bank-val');
+    if (kasEl)     kasEl.textContent     = fmtRp(totalKas);
+    if (bankEl)    bankEl.textContent    = fmtRp(totalBank);
+    if (kasDetEl)  kasDetEl.textContent  = kasDetail;
+    if (bankDetEl) bankDetEl.textContent = bankDetail;
+    if (saldoEl)   saldoEl.value  = totalKas;
+    if (bankValEl) bankValEl.value = totalBank;
+    hitungSelisihShift();
   }
 
   // ─── SWITCH TAB ABSENSI ───
@@ -9022,6 +9129,8 @@
       const mm = String(now.getMinutes()).padStart(2,'0');
       jamEl.value = hh + ':' + mm;
     }
+    // Refresh saldo dari dompet
+    setTimeout(_refreshSaldoTutup, 300);
   }
 
   // ─── LOAD SHIFT AKTIF UNTUK DROPDOWN TUTUP ───
@@ -9072,9 +9181,13 @@
         <span style="font-size:9px;font-weight:700;color:#92400e;">Mulai Shift</span>
         <span style="font-size:10px;font-weight:900;color:#451a03;">${s.buka_tgl||'—'} ${s.buka_jam||'—'}</span>
       </div>
+      <div class="flex justify-between items-center py-1 border-b border-amber-100">
+        <span style="font-size:9px;font-weight:700;color:#92400e;"><i class="fas fa-coins mr-1"></i>Saldo Awal Kas</span>
+        <span style="font-size:11px;font-weight:900;color:#059669;">${fmtRp(s.saldo_awal||s.saldo_awal_kas||0)}</span>
+      </div>
       <div class="flex justify-between items-center py-1">
-        <span style="font-size:9px;font-weight:700;color:#92400e;">Saldo Awal</span>
-        <span style="font-size:11px;font-weight:900;color:#059669;">${fmtRp(s.saldo_awal)}</span>
+        <span style="font-size:9px;font-weight:700;color:#92400e;"><i class="fas fa-building-columns mr-1"></i>Saldo Awal Bank</span>
+        <span style="font-size:11px;font-weight:900;color:#0369a1;">${fmtRp(s.saldo_awal_bank||0)}</span>
       </div>
     `;
     infoBox.classList.remove('hidden');
@@ -9084,17 +9197,27 @@
   // ─── HITUNG SELISIH SALDO ───
   function hitungSelisihShift() {
     const shiftId = document.getElementById('absensi-tutup-shift-id')?.value;
-    const saldoAkhirEl = document.getElementById('absensi-tutup-saldo');
-    const selisihRow = document.getElementById('absensi-selisih-row');
-    const selisihVal = document.getElementById('absensi-selisih-val');
-    if (!shiftId || !saldoAkhirEl || !selisihRow || !selisihVal) return;
+    const saldoAkhirKasEl  = document.getElementById('absensi-tutup-saldo');
+    const saldoAkhirBankEl = document.getElementById('absensi-tutup-saldo-bank-val');
+    const selisihRow    = document.getElementById('absensi-selisih-row');
+    const selisihVal    = document.getElementById('absensi-selisih-val');
+    const selisihKasVal = document.getElementById('absensi-selisih-kas-val');
+    const selisihBankVal= document.getElementById('absensi-selisih-bank-val');
+    if (!shiftId || !saldoAkhirKasEl || !selisihRow || !selisihVal) return;
     const s = _absensiActiveShifts.find(x => x.id === shiftId);
-    const saldoAkhir = parseFloat(saldoAkhirEl.value) || 0;
     if (!s) { selisihRow.classList.add('hidden'); return; }
-    const selisih = saldoAkhir - (s.saldo_awal || 0);
-    const fmtRp = v => 'Rp ' + Math.abs(v).toLocaleString('id-ID');
-    selisihVal.textContent = (selisih >= 0 ? '+' : '-') + fmtRp(selisih);
-    selisihVal.style.color = selisih >= 0 ? '#059669' : '#ef4444';
+    const saldoAkhirKas  = parseFloat(saldoAkhirKasEl.value)  || 0;
+    const saldoAkhirBank = parseFloat(saldoAkhirBankEl?.value) || 0;
+    const saldoAwalKas   = s.saldo_awal_kas  !== undefined ? (s.saldo_awal_kas||0) : (s.saldo_awal||0);
+    const saldoAwalBank  = s.saldo_awal_bank || 0;
+    const selisihKas  = saldoAkhirKas  - saldoAwalKas;
+    const selisihBank = saldoAkhirBank - saldoAwalBank;
+    const selisihTotal = selisihKas + selisihBank;
+    const fmtSelisih = v => (v >= 0 ? '+' : '-') + 'Rp ' + Math.abs(v).toLocaleString('id-ID');
+    if (selisihKasVal)  { selisihKasVal.textContent  = fmtSelisih(selisihKas);  selisihKasVal.style.color  = selisihKas  >= 0 ? '#059669' : '#ef4444'; }
+    if (selisihBankVal) { selisihBankVal.textContent = fmtSelisih(selisihBank); selisihBankVal.style.color = selisihBank >= 0 ? '#059669' : '#ef4444'; }
+    selisihVal.textContent = fmtSelisih(selisihTotal);
+    selisihVal.style.color = selisihTotal >= 0 ? '#059669' : '#ef4444';
     selisihRow.classList.remove('hidden');
   }
 
@@ -9104,7 +9227,8 @@
     const nama   = (document.getElementById('absensi-buka-nama')?.value || '').trim();
     const tgl    = document.getElementById('absensi-buka-tgl')?.value || '';
     const jam    = document.getElementById('absensi-buka-jam')?.value || '';
-    const saldo  = parseFloat(document.getElementById('absensi-buka-saldo')?.value) || 0;
+    const saldoKas  = parseFloat(document.getElementById('absensi-buka-saldo-kas-val')?.value) || 0;
+    const saldoBank = parseFloat(document.getElementById('absensi-buka-saldo-bank-val')?.value) || 0;
     const ket    = (document.getElementById('absensi-buka-ket')?.value || '').trim();
     if (!nama) return (_getMySwal()||Swal).fire('Perhatian', 'Nama kasir harus diisi!', 'warning');
     if (!tgl)  return (_getMySwal()||Swal).fire('Perhatian', 'Tanggal mulai shift harus diisi!', 'warning');
@@ -9114,24 +9238,27 @@
       const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
       const tglObj = new Date(tgl + 'T' + jam);
       await window._fbFirestore.collection('absensi_kasir').add({
-        owner_uid  : uid,
-        store_id   : localStorage.getItem('k_active_store_id') || '',
-        nama       : nama,
-        buka_tgl   : tgl,
-        buka_jam   : jam,
-        buka_hari  : HARI[tglObj.getDay()],
-        buka_at    : tglObj,
-        saldo_awal : saldo,
-        keterangan_buka: ket,
-        status     : 'aktif',
-        created_at : new Date(),
+        owner_uid       : uid,
+        store_id        : localStorage.getItem('k_active_store_id') || '',
+        nama            : nama,
+        buka_tgl        : tgl,
+        buka_jam        : jam,
+        buka_hari       : HARI[tglObj.getDay()],
+        buka_at         : tglObj,
+        saldo_awal      : saldoKas,        // backward-compat
+        saldo_awal_kas  : saldoKas,
+        saldo_awal_bank : saldoBank,
+        keterangan_buka : ket,
+        status          : 'aktif',
+        created_at      : new Date(),
       });
       // Reset form
-      ['absensi-buka-saldo','absensi-buka-ket'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+      document.getElementById('absensi-buka-ket').value = '';
+      const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
       (_getMySwal()||Swal).fire({
         title: '✅ Shift Dibuka!',
-        html: `<b>${nama}</b> mulai shift<br><small style="color:#94a3b8;">${tgl} pukul ${jam} · Saldo Awal: <b>Rp ${saldo.toLocaleString('id-ID')}</b></small>`,
-        icon: 'success', timer: 3000, showConfirmButton: false
+        html: `<b>${nama}</b> mulai shift<br><small style="color:#94a3b8;">${tgl} pukul ${jam}</small><br><small style="color:#059669;">Kas: <b>${fmtRp(saldoKas)}</b> · Bank: <b>${fmtRp(saldoBank)}</b></small>`,
+        icon: 'success', timer: 3500, showConfirmButton: false
       });
     } catch(e) {
       (_getMySwal()||Swal).fire('Gagal', e.message || 'Error menyimpan absensi', 'error');
@@ -9140,21 +9267,28 @@
 
   // ─── PROSES TUTUP SHIFT ───
   async function prosesAbsensiTutup() {
-    const shiftId     = document.getElementById('absensi-tutup-shift-id')?.value || '';
-    const tglTutup    = document.getElementById('absensi-tutup-tgl')?.value || '';
-    const jamTutup    = document.getElementById('absensi-tutup-jam')?.value || '';
-    const saldoAkhir  = parseFloat(document.getElementById('absensi-tutup-saldo')?.value) || 0;
-    const ket         = (document.getElementById('absensi-tutup-ket')?.value || '').trim();
+    const shiftId       = document.getElementById('absensi-tutup-shift-id')?.value || '';
+    const tglTutup      = document.getElementById('absensi-tutup-tgl')?.value || '';
+    const jamTutup      = document.getElementById('absensi-tutup-jam')?.value || '';
+    const saldoAkhirKas = parseFloat(document.getElementById('absensi-tutup-saldo')?.value) || 0;
+    const saldoAkhirBank= parseFloat(document.getElementById('absensi-tutup-saldo-bank-val')?.value) || 0;
+    const ket           = (document.getElementById('absensi-tutup-ket')?.value || '').trim();
     if (!shiftId)   return (_getMySwal()||Swal).fire('Perhatian', 'Pilih shift yang akan ditutup!', 'warning');
     if (!tglTutup)  return (_getMySwal()||Swal).fire('Perhatian', 'Tanggal tutup shift harus diisi!', 'warning');
     if (!jamTutup)  return (_getMySwal()||Swal).fire('Perhatian', 'Jam tutup shift harus diisi!', 'warning');
     const s = _absensiActiveShifts.find(x => x.id === shiftId);
     if (!s) return (_getMySwal()||Swal).fire('Error', 'Data shift tidak ditemukan.', 'error');
-    const selisih = saldoAkhir - (s.saldo_awal || 0);
-    const fmtRp = v => 'Rp ' + v.toLocaleString('id-ID');
+    const saldoAwalKas  = s.saldo_awal_kas  !== undefined ? (s.saldo_awal_kas||0)  : (s.saldo_awal||0);
+    const saldoAwalBank = s.saldo_awal_bank || 0;
+    const selisihKas    = saldoAkhirKas  - saldoAwalKas;
+    const selisihBank   = saldoAkhirBank - saldoAwalBank;
+    const selisihTotal  = selisihKas + selisihBank;
+    const fmtRp = v => 'Rp ' + (Math.abs(v)||0).toLocaleString('id-ID');
     const confirm = await (_getMySwal()||Swal).fire({
       title: 'Tutup Shift?',
-      html: `<b>${s.nama}</b><br>Saldo Akhir: <b>${fmtRp(saldoAkhir)}</b><br><small style="color:${selisih>=0?'#059669':'#ef4444'}">Selisih: ${selisih>=0?'+':''}${fmtRp(selisih)}</small>`,
+      html: `<b>${s.nama}</b><br>
+        <small style="color:#64748b;">Akhir Kas: <b style="color:#059669;">Rp ${saldoAkhirKas.toLocaleString('id-ID')}</b> · Bank: <b style="color:#0369a1;">Rp ${saldoAkhirBank.toLocaleString('id-ID')}</b></small><br>
+        <small style="color:${selisihTotal>=0?'#059669':'#ef4444'}">Selisih Total: ${selisihTotal>=0?'+':''}Rp ${Math.abs(selisihTotal).toLocaleString('id-ID')}</small>`,
       icon: 'question', showCancelButton: true,
       confirmButtonText: 'Ya, Tutup Shift', cancelButtonText: 'Batal',
       confirmButtonColor: '#7c3aed'
@@ -9170,25 +9304,31 @@
       const durasiJam = Math.floor(durasiMs / 3600000);
       const durasiMenit = Math.floor((durasiMs % 3600000) / 60000);
       await window._fbFirestore.collection('absensi_kasir').doc(shiftId).update({
-        tutup_tgl        : tglTutup,
-        tutup_jam        : jamTutup,
-        tutup_hari       : HARI[tutupObj.getDay()],
-        tutup_at         : tutupObj,
-        saldo_akhir      : saldoAkhir,
-        selisih_saldo    : selisih,
-        durasi_jam       : durasiJam,
-        durasi_menit     : durasiMenit,
-        keterangan_tutup : ket,
-        status           : 'selesai',
+        tutup_tgl         : tglTutup,
+        tutup_jam         : jamTutup,
+        tutup_hari        : HARI[tutupObj.getDay()],
+        tutup_at          : tutupObj,
+        saldo_akhir       : saldoAkhirKas,       // backward-compat
+        saldo_akhir_kas   : saldoAkhirKas,
+        saldo_akhir_bank  : saldoAkhirBank,
+        selisih_saldo     : selisihTotal,
+        selisih_kas       : selisihKas,
+        selisih_bank      : selisihBank,
+        durasi_jam        : durasiJam,
+        durasi_menit      : durasiMenit,
+        keterangan_tutup  : ket,
+        status            : 'selesai',
       });
       // Reset form
-      ['absensi-tutup-saldo','absensi-tutup-ket'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+      document.getElementById('absensi-tutup-ket').value = '';
       const infoBox = document.getElementById('absensi-tutup-info');
       if (infoBox) infoBox.classList.add('hidden');
       (_getMySwal()||Swal).fire({
         title: '✅ Shift Ditutup!',
-        html: `<b>${s.nama}</b> — ${durasiJam}j ${durasiMenit}m<br>Saldo Awal: <b>${fmtRp(s.saldo_awal||0)}</b> → Akhir: <b>${fmtRp(saldoAkhir)}</b>`,
-        icon: 'success', timer: 3500, showConfirmButton: false
+        html: `<b>${s.nama}</b> — ${durasiJam}j ${durasiMenit}m<br>
+          <small style="color:#64748b;">Kas: <b>Rp ${saldoAwalKas.toLocaleString('id-ID')}</b> → <b>Rp ${saldoAkhirKas.toLocaleString('id-ID')}</b></small><br>
+          <small style="color:#64748b;">Bank: <b>Rp ${saldoAwalBank.toLocaleString('id-ID')}</b> → <b>Rp ${saldoAkhirBank.toLocaleString('id-ID')}</b></small>`,
+        icon: 'success', timer: 4000, showConfirmButton: false
       });
       await _loadShiftAktifUntukTutup();
     } catch(e) {
@@ -9221,10 +9361,17 @@
       const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
       listEl.innerHTML = data.map(s => {
         const isAktif = s.status === 'aktif';
-        const selisihColor = (s.selisih_saldo||0) >= 0 ? '#059669' : '#ef4444';
-        const selisihStr = s.selisih_saldo !== undefined
-          ? ((s.selisih_saldo>=0?'+':'')+fmtRp(Math.abs(s.selisih_saldo)))
-          : '—';
+        // Support field lama (saldo_awal) dan baru (saldo_awal_kas + saldo_awal_bank)
+        const saldoAwalKas   = s.saldo_awal_kas  !== undefined ? (s.saldo_awal_kas||0)  : (s.saldo_awal||0);
+        const saldoAwalBank  = s.saldo_awal_bank  || 0;
+        const saldoAkhirKas  = s.saldo_akhir_kas  !== undefined ? (s.saldo_akhir_kas||0) : (s.saldo_akhir||0);
+        const saldoAkhirBank = s.saldo_akhir_bank || 0;
+        const selisihKas     = s.selisih_kas  !== undefined ? s.selisih_kas  : (s.selisih_saldo||0);
+        const selisihBank    = s.selisih_bank || 0;
+        const selisihTotal   = s.selisih_saldo !== undefined ? s.selisih_saldo : selisihKas;
+        const selisihColor   = selisihTotal >= 0 ? '#059669' : '#ef4444';
+        const fmtSelisih = v => (v >= 0 ? '+' : '-') + fmtRp(Math.abs(v));
+        const selisihStr = s.selisih_saldo !== undefined ? fmtSelisih(selisihTotal) : '—';
         return `
         <div class="rounded-2xl overflow-hidden" style="background:white;border:1.5px solid ${isAktif ? '#6ee7b7' : '#e2e8f0'};">
           <!-- Header kartu -->
@@ -9251,7 +9398,10 @@
               <div class="flex-1 min-w-0">
                 <p style="font-size:8px;font-weight:900;color:#065f46;text-transform:uppercase;letter-spacing:0.08em;">MULAI SHIFT</p>
                 <p style="font-size:11px;font-weight:900;color:#064e3b;">${s.buka_hari||''} ${s.buka_tgl||'—'} · ${s.buka_jam||'—'}</p>
-                <p style="font-size:10px;font-weight:800;color:#059669;">Saldo Awal: <b>${fmtRp(s.saldo_awal)}</b></p>
+                <div class="flex gap-3 mt-0.5">
+                  <p style="font-size:9px;font-weight:800;color:#059669;"><i class="fas fa-coins mr-1"></i>Kas: <b>${fmtRp(saldoAwalKas)}</b></p>
+                  <p style="font-size:9px;font-weight:800;color:#0369a1;"><i class="fas fa-building-columns mr-1"></i>Bank: <b>${fmtRp(saldoAwalBank)}</b></p>
+                </div>
               </div>
             </div>
 
@@ -9264,19 +9414,26 @@
               <div class="flex-1 min-w-0">
                 <p style="font-size:8px;font-weight:900;color:#4c1d95;text-transform:uppercase;letter-spacing:0.08em;">TUTUP SHIFT</p>
                 <p style="font-size:11px;font-weight:900;color:#3b0764;">${s.tutup_hari||''} ${s.tutup_tgl||'—'} · ${s.tutup_jam||'—'}</p>
-                <p style="font-size:10px;font-weight:800;color:#7c3aed;">Saldo Akhir: <b>${fmtRp(s.saldo_akhir)}</b></p>
+                <div class="flex gap-3 mt-0.5">
+                  <p style="font-size:9px;font-weight:800;color:#7c3aed;"><i class="fas fa-coins mr-1"></i>Kas: <b>${fmtRp(saldoAkhirKas)}</b></p>
+                  <p style="font-size:9px;font-weight:800;color:#6d28d9;"><i class="fas fa-building-columns mr-1"></i>Bank: <b>${fmtRp(saldoAkhirBank)}</b></p>
+                </div>
               </div>
             </div>
 
             <!-- Ringkasan selisih & durasi -->
-            <div class="grid grid-cols-2 gap-2">
-              <div class="rounded-xl p-2.5" style="background:#f8fafc;border:1px solid #e2e8f0;">
-                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Selisih Kas</p>
-                <p style="font-size:13px;font-weight:900;color:${selisihColor};">${selisihStr}</p>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="rounded-xl p-2.5" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;"><i class="fas fa-coins mr-1"></i>Selisih Kas</p>
+                <p style="font-size:11px;font-weight:900;color:${selisihKas>=0?'#059669':'#ef4444'};">${fmtSelisih(selisihKas)}</p>
+              </div>
+              <div class="rounded-xl p-2.5" style="background:#f0f9ff;border:1px solid #bae6fd;">
+                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;"><i class="fas fa-building-columns mr-1"></i>Selisih Bank</p>
+                <p style="font-size:11px;font-weight:900;color:${selisihBank>=0?'#059669':'#ef4444'};">${fmtSelisih(selisihBank)}</p>
               </div>
               <div class="rounded-xl p-2.5" style="background:#f8fafc;border:1px solid #e2e8f0;">
-                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">Durasi Shift</p>
-                <p style="font-size:12px;font-weight:900;color:#1e293b;">${(s.durasi_jam||0)}j ${(s.durasi_menit||0)}m</p>
+                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">⏱ Durasi</p>
+                <p style="font-size:11px;font-weight:900;color:#1e293b;">${(s.durasi_jam||0)}j ${(s.durasi_menit||0)}m</p>
               </div>
             </div>
             ` : '<p style="font-size:9px;font-weight:700;color:#94a3b8;text-align:center;padding:8px 0;"><i class="fas fa-clock mr-1"></i>Shift masih berjalan...</p>'}
