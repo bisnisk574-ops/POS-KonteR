@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- ===== FIREBASE SDK ===== -->
@@ -54,6 +55,135 @@
   </script>
   <style>
     :root { --primary: #0061C2; --bg: #F8FAFC; --slate-800: #1e293b; }
+
+    /* ===== SWEETALERT2 PREMIUM OVERRIDES ===== */
+    /* Pastikan selalu di depan (z-index tertinggi) */
+    .swal2-container { z-index: 99999 !important; }
+    .swal2-backdrop-show { backdrop-filter: blur(6px) !important; -webkit-backdrop-filter: blur(6px) !important; background: rgba(10,20,50,0.6) !important; }
+
+    /* Popup utama */
+    .swal2-popup.swal2-ku {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      border-radius: 28px !important;
+      padding: 32px 28px 28px !important;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.28), 0 8px 32px rgba(0,97,194,0.18) !important;
+      border: 1px solid rgba(255,255,255,0.9) !important;
+      overflow: hidden !important;
+    }
+    .swal2-popup.swal2-ku::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      border-radius: 28px 28px 0 0;
+    }
+    .swal2-popup.swal2-ku.swal2-icon-success::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .swal2-popup.swal2-ku.swal2-icon-error::before   { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .swal2-popup.swal2-ku.swal2-icon-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .swal2-popup.swal2-ku.swal2-icon-info::before    { background: linear-gradient(90deg, #0061C2, #38BDF8); }
+    .swal2-popup.swal2-ku.swal2-icon-question::before{ background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+    /* Icon */
+    .swal2-popup.swal2-ku .swal2-icon {
+      border-width: 3px !important;
+      width: 68px !important; height: 68px !important;
+      margin: 0 auto 16px !important;
+    }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-success {
+      border-color: #10b981 !important;
+      color: #10b981 !important;
+    }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-success [class^='swal2-success-line'] { background: #10b981 !important; }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-success .swal2-success-ring { border-color: rgba(16,185,129,0.25) !important; }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-error    { border-color: #ef4444 !important; color: #ef4444 !important; }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-error [class^='swal2-x-mark-line'] { background: #ef4444 !important; }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-warning  { border-color: #f59e0b !important; color: #f59e0b !important; }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-info     { border-color: #0061C2 !important; color: #0061C2 !important; }
+    .swal2-popup.swal2-ku .swal2-icon.swal2-question { border-color: #8b5cf6 !important; color: #8b5cf6 !important; }
+
+    /* Title */
+    .swal2-popup.swal2-ku .swal2-title {
+      font-size: 1.15rem !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+      padding: 0 0 4px !important;
+      line-height: 1.3 !important;
+    }
+
+    /* Content / text */
+    .swal2-popup.swal2-ku .swal2-html-container,
+    .swal2-popup.swal2-ku .swal2-content {
+      font-size: 0.855rem !important;
+      font-weight: 600 !important;
+      color: #475569 !important;
+      line-height: 1.55 !important;
+      margin: 4px 0 0 !important;
+    }
+
+    /* Confirm button */
+    .swal2-popup.swal2-ku .swal2-confirm {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-size: 0.8rem !important;
+      font-weight: 800 !important;
+      border-radius: 14px !important;
+      padding: 11px 28px !important;
+      letter-spacing: 0.03em !important;
+      box-shadow: 0 6px 20px rgba(0,97,194,0.35) !important;
+      transition: all 0.2s !important;
+    }
+    .swal2-popup.swal2-ku .swal2-confirm:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .swal2-popup.swal2-ku .swal2-confirm:active { transform: translateY(0); }
+
+    /* Cancel button */
+    .swal2-popup.swal2-ku .swal2-cancel {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-size: 0.8rem !important;
+      font-weight: 800 !important;
+      border-radius: 14px !important;
+      padding: 11px 22px !important;
+      background: #F1F5F9 !important;
+      color: #64748b !important;
+      letter-spacing: 0.03em !important;
+    }
+    .swal2-popup.swal2-ku .swal2-cancel:hover { background: #e2e8f0 !important; }
+
+    /* Actions area */
+    .swal2-popup.swal2-ku .swal2-actions { margin-top: 22px !important; gap: 10px !important; }
+
+    /* Input */
+    .swal2-popup.swal2-ku .swal2-input,
+    .swal2-popup.swal2-ku .swal2-select,
+    .swal2-popup.swal2-ku .swal2-textarea {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      font-weight: 600 !important;
+      font-size: 0.875rem !important;
+      border: 2px solid #e2e8f0 !important;
+      border-radius: 12px !important;
+      padding: 10px 14px !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    .swal2-popup.swal2-ku .swal2-input:focus { border-color: #0061C2 !important; box-shadow: 0 0 0 3px rgba(0,97,194,0.12) !important; }
+
+    /* Timer bar */
+    .swal2-popup.swal2-ku .swal2-timer-progress-bar { background: linear-gradient(90deg, #0061C2, #38BDF8) !important; height: 4px !important; border-radius: 4px !important; }
+
+    /* Close button */
+    .swal2-popup.swal2-ku .swal2-close { font-size: 1.4rem !important; color: #94a3b8 !important; top: 14px !important; right: 16px !important; }
+    .swal2-popup.swal2-ku .swal2-close:hover { color: #ef4444 !important; transform: scale(1.2); }
+
+    /* Toast premium */
+    .swal2-popup.swal2-toast.swal2-ku-toast {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      border-radius: 18px !important;
+      padding: 14px 20px !important;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,97,194,0.12) !important;
+      border: 1px solid rgba(255,255,255,0.85) !important;
+      font-weight: 700 !important;
+    }
+    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-title { font-size: 0.82rem !important; font-weight: 800 !important; color: #0f172a !important; }
+    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-timer-progress-bar { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
+    /* ===== END SWEETALERT2 PREMIUM ===== */
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--slate-800); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
     /* ===== HEADER ===== */
     .header-gradient {
@@ -418,6 +548,59 @@
       border-radius: inherit;
     }
   </style>
+  <script>
+    // ===== MYSWAL — Global SweetAlert2 Mixin Premium =====
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof Swal === 'undefined') return;
+      window.MySwal = Swal.mixin({
+        customClass: { popup: 'swal2-ku' },
+        zIndex: 99999,
+        buttonsStyling: true,
+        confirmButtonColor: '#0061C2',
+        scrollbarPadding: false,
+        allowOutsideClick: true,
+        showClass: {
+          popup: 'animate__animated animate__zoomIn animate__faster'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__zoomOut animate__faster'
+        },
+        willOpen: (popup) => {
+          // Tambah class icon ke popup agar CSS top-bar berwarna
+          const icon = popup.querySelector('.swal2-icon');
+          if (icon) {
+            const types = ['success','error','warning','info','question'];
+            types.forEach(t => {
+              if (icon.classList.contains('swal2-'+t)) {
+                popup.classList.add('swal2-icon-'+t);
+              }
+            });
+          }
+        }
+      });
+      window.MySwalToast = Swal.mixin({
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: { popup: 'swal2-ku-toast' },
+        zIndex: 99999,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer);
+          toast.addEventListener('mouseleave', Swal.resumeTimer);
+        }
+      });
+    });
+    // Fallback sinkron sebelum DOMContentLoaded
+    function _getMySwal() {
+      if (window.MySwal) return window.MySwal;
+      if (typeof Swal !== 'undefined') {
+        return Swal.mixin({ customClass: { popup: 'swal2-ku' }, zIndex: 99999, confirmButtonColor: '#0061C2', scrollbarPadding: false });
+      }
+      return null;
+    }
+  </script>
 </head>
 <body class="pb-32" style="background:#F8FAFC;">
 
@@ -1051,7 +1234,7 @@
       // Berjalan di background, tidak menghambat alur login
       createSubscription(uid, email, storeName);
 
-      Swal.fire({
+      (_getMySwal()||Swal).fire({
         title: '🎉 Akun Berhasil Dibuat!',
         html: `<b>${storeName}</b> siap digunakan.<br>
                <span style="font-size:11px;color:#059669;font-weight:700;">
@@ -1069,7 +1252,7 @@
   // ─── FORGOT PASSWORD ───
   async function doForgotPassword() {
     const email = (document.getElementById('login-email')?.value || '').trim();
-    const { value: inputEmail } = await Swal.fire({
+    const { value: inputEmail } = await (_getMySwal()||Swal).fire({
       title: '🔑 Reset Password',
       input: 'email',
       inputLabel: 'Masukkan email yang terdaftar',
@@ -1084,9 +1267,9 @@
     if (!inputEmail) return;
     try {
       await firebaseSendPasswordReset(inputEmail);
-      Swal.fire({ title: '📧 Email Terkirim!', text: `Link reset password dikirim ke ${inputEmail}. Cek inbox atau folder spam.`, icon: 'success', confirmButtonColor: '#0061C2' });
+      (_getMySwal()||Swal).fire({ title: '📧 Email Terkirim!', text: `Link reset password dikirim ke ${inputEmail}. Cek inbox atau folder spam.`, icon: 'success', confirmButtonColor: '#0061C2' });
     } catch(err) {
-      Swal.fire('Gagal', err.message || 'Email tidak ditemukan.', 'error');
+      (_getMySwal()||Swal).fire('Gagal', err.message || 'Email tidak ditemukan.', 'error');
     }
   }
 
@@ -3138,34 +3321,84 @@
           </div>
         </div>
 
-        <div class="flex bg-blue-50 p-1 rounded-2xl mb-6 border border-blue-100">
-          <button onclick="setWalletViewTab('list')" id="btn-w-list" class="tab-btn active uppercase">Daftar Saldo</button>
-          <button onclick="setWalletViewTab('mutasi')" id="btn-w-mutasi" class="tab-btn inactive uppercase">Riwayat Mutasi</button>
-        </div>
+        <!-- ===== SUMMARY CARDS PREMIUM ===== -->
+        <div class="relative rounded-[28px] overflow-hidden mb-5" style="background:linear-gradient(135deg,#0a1628 0%,#0d2550 55%,#0c3476 100%);padding:2px;">
+          <div class="rounded-[26px] overflow-hidden" style="background:linear-gradient(135deg,#0a1628 0%,#0d2550 55%,#0c3476 100%);">
+            <!-- Ornamen -->
+            <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse 70% 55% at 90% 0%,rgba(56,189,248,0.18) 0%,transparent 65%),radial-gradient(ellipse 50% 45% at 5% 100%,rgba(0,97,194,0.28) 0%,transparent 60%);"></div>
+            <!-- Dot grid ornament -->
+            <div class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.04]" style="background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:18px 18px;"></div>
 
-        <div id="wallet-list-container">
-          <div class="grid grid-cols-2 gap-4 mb-8">
-            <div class="p-5 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-[28px] shadow-xl relative overflow-hidden">
-              <i class="fas fa-wallet absolute -right-4 -bottom-4 text-6xl opacity-10"></i>
-              <div class="flex items-center gap-2 mb-1">
-                <i class="fas fa-wallet text-[10px]"></i>
-                <p class="text-[9px] font-black opacity-80 uppercase tracking-widest">Saldo Tunai</p>
+            <div class="relative p-5">
+              <!-- Label total semua -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-xl flex items-center justify-center" style="background:rgba(56,189,248,0.18);border:1px solid rgba(56,189,248,0.3);">
+                    <i class="fas fa-layer-group text-sky-300" style="font-size:10px;"></i>
+                  </div>
+                  <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Ringkasan Dompet</span>
+                </div>
+                <span class="text-[8px] font-black px-2 py-1 rounded-lg" style="background:rgba(56,189,248,0.12);color:#38BDF8;border:1px solid rgba(56,189,248,0.2);">LIVE</span>
               </div>
-              <h4 id="summary-kas" class="text-lg font-black tracking-tight">Rp 0</h4>
-            </div>
-            <div class="p-5 bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-[28px] shadow-xl relative overflow-hidden">
-              <i class="fas fa-university absolute -right-4 -bottom-4 text-6xl opacity-10"></i>
-              <div class="flex items-center gap-2 mb-1">
-                <i class="fas fa-university text-[10px]"></i>
-                <p class="text-[9px] font-black opacity-80 uppercase tracking-widest">Saldo Bank</p>
+
+              <!-- 2 kolom: kas & bank -->
+              <div class="grid grid-cols-2 gap-3">
+                <!-- KAS TUNAI -->
+                <div class="rounded-[18px] p-4 relative overflow-hidden" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
+                  <div class="absolute -right-3 -bottom-3 w-16 h-16 rounded-full pointer-events-none" style="background:rgba(251,191,36,0.12);"></div>
+                  <div class="flex items-center gap-1.5 mb-2.5">
+                    <div class="w-6 h-6 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);box-shadow:0 4px 10px rgba(245,158,11,0.4);">
+                      <i class="fas fa-coins text-white" style="font-size:9px;"></i>
+                    </div>
+                    <span class="text-[8px] font-black uppercase tracking-widest" style="color:rgba(251,191,36,0.8);">Kas Tunai</span>
+                  </div>
+                  <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Total Saldo</p>
+                  <p id="summary-kas" class="text-base font-black text-white tracking-tight leading-tight">Rp 0</p>
+                  <!-- mini accent bar -->
+                  <div class="mt-2.5 h-0.5 rounded-full w-full" style="background:rgba(255,255,255,0.08);"><div class="h-full rounded-full w-3/5" style="background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+                </div>
+
+                <!-- BANK / DIGITAL -->
+                <div class="rounded-[18px] p-4 relative overflow-hidden" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
+                  <div class="absolute -right-3 -bottom-3 w-16 h-16 rounded-full pointer-events-none" style="background:rgba(56,189,248,0.12);"></div>
+                  <div class="flex items-center gap-1.5 mb-2.5">
+                    <div class="w-6 h-6 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#0061C2,#38BDF8);box-shadow:0 4px 10px rgba(0,97,194,0.45);">
+                      <i class="fas fa-building-columns text-white" style="font-size:9px;"></i>
+                    </div>
+                    <span class="text-[8px] font-black uppercase tracking-widest" style="color:rgba(56,189,248,0.85);">Bank / Digital</span>
+                  </div>
+                  <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Total Saldo</p>
+                  <p id="summary-bank" class="text-base font-black text-white tracking-tight leading-tight">Rp 0</p>
+                  <!-- mini accent bar -->
+                  <div class="mt-2.5 h-0.5 rounded-full w-full" style="background:rgba(255,255,255,0.08);"><div class="h-full rounded-full w-4/5" style="background:linear-gradient(90deg,#0061C2,#38BDF8);"></div></div>
+                </div>
               </div>
-              <h4 id="summary-bank" class="text-lg font-black tracking-tight">Rp 0</h4>
             </div>
           </div>
+        </div>
+        <!-- ===== END SUMMARY CARDS ===== -->
+
+        <!-- ===== SWITCH TAB PREMIUM ===== -->
+        <div class="relative flex p-1 mb-6 rounded-2xl gap-1" style="background:#EEF2FF;border:1px solid #E0E7FF;">
+          <!-- Sliding pill indicator -->
+          <div id="wallet-tab-pill" class="absolute top-1 bottom-1 rounded-xl transition-all duration-300 ease-out pointer-events-none"
+            style="width:calc(50% - 4px);left:4px;background:linear-gradient(135deg,#0061C2,#0284c7);box-shadow:0 4px 14px rgba(0,97,194,0.35);"></div>
+          <button onclick="setWalletViewTab('list')" id="btn-w-list"
+            class="relative z-10 flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wide transition-all duration-300 border-0 cursor-pointer bg-transparent"
+            style="color:white;">
+            <i class="fas fa-wallet text-[9px]"></i> Daftar Saldo
+          </button>
+          <button onclick="setWalletViewTab('mutasi')" id="btn-w-mutasi"
+            class="relative z-10 flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wide transition-all duration-300 border-0 cursor-pointer bg-transparent"
+            style="color:#94A3B8;">
+            <i class="fas fa-clock-rotate-left text-[9px]"></i> Riwayat Mutasi
+          </button>
+        </div>
+        <!-- ===== END SWITCH TAB ===== -->
+
+        <div id="wallet-list-container">
           <div class="space-y-6" id="wallet-items"></div>
         </div>
-
-        <div id="wallet-mutasi-container" class="hidden">
           <div id="mutasi-list" class="space-y-3"></div>
         </div>
       </section>
@@ -3723,7 +3956,7 @@
       },
       pro: {
         color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)',
-        label: 'PRO ⭐', price: 'Rp59K/bln',
+        label: 'PRO ⭐', price: 'Rp50K/bln',
         icon: 'fa-crown', iconColor: '#10b981',
         desc: 'Fitur lengkap untuk konter yang berkembang pesat.',
         fitur: ['Semua fitur Basic', 'Ekspor PDF & Laporan', 'Pantau Stok Realtime', 'Notifikasi Stok Menipis', 'Multi-Device Cloud Sync'],
@@ -3731,7 +3964,7 @@
       },
       unlimited: {
         color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)',
-        label: 'UNLIMITED 🔥', price: 'Rp99K/bln',
+        label: 'UNLIMITED 🔥', price: 'Rp499K/bln',
         icon: 'fa-fire', iconColor: '#f59e0b',
         desc: 'Untuk konter besar dengan kebutuhan bisnis penuh.',
         fitur: ['Semua Fitur Pro', 'Multi-Toko / Cabang', 'Laporan Bulanan Lanjutan', 'Ekspor Laporan PDF', 'Support Dedicated WA'],
@@ -3945,8 +4178,16 @@
 
     function setWalletViewTab(tab) {
       const isList = tab === 'list';
-      document.getElementById('btn-w-list').className = `tab-btn ${isList ? 'active' : 'inactive'} uppercase`;
-      document.getElementById('btn-w-mutasi').className = `tab-btn ${!isList ? 'active' : 'inactive'} uppercase`;
+      // Update pill position
+      const pill = document.getElementById('wallet-tab-pill');
+      if (pill) {
+        pill.style.left   = isList ? '4px' : 'calc(50%)';
+      }
+      // Update button text colors
+      const btnList   = document.getElementById('btn-w-list');
+      const btnMutasi = document.getElementById('btn-w-mutasi');
+      if (btnList)   btnList.style.color   = isList  ? 'white' : '#94A3B8';
+      if (btnMutasi) btnMutasi.style.color = !isList ? 'white' : '#94A3B8';
       document.getElementById('wallet-list-container').classList.toggle('hidden', !isList);
       document.getElementById('wallet-mutasi-container').classList.toggle('hidden', isList);
       if (!isList) renderMutasi();
@@ -4037,7 +4278,7 @@
       const id = document.getElementById('note-id').value;
       const title = document.getElementById('note-title').value.trim();
       const body = document.getElementById('note-body').value.trim();
-      if (!title || !body) return Swal.fire('Error', 'Judul dan isi catatan wajib diisi!', 'warning');
+      if (!title || !body) return (_getMySwal()||Swal).fire('Error', 'Judul dan isi catatan wajib diisi!', 'warning');
       if (!db.notes) db.notes = [];
       if (id) {
         const idx = db.notes.findIndex(n => n.id === id);
@@ -4065,7 +4306,7 @@
     }
 
     async function deleteNote(id) {
-      const res = await Swal.fire({ title: 'Hapus Catatan?', text: "Catatan ini akan dihapus permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Catatan?', text: "Catatan ini akan dihapus permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) { db.notes = db.notes.filter(n => n.id !== id); await sync(); }
     }
 
@@ -4098,15 +4339,15 @@
       let nama = selVal;
       if (selVal === 'manual') {
         nama = document.getElementById('m-h-nama-manual').value.trim();
-        if (!nama) { Swal.fire('Gagal', 'Nama harus diisi!', 'error'); return; }
+        if (!nama) { (_getMySwal()||Swal).fire('Gagal', 'Nama harus diisi!', 'error'); return; }
       } else if (!selVal) {
-        Swal.fire('Gagal', 'Silakan pilih pelanggan!', 'error'); return;
+        (_getMySwal()||Swal).fire('Gagal', 'Silakan pilih pelanggan!', 'error'); return;
       }
       const jumlah = Number(document.getElementById('m-h-jumlah').value);
       const wId = document.getElementById('m-h-wallet').value;
       const ket = document.getElementById('m-h-ket').value || 'Manual';
       const type = currentManualHutangType;
-      if (!nama || jumlah <= 0 || !wId) { Swal.fire('Gagal', 'Lengkapi semua data dengan benar', 'error'); return; }
+      if (!nama || jumlah <= 0 || !wId) { (_getMySwal()||Swal).fire('Gagal', 'Lengkapi semua data dengan benar', 'error'); return; }
       const wIdx = db.dompet.findIndex(w => w.id === wId);
       if (wIdx === -1) return;
       if (type === 'pelanggan') { db.dompet[wIdx].saldo -= jumlah; addMutasi(wId, jumlah, 'out', 'PIUTANG: '+nama); }
@@ -4119,7 +4360,7 @@
     // ---- LOGIN ----
     async function handleLogin() {
       const sid = document.getElementById('store-id-input').value.trim().toUpperCase();
-      if (!sid) return Swal.fire('Error', 'Masukkan ID Toko terlebih dahulu!', 'warning');
+      if (!sid) return (_getMySwal()||Swal).fire('Error', 'Masukkan ID Toko terlebih dahulu!', 'warning');
 
       // Update button state
       const btn = document.getElementById('login-btn');
@@ -4155,7 +4396,7 @@
           if (btn) btn.disabled = false;
           if (btnText) btnText.innerHTML = '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK KE TOKO';
           showSyncToast('hide');
-          Swal.fire({ title: 'Gagal Login', text: 'Tidak dapat terhubung ke Firebase. Coba lagi.', icon: 'error', confirmButtonText: 'Tutup' });
+          (_getMySwal()||Swal).fire({ title: 'Gagal Login', text: 'Tidak dapat terhubung ke Firebase. Coba lagi.', icon: 'error', confirmButtonText: 'Tutup' });
         }
       } catch(e) {
         showSyncToast('offline', 'MODE OFFLINE');
@@ -4168,7 +4409,7 @@
           if (btn) btn.disabled = false;
           if (btnText) btnText.innerHTML = '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK KE TOKO';
           showSyncToast('error', 'GAGAL LOGIN');
-          Swal.fire('Error', 'Gagal terhubung ke Firebase. Pastikan Anda online untuk login pertama kali.', 'error');
+          (_getMySwal()||Swal).fire('Error', 'Gagal terhubung ke Firebase. Pastikan Anda online untuk login pertama kali.', 'error');
         }
       }
     }
@@ -4849,11 +5090,11 @@
       db.transaksi[idx] = { ...db.transaksi[idx], tgl, pelanggan, modal, jual };
       closeModal('modal-edit-tr');
       await sync();
-      Swal.fire('Sukses', 'Perubahan transaksi berhasil disimpan!', 'success');
+      (_getMySwal()||Swal).fire('Sukses', 'Perubahan transaksi berhasil disimpan!', 'success');
     }
 
     async function deleteTr(id) {
-      const res = await Swal.fire({ title: 'Refund Transaksi?', text: 'Dana saldo dompet dan stok akan dikembalikan otomatis!', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Refund', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Refund Transaksi?', text: 'Dana saldo dompet dan stok akan dikembalikan otomatis!', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Refund', cancelButtonText: 'Batal' });
       if (!res.isConfirmed) return;
       const t = db.transaksi.find(x => x.id === id);
       if (!t) return;
@@ -4874,7 +5115,7 @@
       }
       db.transaksi = db.transaksi.filter(x => x.id !== id);
       await sync();
-      Swal.fire('Sukses', 'Transaksi berhasil di-refund!', 'success');
+      (_getMySwal()||Swal).fire('Sukses', 'Transaksi berhasil di-refund!', 'success');
     }
 
     // ---- RENDER WALLETS ----
@@ -4973,21 +5214,21 @@
       items.innerHTML = `
         <div class="space-y-3">
           <div class="flex items-center gap-2 px-1">
-            <div class="w-5 h-5 rounded-lg bg-amber-100 flex items-center justify-center">
-              <i class="fas fa-coins text-amber-500 text-[9px]"></i>
-            </div>
-            <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Tunai (${kasWallets.length})</span>
-          </div>
-          ${kasHtml}
-        </div>
-        <div class="space-y-3 mt-6">
-          <div class="flex items-center gap-2 px-1">
             <div class="w-5 h-5 rounded-lg bg-blue-100 flex items-center justify-center">
               <i class="fas fa-building-columns text-blue-500 text-[9px]"></i>
             </div>
             <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Digital / Bank (${digWallets.length})</span>
           </div>
           ${digHtml}
+        </div>
+        <div class="space-y-3 mt-6">
+          <div class="flex items-center gap-2 px-1">
+            <div class="w-5 h-5 rounded-lg bg-amber-100 flex items-center justify-center">
+              <i class="fas fa-coins text-amber-500 text-[9px]"></i>
+            </div>
+            <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Tunai (${kasWallets.length})</span>
+          </div>
+          ${kasHtml}
         </div>
       `;
       document.getElementById('summary-kas').innerText  = `Rp ${fmt(kasWallets.reduce((a,b)=>a+Number(b.saldo||0),0))}`;
@@ -5577,7 +5818,7 @@
       const id = document.getElementById('c-id').value;
       const nama = document.getElementById('c-nama').value.trim();
       const phone = document.getElementById('c-phone').value.trim();
-      if (!nama) return Swal.fire('Error', 'Nama pelanggan harus diisi!', 'warning');
+      if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama pelanggan harus diisi!', 'warning');
       if (id) {
         const idx = db.pelanggan.findIndex(c => c.id === id);
         if (idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone };
@@ -5590,7 +5831,7 @@
 
     async function deleteCustomer() {
       const id = document.getElementById('c-id').value;
-      const res = await Swal.fire({ title: 'Hapus Pelanggan?', text: 'Data pelanggan akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Pelanggan?', text: 'Data pelanggan akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) {
         db.pelanggan = db.pelanggan.filter(c => c.id !== id);
         closeModal('modal-pelanggan');
@@ -5599,7 +5840,7 @@
     }
 
     async function deleteCustomerDirect(id) {
-      const res = await Swal.fire({ title: 'Hapus Pelanggan?', text: 'Data pelanggan akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Pelanggan?', text: 'Data pelanggan akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) { db.pelanggan = db.pelanggan.filter(c => c.id !== id); await sync(); }
     }
 
@@ -5639,7 +5880,7 @@
       const jual = Number(document.getElementById('p-jual').value);
       const stok = Number(document.getElementById('p-stok').value);
       const batas_stok = tipe === 'fisik' ? Number(document.getElementById('p-batas-stok').value) : 0;
-      if (!nama) return Swal.fire('Error', 'Nama produk harus diisi', 'warning');
+      if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama produk harus diisi', 'warning');
       if (id) {
         const idx = db.inventory.findIndex(p => p.id === id);
         if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok };
@@ -5653,7 +5894,7 @@
     }
 
     async function deleteProduk(id) {
-      const res = await Swal.fire({ title: 'Hapus Produk?', text: 'Data produk ini akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Produk?', text: 'Data produk ini akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) { db.inventory = db.inventory.filter(p => p.id !== id); await sync(); }
     }
 
@@ -5662,7 +5903,7 @@
       const nama = document.getElementById('w-nama').value.trim();
       const tipe = document.getElementById('w-tipe').value;
       const saldo = Number(document.getElementById('w-saldo').value||0);
-      if (!nama) return Swal.fire('Error', 'Nama dompet harus diisi!', 'warning');
+      if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama dompet harus diisi!', 'warning');
       const w = { id: 'W-'+Date.now(), nama, tipe, saldo };
       db.dompet.push(w);
       addMutasi(w.id, saldo, 'in', 'SALDO AWAL: '+nama);
@@ -5673,7 +5914,7 @@
     }
 
     async function deleteWallet(id) {
-      const res = await Swal.fire({ title: 'Hapus Dompet?', text: 'Dompet akan dihapus permanen. Pastikan saldo sudah 0.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Dompet?', text: 'Dompet akan dihapus permanen. Pastikan saldo sudah 0.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) { db.dompet = db.dompet.filter(w => w.id !== id); await sync(); }
     }
 
@@ -5682,12 +5923,12 @@
       const f = document.getElementById('tr-from').value;
       const t = document.getElementById('tr-to').value;
       const a = Number(document.getElementById('tr-amount').value);
-      if (!f || !t || f === t) return Swal.fire('Error', 'Pilih dompet yang berbeda!', 'warning');
-      if (a <= 0) return Swal.fire('Error', 'Jumlah transfer harus lebih dari 0', 'warning');
+      if (!f || !t || f === t) return (_getMySwal()||Swal).fire('Error', 'Pilih dompet yang berbeda!', 'warning');
+      if (a <= 0) return (_getMySwal()||Swal).fire('Error', 'Jumlah transfer harus lebih dari 0', 'warning');
       const fIdx = db.dompet.findIndex(w => w.id === f);
       const tIdx = db.dompet.findIndex(w => w.id === t);
       if (fIdx === -1 || tIdx === -1) return;
-      if (db.dompet[fIdx].saldo < a) return Swal.fire('Error', 'Saldo tidak mencukupi!', 'error');
+      if (db.dompet[fIdx].saldo < a) return (_getMySwal()||Swal).fire('Error', 'Saldo tidak mencukupi!', 'error');
       db.dompet[fIdx].saldo -= a;
       db.dompet[tIdx].saldo += a;
       addMutasi(f, a, 'out', 'TRANSFER KE: ' + db.dompet[tIdx].nama);
@@ -5695,7 +5936,7 @@
       document.getElementById('tr-amount').value = '';
       closeModal('modal-tr-wallet');
       await sync();
-      Swal.fire('Sukses', `Transfer Rp ${fmt(a)} berhasil!`, 'success');
+      (_getMySwal()||Swal).fire('Sukses', `Transfer Rp ${fmt(a)} berhasil!`, 'success');
     }
 
     // ---- PENYESUAIAN ----
@@ -5704,17 +5945,17 @@
       const type = document.getElementById('adj-type').value;
       const amount = Number(document.getElementById('adj-amount').value);
       const reason = document.getElementById('adj-reason').value.trim() || "Penyesuaian Manual";
-      if (amount <= 0) return Swal.fire('Error', 'Jumlah penyesuaian harus lebih dari 0', 'warning');
+      if (amount <= 0) return (_getMySwal()||Swal).fire('Error', 'Jumlah penyesuaian harus lebih dari 0', 'warning');
       const wIdx = db.dompet.findIndex(w => w.id === wId);
-      if (wIdx === -1) return Swal.fire('Error', 'Dompet tidak ditemukan', 'error');
-      if (type === 'kurang' && db.dompet[wIdx].saldo < amount) return Swal.fire('Error', 'Saldo tidak mencukupi untuk dikurangi', 'error');
+      if (wIdx === -1) return (_getMySwal()||Swal).fire('Error', 'Dompet tidak ditemukan', 'error');
+      if (type === 'kurang' && db.dompet[wIdx].saldo < amount) return (_getMySwal()||Swal).fire('Error', 'Saldo tidak mencukupi untuk dikurangi', 'error');
       if (type === 'tambah') { db.dompet[wIdx].saldo += amount; addMutasi(wId, amount, 'in', 'PENYESUAIAN (+): '+reason); }
       else { db.dompet[wIdx].saldo -= amount; addMutasi(wId, amount, 'out', 'PENYESUAIAN (-): '+reason); }
       document.getElementById('adj-amount').value = '';
       document.getElementById('adj-reason').value = '';
       closeModal('modal-adj-wallet');
       await sync();
-      Swal.fire('Sukses', 'Penyesuaian saldo berhasil!', 'success');
+      (_getMySwal()||Swal).fire('Sukses', 'Penyesuaian saldo berhasil!', 'success');
     }
 
     // ---- BAYAR HUTANG ----
@@ -5733,11 +5974,11 @@
       const amount = Number(document.getElementById('pay-h-amount').value);
       const wId = document.getElementById('pay-h-wallet').value;
       const hIdx = db.hutang.findIndex(x => x.id === id);
-      if (hIdx === -1) return Swal.fire('Error', 'Data hutang tidak ditemukan', 'error');
-      if (amount <= 0) return Swal.fire('Error', 'Jumlah pembayaran harus lebih dari 0', 'warning');
+      if (hIdx === -1) return (_getMySwal()||Swal).fire('Error', 'Data hutang tidak ditemukan', 'error');
+      if (amount <= 0) return (_getMySwal()||Swal).fire('Error', 'Jumlah pembayaran harus lebih dari 0', 'warning');
       const hType = db.hutang[hIdx].tipe;
       const wIdx = db.dompet.findIndex(w => w.id === wId);
-      if (wIdx === -1) return Swal.fire('Error', 'Dompet tidak ditemukan', 'error');
+      if (wIdx === -1) return (_getMySwal()||Swal).fire('Error', 'Dompet tidak ditemukan', 'error');
       const walletName = db.dompet[wIdx].nama;
       const customerName = db.hutang[hIdx].nama;
       const sisaSebelumnya = db.hutang[hIdx].jumlah;
@@ -5767,11 +6008,11 @@
       }
       closeModal('modal-pay-hutang');
       await sync();
-      Swal.fire('Sukses', isLunas ? 'Hutang LUNAS! Tersimpan di riwayat.' : `Cicilan Rp ${fmt(amount)} tercatat. Sisa: Rp ${fmt(sisaSekarang)}`, 'success');
+      (_getMySwal()||Swal).fire('Sukses', isLunas ? 'Hutang LUNAS! Tersimpan di riwayat.' : `Cicilan Rp ${fmt(amount)} tercatat. Sisa: Rp ${fmt(sisaSekarang)}`, 'success');
     }
 
     async function deleteHutangLunas(id) {
-      const res = await Swal.fire({ title: 'Hapus Riwayat Lunas?', text: 'Data hutang lunas ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Riwayat Lunas?', text: 'Data hutang lunas ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) {
         db.hutang_lunas = (db.hutang_lunas||[]).filter(h => h.id !== id);
         await sync();
@@ -5784,7 +6025,7 @@
         ? 'Riwayat hutang yang sudah LUNAS ini akan dihapus permanen. Yakin ingin menghapus?'
         : 'Entri riwayat bayar ini akan dihapus permanen.';
       const confirmColor = isLunas ? '#dc2626' : '#ef4444';
-      const res = await Swal.fire({
+      const res = await (_getMySwal()||Swal).fire({
         title, text, icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: confirmColor,
@@ -5825,7 +6066,7 @@
     }
 
     async function deleteHutang(id) {
-      const res = await Swal.fire({ title: 'Hapus Data?', text: 'Data hutang akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Data?', text: 'Data hutang akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) { db.hutang = db.hutang.filter(h => h.id !== id); await sync(); }
     }
 
@@ -5895,8 +6136,8 @@
         const wModalId = document.getElementById('ke-w-modal').value;
         const wBayarId = document.getElementById('ke-w-bayar').value;
 
-        if (nominal <= 0) return Swal.fire('Error', 'Nominal transaksi harus diisi!', 'warning');
-        if (!wModalId)    return Swal.fire('Error', 'Pilih sumber dana (dompet modal keluar)!', 'warning');
+        if (nominal <= 0) return (_getMySwal()||Swal).fire('Error', 'Nominal transaksi harus diisi!', 'warning');
+        if (!wModalId)    return (_getMySwal()||Swal).fire('Error', 'Pilih sumber dana (dompet modal keluar)!', 'warning');
 
         const productName = jenis + (note ? ' - ' + note : '');
 
@@ -5909,7 +6150,7 @@
 
         // Masukkan dana ke dompet penerima (jika Lunas)
         if (status === 'Lunas') {
-          if (!wBayarId) return Swal.fire('Error', 'Pilih dompet penerima dana!', 'warning');
+          if (!wBayarId) return (_getMySwal()||Swal).fire('Error', 'Pilih dompet penerima dana!', 'warning');
           const wBIdx = db.dompet.findIndex(w => w.id === wBayarId);
           if (wBIdx !== -1) {
             db.dompet[wBIdx].saldo += totalBayar;
@@ -5933,7 +6174,7 @@
 
         resetKasirForms();
         showView('dashboard');
-        Swal.fire({ title: 'Sukses! 🎉', text: `${jenis} Rp ${fmt(nominal)} berhasil disimpan! Keuntungan: Rp ${fmt(adminAgen)}`, icon: 'success', timer: 2500, showConfirmButton: false });
+        (_getMySwal()||Swal).fire({ title: 'Sukses! 🎉', text: `${jenis} Rp ${fmt(nominal)} berhasil disimpan! Keuntungan: Rp ${fmt(adminAgen)}`, icon: 'success', timer: 2500, showConfirmButton: false });
         syncImmediate().then(ok => { if (!ok && navigator.onLine) console.warn('[Kasir] Cloud sync gagal'); });
         return;
       }
@@ -5953,19 +6194,19 @@
         jual = Number(document.getElementById('kd-jual').value);
         if (isManual) {
           productName = document.getElementById('kd-produk-manual').value.trim();
-          if (!productName) return Swal.fire('Error', 'Nama produk manual harus diisi!', 'warning');
+          if (!productName) return (_getMySwal()||Swal).fire('Error', 'Nama produk manual harus diisi!', 'warning');
         } else {
           const item = db.inventory.find(p => p.id === selVal);
-          if (!item) return Swal.fire('Error', 'Silakan pilih produk!', 'warning');
+          if (!item) return (_getMySwal()||Swal).fire('Error', 'Silakan pilih produk!', 'warning');
           productName = item.nama;
         }
-        if (jual <= 0) return Swal.fire('Error', 'Harga jual harus diisi!', 'warning');
+        if (jual <= 0) return (_getMySwal()||Swal).fire('Error', 'Harga jual harus diisi!', 'warning');
         const wmId = document.getElementById('kd-w-modal').value;
-        if (!wmId) return Swal.fire('Error', 'Pilih dompet modal terlebih dahulu!', 'warning');
+        if (!wmId) return (_getMySwal()||Swal).fire('Error', 'Pilih dompet modal terlebih dahulu!', 'warning');
         const wmIdx = db.dompet.findIndex(w => w.id === wmId);
         if (wmIdx !== -1) { db.dompet[wmIdx].saldo -= modal; addMutasi(wmId, modal, 'out', 'MODAL DIG: '+productName); }
         if (status === 'Lunas') {
-          if (!wpId) return Swal.fire('Error', 'Pilih dompet penerima dana!', 'warning');
+          if (!wpId) return (_getMySwal()||Swal).fire('Error', 'Pilih dompet penerima dana!', 'warning');
           const wpIdx = db.dompet.findIndex(w => w.id === wpId);
           if (wpIdx !== -1) { db.dompet[wpIdx].saldo += jual; addMutasi(wpId, jual, 'in', 'TRX LUNAS: '+productName); }
         } else {
@@ -5975,12 +6216,12 @@
       } else {
         const pid = document.getElementById('kf-produk').value;
         const pIdx = db.inventory.findIndex(p => p.id === pid);
-        if (pIdx === -1) return Swal.fire('Error', 'Silakan pilih produk fisik!', 'warning');
-        if (db.inventory[pIdx].stok <= 0) return Swal.fire('Error', 'Stok habis!', 'error');
+        if (pIdx === -1) return (_getMySwal()||Swal).fire('Error', 'Silakan pilih produk fisik!', 'warning');
+        if (db.inventory[pIdx].stok <= 0) return (_getMySwal()||Swal).fire('Error', 'Stok habis!', 'error');
         productName = db.inventory[pIdx].nama;
         modal = db.inventory[pIdx].modal;
         jual = Number(document.getElementById('kf-jual').value);
-        if (jual <= 0) return Swal.fire('Error', 'Harga jual harus diisi!', 'warning');
+        if (jual <= 0) return (_getMySwal()||Swal).fire('Error', 'Harga jual harus diisi!', 'warning');
         db.inventory[pIdx].stok -= 1;
         if (status === 'Lunas') {
           const wpIdx = db.dompet.findIndex(w => w.id === wpId);
@@ -5995,7 +6236,7 @@
 
       // Navigasi ke dashboard dan tampilkan sukses lokal segera
       showView('dashboard');
-      Swal.fire({ title: 'Sukses! 🎉', text: `Transaksi ${productName} berhasil disimpan!`, icon: 'success', timer: 2000, showConfirmButton: false });
+      (_getMySwal()||Swal).fire({ title: 'Sukses! 🎉', text: `Transaksi ${productName} berhasil disimpan!`, icon: 'success', timer: 2000, showConfirmButton: false });
 
       // Sync ke cloud tanpa debounce (langsung kirim) di background
       // Data sudah aman di localStorage, cloud sync di background
@@ -6008,7 +6249,7 @@
 
     // ---- LOGOUT ----
     function logout() {
-      Swal.fire({ title: 'Keluar?', text: 'Anda akan keluar dari sesi ini.', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal' }).then(res => {
+      (_getMySwal()||Swal).fire({ title: 'Keluar?', text: 'Anda akan keluar dari sesi ini.', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal' }).then(res => {
         if (res.isConfirmed) {
           // Sign out dari Firebase Auth
           if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
@@ -6426,7 +6667,7 @@
     }
 
     async function deleteNoteFromSidebar(id) {
-      const res = await Swal.fire({ title: 'Hapus Catatan?', text: 'Catatan ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Catatan?', text: 'Catatan ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) {
         db.notes = (db.notes||[]).filter(n => n.id !== id);
         await sync();
@@ -6450,15 +6691,15 @@
         const el = document.getElementById('backup-last-sync');
         if (el) el.innerText = 'Terakhir sync: ' + now;
         showSyncToast('ok', 'BACKUP BERHASIL ✓');
-        Swal.fire({ title: 'Backup Berhasil!', text: 'Data berhasil disimpan ke Firebase Cloud.', icon: 'success', timer: 2500, showConfirmButton: false });
+        (_getMySwal()||Swal).fire({ title: 'Backup Berhasil!', text: 'Data berhasil disimpan ke Firebase Cloud.', icon: 'success', timer: 2500, showConfirmButton: false });
       } catch(e) {
         showSyncToast('error', 'BACKUP GAGAL');
-        Swal.fire('Gagal', 'Koneksi gagal atau Firebase error. Coba lagi.', 'error');
+        (_getMySwal()||Swal).fire('Gagal', 'Koneksi gagal atau Firebase error. Coba lagi.', 'error');
       }
     }
 
     async function doRestore() {
-      const res = await Swal.fire({ title: 'Restore dari Firebase?', text: 'Data lokal akan DITIMPA dengan data dari Firebase Cloud. Lanjutkan?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Restore', cancelButtonText: 'Batal', confirmButtonColor: '#f59e0b' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Restore dari Firebase?', text: 'Data lokal akan DITIMPA dengan data dari Firebase Cloud. Lanjutkan?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Restore', cancelButtonText: 'Batal', confirmButtonColor: '#f59e0b' });
       if (!res.isConfirmed) return;
       showSyncToast('saving', 'MEMUAT DATA FIREBASE...');
       try {
@@ -6476,14 +6717,14 @@
           const el = document.getElementById('backup-last-sync');
           if (el) el.innerText = 'Terakhir sync: ' + now;
           showSyncToast('ok', 'RESTORE BERHASIL ✓');
-          Swal.fire({ title: 'Restore Berhasil!', text: 'Data berhasil dipulihkan dari Firebase.', icon: 'success', timer: 2500, showConfirmButton: false });
+          (_getMySwal()||Swal).fire({ title: 'Restore Berhasil!', text: 'Data berhasil dipulihkan dari Firebase.', icon: 'success', timer: 2500, showConfirmButton: false });
         } else {
           showSyncToast('hide');
-          Swal.fire('Gagal', 'Data tidak ditemukan di Firebase.', 'error');
+          (_getMySwal()||Swal).fire('Gagal', 'Data tidak ditemukan di Firebase.', 'error');
         }
       } catch(e) {
         showSyncToast('error', 'RESTORE GAGAL');
-        Swal.fire('Gagal', 'Koneksi gagal. Pastikan Anda online.', 'error');
+        (_getMySwal()||Swal).fire('Gagal', 'Koneksi gagal. Pastikan Anda online.', 'error');
       }
     }
 
@@ -6497,13 +6738,13 @@
       a.download = `backup_${sid}_${new Date().toISOString().slice(0,10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      Swal.fire({ title: 'Export Berhasil!', text: 'File JSON berhasil diunduh.', icon: 'success', timer: 2000, showConfirmButton: false });
+      (_getMySwal()||Swal).fire({ title: 'Export Berhasil!', text: 'File JSON berhasil diunduh.', icon: 'success', timer: 2000, showConfirmButton: false });
     }
 
     async function doImportJSON(event) {
       const file = event.target.files[0];
       if (!file) return;
-      const res = await Swal.fire({ title: 'Import File Ini?', text: `"${file.name}" — Semua data lokal akan DITIMPA. Lanjutkan?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Import', cancelButtonText: 'Batal', confirmButtonColor: '#7c3aed' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Import File Ini?', text: `"${file.name}" — Semua data lokal akan DITIMPA. Lanjutkan?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Import', cancelButtonText: 'Batal', confirmButtonColor: '#7c3aed' });
       if (!res.isConfirmed) { event.target.value = ''; return; }
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -6518,9 +6759,9 @@
           };
           saveLocalData();
           renderAll();
-          Swal.fire({ title: 'Import Berhasil!', text: 'Data berhasil dipulihkan dari file JSON.', icon: 'success', timer: 2500, showConfirmButton: false });
+          (_getMySwal()||Swal).fire({ title: 'Import Berhasil!', text: 'Data berhasil dipulihkan dari file JSON.', icon: 'success', timer: 2500, showConfirmButton: false });
         } catch(err) {
-          Swal.fire('Gagal', 'File tidak valid atau rusak.', 'error');
+          (_getMySwal()||Swal).fire('Gagal', 'File tidak valid atau rusak.', 'error');
         }
         event.target.value = '';
       };
@@ -6546,7 +6787,7 @@
         if (menu === 'admin') {
           document.getElementById('sidebar-overlay').classList.remove('open');
           document.body.style.overflow = '';
-          if (!isAdminUser()) { Swal.fire('Akses Ditolak','Anda tidak punya akses admin.','error'); return; }
+          if (!isAdminUser()) { (_getMySwal()||Swal).fire('Akses Ditolak','Anda tidak punya akses admin.','error'); return; }
           openModal('modal-admin-panel');
           return;
         }
@@ -6675,7 +6916,7 @@
       const expStr   = document.getElementById('admin-edit-expired').value;
       const payref   = document.getElementById('admin-edit-payref').value.trim();
       const storeName= document.getElementById('admin-edit-store').value.trim();
-      if (!expStr) { Swal.fire('Error','Tanggal expired harus diisi.','warning'); return; }
+      if (!expStr) { (_getMySwal()||Swal).fire('Error','Tanggal expired harus diisi.','warning'); return; }
       try {
         await waitFirebase();
         await window._fbFirestore.collection('subscriptions').doc(uid).update({
@@ -6686,23 +6927,23 @@
           updated_by : ADMIN_UID,
         });
         closeModal('modal-admin-edit');
-        Swal.fire({ title:'Berhasil!', text:'Langganan '+uid+' diperbarui.', icon:'success', timer:2000, showConfirmButton:false });
+        (_getMySwal()||Swal).fire({ title:'Berhasil!', text:'Langganan '+uid+' diperbarui.', icon:'success', timer:2000, showConfirmButton:false });
         adminLoadSubscriptions();
-      } catch(e) { Swal.fire('Gagal', e.message||'Error', 'error'); }
+      } catch(e) { (_getMySwal()||Swal).fire('Gagal', e.message||'Error', 'error'); }
     }
 
     async function adminDeleteSubscription() {
       const uid = document.getElementById('admin-edit-uid').value;
       if (!uid) return;
-      const res = await Swal.fire({ title:'Hapus Langganan?', text:'subscriptions/'+uid+' akan dihapus permanen!', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Ya, Hapus', cancelButtonText:'Batal' });
+      const res = await (_getMySwal()||Swal).fire({ title:'Hapus Langganan?', text:'subscriptions/'+uid+' akan dihapus permanen!', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Ya, Hapus', cancelButtonText:'Batal' });
       if (!res.isConfirmed) return;
       try {
         await waitFirebase();
         await window._fbFirestore.collection('subscriptions').doc(uid).delete();
         closeModal('modal-admin-edit');
-        Swal.fire({ title:'Dihapus!', icon:'success', timer:1500, showConfirmButton:false });
+        (_getMySwal()||Swal).fire({ title:'Dihapus!', icon:'success', timer:1500, showConfirmButton:false });
         adminLoadSubscriptions();
-      } catch(e) { Swal.fire('Gagal', e.message, 'error'); }
+      } catch(e) { (_getMySwal()||Swal).fire('Gagal', e.message, 'error'); }
     }
 
     async function adminSaveSubscription() {
@@ -6711,8 +6952,8 @@
       const status = document.getElementById('admin-input-status').value;
       const expStr = document.getElementById('admin-input-expired').value;
       const payref = document.getElementById('admin-input-payref').value.trim();
-      if (!uid)    { Swal.fire('Error','UID harus diisi.','warning'); return; }
-      if (!expStr) { Swal.fire('Error','Tanggal expired harus diisi.','warning'); return; }
+      if (!uid)    { (_getMySwal()||Swal).fire('Error','UID harus diisi.','warning'); return; }
+      if (!expStr) { (_getMySwal()||Swal).fire('Error','Tanggal expired harus diisi.','warning'); return; }
       try {
         await waitFirebase();
         const existing = await window._fbFirestore.collection('subscriptions').doc(uid).get();
@@ -6727,9 +6968,9 @@
         if (isNew) { subData.email=''; subData.store_name=''; subData.created_at=new Date(); subData.trial_days=0; }
         await window._fbFirestore.collection('subscriptions').doc(uid).set(subData, { merge:true });
         ['admin-input-uid','admin-input-expired','admin-input-payref'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-        Swal.fire({ title: isNew?'Dibuat!':'Diperbarui!', text:(isNew?'Subscription baru: ':'Diperbarui: ')+uid, icon:'success', timer:2000, showConfirmButton:false });
+        (_getMySwal()||Swal).fire({ title: isNew?'Dibuat!':'Diperbarui!', text:(isNew?'Subscription baru: ':'Diperbarui: ')+uid, icon:'success', timer:2000, showConfirmButton:false });
         adminLoadSubscriptions();
-      } catch(e) { Swal.fire('Gagal', e.message||'Error Firestore', 'error'); }
+      } catch(e) { (_getMySwal()||Swal).fire('Gagal', e.message||'Error Firestore', 'error'); }
     }
 
     // ---- AUTO LOGIN ----
@@ -6944,13 +7185,13 @@
 
         const win = window.open('', '_blank');
         if (!win) {
-          Swal.fire('Popup Diblokir', 'Izinkan popup di browser untuk mencetak laporan PDF.', 'warning');
+          (_getMySwal()||Swal).fire('Popup Diblokir', 'Izinkan popup di browser untuk mencetak laporan PDF.', 'warning');
         } else {
           win.document.write(html);
           win.document.close();
         }
       } catch(e) {
-        Swal.fire('Gagal', 'Terjadi kesalahan saat membuat laporan: ' + e.message, 'error');
+        (_getMySwal()||Swal).fire('Gagal', 'Terjadi kesalahan saat membuat laporan: ' + e.message, 'error');
       } finally {
         if (btn) { btn.disabled = false; btnText.innerHTML = '<i class="fas fa-file-arrow-down"></i> UNDUH LAPORAN PDF'; }
       }
@@ -7118,14 +7359,16 @@
       if (tipis.length) msg += `${habis.length ? ' & ' : ''}<b>${tipis.length} produk menipis</b>`;
 
       if (typeof Swal !== 'undefined') {
-        const Toast = Swal.mixin({
-          toast: true, position: 'top-end', showConfirmButton: false, timer: 4000,
+        const Toast = (window.MySwalToast || Swal.mixin({
+          toast: true, position: 'top', showConfirmButton: false, timer: 4000,
           timerProgressBar: true,
+          customClass: { popup: 'swal2-ku-toast' },
+          zIndex: 99999,
           didOpen: (toast) => {
             toast.addEventListener('mouseenter', Swal.stopTimer);
             toast.addEventListener('mouseleave', Swal.resumeTimer);
           }
-        });
+        }));
         Toast.fire({ icon: 'warning', title: `⚠️ Stok Menipis!`, html: msg });
       }
 
@@ -7518,7 +7761,7 @@
 
   function showUpgradeHintToko(plan) {
     const next = (plan === 'trial' || plan === 'basic') ? 'Pro' : 'Unlimited';
-    Swal.fire({
+    (_getMySwal()||Swal).fire({
       title : '🔒 Batas Toko Tercapai',
       html  : 'Paket <b>' + (PLAN_LABELS[plan]||plan) + '</b> hanya untuk <b>' + (PLAN_STORE_LIMIT[plan]||1) + ' toko</b>.<br><br>Upgrade ke <b>' + next + '</b> untuk lebih banyak toko!',
       icon  : 'info',
@@ -7552,7 +7795,7 @@
     const max   = PLAN_STORE_LIMIT[plan] || 1;
     const nama  = (document.getElementById('input-nama-toko-baru')?.value || '').trim();
 
-    if (!nama) { Swal.fire('Error','Nama toko harus diisi!','warning'); return; }
+    if (!nama) { (_getMySwal()||Swal).fire('Error','Nama toko harus diisi!','warning'); return; }
 
     let stores = [];
     try { stores = await getUserStores(uid); } catch(e) {}
@@ -7578,7 +7821,7 @@
 
       if (typeof showSyncToast === 'function') showSyncToast('ok','TOKO DIBUAT ✓');
       closeModal('modal-tambah-toko');
-      Swal.fire({
+      (_getMySwal()||Swal).fire({
         title:'🎉 Toko Berhasil Dibuat!',
         html :'<b>' + nama + '</b> siap digunakan.',
         icon :'success', timer:2500, showConfirmButton:false
@@ -7589,7 +7832,7 @@
       if (errMsg.toLowerCase().includes('permission') || errMsg.toLowerCase().includes('insufficient')) {
         errMsg = 'Sesi login expired. Silakan logout lalu login kembali, kemudian coba lagi.';
       }
-      Swal.fire('Gagal', errMsg, 'error');
+      (_getMySwal()||Swal).fire('Gagal', errMsg, 'error');
     }
   }
 
@@ -7599,11 +7842,11 @@
   async function switchToStore(storeId, storeName) {
     const currentId = localStorage.getItem('k_active_store_id');
     if (storeId === currentId) {
-      Swal.fire({ title:'Toko Sudah Aktif', text: storeName + ' sedang aktif.', icon:'info', timer:1500, showConfirmButton:false });
+      (_getMySwal()||Swal).fire({ title:'Toko Sudah Aktif', text: storeName + ' sedang aktif.', icon:'info', timer:1500, showConfirmButton:false });
       return;
     }
 
-    const res = await Swal.fire({
+    const res = await (_getMySwal()||Swal).fire({
       title :'Pindah ke ' + storeName + '?',
       html  :'Data toko saat ini akan disimpan, lalu beralih ke <b>' + storeName + '</b>.',
       icon  :'question',
@@ -7626,7 +7869,7 @@
     try {
       if (typeof showSyncToast === 'function') showSyncToast('saving','MEMUAT ' + storeName.toUpperCase() + '...');
       const doc = await loadStoreData(storeId);
-      if (!doc) { Swal.fire('Error','Data toko tidak ditemukan.','error'); return; }
+      if (!doc) { (_getMySwal()||Swal).fire('Error','Data toko tidak ditemukan.','error'); return; }
 
       const d = doc.data || {};
       if (typeof window.db !== 'undefined') {
@@ -7664,10 +7907,10 @@
       if (typeof showSyncToast === 'function') showSyncToast('ok','TOKO AKTIF: ' + storeName.toUpperCase());
       closeModal('modal-sidebar-akun');
       renderMultiTokoSection();
-      Swal.fire({ title:'✅ Toko Aktif: ' + storeName, text:'Data berhasil dimuat.', icon:'success', timer:2000, showConfirmButton:false });
+      (_getMySwal()||Swal).fire({ title:'✅ Toko Aktif: ' + storeName, text:'Data berhasil dimuat.', icon:'success', timer:2000, showConfirmButton:false });
     } catch(e) {
       if (typeof showSyncToast === 'function') showSyncToast('error','GAGAL MUAT TOKO');
-      Swal.fire('Gagal','Gagal memuat toko: ' + (e.message || 'Error'),'error');
+      (_getMySwal()||Swal).fire('Gagal','Gagal memuat toko: ' + (e.message || 'Error'),'error');
     }
   }
 
@@ -7677,10 +7920,10 @@
   async function confirmDeleteStore(storeId, storeName) {
     const activeId = localStorage.getItem('k_active_store_id');
     if (storeId === activeId) {
-      Swal.fire('Tidak Bisa','Toko aktif tidak bisa dihapus. Pindah ke toko lain dulu.','warning');
+      (_getMySwal()||Swal).fire('Tidak Bisa','Toko aktif tidak bisa dihapus. Pindah ke toko lain dulu.','warning');
       return;
     }
-    const res = await Swal.fire({
+    const res = await (_getMySwal()||Swal).fire({
       title:'Hapus Toko "' + storeName + '"?',
       html :'Semua data toko ini akan <b>dihapus permanen</b>!',
       icon :'warning',
@@ -7693,9 +7936,9 @@
     try {
       await waitMTFirebase();
       await window._fbFirestore.collection('user_stores').doc(storeId).delete();
-      Swal.fire({ title:'Toko Dihapus', icon:'success', timer:1800, showConfirmButton:false });
+      (_getMySwal()||Swal).fire({ title:'Toko Dihapus', icon:'success', timer:1800, showConfirmButton:false });
       renderMultiTokoSection();
-    } catch(e) { Swal.fire('Gagal', e.message || 'Error hapus toko','error'); }
+    } catch(e) { (_getMySwal()||Swal).fire('Gagal', e.message || 'Error hapus toko','error'); }
   }
 
   // =====================================================
@@ -7703,7 +7946,7 @@
   // =====================================================
   async function adminMonitorAllStores() {
     if (typeof isAdminUser === 'function' && !isAdminUser()) {
-      Swal.fire('Akses Ditolak','Anda bukan admin.','error'); return;
+      (_getMySwal()||Swal).fire('Akses Ditolak','Anda bukan admin.','error'); return;
     }
     openModal('modal-admin-toko-monitor');
     const listEl  = document.getElementById('admin-monitor-toko-list');
@@ -7932,9 +8175,9 @@
     const kode = getKodeToko(uid);
     if (kode === '—') return;
     navigator.clipboard.writeText(kode).then(() => {
-      Swal.fire({ title: 'Tersalin!', text: 'Kode toko ' + kode + ' disalin ke clipboard.', icon: 'success', timer: 1500, showConfirmButton: false });
+      (_getMySwal()||Swal).fire({ title: 'Tersalin!', text: 'Kode toko ' + kode + ' disalin ke clipboard.', icon: 'success', timer: 1500, showConfirmButton: false });
     }).catch(() => {
-      Swal.fire({ title: 'Kode Toko', text: kode, icon: 'info' });
+      (_getMySwal()||Swal).fire({ title: 'Kode Toko', text: kode, icon: 'info' });
     });
   }
 
@@ -8019,10 +8262,10 @@
     const username = (document.getElementById('new-kasir-username')?.value || '').trim().toLowerCase();
     const password = (document.getElementById('new-kasir-password')?.value || '');
 
-    if (!nama)     return Swal.fire('Error', 'Nama kasir harus diisi!', 'warning');
-    if (!username) return Swal.fire('Error', 'Username harus diisi!', 'warning');
-    if (!/^[a-z0-9_]+$/.test(username)) return Swal.fire('Error', 'Username hanya boleh huruf kecil, angka, dan underscore!', 'warning');
-    if (password.length < 4) return Swal.fire('Error', 'Password minimal 4 karakter!', 'warning');
+    if (!nama)     return (_getMySwal()||Swal).fire('Error', 'Nama kasir harus diisi!', 'warning');
+    if (!username) return (_getMySwal()||Swal).fire('Error', 'Username harus diisi!', 'warning');
+    if (!/^[a-z0-9_]+$/.test(username)) return (_getMySwal()||Swal).fire('Error', 'Username hanya boleh huruf kecil, angka, dan underscore!', 'warning');
+    if (password.length < 4) return (_getMySwal()||Swal).fire('Error', 'Password minimal 4 karakter!', 'warning');
 
     const izin = {
       kasir_digital   : document.getElementById('izin-kasir-digital')?.checked || false,
@@ -8040,7 +8283,7 @@
         .where('owner_uid', '==', uid)
         .where('username', '==', username)
         .get();
-      if (!dupSnap.empty) return Swal.fire('Error', 'Username "' + username + '" sudah digunakan di toko ini!', 'warning');
+      if (!dupSnap.empty) return (_getMySwal()||Swal).fire('Error', 'Username "' + username + '" sudah digunakan di toko ini!', 'warning');
 
       const storeId = localStorage.getItem('k_active_store_id') || '';
       // Hash sederhana password (bukan kriptografi kuat, cukup untuk use case ini)
@@ -8066,17 +8309,17 @@
         const el = document.getElementById(id); if (el) el.checked = (id==='izin-kasir-digital'||id==='izin-kasir-fisik');
       });
 
-      Swal.fire({ title: '✅ Kasir Ditambahkan!', html: '<b>' + nama + '</b> (@' + username + ') berhasil didaftarkan.', icon: 'success', timer: 2000, showConfirmButton: false });
+      (_getMySwal()||Swal).fire({ title: '✅ Kasir Ditambahkan!', html: '<b>' + nama + '</b> (@' + username + ') berhasil didaftarkan.', icon: 'success', timer: 2000, showConfirmButton: false });
       await loadKasirList();
 
     } catch(e) {
-      Swal.fire('Gagal', e.message || 'Error tambah kasir', 'error');
+      (_getMySwal()||Swal).fire('Gagal', e.message || 'Error tambah kasir', 'error');
     }
   }
 
   // ─── HAPUS KASIR ───
   async function deleteKasir(id, nama) {
-    const res = await Swal.fire({
+    const res = await (_getMySwal()||Swal).fire({
       title: 'Hapus Kasir "' + nama + '"?',
       text: 'Akun kasir ini akan dihapus permanen.',
       icon: 'warning', showCancelButton: true,
@@ -8088,10 +8331,10 @@
     try {
       await waitMTFirebase(5000);
       await window._fbFirestore.collection('kasir_accounts').doc(id).delete();
-      Swal.fire({ title: 'Dihapus', icon: 'success', timer: 1500, showConfirmButton: false });
+      (_getMySwal()||Swal).fire({ title: 'Dihapus', icon: 'success', timer: 1500, showConfirmButton: false });
       await loadKasirList();
     } catch(e) {
-      Swal.fire('Gagal', e.message || 'Error', 'error');
+      (_getMySwal()||Swal).fire('Gagal', e.message || 'Error', 'error');
     }
   }
 
@@ -8102,9 +8345,9 @@
     try {
       await waitMTFirebase(5000);
       const doc = await window._fbFirestore.collection('kasir_accounts').doc(id).get();
-      if (!doc.exists) return Swal.fire('Error', 'Data kasir tidak ditemukan.', 'error');
+      if (!doc.exists) return (_getMySwal()||Swal).fire('Error', 'Data kasir tidak ditemukan.', 'error');
       const k = doc.data();
-      const { value: formValues } = await Swal.fire({
+      const { value: formValues } = await (_getMySwal()||Swal).fire({
         title: '✏️ Edit Kasir: ' + (k.nama||''),
         html: `
           <div style="text-align:left;space-y:12px;">
@@ -8150,13 +8393,13 @@
       if (formValues.pwd && formValues.pwd.length >= 4) {
         updateData.pw_hash = _simpleHash(formValues.pwd);
       } else if (formValues.pwd && formValues.pwd.length > 0) {
-        return Swal.fire('Error', 'Password minimal 4 karakter!', 'warning');
+        return (_getMySwal()||Swal).fire('Error', 'Password minimal 4 karakter!', 'warning');
       }
       await window._fbFirestore.collection('kasir_accounts').doc(id).update(updateData);
-      Swal.fire({ title: 'Tersimpan!', icon: 'success', timer: 1500, showConfirmButton: false });
+      (_getMySwal()||Swal).fire({ title: 'Tersimpan!', icon: 'success', timer: 1500, showConfirmButton: false });
       await loadKasirList();
     } catch(e) {
-      Swal.fire('Gagal', e.message || 'Error', 'error');
+      (_getMySwal()||Swal).fire('Gagal', e.message || 'Error', 'error');
     }
   }
 
@@ -8296,7 +8539,7 @@
     }
 
     // Tampilkan notif mode kasir
-    Swal.fire({
+    (_getMySwal()||Swal).fire({
       title: '👋 Halo, ' + kasirNama + '!',
       html: 'Anda masuk sebagai <b>Kasir</b>.<br><small style="color:#94a3b8;">Akses dibatasi sesuai izin dari pemilik toko.</small>',
       icon: 'success',
@@ -8312,7 +8555,7 @@
     if (menu === 'kelola-kasir') {
       // Hanya pemilik toko (bukan kasir) yang boleh buka
       if (localStorage.getItem('k_kasir_mode') === 'true') {
-        Swal.fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengelola kasir.', 'warning');
+        (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengelola kasir.', 'warning');
         return;
       }
       closeSidebar();
@@ -8358,7 +8601,7 @@
   // ─── PATCH LOGOUT untuk bersihkan session kasir ───
   const _origLogout = typeof logout === 'function' ? logout : null;
   window.logout = function() {
-    Swal.fire({
+    (_getMySwal()||Swal).fire({
       title: 'Keluar?',
       text: 'Anda akan keluar dari sesi ini.',
       icon: 'question', showCancelButton: true,
@@ -8396,7 +8639,7 @@
   function openMonitorCabang() {
     const isKasir = localStorage.getItem('k_kasir_mode') === 'true';
     if (isKasir) {
-      Swal.fire('Akses Ditolak', 'Hanya pemilik toko yang bisa melihat monitor cabang.', 'warning');
+      (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa melihat monitor cabang.', 'warning');
       return;
     }
     // Buka modal akun lalu scroll ke bagian monitor
