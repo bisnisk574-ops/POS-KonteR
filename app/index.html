@@ -1707,6 +1707,7 @@
               <p class="text-[12px] font-black text-slate-200">Absensi Kasir</p>
               <p class="text-[9px] text-slate-500 font-bold">Laporan shift & saldo kas</p>
             </div>
+            <span id="absensi-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(5,150,105,0.25);display:none;">PRO ⭐</span>
             <i class="fas fa-chevron-right text-slate-600 text-[9px]"></i>
           </button>
 
@@ -8112,7 +8113,13 @@
         }
       }
 
-      // ── 4. View hutang: paywall blur overlay jika < basic ──
+      // ── 4. Badge PRO absensi kasir: tampil jika < pro ──
+      const absensiBadge = document.getElementById('absensi-plan-badge');
+      if (absensiBadge) {
+        absensiBadge.style.display = rank < 2 ? 'inline' : 'none';
+      }
+
+      // ── 5. View hutang: paywall blur overlay jika < basic ──
       const viewHutang = document.getElementById('view-hutang');
       if (viewHutang) {
         let hutangWall = document.getElementById('hutang-paywall');
@@ -9782,6 +9789,14 @@
     const _prev = typeof openSidebarMenu === 'function' ? openSidebarMenu : null;
     window.openSidebarMenu = function(menu) {
       if (menu === 'absensi-kasir') {
+        // ── FEATURE GATE: minimal paket PRO ──
+        const plan = localStorage.getItem('k_plan') || 'trial';
+        const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
+        const rank = PLAN_RANK[plan] ?? 0;
+        if (rank < 2) {
+          showUpgradeModal('absensi', 'pro');
+          return;
+        }
         closeSidebar();
         openAbsensiKasirModal();
         return;
