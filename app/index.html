@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KonterKU Cloud - Premium POS</title>
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -547,6 +547,173 @@
       pointer-events: none;
       border-radius: inherit;
     }
+
+    /* =====================================================
+       DESKTOP RESPONSIVE LAYOUT (≥ 860px)
+       ===================================================== */
+    @media (min-width: 860px) {
+
+      /* Body reset — no mobile padding-bottom */
+      body { padding-bottom: 0 !important; overflow-x: hidden; }
+
+      /* ── App wrapper: flex row ── */
+      #app-content {
+        display: flex !important;
+        flex-direction: row;
+        min-height: 100vh;
+      }
+
+      /* ── Sidebar: always visible on desktop ── */
+      .sidebar-overlay {
+        position: relative !important;
+        inset: auto !important;
+        background: none !important;
+        backdrop-filter: none !important;
+        pointer-events: all !important;
+        width: 260px;
+        flex-shrink: 0;
+        height: 100vh;
+        position: sticky !important;
+        top: 0;
+        z-index: 100;
+      }
+      .sidebar-panel {
+        position: relative !important;
+        transform: none !important;
+        width: 260px !important;
+        max-width: 260px !important;
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+      }
+      /* Hide sidebar overlay backdrop on desktop */
+      .sidebar-overlay::before { display: none; }
+
+      /* ── Desktop main content area ── */
+      #desktop-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        background: #F8FAFC;
+        overflow-y: auto;
+        height: 100vh;
+      }
+
+      /* ── Header ── */
+      header.header-gradient {
+        border-radius: 0 0 28px 28px;
+        margin: 0 16px;
+      }
+
+      /* ── Main content ── */
+      main { padding: 24px 24px 24px 24px !important; }
+
+      /* ── Bottom nav → hide on desktop ── */
+      .bottom-nav { display: none !important; }
+
+      /* ── Desktop top bar (hamburger area) → hide on desktop ── */
+      .mobile-topbar { display: none !important; }
+
+      /* ── Desktop side nav links at bottom of sidebar ── */
+      .desktop-sidenav {
+        display: flex !important;
+        flex-direction: column;
+        padding: 0 12px 16px;
+        gap: 2px;
+      }
+      .desktop-sidenav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border-radius: 14px;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        width: 100%;
+        text-align: left;
+        transition: all 0.18s;
+      }
+      .desktop-sidenav-item:hover { background: rgba(255,255,255,0.06); color: #94a3b8; }
+      .desktop-sidenav-item.active {
+        background: linear-gradient(135deg, rgba(0,97,194,0.3), rgba(56,189,248,0.15));
+        color: #38BDF8;
+        border: 1px solid rgba(56,189,248,0.2);
+      }
+      .desktop-sidenav-item .dsn-icon {
+        width: 34px; height: 34px; border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; flex-shrink: 0;
+        background: rgba(255,255,255,0.06);
+        color: #64748b;
+        transition: all 0.18s;
+      }
+      .desktop-sidenav-item.active .dsn-icon {
+        background: linear-gradient(135deg, #0061C2, #38BDF8);
+        color: white;
+        box-shadow: 0 4px 14px rgba(0,97,194,0.4);
+      }
+      /* Hide on mobile */
+      .desktop-sidenav { display: none; }
+
+      /* ── Grid improvements for dashboard ── */
+      #view-dashboard .flex.flex-col.gap-3 { flex-direction: row !important; flex-wrap: wrap; }
+      #view-dashboard .stat-card-omset { flex: 1 1 100%; }
+      #view-dashboard .grid.grid-cols-2 { flex: 1 1 100%; }
+
+      /* Kasir: 2-col layout for forms */
+      #view-kasir { max-width: 720px; margin: 0 auto; }
+
+      /* Stok & Hutang max-width */
+      #view-stok, #view-hutang { max-width: 900px; }
+
+      /* Dompet */
+      #view-wallets { max-width: 900px; }
+
+      /* Modals → centered on desktop instead of bottom sheet */
+      .modal-overlay {
+        align-items: center !important;
+        padding: 24px;
+      }
+      .modal-content {
+        border-radius: 28px !important;
+        max-width: 560px;
+        max-height: 85vh;
+      }
+    }
+
+    /* ── Desktop top info bar ── */
+    @media (min-width: 860px) {
+      .desktop-topbar {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 24px 0;
+        gap: 12px;
+      }
+      .desktop-topbar-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      .desktop-topbar-sub {
+        font-size: 11px;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-top: 1px;
+      }
+    }
+    .desktop-topbar { display: none; }
+    .desktop-sidenav { display: none; }
   </style>
   <script>
     // ===== MYSWAL — Global SweetAlert2 Mixin Premium =====
@@ -1741,6 +1908,33 @@
 
         <!-- Sidebar Footer -->
         <div class="sidebar-divider"></div>
+
+        <!-- ── DESKTOP SIDE NAV (hanya tampil di layar ≥860px) ── -->
+        <div class="desktop-sidenav" id="desktop-sidenav">
+          <div class="sidebar-section-label" style="padding-left:4px;">Menu Utama</div>
+          <button class="desktop-sidenav-item active" id="dsn-dashboard" onclick="showView('dashboard'); _dsnSetActive('dashboard')">
+            <div class="dsn-icon"><i class="fas fa-chart-pie"></i></div>
+            Dashboard
+          </button>
+          <button class="desktop-sidenav-item" id="dsn-kasir" onclick="showView('kasir'); _dsnSetActive('kasir')">
+            <div class="dsn-icon"><i class="fas fa-cash-register"></i></div>
+            Kasir
+          </button>
+          <button class="desktop-sidenav-item" id="dsn-stok" onclick="showView('stok'); _dsnSetActive('stok')">
+            <div class="dsn-icon"><i class="fas fa-box-open"></i></div>
+            Stok
+          </button>
+          <button class="desktop-sidenav-item" id="dsn-wallets" onclick="showView('wallets'); _dsnSetActive('wallets')">
+            <div class="dsn-icon"><i class="fas fa-wallet"></i></div>
+            Dompet
+          </button>
+          <button class="desktop-sidenav-item" id="dsn-hutang" onclick="showView('hutang'); _dsnSetActive('hutang')">
+            <div class="dsn-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            Hutang
+          </button>
+          <div class="sidebar-divider" style="margin:8px 4px;"></div>
+        </div>
+
         <button class="sidebar-menu-item danger mb-4" onclick="closeSidebar(); logout();">
           <div class="sidebar-icon-wrap bg-red-500/15">
             <i class="fas fa-right-from-bracket text-red-400"></i>
@@ -2950,6 +3144,7 @@
       </div>
     </div>
 
+    <div id="desktop-main">
     <header class="header-gradient text-white">
       <div class="absolute -right-10 -top-10 w-52 h-52 rounded-full pointer-events-none"
         style="background:radial-gradient(circle, rgba(56,189,248,0.18) 0%, transparent 70%)"></div>
@@ -4342,6 +4537,7 @@
         <span class="nav-dot"></span>
       </button>
     </nav>
+    </div><!-- end #desktop-main -->
   </div><!-- end #app-content -->
 
   <!-- ==================== JAVASCRIPT ==================== -->
@@ -4544,11 +4740,19 @@
         if (wrap) { wrap.style.animation = 'none'; wrap.offsetHeight; wrap.style.animation = ''; }
       });
       document.getElementById('nav-' + v).classList.add('active');
+      // Sync desktop sidenav
+      _dsnSetActive(v);
       if (v === 'dashboard') renderProfitChart();
       if (v === 'wallets') {
         setWalletViewTab('list');
         renderWallets();
       }
+    }
+
+    function _dsnSetActive(v) {
+      document.querySelectorAll('.desktop-sidenav-item').forEach(el => el.classList.remove('active'));
+      const el = document.getElementById('dsn-' + v);
+      if (el) el.classList.add('active');
     }
 
     // ── PLAN LIMITS ──
@@ -5100,6 +5304,31 @@
       if (headerName) headerName.innerText = _appDisplayName;
       const sidebarName = document.getElementById('sidebar-store-name');
       if (sidebarName) sidebarName.innerText = _appDisplayName;
+      // Sidebar email
+      const sidebarEmail = document.getElementById('sidebar-store-email');
+      if (sidebarEmail) sidebarEmail.innerText = _email || '';
+
+      // Desktop: mulai jam sidebar + init sidenav active
+      if (window.innerWidth >= 860) {
+        tickSidebarClock();
+        if (_clockInterval) clearInterval(_clockInterval);
+        _clockInterval = setInterval(tickSidebarClock, 1000);
+        _dsnSetActive('dashboard');
+        // Update status online di sidebar
+        const dot2  = document.getElementById('sidebar-dot');
+        const stxt2 = document.getElementById('sidebar-status-text');
+        if (dot2 && stxt2) {
+          if (navigator.onLine) {
+            dot2.className  = 'w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse';
+            stxt2.innerText = 'ONLINE';
+            stxt2.className = 'text-[8px] font-black text-emerald-300';
+          } else {
+            dot2.className  = 'w-1.5 h-1.5 bg-rose-400 rounded-full';
+            stxt2.innerText = 'OFFLINE';
+            stxt2.className = 'text-[8px] font-black text-rose-300';
+          }
+        }
+      }
 
       // Init sync version dari storage
       _syncVersion   = parseInt(localStorage.getItem('k_sync_version') || '0');
@@ -7152,6 +7381,9 @@
     }
 
     function openSidebar() {
+      // Desktop ≥860px: sidebar sudah selalu terbuka, tidak perlu aksi overlay
+      if (window.innerWidth >= 860) return;
+
       // Mulai/update jam saat sidebar dibuka
       tickSidebarClock();
       if (_clockInterval) clearInterval(_clockInterval);
@@ -7193,6 +7425,8 @@
     }
 
     function closeSidebar(e) {
+      // Desktop: sidebar selalu terbuka
+      if (window.innerWidth >= 860) return;
       if (e && e.target !== document.getElementById('sidebar-overlay')) return;
       document.getElementById('sidebar-overlay').classList.remove('open');
       document.body.style.overflow = '';
