@@ -203,8 +203,74 @@
       color:white; box-shadow:0 4px 16px rgba(5,150,105,0.5);
       transform:scale(1.02);
     }
+    .kasir-tab-btn.k-active-ewl {
+      background:linear-gradient(135deg,#7c3aed,#a855f7);
+      color:white; box-shadow:0 4px 16px rgba(124,58,237,0.55);
+      transform:scale(1.02);
+    }
     .kasir-tab-btn.k-inactive {
       background:transparent; color:rgba(255,255,255,0.45);
+    }
+    /* Ewallet submit button */
+    .kasir-submit-ewl {
+      background:linear-gradient(135deg,#7c3aed 0%,#a855f7 50%,#c084fc 100%);
+      color:white; box-shadow:0 8px 28px rgba(124,58,237,0.45);
+    }
+    /* Ewallet transfer flow visual */
+    .ewl-flow-card {
+      background:linear-gradient(135deg,#1e1040,#2d1b69);
+      border-radius:20px; padding:16px;
+      position:relative; overflow:hidden;
+      border:1.5px solid rgba(167,139,250,0.2);
+    }
+    .ewl-flow-card::before {
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse 70% 60% at 90% 10%, rgba(192,132,252,0.15) 0%, transparent 65%);
+      pointer-events:none;
+    }
+    .ewl-wallet-chip {
+      background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+      border-radius:14px; padding:10px 14px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .ewl-arrow-indicator {
+      display:flex;flex-direction:column;align-items:center;gap:2px;
+      padding:6px 0;
+    }
+    .ewl-arrow-line {
+      width:2px; height:14px;
+      background:linear-gradient(to bottom,rgba(167,139,250,0.4),rgba(167,139,250,0.8));
+      border-radius:2px;
+    }
+    .ewl-arrow-head {
+      width:0; height:0;
+      border-left:5px solid transparent; border-right:5px solid transparent;
+      border-top:7px solid rgba(167,139,250,0.8);
+    }
+    .ewl-profit-badge {
+      background:linear-gradient(135deg,#1a0f40,#2d1b69);
+      border:1.5px solid rgba(167,139,250,0.25); border-radius:14px; padding:10px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .ewl-nominal-badge {
+      background:linear-gradient(135deg,#2e1065,#4c1d95);
+      border:1.5px solid rgba(192,132,252,0.3); border-radius:14px;
+      padding:12px 14px; display:flex; align-items:center; gap:10px;
+    }
+    .ewl-admin-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    .ewl-admin-box {
+      border-radius:14px; padding:12px 14px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .ewl-admin-bank {
+      background:linear-gradient(135deg,#fff7ed,#ffedd5);
+      border:1.5px solid #fed7aa;
+    }
+    .ewl-admin-agen {
+      background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+      border:1.5px solid #86efac;
     }
     .kasir-field-card {
       background:white; border-radius:20px;
@@ -2304,6 +2370,9 @@
               <button onclick="setKasirTab('fisik')" id="btn-k-fisik" class="kasir-tab-btn k-inactive">
                 <i class="fas fa-box mr-1.5"></i>FISIK
               </button>
+              <button onclick="setKasirTab('ewallet')" id="btn-k-ewallet" class="kasir-tab-btn k-inactive">
+                <i class="fas fa-mobile-screen-button mr-1.5"></i>E-WALLET
+              </button>
             </div>
           </div>
         </div>
@@ -2573,6 +2642,230 @@
           </button>
 
         </div>
+
+        <!-- ===== FORM E-WALLET / TRANSFER ===== -->
+        <div id="form-k-ewallet" class="hidden space-y-3">
+
+          <!-- Flow visual header card -->
+          <div class="ewl-flow-card" style="position:relative;z-index:1;">
+            <div class="flex items-center gap-3 mb-3" style="position:relative;z-index:1;">
+              <div class="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style="background:rgba(167,139,250,0.2);border:1px solid rgba(167,139,250,0.25);">
+                <i class="fas fa-mobile-screen-button text-violet-300 text-sm"></i>
+              </div>
+              <div>
+                <p class="font-black text-white text-[13px] leading-tight">Transfer / Top Up E-Wallet</p>
+                <p class="text-[9px] font-bold" style="color:rgba(192,132,252,0.7);">SETOR TUNAI · TARIK TUNAI · TOPUP</p>
+              </div>
+              <!-- Live profit badge -->
+              <div id="ewl-profit-live" class="ml-auto text-right hidden">
+                <p class="text-[8px] font-black uppercase" style="color:rgba(255,255,255,0.4);">Keuntungan</p>
+                <p id="ewl-profit-live-val" class="text-sm font-black text-violet-300">Rp 0</p>
+              </div>
+            </div>
+
+            <!-- From → To chips -->
+            <div class="flex flex-col items-center gap-1" style="position:relative;z-index:1;">
+              <div class="ewl-wallet-chip w-full">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style="background:rgba(239,68,68,0.2);">
+                  <i class="fas fa-wallet text-red-400" style="font-size:11px;"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.35);">SUMBER DANA (Modal Keluar)</p>
+                  <select id="ke-w-modal" class="kasir-field-input" style="background:transparent;color:white;font-size:12px;border:none;padding:0;margin-top:1px;"></select>
+                </div>
+              </div>
+              <div class="ewl-arrow-indicator">
+                <div class="ewl-arrow-line"></div>
+                <div class="ewl-arrow-head"></div>
+              </div>
+              <div class="ewl-wallet-chip w-full">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style="background:rgba(16,185,129,0.2);">
+                  <i class="fas fa-mobile-screen-button text-emerald-400" style="font-size:11px;"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.35);">TUJUAN / DITERIMA KE</p>
+                  <select id="ke-w-penerima" class="kasir-field-input" style="background:transparent;color:white;font-size:12px;border:none;padding:0;margin-top:1px;"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Jenis Layanan -->
+          <div class="kasir-field-card">
+            <div class="kasir-field-row" style="border:none;">
+              <div class="kasir-field-icon" style="background:rgba(124,58,237,0.1);">
+                <i class="fas fa-layer-group" style="color:#7c3aed;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Jenis Layanan</p>
+                <select id="ke-jenis" class="kasir-field-input">
+                  <option value="Setor Tunai">💵 Setor Tunai</option>
+                  <option value="Tarik Tunai">🏧 Tarik Tunai</option>
+                  <option value="Top Up E-Wallet">📲 Top Up E-Wallet</option>
+                  <option value="Transfer Antar Bank">🏦 Transfer Antar Bank</option>
+                  <option value="Lainnya">🔄 Lainnya</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nominal & Admin grid -->
+          <div class="kasir-field-card">
+            <!-- Nominal -->
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(124,58,237,0.1);">
+                <i class="fas fa-coins" style="color:#7c3aed;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label">Nominal Transaksi</p>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] font-black text-slate-400">Rp</span>
+                  <input type="number" id="ke-nominal" class="kasir-field-input" placeholder="0"
+                    oninput="updateEwalletCalc()">
+                </div>
+              </div>
+            </div>
+            <!-- Admin row separator -->
+            <div style="height:1px;background:#f8fafc;margin:0 14px;"></div>
+            <!-- Admin Bank & Admin Agen side by side -->
+            <div class="p-3">
+              <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                <i class="fas fa-sliders mr-1"></i>Rincian Admin
+              </p>
+              <div class="ewl-admin-grid">
+                <!-- Admin Bank -->
+                <div class="ewl-admin-box ewl-admin-bank">
+                  <div class="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style="background:rgba(234,88,12,0.15);">
+                    <i class="fas fa-landmark text-orange-600" style="font-size:11px;"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="kasir-field-label" style="color:#9a3412;">ADMIN BANK</p>
+                    <p style="font-size:8px;color:#c2410c;font-weight:700;margin-bottom:2px;">jika ada, isi 0 jika tidak</p>
+                    <div class="flex items-center gap-0.5">
+                      <span style="font-size:9px;font-weight:900;color:#ea580c;">Rp</span>
+                      <input type="number" id="ke-admin-bank" class="kasir-field-input" style="background:transparent;color:#c2410c;"
+                        placeholder="0" value="0" oninput="updateEwalletCalc()">
+                    </div>
+                  </div>
+                </div>
+                <!-- Admin Agen -->
+                <div class="ewl-admin-box ewl-admin-agen">
+                  <div class="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style="background:rgba(5,150,105,0.15);">
+                    <i class="fas fa-user-tie text-emerald-600" style="font-size:11px;"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="kasir-field-label" style="color:#166534;">ADMIN AGEN</p>
+                    <p style="font-size:8px;color:#15803d;font-weight:700;margin-bottom:2px;">biaya admin kamu</p>
+                    <div class="flex items-center gap-0.5">
+                      <span style="font-size:9px;font-weight:900;color:#16a34a;">Rp</span>
+                      <input type="number" id="ke-admin-agen" class="kasir-field-input" style="background:transparent;color:#166534;"
+                        placeholder="0" oninput="updateEwalletCalc()">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ringkasan perhitungan -->
+          <div id="ewl-calc-row" class="hidden" style="background:linear-gradient(135deg,#1e1040,#2d1b69);border:1.5px solid rgba(167,139,250,0.25);border-radius:16px;padding:14px 16px;">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fas fa-calculator text-violet-400 text-[11px]"></i>
+              <span class="text-[10px] font-black text-violet-300 uppercase tracking-wide">Ringkasan Transaksi</span>
+            </div>
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;">Nominal</span>
+                <span id="ewl-sum-nominal" style="font-size:11px;font-weight:900;color:white;">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;">Admin Bank</span>
+                <span id="ewl-sum-bank" style="font-size:11px;font-weight:900;color:#fb923c;">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;">Admin Agen (Keuntungan)</span>
+                <span id="ewl-sum-agen" style="font-size:11px;font-weight:900;color:#4ade80;">Rp 0</span>
+              </div>
+              <div style="height:1px;background:rgba(255,255,255,0.08);margin:6px 0;"></div>
+              <div class="flex justify-between items-center">
+                <span style="font-size:10px;color:rgba(255,255,255,0.6);font-weight:800;">Pelanggan Bayar</span>
+                <span id="ewl-sum-total" style="font-size:14px;font-weight:900;color:#c084fc;">Rp 0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detail transaksi -->
+          <div class="kasir-field-card">
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
+                <i class="fas fa-calendar-day" style="color:#6366f1;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Tanggal</p>
+                <input type="date" id="ke-tgl" class="kasir-field-input">
+              </div>
+            </div>
+            <div class="kasir-field-row">
+              <div class="kasir-field-icon" style="background:rgba(168,85,247,0.1);">
+                <i class="fas fa-user" style="color:#a855f7;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Pelanggan / No. HP</p>
+                <select id="ke-customer" class="kasir-field-input"></select>
+              </div>
+            </div>
+            <div class="kasir-field-row" style="border:none;">
+              <div class="kasir-field-icon" style="background:rgba(148,163,184,0.1);">
+                <i class="fas fa-note-sticky" style="color:#94a3b8;"></i>
+              </div>
+              <div class="flex-1">
+                <p class="kasir-field-label">Keterangan (Opsional)</p>
+                <input type="text" id="ke-note" class="kasir-field-input" placeholder="No HP, nama, catatan...">
+              </div>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="kasir-field-card">
+              <div class="kasir-field-row" style="border:none;">
+                <div class="kasir-field-icon" style="background:rgba(16,185,129,0.1);">
+                  <i class="fas fa-circle-check" style="color:#10b981;"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="kasir-field-label">Status</p>
+                  <select id="ke-status" class="kasir-field-input">
+                    <option value="Lunas">✅ Lunas</option>
+                    <option value="Hutang">⏳ Hutang</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="kasir-field-card">
+              <div class="kasir-field-row" style="border:none;">
+                <div class="kasir-field-icon" style="background:rgba(124,58,237,0.1);">
+                  <i class="fas fa-money-bill-wave" style="color:#7c3aed;"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="kasir-field-label">Dana Masuk ke</p>
+                  <select id="ke-w-bayar" class="kasir-field-input"></select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button onclick="prosesKasir('ewallet')" class="kasir-submit-btn kasir-submit-ewl mt-1">
+            <i class="fas fa-mobile-screen-button mr-2"></i>PROSES TRANSFER / TOP UP
+          </button>
+
+        </div>
+
       </section>
 
       <!-- ===== VIEW: STOK ===== -->
@@ -3435,13 +3728,20 @@
     // ---- TAB SWITCHES ----
     function setKasirTab(tab) {
       const isDig = tab === 'digital';
+      const isFis = tab === 'fisik';
+      const isEwl = tab === 'ewallet';
       const btnDig = document.getElementById('btn-k-digital');
       const btnFis = document.getElementById('btn-k-fisik');
-      btnDig.className = 'kasir-tab-btn ' + (isDig  ? 'k-active-dig' : 'k-inactive');
-      btnFis.className = 'kasir-tab-btn ' + (!isDig ? 'k-active-fis' : 'k-inactive');
+      const btnEwl = document.getElementById('btn-k-ewallet');
+      btnDig.className = 'kasir-tab-btn ' + (isDig ? 'k-active-dig' : 'k-inactive');
+      btnFis.className = 'kasir-tab-btn ' + (isFis ? 'k-active-fis' : 'k-inactive');
+      if (btnEwl) btnEwl.className = 'kasir-tab-btn ' + (isEwl ? 'k-active-ewl' : 'k-inactive');
       document.getElementById('form-k-digital').classList.toggle('hidden', !isDig);
-      document.getElementById('form-k-fisik').classList.toggle('hidden', isDig);
+      document.getElementById('form-k-fisik').classList.toggle('hidden', !isFis);
+      const ewlForm = document.getElementById('form-k-ewallet');
+      if (ewlForm) ewlForm.classList.toggle('hidden', !isEwl);
       if (isDig) toggleManualProductInput();
+      if (isEwl) populateEwalletWallets();
     }
 
     function updateKasirLaba(tipe) {
@@ -3759,24 +4059,149 @@
       updateConnectionStatus();
       resetKasirForms();
       renderAll();
-      // Hanya fetch cloud kalau auto-login (buka ulang), bukan setelah login manual (sudah fresh)
-      if (!skipCloudFetch) {
+
+      // ── LOAD DATA TOKO AKTIF DARI user_stores (multi-toko) ──
+      // Dipanggil setelah app tampil, tidak memblokir UI
+      if (_sid && _sid !== 'DEMO') {
+        setTimeout(() => _loadActiveStoreOnInit(skipCloudFetch), 800);
+      } else if (!skipCloudFetch) {
         setTimeout(fetchCloudData, 1500);
+      }
+    }
+
+    // Muat data toko yang aktif dari user_stores, lalu sync ke stores/{uid}
+    async function _loadActiveStoreOnInit(skipCloudFetch) {
+      try {
+        // Tunggu Firebase siap (max 10 detik)
+        await new Promise(resolve => {
+          if (window._fbReady && window._fbFirestore) { resolve(); return; }
+          let w = 0;
+          const iv = setInterval(() => {
+            w += 200;
+            if (window._fbReady && window._fbFirestore) { clearInterval(iv); resolve(); }
+            else if (w >= 10000) { clearInterval(iv); resolve(); }
+          }, 200);
+        });
+
+        if (!window._fbFirestore) {
+          if (!skipCloudFetch) setTimeout(fetchCloudData, 500);
+          return;
+        }
+
+        const uid = localStorage.getItem('k_sid');
+        if (!uid || uid === 'DEMO') return;
+
+        // Refresh token
+        if (window._fbAuth && window._fbAuth.currentUser) {
+          try { await window._fbAuth.currentUser.getIdToken(true); } catch(e) {}
+        }
+
+        const activeStoreId = localStorage.getItem('k_active_store_id');
+
+        if (activeStoreId) {
+          // Ada toko aktif — load datanya dari user_stores
+          showSyncToast('saving', 'MEMUAT DATA TOKO...');
+          try {
+            const doc = await window._fbFirestore.collection('user_stores').doc(activeStoreId).get();
+            if (doc.exists) {
+              const storeDoc = doc.data();
+              // Update store_name dari dokumen toko aktif
+              if (storeDoc.store_name) {
+                localStorage.setItem('k_store_name', storeDoc.store_name);
+                ['display-store-name','sidebar-store-name','akun-store-name-display'].forEach(id => {
+                  const el = document.getElementById(id);
+                  if (el) el.innerText = storeDoc.store_name;
+                });
+              }
+              // Muat data db dari toko aktif
+              if (storeDoc.data) {
+                const d = storeDoc.data;
+                db = {
+                  dompet        : d.dompet         || [],
+                  transaksi     : d.transaksi       || [],
+                  inventory     : d.inventory       || [],
+                  hutang        : d.hutang          || [],
+                  hutang_lunas  : d.hutang_lunas    || [],
+                  pelanggan     : d.pelanggan       || [],
+                  mutasi        : d.mutasi          || [],
+                  notes         : d.notes           || [],
+                  riwayat_hutang: d.riwayat_hutang  || []
+                };
+                saveLocalData();
+                renderAll();
+                showSyncToast('ok', 'TOKO AKTIF DIMUAT ✓');
+                return; // Data sudah dari user_stores, tidak perlu fetchCloudData lagi
+              }
+            }
+          } catch(e) {
+            console.warn('[initApp] Gagal load user_stores:', e.message);
+          }
+        } else {
+          // Belum ada active_store_id — cek apakah ada toko di user_stores
+          try {
+            const snap = await window._fbFirestore
+              .collection('user_stores')
+              .where('uid', '==', uid)
+              .get();
+            if (!snap.empty) {
+              // Ambil toko pertama sebagai aktif
+              const firstDoc = snap.docs[0];
+              localStorage.setItem('k_active_store_id', firstDoc.id);
+              const d = (firstDoc.data().data) || {};
+              const sName = firstDoc.data().store_name || '';
+              if (sName) {
+                localStorage.setItem('k_store_name', sName);
+                ['display-store-name','sidebar-store-name'].forEach(id => {
+                  const el = document.getElementById(id);
+                  if (el) el.innerText = sName;
+                });
+              }
+              db = {
+                dompet        : d.dompet         || [],
+                transaksi     : d.transaksi       || [],
+                inventory     : d.inventory       || [],
+                hutang        : d.hutang          || [],
+                hutang_lunas  : d.hutang_lunas    || [],
+                pelanggan     : d.pelanggan       || [],
+                mutasi        : d.mutasi          || [],
+                notes         : d.notes           || [],
+                riwayat_hutang: d.riwayat_hutang  || []
+              };
+              saveLocalData();
+              renderAll();
+              showSyncToast('ok', 'DATA TOKO DIMUAT ✓');
+              return;
+            }
+          } catch(e) {
+            console.warn('[initApp] Gagal cari user_stores:', e.message);
+          }
+        }
+
+        // Fallback: tidak ada data di user_stores, pakai fetchCloudData biasa
+        if (!skipCloudFetch) setTimeout(fetchCloudData, 500);
+
+      } catch(e) {
+        console.warn('[_loadActiveStoreOnInit] Error:', e.message);
+        if (!skipCloudFetch) setTimeout(fetchCloudData, 500);
       }
     }
 
     function resetKasirForms() {
       const today = getWIBDate();
-      ['kd-tgl','kf-tgl'].forEach(id => { const el = document.getElementById(id); if(el) el.value = today; });
-      ['kd-modal','kd-jual','kf-modal','kf-jual'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
-      ['kd-note','kf-note'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
-      ['kd-status','kf-status'].forEach(id => { const el = document.getElementById(id); if(el) el.value = "Lunas"; });
+      ['kd-tgl','kf-tgl','ke-tgl'].forEach(id => { const el = document.getElementById(id); if(el) el.value = today; });
+      ['kd-modal','kd-jual','kf-modal','kf-jual','ke-nominal','ke-admin-bank','ke-admin-agen'].forEach(id => { const el = document.getElementById(id); if(el) el.value = id === 'ke-admin-bank' ? '0' : ''; });
+      ['kd-note','kf-note','ke-note'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
+      ['kd-status','kf-status','ke-status'].forEach(id => { const el = document.getElementById(id); if(el) el.value = "Lunas"; });
       const manRow = document.getElementById('kd-produk-manual-row');
       if (manRow) manRow.classList.add('hidden');
       const man = document.getElementById('kd-produk-manual');
       if (man) man.value = "";
       // Reset laba display
       ['kd-laba-row','kf-laba-row'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
+      const ewlCalc = document.getElementById('ewl-calc-row');
+      if (ewlCalc) ewlCalc.classList.add('hidden');
+      const ewlLive = document.getElementById('ewl-profit-live');
+      if (ewlLive) ewlLive.classList.add('hidden');
     }
 
     // ============================================================
@@ -3952,6 +4377,11 @@
         showSyncToast('ok', 'TERSIMPAN ✓');
         const el = document.getElementById('backup-last-sync');
         if (el) el.innerText = 'Terakhir sync: ' + now;
+        // ── Update user_stores agar data toko aktif selalu fresh ──
+        const _activeId = localStorage.getItem('k_active_store_id');
+        if (_activeId && typeof saveCurrentStoreData === 'function') {
+          saveCurrentStoreData(_activeId, db).catch(() => {});
+        }
       } else {
         localStorage.setItem('k_pending_sync', 'true');
         console.warn('[Firebase Sync] Semua attempt gagal:', lastErr);
@@ -5251,7 +5681,114 @@
     }
 
     // ---- KASIR ----
+    // ============================================================
+    // EWALLET / TRANSFER FUNCTIONS
+    // ============================================================
+    function populateEwalletWallets() {
+      const wallets = db.dompet || [];
+      const opts = wallets.map(w => `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo||0)})</option>`).join('');
+      const fallback = '<option value="">-- Pilih Dompet --</option>';
+      ['ke-w-modal','ke-w-penerima','ke-w-bayar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = (opts || fallback);
+      });
+      const today = getWIBDate();
+      const tgl = document.getElementById('ke-tgl');
+      if (tgl && !tgl.value) tgl.value = today;
+      // Populate customers
+      const custEl = document.getElementById('ke-customer');
+      if (custEl) {
+        const custs = db.pelanggan || [];
+        custEl.innerHTML = '<option value="Umum">👤 Umum</option>' + custs.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('');
+      }
+    }
+
+    function updateEwalletCalc() {
+      const nominal = Number(document.getElementById('ke-nominal')?.value) || 0;
+      const adminBank = Number(document.getElementById('ke-admin-bank')?.value) || 0;
+      const adminAgen = Number(document.getElementById('ke-admin-agen')?.value) || 0;
+      const totalBayar = nominal + adminBank + adminAgen;
+
+      const calcRow = document.getElementById('ewl-calc-row');
+      const liveEl = document.getElementById('ewl-profit-live');
+      const liveVal = document.getElementById('ewl-profit-live-val');
+
+      if (nominal > 0 || adminBank > 0 || adminAgen > 0) {
+        if (calcRow) calcRow.classList.remove('hidden');
+        if (liveEl) liveEl.classList.remove('hidden');
+        const sNominal = document.getElementById('ewl-sum-nominal');
+        const sBank = document.getElementById('ewl-sum-bank');
+        const sAgen = document.getElementById('ewl-sum-agen');
+        const sTotal = document.getElementById('ewl-sum-total');
+        if (sNominal) sNominal.textContent = 'Rp ' + fmt(nominal);
+        if (sBank) sBank.textContent = 'Rp ' + fmt(adminBank);
+        if (sAgen) sAgen.textContent = 'Rp ' + fmt(adminAgen);
+        if (sTotal) sTotal.textContent = 'Rp ' + fmt(totalBayar);
+        if (liveVal) liveVal.textContent = 'Rp ' + fmt(adminAgen);
+      } else {
+        if (calcRow) calcRow.classList.add('hidden');
+        if (liveEl) liveEl.classList.add('hidden');
+      }
+    }
+
     async function prosesKasir(tipe) {
+      // ===== E-WALLET / TRANSFER =====
+      if (tipe === 'ewallet') {
+        const tgl    = document.getElementById('ke-tgl').value || getWIBDate();
+        const jenis  = document.getElementById('ke-jenis').value;
+        const nominal = Number(document.getElementById('ke-nominal').value) || 0;
+        const adminBank = Number(document.getElementById('ke-admin-bank').value) || 0;
+        const adminAgen = Number(document.getElementById('ke-admin-agen').value) || 0;
+        const totalBayar = nominal + adminBank + adminAgen;
+        const status = document.getElementById('ke-status').value;
+        const cust   = document.getElementById('ke-customer').value || 'Umum';
+        const note   = document.getElementById('ke-note').value;
+        const wModalId = document.getElementById('ke-w-modal').value;
+        const wBayarId = document.getElementById('ke-w-bayar').value;
+
+        if (nominal <= 0) return Swal.fire('Error', 'Nominal transaksi harus diisi!', 'warning');
+        if (!wModalId)    return Swal.fire('Error', 'Pilih sumber dana (dompet modal keluar)!', 'warning');
+
+        const productName = jenis + (note ? ' - ' + note : '');
+
+        // Kurangi saldo dompet modal (nominal + admin bank keluar)
+        const wMIdx = db.dompet.findIndex(w => w.id === wModalId);
+        if (wMIdx !== -1) {
+          db.dompet[wMIdx].saldo -= (nominal + adminBank);
+          addMutasi(wModalId, nominal + adminBank, 'out', 'EWL OUT: ' + productName);
+        }
+
+        // Masukkan dana ke dompet penerima (jika Lunas)
+        if (status === 'Lunas') {
+          if (!wBayarId) return Swal.fire('Error', 'Pilih dompet penerima dana!', 'warning');
+          const wBIdx = db.dompet.findIndex(w => w.id === wBayarId);
+          if (wBIdx !== -1) {
+            db.dompet[wBIdx].saldo += totalBayar;
+            addMutasi(wBayarId, totalBayar, 'in', 'EWL IN: ' + productName);
+          }
+        } else {
+          db.hutang.push({ id: 'H-'+Date.now(), tipe: 'pelanggan', nama: cust, jumlah: totalBayar, tgl, ket: 'EWL: '+productName });
+        }
+
+        // Simpan transaksi — modal = nominal+adminBank, jual = totalBayar, laba = adminAgen
+        db.transaksi.push({
+          id: 'TR-'+Date.now(), tgl,
+          produk: 'EWL: ' + productName,
+          modal: nominal + adminBank,
+          jual: totalBayar,
+          pelanggan: cust, status,
+          walletModal: wModalId, walletJual: wBayarId,
+          tipe: 'ewallet',
+          adminBank, adminAgen, nominal
+        });
+
+        resetKasirForms();
+        showView('dashboard');
+        Swal.fire({ title: 'Sukses! 🎉', text: `${jenis} Rp ${fmt(nominal)} berhasil disimpan! Keuntungan: Rp ${fmt(adminAgen)}`, icon: 'success', timer: 2500, showConfirmButton: false });
+        syncImmediate().then(ok => { if (!ok && navigator.onLine) console.warn('[Kasir] Cloud sync gagal'); });
+        return;
+      }
+
       const isDig = tipe === 'digital';
       const tgl = document.getElementById(isDig ? 'kd-tgl' : 'kf-tgl').value || getWIBDate();
       const status = document.getElementById(isDig ? 'kd-status' : 'kf-status').value;
@@ -6964,6 +7501,16 @@
       ['display-store-name','sidebar-store-name','akun-store-name-display'].forEach(id => {
         const el = document.getElementById(id); if (el) el.textContent = storeName;
       });
+
+      // Simpan data toko baru ke stores/{uid} agar fetchCloudData & sync konsisten
+      if (typeof saveFirebaseData === 'function' && typeof window.db !== 'undefined') {
+        const uid = localStorage.getItem('k_sid');
+        if (uid && uid !== 'DEMO') {
+          saveFirebaseData(uid, window.db).catch(e => console.warn('[switchToStore] sync stores gagal:', e.message));
+        }
+      }
+      // Simpan juga ke localStorage
+      if (typeof saveLocalData === 'function') saveLocalData();
 
       if (typeof showSyncToast === 'function') showSyncToast('ok','TOKO AKTIF: ' + storeName.toUpperCase());
       closeModal('modal-sidebar-akun');
