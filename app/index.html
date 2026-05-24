@@ -57,6 +57,141 @@
   <style>
     :root { --primary: #0061C2; --bg: #F8FAFC; --slate-800: #1e293b; }
 
+    /* ===== DARK MODE VARIABLES ===== */
+    html.dark-mode {
+      --bg: #0f172a;
+      --slate-800: #e2e8f0;
+    }
+    html.dark-mode body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+    }
+    /* Cards & surfaces */
+    html.dark-mode .card-premium {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    html.dark-mode .modal-content {
+      background: #1e293b !important;
+      color: #e2e8f0 !important;
+    }
+    html.dark-mode .input-premium {
+      background: #0f172a !important;
+      color: #e2e8f0 !important;
+      border-color: #334155 !important;
+    }
+    html.dark-mode .input-premium:focus {
+      background: #1e293b !important;
+      border-color: #0061C2 !important;
+    }
+    /* Sidebar */
+    html.dark-mode #app-sidebar {
+      background: #0f172a !important;
+    }
+    html.dark-mode #app-sidebar .bg-white\/5 {
+      background: rgba(255,255,255,0.05) !important;
+    }
+    /* Bottom nav */
+    html.dark-mode .bottom-nav {
+      background: rgba(5, 8, 18, 0.98) !important;
+    }
+    /* View sections */
+    html.dark-mode .view-section {
+      color: #e2e8f0;
+    }
+    /* Text overrides */
+    html.dark-mode .text-slate-700,
+    html.dark-mode .text-slate-800 {
+      color: #cbd5e1 !important;
+    }
+    html.dark-mode .text-slate-500,
+    html.dark-mode .text-slate-600 {
+      color: #94a3b8 !important;
+    }
+    html.dark-mode .text-slate-400 {
+      color: #64748b !important;
+    }
+    /* Background overrides for white cards */
+    html.dark-mode .bg-white,
+    html.dark-mode [style*="background:white"],
+    html.dark-mode [style*="background: white"] {
+      background: #1e293b !important;
+    }
+    html.dark-mode .bg-slate-50,
+    html.dark-mode .bg-\[#F8FAFC\] {
+      background: #0f172a !important;
+    }
+    html.dark-mode .border-slate-100 {
+      border-color: #1e293b !important;
+    }
+    html.dark-mode .border-slate-200 {
+      border-color: #334155 !important;
+    }
+    /* Filter chips */
+    html.dark-mode .filter-chip {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+      color: #94a3b8 !important;
+    }
+    html.dark-mode .filter-chip.active {
+      background: #0061C2 !important;
+      color: white !important;
+    }
+    /* Tab buttons */
+    html.dark-mode .tab-btn.inactive {
+      color: #475569 !important;
+    }
+    /* Labels */
+    html.dark-mode label {
+      color: #64748b !important;
+    }
+    /* Main content area */
+    html.dark-mode main {
+      background: #0f172a;
+    }
+    /* Stat cards text in dark */
+    html.dark-mode .bg-slate-50.rounded-2xl {
+      background: #1e293b !important;
+    }
+    /* Kasir field cards */
+    html.dark-mode .kasir-field-card,
+    html.dark-mode [class*="kasir-field"] {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+    }
+    html.dark-mode .kasir-field-input {
+      color: #e2e8f0 !important;
+      background: transparent !important;
+    }
+    /* Theme toggle button */
+    #btn-theme-toggle {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    #btn-theme-toggle:hover {
+      background: rgba(255,255,255,0.18);
+      transform: scale(1.08);
+    }
+    #btn-theme-toggle:active { transform: scale(0.92); }
+    #btn-theme-toggle .icon-sun,
+    #btn-theme-toggle .icon-moon {
+      position: absolute;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      font-size: 13px;
+    }
+    #btn-theme-toggle .icon-sun  { color: #fbbf24; opacity: 1; transform: scale(1) rotate(0deg); }
+    #btn-theme-toggle .icon-moon { color: #93c5fd; opacity: 0; transform: scale(0.5) rotate(-90deg); }
+    html.dark-mode #btn-theme-toggle .icon-sun  { opacity: 0; transform: scale(0.5) rotate(90deg); }
+    html.dark-mode #btn-theme-toggle .icon-moon { opacity: 1; transform: scale(1) rotate(0deg); }
+    /* ===== END DARK MODE ===== */
+
     /* ===== SWEETALERT2 PREMIUM OVERRIDES ===== */
     /* Pastikan selalu di depan (z-index tertinggi) */
     .swal2-container { z-index: 99999 !important; }
@@ -3374,6 +3509,12 @@
             <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" id="status-dot"></span>
             <span id="status-text">ONLINE</span>
           </div>
+
+          <!-- Tombol Toggle Tema Gelap/Terang -->
+          <button id="btn-theme-toggle" onclick="toggleDarkMode()" title="Ganti Tema">
+            <i class="fas fa-sun icon-sun"></i>
+            <i class="fas fa-moon icon-moon"></i>
+          </button>
         </div>
       </div>
 
@@ -12474,6 +12615,38 @@
       100% { top: 5%; }
     }
   </style>
+
+  <script>
+  // ==================== DARK MODE ENGINE ====================
+  (function() {
+    // Terapkan tema tersimpan saat halaman dimuat (sebelum render)
+    const saved = localStorage.getItem('k_theme');
+    if (saved === 'dark') {
+      document.documentElement.classList.add('dark-mode');
+    }
+  })();
+
+  function toggleDarkMode() {
+    const html = document.documentElement;
+    const isDark = html.classList.toggle('dark-mode');
+    localStorage.setItem('k_theme', isDark ? 'dark' : 'light');
+
+    // Feedback toast
+    const label = isDark ? '🌙 Tema Gelap Aktif' : '☀️ Tema Terang Aktif';
+    try {
+      (_getMySwal && _getMySwal() || Swal).fire({
+        title: label,
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 1400,
+        timerProgressBar: true,
+        customClass: { popup: 'swal2-ku-toast' }
+      });
+    } catch(e) {}
+  }
+  // ==================== END DARK MODE ENGINE ====================
+  </script>
 
   <script>
   // ==================== BARCODE SCANNER ENGINE ====================
