@@ -627,6 +627,8 @@
     [data-theme="dark"] .desktop-sidenav-item:hover { background: rgba(255,255,255,0.06); color: #94a3b8; }
     [data-theme="dark"] .desktop-sidenav-item.active { background: linear-gradient(135deg,rgba(0,97,194,0.3),rgba(56,189,248,0.15)); color: #38BDF8; border: 1px solid rgba(56,189,248,0.2); }
     [data-theme="dark"] .desktop-sidenav-item .dsn-icon { background: rgba(255,255,255,0.06); color: #64748b; }
+    /* Pertahankan warna ikon kustom (Pengaturan & Lainnya) di dark mode */
+    [data-theme="dark"] .desktop-sidenav-item .dsn-icon[style*="color"] { background: rgba(255,255,255,0.06) !important; }
     /* Light mode sidebar desktop sidenav */
     [data-theme="light"] .desktop-sidenav-item:hover { background: rgba(0,97,194,0.07); color: #0061C2; }
     [data-theme="light"] .desktop-sidenav-item.active { background: linear-gradient(135deg,rgba(0,97,194,0.12),rgba(56,189,248,0.08)); color: #0061C2; border: 1px solid rgba(0,97,194,0.2); }
@@ -2430,6 +2432,50 @@
             <div class="dsn-icon"><i class="fas fa-file-invoice-dollar"></i></div>
             Hutang
           </button>
+
+          <!-- ── Divider + Menu Pengaturan (mirip mobile) ── -->
+          <div class="sidebar-divider" style="margin:8px 4px;"></div>
+          <div class="sidebar-section-label" style="padding-left:4px;">Pengaturan</div>
+
+          <!-- Akun Toko -->
+          <button class="desktop-sidenav-item" onclick="openSidebarMenu('akun')">
+            <div class="dsn-icon" style="background:rgba(59,130,246,0.15);"><i class="fas fa-user-circle" style="color:#60a5fa;"></i></div>
+            Akun Toko
+          </button>
+
+          <!-- Kelola Kasir -->
+          <button class="desktop-sidenav-item" id="dsn-kelola-kasir" onclick="openSidebarMenu('kelola-kasir')">
+            <div class="dsn-icon" style="background:rgba(139,92,246,0.15);"><i class="fas fa-users-gear" style="color:#a78bfa;"></i></div>
+            Kelola Kasir
+          </button>
+
+          <!-- Absensi Kasir -->
+          <button class="desktop-sidenav-item" id="dsn-absensi" onclick="openSidebarMenu('absensi-kasir')">
+            <div class="dsn-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-user-clock" style="color:#34d399;"></i></div>
+            Absensi Kasir
+          </button>
+
+          <!-- Backup & Restore -->
+          <button class="desktop-sidenav-item" onclick="openSidebarMenu('backup')">
+            <div class="dsn-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-cloud-arrow-up" style="color:#6ee7b7;"></i></div>
+            Backup & Restore
+          </button>
+
+          <div class="sidebar-divider" style="margin:8px 4px;"></div>
+          <div class="sidebar-section-label" style="padding-left:4px;">Lainnya</div>
+
+          <!-- Tentang Aplikasi -->
+          <button class="desktop-sidenav-item" onclick="openSidebarMenu('tentang')">
+            <div class="dsn-icon" style="background:rgba(139,92,246,0.15);"><i class="fas fa-circle-info" style="color:#a78bfa;"></i></div>
+            Tentang Aplikasi
+          </button>
+
+          <!-- Panduan -->
+          <button class="desktop-sidenav-item" onclick="openPanduanModal()">
+            <div class="dsn-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-book-open" style="color:#34d399;"></i></div>
+            <span style="color:#059669;">Panduan</span>
+          </button>
+
           <div class="sidebar-divider" style="margin:8px 4px;"></div>
         </div>
 
