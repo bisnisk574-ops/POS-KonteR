@@ -850,6 +850,45 @@
     .header-desktop-only { display: none !important; }
     #sidebar-header-mobile { display: block; }  /* tampil di mobile */
     .desktop-sidenav { display: none; }
+
+    /* ── DROPDOWN MENU UTAMA (Desktop) ── */
+    @media (min-width: 860px) {
+      #dsn-dropdown-wrap { display: block !important; }
+    }
+    .dsn-dd-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--sb-text-title);
+      text-align: left;
+      transition: background 0.15s, transform 0.12s;
+      letter-spacing: 0.01em;
+    }
+    .dsn-dd-item:hover { background: var(--sb-hover); transform: translateX(2px); }
+    .dsn-dd-item:active { transform: scale(0.97); }
+    .dsn-dd-item.active { background: linear-gradient(135deg,rgba(0,97,194,0.1),rgba(56,189,248,0.07)); color: #0061C2; }
+    [data-theme="dark"] .dsn-dd-item.active { color: #38BDF8; background: linear-gradient(135deg,rgba(0,97,194,0.25),rgba(56,189,248,0.12)); }
+    .dsn-dd-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    #dsn-dropdown-panel.open {
+      display: block !important;
+      transform: translateY(0) !important;
+      opacity: 1 !important;
+    }
+    #dsn-dropdown-btn:hover { filter: brightness(1.08); box-shadow: 0 8px 24px rgba(0,97,194,0.45); }
+    #dsn-dropdown-btn:active { transform: scale(0.98); }
   </style>
   <script>
     // ===== TEMA SISTEM (DARK / LIGHT) =====
@@ -2195,6 +2234,57 @@
         <!-- Menu Items -->
         <div class="flex-1 py-2">
 
+          <!-- ── FLOATING DROPDOWN MENU UTAMA (hanya desktop ≥860px) ── -->
+          <div id="dsn-dropdown-wrap" style="display:none;padding:12px 12px 4px;position:relative;">
+            <!-- Tombol trigger -->
+            <button id="dsn-dropdown-btn" onclick="toggleDsnDropdown()"
+              style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:16px;border:none;cursor:pointer;
+                     background:linear-gradient(135deg,#0061C2,#0284c7);
+                     box-shadow:0 6px 20px rgba(0,97,194,0.35);
+                     font-family:'Plus Jakarta Sans',sans-serif;
+                     transition:all 0.2s;">
+              <div style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i id="dsn-dropdown-icon" class="fas fa-th-large" style="color:white;font-size:14px;transition:transform 0.25s;"></i>
+              </div>
+              <div style="flex:1;text-align:left;">
+                <p style="font-size:11px;font-weight:900;color:white;letter-spacing:0.04em;line-height:1.2;">MENU UTAMA</p>
+                <p id="dsn-active-label" style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.65);margin-top:1px;">Dashboard</p>
+              </div>
+              <i id="dsn-chevron-icon" class="fas fa-chevron-down" style="color:rgba(255,255,255,0.7);font-size:10px;transition:transform 0.25s;"></i>
+            </button>
+
+            <!-- Dropdown panel -->
+            <div id="dsn-dropdown-panel"
+              style="display:none;position:absolute;top:calc(100% - 4px);left:12px;right:12px;z-index:500;
+                     background:var(--sb-bg);border:1px solid var(--sb-border);border-radius:18px;
+                     box-shadow:0 16px 40px rgba(0,0,0,0.18),0 4px 12px rgba(0,97,194,0.1);
+                     overflow:hidden;transform:translateY(-6px);opacity:0;
+                     transition:transform 0.22s cubic-bezier(0.34,1.3,0.64,1),opacity 0.18s ease;">
+              <div style="padding:6px 6px;">
+                <button class="dsn-dd-item active" id="dsn-dd-dashboard" onclick="dsnSelect('dashboard','Dashboard','fa-chart-pie')">
+                  <div class="dsn-dd-icon" style="background:linear-gradient(135deg,#0061C2,#38BDF8);"><i class="fas fa-chart-pie" style="color:white;font-size:12px;"></i></div>
+                  <span>Dashboard</span>
+                </button>
+                <button class="dsn-dd-item" id="dsn-dd-kasir" onclick="dsnSelect('kasir','Kasir','fa-cash-register')">
+                  <div class="dsn-dd-icon" style="background:linear-gradient(135deg,#059669,#34d399);"><i class="fas fa-cash-register" style="color:white;font-size:12px;"></i></div>
+                  <span>Kasir</span>
+                </button>
+                <button class="dsn-dd-item" id="dsn-dd-stok" onclick="dsnSelect('stok','Stok','fa-box-open')">
+                  <div class="dsn-dd-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);"><i class="fas fa-box-open" style="color:white;font-size:12px;"></i></div>
+                  <span>Stok</span>
+                </button>
+                <button class="dsn-dd-item" id="dsn-dd-wallets" onclick="dsnSelect('wallets','Dompet','fa-wallet')">
+                  <div class="dsn-dd-icon" style="background:linear-gradient(135deg,#d97706,#fbbf24);"><i class="fas fa-wallet" style="color:white;font-size:12px;"></i></div>
+                  <span>Dompet</span>
+                </button>
+                <button class="dsn-dd-item" id="dsn-dd-hutang" onclick="dsnSelect('hutang','Hutang','fa-file-invoice-dollar')">
+                  <div class="dsn-dd-icon" style="background:linear-gradient(135deg,#dc2626,#f87171);"><i class="fas fa-file-invoice-dollar" style="color:white;font-size:12px;"></i></div>
+                  <span>Hutang</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <p class="sidebar-section-label">MENU UTAMA</p>
 
           <!-- Akun -->
@@ -2281,31 +2371,7 @@
         <!-- Sidebar Footer -->
         <div class="sidebar-divider"></div>
 
-        <!-- ── DESKTOP SIDE NAV (hanya tampil di layar ≥860px) ── -->
-        <div class="desktop-sidenav" id="desktop-sidenav">
-          <div class="sidebar-section-label" style="padding-left:4px;">Menu Utama</div>
-          <button class="desktop-sidenav-item active" id="dsn-dashboard" onclick="showView('dashboard'); _dsnSetActive('dashboard')">
-            <div class="dsn-icon"><i class="fas fa-chart-pie"></i></div>
-            Dashboard
-          </button>
-          <button class="desktop-sidenav-item" id="dsn-kasir" onclick="showView('kasir'); _dsnSetActive('kasir')">
-            <div class="dsn-icon"><i class="fas fa-cash-register"></i></div>
-            Kasir
-          </button>
-          <button class="desktop-sidenav-item" id="dsn-stok" onclick="showView('stok'); _dsnSetActive('stok')">
-            <div class="dsn-icon"><i class="fas fa-box-open"></i></div>
-            Stok
-          </button>
-          <button class="desktop-sidenav-item" id="dsn-wallets" onclick="showView('wallets'); _dsnSetActive('wallets')">
-            <div class="dsn-icon"><i class="fas fa-wallet"></i></div>
-            Dompet
-          </button>
-          <button class="desktop-sidenav-item" id="dsn-hutang" onclick="showView('hutang'); _dsnSetActive('hutang')">
-            <div class="dsn-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-            Hutang
-          </button>
-          <div class="sidebar-divider" style="margin:8px 4px;"></div>
-        </div>
+
 
         <button class="sidebar-menu-item danger mb-4" onclick="closeSidebar(); logout();">
           <div class="sidebar-icon-wrap bg-red-500/15">
@@ -5712,7 +5778,53 @@
       document.querySelectorAll('.desktop-sidenav-item').forEach(el => el.classList.remove('active'));
       const el = document.getElementById('dsn-' + v);
       if (el) el.classList.add('active');
+      // Update dropdown active state too
+      document.querySelectorAll('.dsn-dd-item').forEach(el => el.classList.remove('active'));
+      const ddEl = document.getElementById('dsn-dd-' + v);
+      if (ddEl) ddEl.classList.add('active');
+      // Update label on trigger button
+      const labelMap = { dashboard:'Dashboard', kasir:'Kasir', stok:'Stok', wallets:'Dompet', hutang:'Hutang' };
+      const iconMap  = { dashboard:'fa-chart-pie', kasir:'fa-cash-register', stok:'fa-box-open', wallets:'fa-wallet', hutang:'fa-file-invoice-dollar' };
+      const lbl = document.getElementById('dsn-active-label');
+      if (lbl) lbl.textContent = labelMap[v] || v;
     }
+
+    // ── DROPDOWN MENU UTAMA TOGGLE ──
+    window.toggleDsnDropdown = function() {
+      const panel  = document.getElementById('dsn-dropdown-panel');
+      const chevron= document.getElementById('dsn-chevron-icon');
+      if (!panel) return;
+      const isOpen = panel.classList.contains('open');
+      if (isOpen) {
+        panel.classList.remove('open');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      } else {
+        panel.classList.add('open');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      }
+    };
+
+    window.dsnSelect = function(view, label, icon) {
+      // Close dropdown
+      const panel  = document.getElementById('dsn-dropdown-panel');
+      const chevron= document.getElementById('dsn-chevron-icon');
+      if (panel)  panel.classList.remove('open');
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+      // Switch view
+      showView(view);
+      _dsnSetActive(view);
+    };
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const wrap = document.getElementById('dsn-dropdown-wrap');
+      if (wrap && !wrap.contains(e.target)) {
+        const panel  = document.getElementById('dsn-dropdown-panel');
+        const chevron= document.getElementById('dsn-chevron-icon');
+        if (panel)  panel.classList.remove('open');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      }
+    });
 
     // ── PLAN LIMITS ──
     const PLAN_LIMITS = {
