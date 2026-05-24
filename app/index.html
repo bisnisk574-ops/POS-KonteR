@@ -7201,33 +7201,6 @@
       checkLowStockNotif();
     }
 
-      // ── GATE: cek limit produk untuk produk baru ──
-      if (!id) {
-        const limits = getPlanLimits();
-        const totalProduk = (db.inventory || []).length;
-        if (totalProduk >= limits.produk) {
-          const plan = localStorage.getItem('k_plan') || 'trial';
-          const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-          const rank = PLAN_RANK[plan] ?? 0;
-          const nextPlan = rank < 1 ? 'basic' : rank < 2 ? 'pro' : 'unlimited';
-          closeModal('modal-produk');
-          showUpgradeModal('limit_produk', nextPlan);
-          return;
-        }
-      }
-
-      if (id) {
-        const idx = db.inventory.findIndex(p => p.id === id);
-        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok, barcode, kategori };
-      } else {
-        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok, batas_stok, barcode, kategori });
-      }
-      closeModal('modal-produk');
-      await sync();
-      // Check for low stock warnings after saving
-      checkLowStockNotif();
-    }
-
     async function deleteProduk(id) {
       const res = await (_getMySwal()||Swal).fire({ title: 'Hapus Produk?', text: 'Data produk ini akan dihapus permanen', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
       if (res.isConfirmed) { db.inventory = db.inventory.filter(p => p.id !== id); await sync(); }
