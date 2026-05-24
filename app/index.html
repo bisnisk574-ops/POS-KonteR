@@ -1795,9 +1795,18 @@
               <p class="font-black uppercase" style="font-size:8px;color:rgba(56,189,248,0.65);letter-spacing:0.15em;margin-bottom:2px;">NAMA TOKO</p>
               <p id="sidebar-store-name" class="font-black text-white" style="font-size:16px;line-height:1.2;word-break:break-all;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
               <p id="sidebar-store-email" class="font-bold truncate" style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:1px;margin-bottom:4px;"></p>
-              <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="margin-top:2px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
+              <div class="flex items-center gap-1.5" style="margin-top:2px;flex-wrap:wrap;">
+              <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
                 <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
                 <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
+              </div>
+              <!-- Admin shortcut button (hanya admin) -->
+              <button id="sidebar-admin-shortcut" class="hidden items-center gap-1 px-2 py-1 rounded-lg"
+                onclick="openSidebarMenu('admin')"
+                style="background:linear-gradient(135deg,rgba(245,158,11,0.22),rgba(234,179,8,0.12));border:1px solid rgba(245,158,11,0.35);cursor:pointer;">
+                <i class="fas fa-shield-halved" style="font-size:8px;color:#fbbf24;"></i>
+                <span class="font-black" style="font-size:8px;color:#fcd34d;letter-spacing:0.04em;">ADMIN</span>
+              </button>
               </div>
             </div>
             <!-- Jam Digital -->
@@ -8122,6 +8131,14 @@
     function checkAdminMenu() {
       const section = document.getElementById('sidebar-admin-section');
       if (section) section.classList.toggle('hidden', !isAdminUser());
+      const shortcut = document.getElementById('sidebar-admin-shortcut');
+      if (shortcut) {
+        if (isAdminUser()) {
+          shortcut.style.display = 'inline-flex';
+        } else {
+          shortcut.style.display = 'none';
+        }
+      }
     }
 
     // Patch openSidebarMenu to handle 'admin'
