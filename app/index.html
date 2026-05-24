@@ -1801,13 +1801,6 @@
                 <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
                 <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
               </div>
-              <!-- Admin shortcut button (hanya admin) -->
-              <button id="sidebar-admin-shortcut" class="hidden items-center gap-1 px-2 py-1 rounded-lg"
-                onclick="openSidebarMenu('admin')"
-                style="background:linear-gradient(135deg,rgba(245,158,11,0.22),rgba(234,179,8,0.12));border:1px solid rgba(245,158,11,0.35);cursor:pointer;">
-                <i class="fas fa-shield-halved" style="font-size:8px;color:#fbbf24;"></i>
-                <span class="font-black" style="font-size:8px;color:#fcd34d;letter-spacing:0.04em;">ADMIN</span>
-              </button>
               </div>
             </div>
             <!-- Jam Digital -->
@@ -1846,20 +1839,6 @@
           </button>
 
           <!-- ADMIN ONLY SECTION -->
-          <div id="sidebar-admin-section" class="hidden">
-            <p class="sidebar-section-label" style="color:#f59e0b;">⚡ ADMIN</p>
-            <button class="sidebar-menu-item" onclick="openSidebarMenu('admin')"
-              style="background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(234,179,8,0.08));border:1px solid rgba(245,158,11,0.2);margin:2px 12px;border-radius:16px;">
-              <div class="sidebar-icon-wrap" style="background:rgba(245,158,11,0.15);">
-                <i class="fas fa-shield-halved" style="color:#f59e0b;"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-[12px] font-black" style="color:#fcd34d;">Panel Admin</p>
-                <p class="text-[9px] font-bold" style="color:#92400e;">Kelola langganan & user</p>
-              </div>
-              <i class="fas fa-chevron-right text-amber-600 text-[9px]"></i>
-            </button>
-          </div>
 
           <p class="sidebar-section-label">DATA</p>
 
@@ -8380,12 +8359,6 @@
 
     function checkAdminMenu() {
       const isAdmin = isAdminUser();
-      // Sidebar section
-      const section = document.getElementById('sidebar-admin-section');
-      if (section) section.classList.toggle('hidden', !isAdmin);
-      // Sidebar shortcut badge
-      const shortcut = document.getElementById('sidebar-admin-shortcut');
-      if (shortcut) shortcut.style.display = isAdmin ? 'inline-flex' : 'none';
       // Header admin button
       const btnAdmin = document.getElementById('btn-admin-panel');
       if (btnAdmin) btnAdmin.style.display = isAdmin ? 'inline-flex' : 'none';
