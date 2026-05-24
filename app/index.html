@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -3693,6 +3694,21 @@
         <!-- ===== FORM DIGITAL ===== -->
         <div id="form-k-digital" class="space-y-3">
 
+          <!-- Filter Kategori Digital -->
+          <div class="kasir-field-card">
+            <div class="kasir-field-row" style="border:none;">
+              <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
+                <i class="fas fa-layer-group" style="color:#6366f1;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label">Filter Kategori Digital</p>
+                <select id="kd-kategori-filter" class="kasir-field-input" onchange="filterKasirByKategori('digital')">
+                  <option value="">Semua Produk Digital</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <!-- Produk & Harga -->
           <div class="kasir-field-card">
             <!-- Produk -->
@@ -3838,6 +3854,40 @@
 
         <!-- ===== FORM FISIK ===== -->
         <div id="form-k-fisik" class="hidden space-y-3">
+
+          <!-- Filter Kategori Fisik -->
+          <div class="kasir-field-card">
+            <div class="kasir-field-row" style="border:none;">
+              <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
+                <i class="fas fa-layer-group" style="color:#6366f1;"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="kasir-field-label">Filter Kategori Fisik</p>
+                <select id="kf-kategori-filter" class="kasir-field-input" onchange="filterKasirByKategori('fisik')">
+                  <option value="">Semua Produk Fisik</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scan Barcode Banner -->
+          <div style="background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(167,139,250,0.05));border:1.5px dashed rgba(167,139,250,0.35);border-radius:16px;padding:12px 14px;">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(124,58,237,0.3);">
+                  <i class="fas fa-barcode text-white" style="font-size:13px;"></i>
+                </div>
+                <div>
+                  <p class="font-black" style="font-size:11px;color:#5b21b6;">Scan Barcode Produk</p>
+                  <p style="font-size:9px;color:#7c3aed;font-weight:600;">Gunakan kamera untuk scan otomatis</p>
+                </div>
+              </div>
+              <button onclick="openBarcodeScanner('kasir')"
+                style="padding:8px 14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;border:none;border-radius:10px;font-size:10px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(124,58,237,0.35);display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-camera"></i> SCAN
+              </button>
+            </div>
+          </div>
 
           <!-- Produk -->
           <div class="kasir-field-card">
@@ -4267,6 +4317,23 @@
           </button>
         </div>
 
+        <!-- Filter Bar: cari nama + filter kategori -->
+        <div class="card-premium p-3 mb-4 space-y-2.5">
+          <!-- Search nama -->
+          <div class="relative">
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" style="font-size:11px;pointer-events:none;"></i>
+            <input type="text" id="stok-search-nama" class="input-premium"
+              placeholder="Cari nama produk..."
+              style="padding-left:34px;font-size:13px;"
+              oninput="renderStok()">
+          </div>
+          <!-- Filter kategori (chips scroll horizontal) -->
+          <div>
+            <p style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Filter Kategori</p>
+            <div id="stok-kategori-chips" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
+          </div>
+        </div>
+
         <!-- List -->
         <div id="stok-list" class="space-y-3"></div>
 
@@ -4556,6 +4623,45 @@
 
           <div><label>Nama Produk</label><input type="text" id="p-nama" class="input-premium" placeholder="Contoh: Pulsa 10rb, Casing iPhone..."></div>
 
+          <!-- Kategori -->
+          <div>
+            <label style="display:flex;align-items:center;gap:5px;">
+              <i class="fas fa-tag" style="font-size:10px;color:#6366f1;"></i>
+              Kategori
+            </label>
+            <!-- Toggle mode: pilih vs tulis manual -->
+            <div class="flex gap-1 mt-1 mb-1.5">
+              <button id="ktg-mode-pilih" onclick="setKtgMode('pilih')"
+                style="padding:4px 12px;border-radius:10px;font-size:9px;font-weight:900;border:1.5px solid #6366f1;background:#6366f1;color:white;cursor:pointer;">
+                <i class="fas fa-list-ul mr-1"></i>Pilih
+              </button>
+              <button id="ktg-mode-manual" onclick="setKtgMode('manual')"
+                style="padding:4px 12px;border-radius:10px;font-size:9px;font-weight:900;border:1.5px solid #e2e8f0;background:transparent;color:#94a3b8;cursor:pointer;">
+                <i class="fas fa-pencil-alt mr-1"></i>Ketik Manual
+              </button>
+            </div>
+            <!-- Mode: pilih dari daftar -->
+            <div id="ktg-wrap-pilih" class="flex gap-2">
+              <select id="p-kategori" class="input-premium" style="flex:1;" onchange="onKategoriChange()">
+                <option value="">-- Pilih Kategori --</option>
+              </select>
+              <button onclick="openTambahKategoriModal()"
+                style="padding:0 13px;background:linear-gradient(135deg,#6366f1,#818cf8);color:white;border:none;border-radius:14px;font-size:11px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(99,102,241,0.3);flex-shrink:0;display:flex;align-items:center;gap:5px;"
+                title="Kelola / tambah kategori baru">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <!-- Mode: ketik manual -->
+            <div id="ktg-wrap-manual" class="hidden">
+              <input type="text" id="p-kategori-manual" class="input-premium"
+                placeholder="Ketik nama kategori bebas, misal: Pulsa, Casing..."
+                style="font-size:13px;">
+              <p style="font-size:9px;color:#a78bfa;font-weight:700;margin-top:5px;margin-left:4px;">
+                <i class="fas fa-info-circle mr-1"></i>Kategori baru akan tersimpan otomatis saat produk disimpan.
+              </p>
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-3">
             <div><label>Harga Modal</label><input type="number" id="p-modal" class="input-premium" value="0"></div>
             <div><label>Harga Jual</label><input type="number" id="p-jual" class="input-premium" value="0"></div>
@@ -4563,6 +4669,20 @@
 
           <!-- Stok (hanya tampil jika fisik) -->
           <div id="p-stok-wrap" class="space-y-3">
+            <!-- Barcode field -->
+            <div>
+              <label style="display:flex;align-items:center;gap:5px;">
+                <i class="fas fa-barcode text-violet-500" style="font-size:10px;"></i>
+                Barcode Produk <span style="font-size:9px;color:#94a3b8;font-weight:600;">(opsional)</span>
+              </label>
+              <div class="flex gap-2 mt-1">
+                <input type="text" id="p-barcode" class="input-premium" placeholder="Scan atau ketik kode barcode..." style="flex:1;font-family:monospace;letter-spacing:0.05em;">
+                <button onclick="openBarcodeScanner('produk')"
+                  style="padding:0 14px;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;border:none;border-radius:14px;font-size:11px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(124,58,237,0.3);flex-shrink:0;display:flex;align-items:center;gap:6px;">
+                  <i class="fas fa-camera"></i>
+                </button>
+              </div>
+            </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label>Jumlah Stok</label>
@@ -4913,6 +5033,10 @@
       // Sync desktop sidenav
       _dsnSetActive(v);
       if (v === 'dashboard') renderProfitChart();
+      if (v === 'stok') {
+        renderStokKtgChips(activeStokTab);
+        renderStok();
+      }
       if (v === 'wallets') {
         setWalletViewTab('list');
         renderWallets();
@@ -5124,6 +5248,8 @@
       if (ewlForm) ewlForm.classList.toggle('hidden', !isEwl);
       if (isDig) toggleManualProductInput();
       if (isEwl) populateEwalletWallets();
+      // Refresh filter kategori saat tab berganti
+      if ((isDig || isFis) && typeof refreshKategoriFilters === 'function') refreshKategoriFilters();
     }
 
     function updateKasirLaba(tipe) {
@@ -6515,9 +6641,55 @@
 
     // ---- RENDER STOK ----
     let activeStokTab = 'digital';
+    let activeStokKtgFilter = ''; // '' = semua
+
+    function setStokKtgFilter(ktg) {
+      activeStokKtgFilter = ktg;
+      // Update chip active state
+      document.querySelectorAll('.stok-ktg-chip').forEach(el => {
+        const isActive = el.dataset.ktg === ktg;
+        el.style.background = isActive ? '#6366f1' : 'white';
+        el.style.color      = isActive ? 'white'   : '#94a3b8';
+        el.style.borderColor= isActive ? '#6366f1' : '#f1f5f9';
+      });
+      renderStok();
+    }
+
+    function renderStokKtgChips(tipe) {
+      const wrap = document.getElementById('stok-kategori-chips');
+      if (!wrap) return;
+      // Kumpulkan kategori yang benar-benar ada di produk tipe ini
+      const produk = (window.db?.inventory || []).filter(p => p.tipe === tipe);
+      const ktgSet = new Set();
+      produk.forEach(p => { if (p.kategori) ktgSet.add(p.kategori); });
+      const ktgList = [...ktgSet].sort();
+
+      let html = `<button class="stok-ktg-chip filter-chip active" data-ktg="" onclick="setStokKtgFilter('')"
+        style="background:#6366f1;color:white;border-color:#6366f1;flex-shrink:0;">Semua</button>`;
+      ktgList.forEach(k => {
+        html += `<button class="stok-ktg-chip filter-chip" data-ktg="${k}" onclick="setStokKtgFilter('${k.replace(/'/g,"\\'")}'"
+          style="flex-shrink:0;">${k}</button>`;
+      });
+      if (produk.some(p => !p.kategori)) {
+        html += `<button class="stok-ktg-chip filter-chip" data-ktg="__tanpa__" onclick="setStokKtgFilter('__tanpa__')"
+          style="flex-shrink:0;">Tanpa Kategori</button>`;
+      }
+      wrap.innerHTML = html;
+      // Re-apply active state
+      document.querySelectorAll('.stok-ktg-chip').forEach(el => {
+        const isActive = el.dataset.ktg === activeStokKtgFilter;
+        el.style.background = isActive ? '#6366f1' : 'white';
+        el.style.color      = isActive ? 'white'   : '#94a3b8';
+        el.style.borderColor= isActive ? '#6366f1' : '#f1f5f9';
+      });
+    }
 
     function setStokTab(tab) {
       activeStokTab = tab;
+      activeStokKtgFilter = ''; // reset filter saat ganti tab
+      // Reset search
+      const searchEl = document.getElementById('stok-search-nama');
+      if (searchEl) searchEl.value = '';
       const btnDig = document.getElementById('stok-switch-digital');
       const btnFis = document.getElementById('stok-switch-fisik');
       if (tab === 'digital') {
@@ -6527,6 +6699,7 @@
         btnFis.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 14px rgba(124,58,237,0.35);';
         btnDig.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
       }
+      renderStokKtgChips(tab);
       renderStok();
     }
 
@@ -6544,6 +6717,7 @@
         btnDig.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
         stokWrap.style.display = 'block';
       }
+      renderKategoriOptions('p-kategori', tipe);
     }
 
     function renderStok() {
@@ -6558,22 +6732,42 @@
       if (cntDig) cntDig.innerText = digital.length;
       if (cntFis) cntFis.innerText = fisik.length;
 
-      const produk = activeStokTab === 'digital' ? digital : fisik;
-      if (sub) sub.innerText = `${produk.length} produk ${activeStokTab}`;
+      // Render chips (tanpa reset filter)
+      renderStokKtgChips(activeStokTab);
+
+      let produk = activeStokTab === 'digital' ? digital : fisik;
+
+      // Terapkan filter kategori chip
+      if (activeStokKtgFilter === '__tanpa__') {
+        produk = produk.filter(p => !p.kategori);
+      } else if (activeStokKtgFilter) {
+        produk = produk.filter(p => p.kategori === activeStokKtgFilter);
+      }
+
+      // Terapkan filter nama
+      const searchQ = (document.getElementById('stok-search-nama')?.value || '').toLowerCase().trim();
+      if (searchQ) {
+        produk = produk.filter(p => (p.nama||'').toLowerCase().includes(searchQ));
+      }
+
+      if (sub) sub.innerText = `${produk.length} produk ${activeStokTab}${searchQ || activeStokKtgFilter ? ' (difilter)' : ''}`;
 
       if (produk.length === 0) {
         const isDigital = activeStokTab === 'digital';
+        const hasFilter = searchQ || activeStokKtgFilter;
         list.innerHTML = `
           <div class="text-center py-16">
             <div class="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4"
               style="background:${isDigital ? 'rgba(56,189,248,0.08)' : 'rgba(167,139,250,0.08)'};">
-              <i class="fas ${isDigital ? 'fa-bolt' : 'fa-box'} text-2xl" style="color:${isDigital ? '#38bdf8' : '#a78bfa'}; opacity:0.5;"></i>
+              <i class="fas ${hasFilter ? 'fa-search' : (isDigital ? 'fa-bolt' : 'fa-box')} text-2xl" style="color:${isDigital ? '#38bdf8' : '#a78bfa'}; opacity:0.5;"></i>
             </div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-300">Belum ada produk ${activeStokTab}</p>
-            <button onclick="openAddProdukModal('${activeStokTab}')" class="mt-4 px-5 py-2.5 rounded-xl font-black text-[10px] text-white cursor-pointer border-0"
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-300">
+              ${hasFilter ? 'Tidak ada produk yang sesuai filter' : 'Belum ada produk ' + activeStokTab}
+            </p>
+            ${hasFilter ? '' : `<button onclick="openAddProdukModal('${activeStokTab}')" class="mt-4 px-5 py-2.5 rounded-xl font-black text-[10px] text-white cursor-pointer border-0"
               style="background:${isDigital ? 'linear-gradient(135deg,#0061C2,#38BDF8)' : 'linear-gradient(135deg,#7c3aed,#a78bfa)'};">
               + Tambah Produk ${isDigital ? 'Digital' : 'Fisik'}
-            </button>
+            </button>`}
           </div>`;
         return;
       }
@@ -6617,6 +6811,7 @@
           <div class="flex-1 min-w-0">
             <p class="text-[12px] font-black text-slate-800 truncate">${p.nama||''}</p>
             <div class="flex items-center gap-2 mt-1 flex-wrap">
+              ${p.kategori ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);"><i class="fas fa-tag text-[7px]" style="color:#6366f1;"></i><span class="font-black text-[8px]" style="color:#4f46e5;">${p.kategori}</span></span>` : ''}
               <span class="text-[9px] font-bold text-slate-400">Modal <span class="text-slate-600 font-black">Rp ${fmt(p.modal)}</span></span>
               <span class="text-slate-200">•</span>
               <span class="text-[9px] font-bold text-slate-400">Jual <span class="font-black" style="color:${accentColor};">Rp ${fmt(p.jual)}</span></span>
@@ -6824,6 +7019,9 @@
           db.inventory.filter(p=>p.tipe==='fisik').map(p=>`<option value="${p.id}">${p.nama}</option>`).join('');
       }
 
+      // Refresh filter kategori kasir
+      refreshKategoriFilters();
+
       // Customer di kasir
       ['kd-customer','kf-customer'].forEach(id => {
         const el = document.getElementById(id);
@@ -6917,6 +7115,10 @@
       document.getElementById('p-jual').value = 0;
       document.getElementById('p-stok').value = 0;
       document.getElementById('p-batas-stok').value = 5;
+      const pb = document.getElementById('p-barcode'); if (pb) pb.value = "";
+      const pk = document.getElementById('p-kategori'); if (pk) pk.value = "";
+      const pm = document.getElementById('p-kategori-manual'); if (pm) pm.value = "";
+      setKtgMode('pilih'); // default ke mode pilih
       openModal('modal-produk');
       setTimeout(() => setModalTipe(t), 50);
     }
@@ -6931,8 +7133,20 @@
       document.getElementById('p-jual').value = p.jual||0;
       document.getElementById('p-stok').value = p.stok||0;
       document.getElementById('p-batas-stok').value = p.batas_stok !== undefined ? p.batas_stok : 5;
+      const pb = document.getElementById('p-barcode'); if (pb) pb.value = p.barcode||'';
       openModal('modal-produk');
-      setTimeout(() => setModalTipe(p.tipe||'digital'), 50);
+      setTimeout(() => {
+        setModalTipe(p.tipe||'digital');
+        // Cek apakah kategori produk ada di daftar, jika tidak → mode manual
+        if (p.kategori && typeof window._isKategoriInList === 'function' && !window._isKategoriInList(p.tipe||'digital', p.kategori)) {
+          setKtgMode('manual');
+          const pm = document.getElementById('p-kategori-manual');
+          if (pm) pm.value = p.kategori;
+        } else {
+          setKtgMode('pilih');
+          renderKategoriOptions('p-kategori', p.tipe||'digital', p.kategori||'');
+        }
+      }, 60);
     }
 
     async function saveProduk() {
@@ -6943,6 +7157,21 @@
       const jual = Number(document.getElementById('p-jual').value);
       const stok = Number(document.getElementById('p-stok').value);
       const batas_stok = tipe === 'fisik' ? Number(document.getElementById('p-batas-stok').value) : 0;
+      const barcode = tipe === 'fisik' ? (document.getElementById('p-barcode')?.value.trim() || '') : '';
+
+      // Ambil kategori dari mode aktif (pilih dari select atau ketik manual)
+      const ktgModeManual = document.getElementById('ktg-wrap-manual')?.classList.contains('hidden') === false;
+      let kategori = '';
+      if (ktgModeManual) {
+        kategori = (document.getElementById('p-kategori-manual')?.value || '').trim();
+        // Auto-simpan kategori baru ke daftar jika belum ada
+        if (kategori && typeof window.autoSaveKategoriManual === 'function') {
+          window.autoSaveKategoriManual(tipe, kategori);
+        }
+      } else {
+        kategori = document.getElementById('p-kategori')?.value || '';
+      }
+
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama produk harus diisi', 'warning');
 
       // ── GATE: cek limit produk untuk produk baru ──
@@ -6962,9 +7191,36 @@
 
       if (id) {
         const idx = db.inventory.findIndex(p => p.id === id);
-        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok };
+        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok, barcode, kategori };
       } else {
-        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok, batas_stok });
+        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok, batas_stok, barcode, kategori });
+      }
+      closeModal('modal-produk');
+      await sync();
+      // Check for low stock warnings after saving
+      checkLowStockNotif();
+    }
+
+      // ── GATE: cek limit produk untuk produk baru ──
+      if (!id) {
+        const limits = getPlanLimits();
+        const totalProduk = (db.inventory || []).length;
+        if (totalProduk >= limits.produk) {
+          const plan = localStorage.getItem('k_plan') || 'trial';
+          const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
+          const rank = PLAN_RANK[plan] ?? 0;
+          const nextPlan = rank < 1 ? 'basic' : rank < 2 ? 'pro' : 'unlimited';
+          closeModal('modal-produk');
+          showUpgradeModal('limit_produk', nextPlan);
+          return;
+        }
+      }
+
+      if (id) {
+        const idx = db.inventory.findIndex(p => p.id === id);
+        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok, barcode, kategori };
+      } else {
+        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok, batas_stok, barcode, kategori });
       }
       closeModal('modal-produk');
       await sync();
@@ -11912,6 +12168,476 @@
       const body = document.getElementById('panduan-body');
       if (body) body.scrollTop = 0;
     }
+  </script>
+
+  <!-- ==================== MODAL TAMBAH KATEGORI ==================== -->
+  <div id="modal-tambah-kategori" class="modal-overlay" style="z-index:4100;">
+    <div class="modal-content" style="max-width:420px;width:92%;margin:auto;">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h4 class="text-[15px] font-black text-slate-800">Kelola Kategori</h4>
+          <p style="font-size:9px;color:#64748b;font-weight:700;">Kategori dipisah antara Produk Digital &amp; Fisik</p>
+        </div>
+        <button onclick="closeModal('modal-tambah-kategori')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+      </div>
+
+      <!-- Tab Pilih Tipe Kategori -->
+      <div class="flex bg-slate-100 p-1 rounded-2xl gap-1 mb-4">
+        <button id="ktg-tab-digital" onclick="switchKtgTab('digital')"
+          class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[10px] cursor-pointer border-0 transition-all"
+          style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);">
+          <i class="fas fa-bolt"></i> DIGITAL
+        </button>
+        <button id="ktg-tab-fisik" onclick="switchKtgTab('fisik')"
+          class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[10px] cursor-pointer border-0 transition-all bg-transparent text-slate-400">
+          <i class="fas fa-box"></i> FISIK
+        </button>
+      </div>
+
+      <!-- Label tipe aktif -->
+      <p id="ktg-modal-tipe-label" style="font-size:9px;color:#6366f1;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">
+        <i class="fas fa-tag mr-1"></i>Kategori Produk Digital
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;">Nama Kategori Baru</label>
+          <input type="text" id="ktg-nama-input" class="input-premium mt-1" placeholder="Contoh: Pulsa, Aksesori HP..."
+            onkeydown="if(event.key==='Enter')saveTambahKategori()">
+        </div>
+        <button onclick="saveTambahKategori()"
+          class="w-full py-3.5 text-white rounded-2xl font-black cursor-pointer border-0"
+          style="background:linear-gradient(135deg,#6366f1,#818cf8);box-shadow:0 6px 18px rgba(99,102,241,0.3);">
+          <i class="fas fa-plus mr-2"></i>TAMBAH KATEGORI
+        </button>
+        <!-- Daftar kategori yg sudah ada -->
+        <div>
+          <p style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Daftar Kategori Tersimpan</p>
+          <div id="ktg-existing-list" class="space-y-1.5 max-h-52 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ==================== SISTEM KATEGORI ====================
+  (function() {
+    // Default kategori — dipisah antara digital dan fisik
+    const DEFAULT_DIGITAL = ['Pulsa', 'Paket Data', 'Token PLN', 'Voucher Game', 'BPJS', 'TV Kabel', 'E-Money', 'Tagihan', 'Lainnya'];
+    const DEFAULT_FISIK   = ['Aksesoris HP', 'Casing & Cover', 'Charger & Kabel', 'Earphone', 'Memory Card', 'Baterai', 'Tempered Glass', 'Spare Part', 'Lainnya'];
+
+    function getKategoriList(tipe) {
+      const key = 'ktg_' + tipe;
+      try {
+        const saved = JSON.parse(localStorage.getItem(key));
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch(e) {}
+      return tipe === 'digital' ? [...DEFAULT_DIGITAL] : [...DEFAULT_FISIK];
+    }
+
+    function saveKategoriList(tipe, list) {
+      localStorage.setItem('ktg_' + tipe, JSON.stringify(list));
+    }
+
+    // Render options ke <select> tertentu
+    window.renderKategoriOptions = function(selectId, tipe, selected) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      const list = getKategoriList(tipe);
+      sel.innerHTML = '<option value="">-- Pilih Kategori --</option>' +
+        list.map(k => `<option value="${k}" ${k === selected ? 'selected' : ''}>${k}</option>`).join('');
+    };
+
+    // Called when tipe switch changes in product form
+    window.onKategoriChange = function() {}; // placeholder, bisa diperluas
+
+    // Refresh filter dropdown di kasir
+    window.refreshKategoriFilters = function() {
+      ['digital', 'fisik'].forEach(tipe => {
+        const filterId = tipe === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
+        const filterSel = document.getElementById(filterId);
+        if (!filterSel) return;
+        const prev = filterSel.value;
+        const list = getKategoriList(tipe);
+        // Tambah "Tanpa Kategori" jika ada produk tanpa kategori
+        const hasTanpa = (window.db?.inventory||[]).some(p => p.tipe === tipe && !p.kategori);
+        filterSel.innerHTML = '<option value="">Semua Produk</option>' +
+          list.map(k => {
+            const count = (window.db?.inventory||[]).filter(p => p.tipe === tipe && p.kategori === k).length;
+            return count > 0 ? `<option value="${k}" ${k===prev?'selected':''}>${k} (${count})</option>` : '';
+          }).join('') +
+          (hasTanpa ? `<option value="__tanpa__" ${'__tanpa__'===prev?'selected':''}>Tanpa Kategori</option>` : '');
+      });
+    };
+
+    // Filter produk di dropdown kasir berdasarkan kategori
+    window.filterKasirByKategori = function(tipe) {
+      const filterId = tipe === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
+      const produkId = tipe === 'digital' ? 'kd-produk' : 'kf-produk';
+      const filterSel = document.getElementById(filterId);
+      const produkSel = document.getElementById(produkId);
+      if (!filterSel || !produkSel || !window.db) return;
+
+      const katVal = filterSel.value;
+      let prodList = (db.inventory || []).filter(p => p.tipe === tipe);
+      if (katVal === '__tanpa__') prodList = prodList.filter(p => !p.kategori);
+      else if (katVal) prodList = prodList.filter(p => p.kategori === katVal);
+
+      if (tipe === 'digital') {
+        produkSel.innerHTML = '<option value="">-- Pilih Produk --</option>' +
+          prodList.map(p => `<option value="${p.id}">${p.nama}</option>`).join('') +
+          '<option value="manual">✏️ Tulis Manual...</option>';
+      } else {
+        produkSel.innerHTML = '<option value="">-- Pilih Produk --</option>' +
+          prodList.map(p => `<option value="${p.id}">${p.nama} (Stok: ${p.stok||0})</option>`).join('');
+      }
+      // reset harga
+      if (typeof autoFillPrices === 'function') autoFillPrices(tipe);
+    };
+
+    // Switch tab di modal kelola kategori
+    let _ktgTipe = 'digital';
+    window.switchKtgTab = function(tipe) {
+      _ktgTipe = tipe;
+      const isDig = tipe === 'digital';
+      const tabDig = document.getElementById('ktg-tab-digital');
+      const tabFis = document.getElementById('ktg-tab-fisik');
+      const label = document.getElementById('ktg-modal-tipe-label');
+      if (tabDig) tabDig.style.cssText = isDig
+        ? 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);'
+        : 'background:transparent;color:#94a3b8;box-shadow:none;';
+      if (tabFis) tabFis.style.cssText = !isDig
+        ? 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 12px rgba(124,58,237,0.3);'
+        : 'background:transparent;color:#94a3b8;box-shadow:none;';
+      if (label) label.innerHTML = isDig
+        ? '<i class="fas fa-bolt mr-1" style="color:#0ea5e9;"></i>Kategori Produk Digital'
+        : '<i class="fas fa-box mr-1" style="color:#a78bfa;"></i>Kategori Produk Fisik';
+      renderExistingKategori(tipe);
+    };
+
+    // Buka modal tambah kategori
+    window.openTambahKategoriModal = function() {
+      // Deteksi tipe dari form produk jika terbuka
+      const tipeFromForm = document.getElementById('p-tipe')?.value || 'digital';
+      document.getElementById('ktg-nama-input').value = '';
+      openModal('modal-tambah-kategori');
+      // Setelah modal tampil, switch ke tipe sesuai form
+      setTimeout(() => {
+        window.switchKtgTab(tipeFromForm);
+        document.getElementById('ktg-nama-input').focus();
+      }, 150);
+    };
+
+    function renderExistingKategori(tipe) {
+      const wrap = document.getElementById('ktg-existing-list');
+      if (!wrap) return;
+      const list = getKategoriList(tipe);
+      const isDig = tipe === 'digital';
+      const accentColor = isDig ? '#0061C2' : '#7c3aed';
+      const accentBg = isDig ? 'rgba(0,97,194,0.08)' : 'rgba(124,58,237,0.08)';
+      wrap.innerHTML = list.map((k, i) => `
+        <div class="flex items-center justify-between px-3 py-2 rounded-xl" style="background:#f8fafc;border:1px solid #e2e8f0;">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${accentBg};">
+              <i class="fas fa-tag text-[7px]" style="color:${accentColor};"></i>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:#334155;">${k}</span>
+          </div>
+          <button onclick="_deleteKategori('${tipe}',${i})" style="width:24px;height:24px;background:rgba(239,68,68,0.08);border:none;border-radius:6px;color:#ef4444;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>`).join('') || '<p style="font-size:10px;color:#cbd5e1;text-align:center;padding:8px;">Belum ada kategori tersimpan</p>';
+    }
+
+    window._deleteKategori = function(tipe, idx) {
+      const list = getKategoriList(tipe);
+      list.splice(idx, 1);
+      saveKategoriList(tipe, list);
+      renderExistingKategori(tipe);
+      renderKategoriOptions('p-kategori', tipe);
+      refreshKategoriFilters();
+    };
+
+    window.autoSaveKategoriManual = function(tipe, nama) {
+      const list = getKategoriList(tipe);
+      if (!list.includes(nama)) {
+        const lastIdx = list.lastIndexOf('Lainnya');
+        if (lastIdx >= 0) list.splice(lastIdx, 0, nama);
+        else list.push(nama);
+        saveKategoriList(tipe, list);
+        refreshKategoriFilters();
+      }
+    };
+
+    window._isKategoriInList = function(tipe, nama) {
+      return getKategoriList(tipe).includes(nama);
+    };
+
+    // Toggle mode input kategori: 'pilih' (select) vs 'manual' (text)
+    window.setKtgMode = function(mode) {
+      const wrapPilih  = document.getElementById('ktg-wrap-pilih');
+      const wrapManual = document.getElementById('ktg-wrap-manual');
+      const btnPilih   = document.getElementById('ktg-mode-pilih');
+      const btnManual  = document.getElementById('ktg-mode-manual');
+      if (!wrapPilih || !wrapManual) return;
+
+      const isManual = mode === 'manual';
+      wrapPilih.classList.toggle('hidden', isManual);
+      wrapManual.classList.toggle('hidden', !isManual);
+
+      if (btnPilih) {
+        btnPilih.style.background   = isManual ? 'transparent' : '#6366f1';
+        btnPilih.style.color        = isManual ? '#94a3b8' : 'white';
+        btnPilih.style.borderColor  = isManual ? '#e2e8f0' : '#6366f1';
+      }
+      if (btnManual) {
+        btnManual.style.background  = isManual ? '#6366f1' : 'transparent';
+        btnManual.style.color       = isManual ? 'white' : '#94a3b8';
+        btnManual.style.borderColor = isManual ? '#6366f1' : '#e2e8f0';
+      }
+    };
+
+    window.saveTambahKategori = function() {
+      const nama = (document.getElementById('ktg-nama-input').value || '').trim();
+      if (!nama) return;
+      const list = getKategoriList(_ktgTipe);
+      if (list.includes(nama)) {
+        (window._getMySwal && _getMySwal() || Swal).fire({icon:'warning',title:'Sudah Ada',text:'Kategori "'+nama+'" sudah terdaftar.',timer:1500,showConfirmButton:false,toast:true,position:'top-end'});
+        return;
+      }
+      // Insert sebelum "Lainnya" jika ada
+      const lastIdx = list.lastIndexOf('Lainnya');
+      if (lastIdx >= 0) list.splice(lastIdx, 0, nama);
+      else list.push(nama);
+      saveKategoriList(_ktgTipe, list);
+      document.getElementById('ktg-nama-input').value = '';
+      renderExistingKategori(_ktgTipe);
+      renderKategoriOptions('p-kategori', _ktgTipe, nama); // auto-select kategori baru
+      refreshKategoriFilters();
+      (window._getMySwal && _getMySwal() || Swal).fire({icon:'success',title:'Kategori Ditambahkan!',text:nama+' ('+(_ktgTipe==='digital'?'Digital':'Fisik')+')',timer:1200,showConfirmButton:false,toast:true,position:'top-end'});
+    };
+
+  })();
+  </script>
+</body>
+</html> -->
+  <div id="modal-barcode-scanner" class="modal-overlay" style="z-index:4000;align-items:center;justify-content:center;">
+    <div class="modal-content" style="border-radius:24px;padding:0;overflow:hidden;max-width:400px;width:92%;margin:auto;">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#3b0764,#7c3aed);padding:16px 18px 14px;display:flex;align-items:center;justify-content:space-between;">
+        <div class="flex items-center gap-3">
+          <div style="width:34px;height:34px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-barcode text-white" style="font-size:15px;"></i>
+          </div>
+          <div>
+            <p class="font-black text-white" style="font-size:14px;">Scan Barcode</p>
+            <p style="font-size:9px;color:rgba(255,255,255,0.6);font-weight:600;">Arahkan kamera ke barcode produk</p>
+          </div>
+        </div>
+        <button onclick="closeBarcodeScanner()" style="width:32px;height:32px;background:rgba(255,255,255,0.12);border:none;border-radius:9px;color:white;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Video viewfinder -->
+      <div style="position:relative;background:#000;aspect-ratio:4/3;overflow:hidden;">
+        <video id="barcode-video" style="width:100%;height:100%;object-fit:cover;" playsinline muted></video>
+        <!-- Overlay frame -->
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+          <div style="width:65%;aspect-ratio:3/1.5;border:2.5px solid rgba(167,139,250,0.9);border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,0.45);">
+            <!-- corner marks -->
+            <div style="position:absolute;top:-2px;left:-2px;width:18px;height:18px;border-top:3px solid #a78bfa;border-left:3px solid #a78bfa;border-radius:3px 0 0 0;"></div>
+            <div style="position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-top:3px solid #a78bfa;border-right:3px solid #a78bfa;border-radius:0 3px 0 0;"></div>
+            <div style="position:absolute;bottom:-2px;left:-2px;width:18px;height:18px;border-bottom:3px solid #a78bfa;border-left:3px solid #a78bfa;border-radius:0 0 0 3px;"></div>
+            <div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-bottom:3px solid #a78bfa;border-right:3px solid #a78bfa;border-radius:0 0 3px 0;"></div>
+            <!-- scan line animation -->
+            <div id="barcode-scanline" style="position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);animation:scanline 1.5s linear infinite;"></div>
+          </div>
+        </div>
+        <!-- Status overlay -->
+        <div id="barcode-status" style="position:absolute;bottom:12px;left:0;right:0;text-align:center;">
+          <span style="background:rgba(0,0,0,0.65);color:rgba(255,255,255,0.85);font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;backdrop-filter:blur(4px);">
+            <i class="fas fa-circle-notch fa-spin mr-1"></i> Menunggu kamera...
+          </span>
+        </div>
+      </div>
+
+      <!-- Input manual fallback -->
+      <div style="padding:14px 16px;background:#f8fafc;border-top:1px solid #e2e8f0;">
+        <p style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Atau ketik barcode manual</p>
+        <div class="flex gap-2">
+          <input type="text" id="barcode-manual-input" class="input-premium" placeholder="Ketik / paste kode barcode..."
+            style="flex:1;font-family:monospace;font-size:13px;letter-spacing:0.08em;"
+            onkeydown="if(event.key==='Enter')submitManualBarcode()">
+          <button onclick="submitManualBarcode()"
+            style="padding:0 16px;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;border:none;border-radius:12px;font-size:11px;font-weight:900;cursor:pointer;">
+            CARI
+          </button>
+        </div>
+        <p style="font-size:9px;color:#94a3b8;font-weight:600;margin-top:7px;"><i class="fas fa-lightbulb text-amber-400 mr-1"></i>Jika kamera tidak aktif, pastikan izin kamera browser diaktifkan.</p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes scanline {
+      0%   { top: 5%; }
+      50%  { top: 85%; }
+      100% { top: 5%; }
+    }
+  </style>
+
+  <script>
+  // ==================== BARCODE SCANNER ENGINE ====================
+  (function() {
+    let _codeReader = null;
+    let _scanMode   = 'kasir'; // 'kasir' | 'produk'
+    let _scanning   = false;
+
+    window.openBarcodeScanner = function(mode) {
+      _scanMode = mode || 'kasir';
+      document.getElementById('barcode-manual-input').value = '';
+      setBarcodeStatus('Menunggu kamera...', true);
+      openModal('modal-barcode-scanner');
+      setTimeout(startScanner, 300);
+    };
+
+    window.closeBarcodeScanner = function() {
+      stopScanner();
+      closeModal('modal-barcode-scanner');
+    };
+
+    function setBarcodeStatus(msg, loading) {
+      const el = document.getElementById('barcode-status');
+      if (!el) return;
+      el.innerHTML = `<span style="background:rgba(0,0,0,0.65);color:rgba(255,255,255,0.85);font-size:10px;font-weight:700;padding:5px 14px;border-radius:20px;backdrop-filter:blur(4px);">
+        ${loading ? '<i class="fas fa-circle-notch fa-spin mr-1"></i>' : '<i class="fas fa-camera mr-1"></i>'} ${msg}
+      </span>`;
+    }
+
+    async function startScanner() {
+      stopScanner();
+      const video = document.getElementById('barcode-video');
+      if (!video) return;
+
+      // Coba gunakan ZXing jika tersedia
+      if (window.ZXing) {
+        try {
+          _codeReader = new ZXing.BrowserMultiFormatReader();
+          const devices = await _codeReader.listVideoInputDevices();
+          const backCam = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
+          const deviceId = backCam ? backCam.deviceId : undefined;
+
+          setBarcodeStatus('Kamera aktif — arahkan ke barcode', false);
+          _scanning = true;
+
+          _codeReader.decodeFromVideoDevice(deviceId, 'barcode-video', (result, err) => {
+            if (result && _scanning) {
+              const code = result.getText();
+              onBarcodeDetected(code);
+            }
+          });
+          return;
+        } catch(e) {
+          console.warn('ZXing error:', e);
+        }
+      }
+
+      // Fallback: pakai getUserMedia langsung (hanya preview, manual input)
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = stream;
+        video.play();
+        setBarcodeStatus('Kamera aktif — ketik barcode di bawah jika scan tidak tersedia', false);
+        _scanning = true;
+      } catch(e) {
+        setBarcodeStatus('Kamera tidak bisa diakses — gunakan input manual', false);
+      }
+    }
+
+    function stopScanner() {
+      _scanning = false;
+      try {
+        if (_codeReader) { _codeReader.reset(); _codeReader = null; }
+      } catch(e) {}
+      try {
+        const video = document.getElementById('barcode-video');
+        if (video && video.srcObject) {
+          video.srcObject.getTracks().forEach(t => t.stop());
+          video.srcObject = null;
+        }
+      } catch(e) {}
+    }
+
+    function onBarcodeDetected(code) {
+      if (!code || !_scanning) return;
+      stopScanner();
+
+      // Feedback visual
+      setBarcodeStatus('✅ Barcode terdeteksi: ' + code, false);
+
+      // Vibrate jika didukung
+      if (navigator.vibrate) navigator.vibrate(120);
+
+      setTimeout(() => {
+        closeBarcodeScanner();
+        if (_scanMode === 'kasir') {
+          selectProductByBarcode(code);
+        } else if (_scanMode === 'produk') {
+          document.getElementById('p-barcode').value = code;
+        }
+      }, 600);
+    }
+
+    function selectProductByBarcode(code) {
+      if (!window.db || !db.inventory) return showNotFound(code);
+      const prod = db.inventory.find(p => p.tipe === 'fisik' && p.barcode === code);
+      if (!prod) return showNotFound(code);
+
+      // Set select ke produk yg ditemukan
+      const sel = document.getElementById('kf-produk');
+      if (sel) {
+        sel.value = prod.id;
+        if (typeof autoFillPrices === 'function') autoFillPrices('fisik');
+      }
+
+      // Flash feedback
+      const card = document.querySelector('#form-k-fisik .kasir-field-card');
+      if (card) {
+        card.style.transition = 'box-shadow 0.3s';
+        card.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.5)';
+        setTimeout(() => card.style.boxShadow = '', 1000);
+      }
+
+      (_getMySwal && _getMySwal() || Swal).fire({
+        icon: 'success', title: 'Produk Ditemukan!',
+        text: prod.nama, timer: 1500, showConfirmButton: false,
+        position: 'top-end', toast: true
+      });
+    }
+
+    function showNotFound(code) {
+      (_getMySwal && _getMySwal() || Swal).fire({
+        icon: 'warning', title: 'Produk Tidak Ditemukan',
+        html: `Barcode <b>${code}</b> belum terdaftar di stok.<br><small style="color:#94a3b8;">Tambahkan barcode ke produk di menu Stok → Edit Produk.</small>`,
+        confirmButtonText: 'OK'
+      });
+    }
+
+    window.submitManualBarcode = function() {
+      const code = (document.getElementById('barcode-manual-input').value || '').trim();
+      if (!code) return;
+      onBarcodeDetected(code);
+    };
+
+    // Tutup scanner saat overlay diklik (bukan konten)
+    const modalEl = document.getElementById('modal-barcode-scanner');
+    if (modalEl) {
+      modalEl.addEventListener('click', function(e) {
+        if (e.target === modalEl) closeBarcodeScanner();
+      });
+    }
+  })();
   </script>
 </body>
 </html>
