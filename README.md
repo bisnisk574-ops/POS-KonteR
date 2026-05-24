@@ -130,7 +130,36 @@ KonterKu/
 
 ## 📸 Screenshot
 
-> *Coming soon — tambahkan screenshot aplikasi di sini*
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center"><b>Dashboard (Owner)</b></td>
+    <td align="center"><b>Dashboard (Admin)</b></td>
+    <td align="center"><b>Stok Produk</b></td>
+    <td align="center"><b>Kasir</b></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/dashboard.jpg" width="160" alt="Dashboard"/></td>
+    <td><img src="screenshots/dashboard-admin.jpg" width="160" alt="Dashboard Admin"/></td>
+    <td><img src="screenshots/stok.jpg" width="160" alt="Stok Produk"/></td>
+    <td><img src="screenshots/kasir.jpg" width="160" alt="Kasir"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Dompet</b></td>
+    <td align="center"><b>Hutang & Piutang</b></td>
+    <td align="center"><b>Menu (Dark)</b></td>
+    <td align="center"><b>Menu (Light)</b></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/dompet.jpg" width="160" alt="Dompet"/></td>
+    <td><img src="screenshots/hutang.jpg" width="160" alt="Hutang Piutang"/></td>
+    <td><img src="screenshots/menu-dark.jpg" width="160" alt="Menu Dark Mode"/></td>
+    <td><img src="screenshots/menu-light.jpg" width="160" alt="Menu Light Mode"/></td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
