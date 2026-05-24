@@ -8783,26 +8783,8 @@
         if (res.isConfirmed) {
           // Sign out dari Firebase Auth
           if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
-
-          // ── Hapus SEMUA data sesi akun agar tidak bocor ke akun lain ──
-          const _keysToRemove = [
-            'k_logged', 'k_token', 'k_sid', 'k_email',
-            'k_store_name', 'k_plan', 'k_expired_date',
-            'k_active_store_id', 'k_sync_version', 'k_pending_sync', 'k_last_sync',
-            'k_kasir_mode', 'k_kasir_id', 'k_kasir_nama',
-            'k_kasir_username', 'k_kasir_izin',
-            'k_struk_alamat', 'k_struk_tagline', 'k_struk_logo'
-          ];
-          _keysToRemove.forEach(k => localStorage.removeItem(k));
-
-          // Hapus cache DB per-sid (konterku_db_* dan ktg_*)
-          const _allKeys = Object.keys(localStorage);
-          _allKeys.forEach(k => {
-            if (k.startsWith('konterku_db_') || k.startsWith('ktg_')) {
-              localStorage.removeItem(k);
-            }
-          });
-
+          localStorage.removeItem('k_logged');
+          localStorage.removeItem('k_token');
           location.reload();
         }
       });
@@ -11286,6 +11268,237 @@
   // (ditambah setelah patch kelola-kasir)
 
   console.log('[KasirStaff] Modul kasir staff v1 dimuat.');
+
+  // ============================================================
+  // ===== NOTIFIKASI SHIFT AKTIF — FLOATING PILL ===============
+  // ============================================================
+  (function() {
+    // ── Inject CSS ──────────────────────────────────────────────
+    const _shiftStyle = document.createElement('style');
+    _shiftStyle.textContent = `
+      #shift-pill-wrap {
+        position: fixed;
+        bottom: 72px;
+        right: 14px;
+        z-index: 8888;
+        display: none;
+        flex-direction: column;
+        align-items: flex-end;
+        pointer-events: none;
+      }
+      #shift-pill {
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border: 1.5px solid #6ee7b7;
+        border-radius: 999px;
+        padding: 8px 14px 8px 10px;
+        box-shadow: 0 4px 20px rgba(16,185,129,0.25), 0 1px 6px rgba(0,0,0,0.08);
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        max-width: 270px;
+        animation: shiftPillIn 0.45s cubic-bezier(.34,1.56,.64,1) both;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #shift-pill:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 28px rgba(16,185,129,0.30), 0 2px 8px rgba(0,0,0,0.10);
+      }
+      #shift-pill:active { transform: scale(0.97); }
+      .sp-icon {
+        width: 34px; height: 34px; border-radius: 50%;
+        background: linear-gradient(135deg, #10b981, #059669);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(16,185,129,0.35);
+      }
+      .sp-icon i { color: #fff; font-size: 14px; }
+      .sp-body { display: flex; flex-direction: column; gap: 1px; }
+      .sp-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5px; font-weight: 800;
+        color: #065f46; letter-spacing: 0.09em; text-transform: uppercase;
+      }
+      .sp-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: #10b981; display: inline-block; margin-right: 3px;
+        animation: spDotPulse 1.6s ease-in-out infinite;
+      }
+      .sp-nama {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 12.5px; font-weight: 800; color: #064e3b;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px;
+      }
+      .sp-waktu {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10px; font-weight: 700; color: #059669;
+      }
+      .sp-badge {
+        background: #10b981; color: #fff;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 9px; font-weight: 900; letter-spacing: 0.06em;
+        border-radius: 999px; padding: 3px 9px;
+        box-shadow: 0 2px 8px rgba(16,185,129,0.4);
+        flex-shrink: 0; line-height: 1.4;
+      }
+      @keyframes shiftPillIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.88); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes spDotPulse {
+        0%,100% { opacity:1; transform:scale(1); }
+        50%      { opacity:0.4; transform:scale(0.72); }
+      }
+      [data-theme="dark"] #shift-pill {
+        background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+        border-color: #059669;
+        box-shadow: 0 4px 20px rgba(16,185,129,0.18), 0 1px 6px rgba(0,0,0,0.35);
+      }
+      [data-theme="dark"] .sp-label { color: #6ee7b7; }
+      [data-theme="dark"] .sp-nama  { color: #d1fae5; }
+      [data-theme="dark"] .sp-waktu { color: #34d399; }
+    `;
+    document.head.appendChild(_shiftStyle);
+
+    // ── Inject HTML ─────────────────────────────────────────────
+    const _pillWrap = document.createElement('div');
+    _pillWrap.id = 'shift-pill-wrap';
+    _pillWrap.innerHTML = `
+      <div id="shift-pill" title="Shift aktif — tap untuk detail">
+        <div class="sp-icon"><i class="fas fa-user-clock"></i></div>
+        <div class="sp-body">
+          <span class="sp-label"><span class="sp-dot"></span>SHIFT SEDANG AKTIF</span>
+          <span class="sp-nama" id="sp-nama">—</span>
+          <span class="sp-waktu" id="sp-waktu">mulai —:—</span>
+        </div>
+        <span class="sp-badge">AKTIF</span>
+      </div>
+    `;
+    document.body.appendChild(_pillWrap);
+
+    // ── Tap buka modal absensi ───────────────────────────────────
+    document.getElementById('shift-pill').addEventListener('click', function() {
+      if (typeof openAbsensiKasirModal === 'function') openAbsensiKasirModal();
+      else if (typeof openSidebarMenu === 'function') openSidebarMenu('absensi-kasir');
+    });
+
+    // ── Timer durasi ─────────────────────────────────────────────
+    let _spTimer = null;
+    let _spStartMs = null;
+
+    function _startSpTimer(jam, tgl) {
+      if (_spTimer) clearInterval(_spTimer);
+      const el = document.getElementById('sp-waktu');
+      if (!el) return;
+      try {
+        const b = tgl && jam ? new Date(tgl + 'T' + jam) : null;
+        _spStartMs = b && !isNaN(b.getTime()) ? b.getTime() : null;
+      } catch(e) { _spStartMs = null; }
+      function _tick() {
+        if (_spStartMs) {
+          const diff = Date.now() - _spStartMs;
+          if (diff > 0) {
+            const hh = String(Math.floor(diff / 3600000)).padStart(2,'0');
+            const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+            el.textContent = 'mulai ' + (jam || '--:--') + '  ·  ' + hh + 'j ' + mm + 'm';
+            return;
+          }
+        }
+        el.textContent = 'mulai ' + (jam || '--:--');
+      }
+      _tick();
+      _spTimer = setInterval(_tick, 30000);
+    }
+
+    function _stopSpTimer() {
+      if (_spTimer) { clearInterval(_spTimer); _spTimer = null; }
+      _spStartMs = null;
+    }
+
+    // ── Tampil / sembunyikan ─────────────────────────────────────
+    window._showShiftPill = function(nama, jam, tgl) {
+      const w = document.getElementById('shift-pill-wrap');
+      const n = document.getElementById('sp-nama');
+      if (!w || !n) return;
+      n.textContent = nama || 'Kasir';
+      w.style.display = 'flex';
+      // Re-trigger animasi
+      const p = document.getElementById('shift-pill');
+      if (p) { p.style.animation = 'none'; void p.offsetHeight; p.style.animation = ''; }
+      _startSpTimer(jam, tgl);
+    };
+
+    window._hideShiftPill = function() {
+      const w = document.getElementById('shift-pill-wrap');
+      if (w) w.style.display = 'none';
+      _stopSpTimer();
+    };
+
+    // ── Cek shift aktif dari Firebase ───────────────────────────
+    async function _checkShiftAktif() {
+      const uid = localStorage.getItem('k_sid');
+      if (!uid) return;
+      // Tunggu Firebase siap
+      await new Promise(resolve => {
+        const t = setInterval(() => {
+          if (window._fbFirestore) { clearInterval(t); resolve(); }
+        }, 200);
+        setTimeout(() => { clearInterval(t); resolve(); }, 6000);
+      });
+      if (!window._fbFirestore) return;
+      try {
+        const snap = await window._fbFirestore.collection('absensi_kasir')
+          .where('owner_uid','==', uid)
+          .where('status','==','aktif')
+          .orderBy('buka_at','desc')
+          .limit(5)
+          .get();
+        if (snap.empty) { _hideShiftPill(); return; }
+        const kasirNama = localStorage.getItem('k_kasir_nama') || '';
+        let doc = null;
+        snap.forEach(d => {
+          const data = d.data();
+          if (!doc) {
+            if (kasirNama) {
+              if ((data.nama||'').toLowerCase() === kasirNama.toLowerCase()) doc = data;
+            } else { doc = data; }
+          }
+        });
+        if (!doc) snap.forEach(d => { if (!doc) doc = d.data(); });
+        if (doc) _showShiftPill(doc.nama, doc.buka_jam, doc.buka_tgl);
+        else _hideShiftPill();
+      } catch(e) { _hideShiftPill(); }
+    }
+
+    // ── Inisialisasi ─────────────────────────────────────────────
+    function _initPill() {
+      if (localStorage.getItem('k_logged') === 'true') {
+        _checkShiftAktif();
+        setInterval(_checkShiftAktif, 5 * 60 * 1000);
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(_initPill, 2500));
+    } else {
+      setTimeout(_initPill, 2500);
+    }
+
+    // ── Hook setelah buka/tutup shift ────────────────────────────
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const txt = btn.textContent || '';
+      if (txt.includes('Buka Shift') || txt.includes('Tutup Shift')) {
+        setTimeout(_checkShiftAktif, 2500);
+      }
+    });
+  })();
+  // ============================================================
+  // ===== END NOTIFIKASI SHIFT AKTIF ===========================
+  // ============================================================
 
   // ============================================================
   // ===== MODUL ABSENSI KASIR ==================================
