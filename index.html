@@ -517,9 +517,122 @@
     }
     .footer-copy { font-size: 12px; color: var(--gray); }
 
+    /* ─── SCROLL PROGRESS BAR ─── */
+    #scroll-progress {
+      position: fixed; top: 0; left: 0; height: 3px; z-index: 9999;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--teal));
+      width: 0%; transition: width 0.1s linear;
+      box-shadow: 0 0 10px rgba(6,182,212,0.6);
+    }
+
     /* ─── ANIMATIONS ─── */
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+    }
     .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* Directional reveals */
+    .reveal-left {
+      opacity: 0; transform: translateX(-50px);
+      transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+    }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+    .reveal-right {
+      opacity: 0; transform: translateX(50px);
+      transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+    }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    .reveal-scale {
+      opacity: 0; transform: scale(0.88);
+      transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+    }
+    .reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+    /* Stagger children */
+    .stagger-children > * {
+      opacity: 0; transform: translateY(32px);
+      transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+    }
+    .stagger-children.visible > *:nth-child(1) { opacity:1; transform:translateY(0); transition-delay: 0.05s; }
+    .stagger-children.visible > *:nth-child(2) { opacity:1; transform:translateY(0); transition-delay: 0.15s; }
+    .stagger-children.visible > *:nth-child(3) { opacity:1; transform:translateY(0); transition-delay: 0.25s; }
+    .stagger-children.visible > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay: 0.35s; }
+    .stagger-children.visible > *:nth-child(5) { opacity:1; transform:translateY(0); transition-delay: 0.42s; }
+    .stagger-children.visible > *:nth-child(6) { opacity:1; transform:translateY(0); transition-delay: 0.49s; }
+    .stagger-children.visible > *:nth-child(7) { opacity:1; transform:translateY(0); transition-delay: 0.55s; }
+    .stagger-children.visible > *:nth-child(8) { opacity:1; transform:translateY(0); transition-delay: 0.60s; }
+    .stagger-children.visible > *:nth-child(9) { opacity:1; transform:translateY(0); transition-delay: 0.65s; }
+
+    /* Highlight text on scroll */
+    .highlight-on-scroll {
+      background-size: 0% 100%;
+      background-repeat: no-repeat;
+      background-position: left center;
+      transition: background-size 1s cubic-bezier(0.22,1,0.36,1);
+    }
+    .highlight-on-scroll.visible { background-size: 100% 100%; }
+
+    /* Section entrance line */
+    .section-line {
+      width: 0; height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      border-radius: 2px; margin-bottom: 16px;
+      transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+    .section-line.visible { width: 60px; }
+
+    /* Parallax container */
+    .parallax-wrap { will-change: transform; }
+
+    /* Counter numbers */
+    .count-up { display: inline-block; }
+
+    /* Floating section indicator */
+    #section-indicator {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      z-index: 100; display: flex; flex-direction: column; gap: 8px;
+    }
+    .si-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer; transition: all 0.3s; position: relative;
+    }
+    .si-dot.active { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 8px rgba(6,182,212,0.6); transform: scale(1.4); }
+    .si-dot:hover { background: rgba(255,255,255,0.5); }
+    @media (max-width: 768px) { #section-indicator { display: none; } }
+
+    /* Glow pulse on feat cards when visible */
+    .feat-card.visible {
+      animation: cardGlow 0.6s ease both;
+    }
+    @keyframes cardGlow {
+      0% { box-shadow: none; }
+      50% { box-shadow: 0 0 30px rgba(29,110,245,0.15); }
+      100% { box-shadow: none; }
+    }
+
+    /* Marquee scroll strip */
+    .marquee-wrap {
+      overflow: hidden; padding: 28px 0;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      position: relative; z-index: 1; margin: 0 0 0;
+    }
+    .marquee-track {
+      display: flex; gap: 48px; width: max-content;
+      animation: marquee 28s linear infinite;
+    }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .marquee-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 600; color: var(--gray);
+      white-space: nowrap;
+    }
+    .marquee-item i { color: var(--cyan); font-size: 14px; }
+    .marquee-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border2); flex-shrink: 0; }
 
     /* ─── MOBILE MENU ─── */
     .mob-menu {
@@ -549,6 +662,7 @@
       .plans-grid { grid-template-columns: 1fr; max-width: 360px; }
       .cta-box { padding: 40px 22px; }
       .trust-sep { display: none; }
+      .multitoko-grid { grid-template-columns: 1fr !important; }
     }
     @media (max-width: 480px) {
       .trust-strip { gap: 20px; }
@@ -557,6 +671,20 @@
   </style>
 </head>
 <body>
+
+<!-- Scroll Progress -->
+<div id="scroll-progress"></div>
+
+<!-- Section Indicator -->
+<nav id="section-indicator" aria-label="Section navigation">
+  <div class="si-dot active" data-target="home" title="Beranda"></div>
+  <div class="si-dot" data-target="fitur" title="Fitur"></div>
+  <div class="si-dot" data-target="multi-toko" title="Multi-Toko"></div>
+  <div class="si-dot" data-target="cara-kerja" title="Cara Kerja"></div>
+  <div class="si-dot" data-target="harga" title="Harga"></div>
+</nav>
+
+<!-- Marquee Strip (shown between hero and features) -->
 
 <div class="bg-mesh"></div>
 <div class="bg-grid"></div>
@@ -569,6 +697,7 @@
   </a>
   <div class="nav-links">
     <a href="#fitur">Fitur</a>
+    <a href="#multi-toko" style="color:var(--cyan);">Multi-Toko</a>
     <a href="#cara-kerja">Cara Kerja</a>
     <a href="#harga">Harga</a>
     <a href="https://wa.me/62895621263666" target="_blank">Bantuan</a>
@@ -585,6 +714,7 @@
 <!-- Mobile Menu -->
 <div class="mob-menu" id="mob-menu">
   <a href="#fitur" onclick="toggleMenu()"><i class="fas fa-sparkles" style="margin-right:10px;color:var(--cyan)"></i>Fitur</a>
+  <a href="#multi-toko" onclick="toggleMenu()" style="color:var(--cyan);"><i class="fas fa-store" style="margin-right:10px;color:var(--cyan)"></i>Multi-Toko ✨</a>
   <a href="#cara-kerja" onclick="toggleMenu()"><i class="fas fa-list-check" style="margin-right:10px;color:var(--cyan)"></i>Cara Kerja</a>
   <a href="#harga" onclick="toggleMenu()"><i class="fas fa-tag" style="margin-right:10px;color:var(--cyan)"></i>Harga</a>
   <a href="https://wa.me/62895621263666" target="_blank" onclick="toggleMenu()"><i class="fab fa-whatsapp" style="margin-right:10px;color:#86efac"></i>Bantuan</a>
@@ -592,11 +722,11 @@
 </div>
 
 <!-- ─── HERO ─── -->
-<section class="hero">
+<section class="hero" id="home">
   <div class="hero-inner">
     <div class="hero-badge">
-      <span class="badge-pill">Baru</span>
-      Terintegrasi Google Sheets &amp; Firebase
+      <span class="badge-pill">Terbaru</span>
+      Fitur Multi-Toko &amp; Monitor Cabang Tersedia
       <span class="pulse-dot"></span>
     </div>
     <h1 class="hero-title">
@@ -604,7 +734,7 @@
       <em>Lebih Modern,<br>Lebih Menguntungkan</em>
     </h1>
     <p class="hero-sub">
-      Kasir digital, manajemen stok real-time, laporan omset otomatis, dan pencatatan hutang — semua dari HP, dari mana saja.
+      Kasir digital, manajemen stok real-time, laporan omset otomatis, multi-toko &amp; monitor cabang — semua dari HP, dari mana saja.
     </p>
     <div class="hero-actions">
       <a href="https://www.agscellpos.my.id/app/" class="btn-primary">
@@ -706,26 +836,69 @@
   </div>
 </div>
 
+<!-- ─── MARQUEE STRIP ─── -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><i class="fas fa-cash-register"></i> Kasir Digital</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-boxes-stacked"></i> Stok Real-Time</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-chart-line"></i> Laporan Otomatis</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-store"></i> Multi-Toko</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-cloud"></i> Cloud Firebase</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-hand-holding-dollar"></i> Hutang & Piutang</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fab fa-whatsapp"></i> Support WA</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-users"></i> Multi-Kasir</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-chart-column"></i> Monitor Cabang</div>
+    <div class="marquee-dot"></div>
+    <!-- Duplicate for seamless loop -->
+    <div class="marquee-item"><i class="fas fa-cash-register"></i> Kasir Digital</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-boxes-stacked"></i> Stok Real-Time</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-chart-line"></i> Laporan Otomatis</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-store"></i> Multi-Toko</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-cloud"></i> Cloud Firebase</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-hand-holding-dollar"></i> Hutang & Piutang</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fab fa-whatsapp"></i> Support WA</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-users"></i> Multi-Kasir</div>
+    <div class="marquee-dot"></div>
+    <div class="marquee-item"><i class="fas fa-chart-column"></i> Monitor Cabang</div>
+    <div class="marquee-dot"></div>
+  </div>
+</div>
+
 <!-- ─── FEATURES ─── -->
 <section class="features" id="fitur">
   <div class="container">
     <div class="feat-header reveal">
       <div class="s-label"><i class="fas fa-sparkles"></i> Fitur Unggulan</div>
       <h2 class="s-title">Semua yang dibutuhkan konter pulsa modern</h2>
-      <p class="s-sub">Dari kasir hingga monitor cabang — satu aplikasi, semua terkontrol.</p>
+      <p class="s-sub">Dari kasir hingga laporan keuangan — satu aplikasi, semua terkontrol.</p>
     </div>
-    <div class="feat-grid">
+    <div class="feat-grid stagger-children">
 
       <div class="feat-card reveal">
         <div class="feat-icon" style="background:linear-gradient(135deg,rgba(29,110,245,0.15),rgba(6,182,212,0.1));border:1px solid rgba(6,182,212,0.18);">
           <i class="fas fa-cash-register" style="color:var(--cyan);"></i>
         </div>
         <div class="feat-name">Kasir Digital</div>
-        <div class="feat-desc">Catat transaksi produk digital (pulsa, paket data, e-wallet) dan produk fisik dalam satu tampilan yang intuitif dan super cepat. Termasuk proses transfer & top up e-wallet.</div>
+        <div class="feat-desc">Catat transaksi produk digital (pulsa, paket data, e-wallet) dan produk fisik dalam satu tampilan yang intuitif dan super cepat.</div>
         <div class="feat-tags">
           <span class="feat-tag">Produk Digital</span>
           <span class="feat-tag">Produk Fisik</span>
-          <span class="feat-tag">Transfer & Top Up</span>
+          <span class="feat-tag">Cetak Struk</span>
         </div>
       </div>
 
@@ -734,7 +907,7 @@
           <i class="fas fa-boxes-stacked" style="color:#86efac;"></i>
         </div>
         <div class="feat-name">Manajemen Stok</div>
-        <div class="feat-desc">Pantau stok secara real-time, terima notifikasi saat stok menipis, dan kelola harga beli/jual dengan mudah. Status stok langsung terlihat di dashboard utama.</div>
+        <div class="feat-desc">Pantau stok secara real-time, terima notifikasi saat stok menipis, dan kelola harga beli/jual dengan mudah tanpa ribet.</div>
         <div class="feat-tags">
           <span class="feat-tag">Stok Real-Time</span>
           <span class="feat-tag">Alert Minimum</span>
@@ -747,7 +920,7 @@
           <i class="fas fa-chart-line" style="color:var(--amber);"></i>
         </div>
         <div class="feat-name">Laporan & Analitik</div>
-        <div class="feat-desc">Lihat omset harian, laba bersih, dan tren penjualan lewat grafik visual. Ekspor laporan ke Google Sheets atau PDF kapan pun dibutuhkan.</div>
+        <div class="feat-desc">Lihat omset harian, laba bersih, dan tren penjualan. Ekspor laporan ke Google Sheets atau PDF kapan pun dibutuhkan.</div>
         <div class="feat-tags">
           <span class="feat-tag">Omset Harian</span>
           <span class="feat-tag">Grafik Visual</span>
@@ -760,24 +933,11 @@
           <i class="fas fa-hand-holding-dollar" style="color:#c4b5fd;"></i>
         </div>
         <div class="feat-name">Hutang & Piutang</div>
-        <div class="feat-desc">Catat pelanggan yang belum bayar, pantau status hutang, dan kelola piutang toko secara terpisah. Tidak ada transaksi yang terlewat.</div>
+        <div class="feat-desc">Catat pelanggan yang belum bayar, pantau status hutang, dan kirim pengingat otomatis. Tidak ada transaksi yang terlewat.</div>
         <div class="feat-tags">
-          <span class="feat-tag">Hutang Pelanggan</span>
-          <span class="feat-tag">Piutang Toko</span>
-          <span class="feat-tag">Riwayat Lengkap</span>
-        </div>
-      </div>
-
-      <div class="feat-card reveal">
-        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(6,182,212,0.12),rgba(20,184,166,0.08));border:1px solid rgba(6,182,212,0.2);">
-          <i class="fas fa-wallet" style="color:var(--cyan);"></i>
-        </div>
-        <div class="feat-name">Dompet & Saldo Terpusat</div>
-        <div class="feat-desc">Kelola saldo kas tunai dan dompet digital (transfer, e-wallet, bank) dalam satu tampilan. Pantau total saldo terpusat langsung dari dashboard.</div>
-        <div class="feat-tags">
-          <span class="feat-tag">Kas Tunai</span>
-          <span class="feat-tag">Dompet Digital</span>
-          <span class="feat-tag">Saldo Real-Time</span>
+          <span class="feat-tag">Catat Hutang</span>
+          <span class="feat-tag">Riwayat</span>
+          <span class="feat-tag">Pengingat</span>
         </div>
       </div>
 
@@ -786,50 +946,11 @@
           <i class="fas fa-cloud" style="color:var(--cyan);"></i>
         </div>
         <div class="feat-name">Cloud & Multi-Device</div>
-        <div class="feat-desc">Data tersimpan otomatis di cloud Firebase. Akses dari HP, tablet, atau laptop kapan saja. Ganti HP, data tetap aman. Backup & restore dengan satu ketuk.</div>
+        <div class="feat-desc">Data tersimpan otomatis di cloud Firebase. Akses dari HP, tablet, atau laptop kapan saja. Ganti HP, data tetap aman.</div>
         <div class="feat-tags">
           <span class="feat-tag">Firebase Cloud</span>
           <span class="feat-tag">Real-Time Sync</span>
           <span class="feat-tag">Backup Otomatis</span>
-        </div>
-      </div>
-
-      <div class="feat-card reveal">
-        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(167,139,250,0.06));border:1px solid rgba(139,92,246,0.2);">
-          <i class="fas fa-users-gear" style="color:#c4b5fd;"></i>
-        </div>
-        <div class="feat-name">Kelola Kasir Karyawan</div>
-        <div class="feat-desc">Tambah akun kasir untuk karyawan dengan akses terbatas. Pemilik tetap memegang kendali penuh — karyawan hanya bisa input transaksi tanpa bisa ubah pengaturan toko.</div>
-        <div class="feat-tags">
-          <span class="feat-tag">Akun Kasir</span>
-          <span class="feat-tag">Hak Akses</span>
-          <span class="feat-tag">Multi Kasir</span>
-        </div>
-      </div>
-
-      <div class="feat-card reveal">
-        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(52,211,153,0.06));border:1px solid rgba(16,185,129,0.2);">
-          <i class="fas fa-user-clock" style="color:#34d399;"></i>
-        </div>
-        <div class="feat-name">Absensi Kasir Karyawan</div>
-        <div class="feat-desc">Catat buka & tutup shift kasir lengkap dengan saldo kas awal dan akhir. Laporan shift otomatis tersimpan — pantau kinerja kasir tanpa perlu kertas.</div>
-        <div class="feat-tags">
-          <span class="feat-tag">Buka Shift</span>
-          <span class="feat-tag">Tutup Shift</span>
-          <span class="feat-tag">Laporan Shift</span>
-        </div>
-      </div>
-
-      <div class="feat-card reveal">
-        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(251,191,36,0.06));border:1px solid rgba(245,158,11,0.2);">
-          <i class="fas fa-store" style="color:var(--amber);"></i>
-        </div>
-        <div class="feat-name">Monitor Cabang & Multi-Toko</div>
-        <div class="feat-desc">Kelola beberapa toko sekaligus dari satu akun. Pantau omset, laba, stok, dan piutang tiap cabang real-time. Trial & Basic: 1 toko · Pro: hingga 3 toko · Unlimited: hingga 10 toko.</div>
-        <div class="feat-tags">
-          <span class="feat-tag">Multi-Toko</span>
-          <span class="feat-tag">Monitor Cabang</span>
-          <span class="feat-tag">Pindah Toko</span>
         </div>
       </div>
 
@@ -846,6 +967,207 @@
         </div>
       </div>
 
+      <div class="feat-card reveal" style="border-color:rgba(0,97,194,0.3);background:linear-gradient(145deg,rgba(0,97,194,0.06),rgba(56,189,248,0.04));">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(0,97,194,0.18),rgba(56,189,248,0.1));border:1px solid rgba(56,189,248,0.25);">
+          <i class="fas fa-store" style="color:#38bdf8;"></i>
+        </div>
+        <div class="feat-name" style="display:flex;align-items:center;gap:8px;">
+          Multi-Toko &amp; Cabang
+          <span style="font-size:9px;font-weight:800;background:linear-gradient(135deg,#0061C2,#38bdf8);color:white;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:0.06em;">Baru</span>
+        </div>
+        <div class="feat-desc">Kelola beberapa toko atau cabang dari satu akun. Berpindah toko dalam satu klik, data tetap terpisah dan aman per cabang.</div>
+        <div class="feat-tags">
+          <span class="feat-tag">Multi-Cabang</span>
+          <span class="feat-tag">Pindah Toko</span>
+          <span class="feat-tag">Data Terpisah</span>
+        </div>
+      </div>
+
+      <div class="feat-card reveal" style="border-color:rgba(139,92,246,0.25);background:linear-gradient(145deg,rgba(139,92,246,0.05),rgba(99,102,241,0.03));">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(99,102,241,0.08));border:1px solid rgba(139,92,246,0.25);">
+          <i class="fas fa-chart-column" style="color:#a78bfa;"></i>
+        </div>
+        <div class="feat-name" style="display:flex;align-items:center;gap:8px;">
+          Monitor Cabang Live
+          <span style="font-size:9px;font-weight:800;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:0.06em;">Baru</span>
+        </div>
+        <div class="feat-desc">Pantau omset, laba, stok, dan piutang semua cabang sekaligus dari satu dashboard. Data real-time, tidak perlu tanya karyawan.</div>
+        <div class="feat-tags">
+          <span class="feat-tag">Dashboard Terpusat</span>
+          <span class="feat-tag">Real-Time</span>
+          <span class="feat-tag">Semua Cabang</span>
+        </div>
+      </div>
+
+      <div class="feat-card reveal" style="border-color:rgba(245,158,11,0.22);">
+        <div class="feat-icon" style="background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(251,191,36,0.06));border:1px solid rgba(245,158,11,0.2);">
+          <i class="fas fa-users" style="color:var(--amber);"></i>
+        </div>
+        <div class="feat-name">Multi-Kasir &amp; Akses</div>
+        <div class="feat-desc">Tambahkan akun kasir per toko dengan akses terbatas sesuai izin pemilik. Cocok untuk toko dengan beberapa karyawan atau shift jaga.</div>
+        <div class="feat-tags">
+          <span class="feat-tag">Akun Kasir</span>
+          <span class="feat-tag">Izin Akses</span>
+          <span class="feat-tag">Multi-Shift</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── MULTI-TOKO SECTION ─── -->
+<section style="padding:100px 0;position:relative;z-index:1;" id="multi-toko">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="reveal" style="text-align:center;max-width:660px;margin:0 auto 60px;">
+      <div class="s-label" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.2);justify-content:center;"><i class="fas fa-store"></i> Fitur Terbaru</div>
+      <h2 class="s-title">Satu akun, banyak toko &amp; cabang</h2>
+      <p class="s-sub">Kelola semua cabang dari satu akun. Monitor omset, stok, dan kinerja setiap toko secara real-time — tanpa perlu berpindah aplikasi.</p>
+    </div>
+
+    <!-- 2-col layout: visual kiri, fitur kanan -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;" class="multitoko-grid">
+
+      <!-- Kiri: Mock UI monitor cabang -->
+      <div class="reveal-left" style="position:relative;">
+        <div style="background:linear-gradient(145deg,#060e20,#0a1a3a);border-radius:28px;border:1.5px solid rgba(56,189,248,0.25);padding:24px;box-shadow:0 40px 80px rgba(0,0,0,0.6),0 0 60px rgba(0,97,194,0.15);">
+
+          <!-- Header monitor -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+            <div>
+              <div style="font-family:var(--font-h);font-size:14px;font-weight:800;color:white;">Monitor Cabang</div>
+              <div style="font-size:10px;color:#64748b;font-weight:600;margin-top:2px;">3 toko aktif · Sync real-time</div>
+            </div>
+            <div style="width:8px;height:8px;background:#34d399;border-radius:50%;box-shadow:0 0 8px #34d399;animation:blink 2s infinite;"></div>
+          </div>
+
+          <!-- Tab toko -->
+          <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;">
+            <div style="padding:6px 14px;border-radius:10px;background:linear-gradient(135deg,#0061C2,#38bdf8);font-size:10px;font-weight:800;color:white;white-space:nowrap;">KonterKU Pusat</div>
+            <div style="padding:6px 14px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:10px;font-weight:700;color:#64748b;white-space:nowrap;">Cabang 2</div>
+            <div style="padding:6px 14px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:10px;font-weight:700;color:#64748b;white-space:nowrap;">Cabang 3</div>
+          </div>
+
+          <!-- Stat grid 2x2 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div style="border-radius:14px;padding:14px;background:rgba(0,97,194,0.15);border:1px solid rgba(0,97,194,0.25);">
+              <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#93c5fd;">Omset Hari Ini</div>
+              <div style="font-family:var(--font-h);font-size:18px;font-weight:900;color:white;margin-top:4px;">Rp 2.450K</div>
+              <div style="font-size:9px;font-weight:700;color:#60a5fa;margin-top:2px;">47 transaksi</div>
+            </div>
+            <div style="border-radius:14px;padding:14px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);">
+              <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#6ee7b7;">Laba Hari Ini</div>
+              <div style="font-family:var(--font-h);font-size:18px;font-weight:900;color:white;margin-top:4px;">Rp 318K</div>
+              <div style="font-size:9px;font-weight:700;color:#34d399;margin-top:2px;">Bersih</div>
+            </div>
+            <div style="border-radius:14px;padding:14px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25);">
+              <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#fcd34d;">Total Saldo</div>
+              <div style="font-family:var(--font-h);font-size:18px;font-weight:900;color:white;margin-top:4px;">Rp 1.2Jt</div>
+              <div style="font-size:9px;font-weight:700;color:#fbbf24;margin-top:2px;">4 dompet</div>
+            </div>
+            <div style="border-radius:14px;padding:14px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);">
+              <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#fca5a5;">Piutang</div>
+              <div style="font-family:var(--font-h);font-size:18px;font-weight:900;color:white;margin-top:4px;">Rp 175K</div>
+              <div style="font-size:9px;font-weight:700;color:#f87171;margin-top:2px;">3 pelanggan</div>
+            </div>
+          </div>
+
+          <!-- Omset total & stok -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div style="border-radius:14px;padding:12px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.2);">
+              <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#c4b5fd;">Omset Total</div>
+              <div style="font-family:var(--font-h);font-size:15px;font-weight:900;color:white;margin-top:4px;">Rp 48.2Jt</div>
+              <div style="font-size:9px;font-weight:700;color:#a78bfa;margin-top:2px;">1.240 trx</div>
+            </div>
+            <div style="border-radius:14px;padding:12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.18);">
+              <div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#86efac;">Status Stok</div>
+              <div style="font-family:var(--font-h);font-size:15px;font-weight:900;color:#34d399;margin-top:4px;">✅ Aman</div>
+              <div style="font-size:9px;font-weight:700;color:#64748b;margin-top:2px;">0 habis · 2 tipis</div>
+            </div>
+          </div>
+
+          <!-- Pindah toko button -->
+          <button style="width:100%;padding:12px;border-radius:14px;background:linear-gradient(135deg,#0061C2,#38bdf8);border:none;color:white;font-size:11px;font-weight:900;letter-spacing:0.05em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i class="fas fa-right-left"></i> PINDAH KE TOKO INI
+          </button>
+
+        </div>
+
+        <!-- Floating badge -->
+        <div style="position:absolute;top:-16px;right:-16px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:16px;padding:10px 16px;box-shadow:0 12px 32px rgba(124,58,237,0.5);border:1px solid rgba(167,139,250,0.3);">
+          <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.08em;">Paket Pro</div>
+          <div style="font-family:var(--font-h);font-size:14px;font-weight:900;color:white;">Hingga 3 Toko</div>
+        </div>
+      </div>
+
+      <!-- Kanan: Fitur list -->
+      <div class="reveal-right">
+        <div style="display:flex;flex-direction:column;gap:22px;">
+
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(0,97,194,0.18),rgba(56,189,248,0.1));border:1px solid rgba(56,189,248,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+              <i class="fas fa-store" style="color:#38bdf8;"></i>
+            </div>
+            <div>
+              <div style="font-family:var(--font-h);font-size:16px;font-weight:800;margin-bottom:5px;">Buat & Kelola Banyak Toko</div>
+              <div style="font-size:13.5px;color:var(--gray2);line-height:1.7;">Satu akun bisa memiliki beberapa toko sesuai paket. Setiap toko punya data produk, transaksi, dan kasir yang terpisah sepenuhnya.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(99,102,241,0.08));border:1px solid rgba(139,92,246,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+              <i class="fas fa-chart-column" style="color:#a78bfa;"></i>
+            </div>
+            <div>
+              <div style="font-family:var(--font-h);font-size:16px;font-weight:800;margin-bottom:5px;">Monitor Semua Cabang Sekaligus</div>
+              <div style="font-size:13.5px;color:var(--gray2);line-height:1.7;">Lihat omset, laba harian, saldo dompet, piutang, dan status stok setiap cabang dari satu tampilan terpusat. Data update otomatis secara real-time.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.07));border:1px solid rgba(34,197,94,0.22);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+              <i class="fas fa-right-left" style="color:#34d399;"></i>
+            </div>
+            <div>
+              <div style="font-family:var(--font-h);font-size:16px;font-weight:800;margin-bottom:5px;">Pindah Toko dalam Satu Klik</div>
+              <div style="font-size:13.5px;color:var(--gray2);line-height:1.7;">Berpindah antar toko semudah tap tombol. Tidak perlu login ulang, tidak perlu buka tab baru. Data langsung beralih ke toko yang dipilih.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(251,191,36,0.06));border:1px solid rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+              <i class="fas fa-users" style="color:var(--amber);"></i>
+            </div>
+            <div>
+              <div style="font-family:var(--font-h);font-size:16px;font-weight:800;margin-bottom:5px;">Kasir per Toko dengan Izin Terbatas</div>
+              <div style="font-size:13.5px;color:var(--gray2);line-height:1.7;">Tambah akun kasir untuk setiap toko. Kasir hanya bisa akses toko yang ditugaskan, dengan fitur sesuai izin yang Anda atur sebagai pemilik.</div>
+            </div>
+          </div>
+
+          <!-- Slot info per paket -->
+          <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;padding:18px;margin-top:6px;">
+            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--gray);margin-bottom:12px;">Slot Toko per Paket</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:13px;font-weight:700;color:var(--gray2);">Trial / Basic</div>
+                <div style="font-size:13px;font-weight:800;background:rgba(255,255,255,0.07);padding:3px 12px;border-radius:8px;color:var(--gray3);">1 Toko</div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:13px;font-weight:700;color:var(--cyan);">Pro — Rp50K/bln</div>
+                <div style="font-size:13px;font-weight:800;background:rgba(6,182,212,0.1);padding:3px 12px;border-radius:8px;color:var(--cyan);border:1px solid rgba(6,182,212,0.2);">Hingga 3 Toko</div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:13px;font-weight:700;color:var(--amber);">Unlimited — Rp125K/bln</div>
+                <div style="font-size:13px;font-weight:800;background:rgba(245,158,11,0.1);padding:3px 12px;border-radius:8px;color:var(--amber);border:1px solid rgba(245,158,11,0.2);">Hingga 10 Toko</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -858,7 +1180,7 @@
       <h2 class="s-title">Mulai dalam 5 menit, tanpa ribet</h2>
       <p class="s-sub">Tidak perlu install aplikasi atau konfigurasi server. Cukup buka browser dan langsung pakai.</p>
     </div>
-    <div class="steps-grid">
+    <div class="steps-grid stagger-children">
       <div class="step-card reveal">
         <div class="step-num">01</div>
         <span class="step-icon">📝</span>
@@ -895,7 +1217,7 @@
       <h2 class="s-title">Harga transparan, tidak ada biaya tersembunyi</h2>
       <p class="s-sub">Mulai gratis, upgrade kapan saja sesuai kebutuhan toko Anda.</p>
     </div>
-    <div class="plans-grid">
+    <div class="plans-grid stagger-children">
 
       <!-- Trial -->
       <div class="plan plan-free reveal">
@@ -908,7 +1230,7 @@
           <li class="ok"><i class="fas fa-check ic"></i>Manajemen Stok</li>
           <li class="ok"><i class="fas fa-check ic"></i>Laporan Harian</li>
           <li class="ok"><i class="fas fa-check ic"></i>1 Toko</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Maks. 100 Produk (Fisik & Digital)</li>
+          <li class="ok"><i class="fas fa-check ic"></i>Maks. 100 Produk (Fisik &amp; Digital)</li>
           <li class="ok"><i class="fas fa-check ic"></i>Maks. 20 Dompet</li>
           <li class="ok"><i class="fas fa-check ic"></i>Transaksi Unlimited</li>
           <li class="no"><i class="fas fa-xmark ic"></i>Ekspor PDF/Sheets</li>
@@ -929,7 +1251,7 @@
           <li class="ok"><i class="fas fa-check ic"></i>Laporan Harian</li>
           <li class="ok"><i class="fas fa-check ic"></i>Hutang Piutang</li>
           <li class="ok"><i class="fas fa-check ic"></i>1 Toko</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Maks. 100 Produk (Fisik & Digital)</li>
+          <li class="ok"><i class="fas fa-check ic"></i>Maks. 100 Produk (Fisik &amp; Digital)</li>
           <li class="ok"><i class="fas fa-check ic"></i>Maks. 20 Dompet</li>
           <li class="ok"><i class="fas fa-check ic"></i>Transaksi Unlimited</li>
           <li class="no"><i class="fas fa-xmark ic"></i>Ekspor PDF/Sheets</li>
@@ -951,13 +1273,13 @@
           <li class="ok"><i class="fas fa-check ic"></i>Manajemen Stok</li>
           <li class="ok"><i class="fas fa-check ic"></i>Laporan Harian</li>
           <li class="ok"><i class="fas fa-check ic"></i>Hutang Piutang</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Ekspor PDF & Google Sheets</li>
+          <li class="ok"><i class="fas fa-check ic"></i>Ekspor PDF &amp; Google Sheets</li>
           <li class="ok"><i class="fas fa-check ic"></i>Multi-Device Cloud Sync</li>
           <li class="ok"><i class="fas fa-check ic"></i>Notifikasi Stok Menipis</li>
           <li class="ok"><i class="fas fa-check ic"></i>Kasir Karyawan</li>
           <li class="ok"><i class="fas fa-check ic"></i>Absensi Kasir Karyawan</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Hingga 3 Toko</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Maks. 300 Produk (Fisik & Digital)</li>
+          <li class="ok"><i class="fas fa-check ic" style="color:#38bdf8;"></i><span style="color:#38bdf8;font-weight:700;">Hingga 3 Toko / Cabang</span></li>
+          <li class="ok"><i class="fas fa-check ic"></i>Maks. 300 Produk (Fisik &amp; Digital)</li>
           <li class="ok"><i class="fas fa-check ic"></i>Maks. 50 Dompet</li>
           <li class="ok"><i class="fas fa-check ic"></i>Transaksi Unlimited</li>
         </ul>
@@ -974,9 +1296,9 @@
           <li class="ok"><i class="fas fa-check ic"></i>Semua Fitur Pro</li>
           <li class="ok"><i class="fas fa-check ic"></i>Kasir Karyawan</li>
           <li class="ok"><i class="fas fa-check ic"></i>Absensi Kasir Karyawan</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Hingga 10 Toko / Cabang</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Monitor Semua Cabang Real-Time</li>
-          <li class="ok"><i class="fas fa-check ic"></i>Maks. 1.000 Produk (Fisik & Digital)</li>
+          <li class="ok"><i class="fas fa-check ic" style="color:var(--amber);"></i><span style="color:var(--amber);font-weight:700;">Hingga 10 Toko / Cabang</span></li>
+          <li class="ok"><i class="fas fa-check ic" style="color:var(--amber);"></i><span style="color:var(--amber);font-weight:700;">Monitor Semua Cabang Real-Time</span></li>
+          <li class="ok"><i class="fas fa-check ic"></i>Maks. 1.000 Produk (Fisik &amp; Digital)</li>
           <li class="ok"><i class="fas fa-check ic"></i>Maks. 100 Dompet</li>
           <li class="ok"><i class="fas fa-check ic"></i>Transaksi Unlimited</li>
           <li class="ok"><i class="fas fa-check ic"></i>Laporan Bulanan Lanjutan</li>
@@ -1001,7 +1323,7 @@
       <div class="s-label"><i class="fas fa-star"></i> Testimoni</div>
       <h2 class="s-title">Dipercaya ratusan konter pulsa</h2>
     </div>
-    <div class="testi-grid">
+    <div class="testi-grid stagger-children">
       <div class="testi-card reveal">
         <div class="testi-stars">★★★★★</div>
         <div class="testi-quote">"Sebelumnya pakai buku tulis buat catat transaksi, sekarang semua otomatis. Laporan omset langsung kelihatan tiap hari — sangat membantu kontrol keuangan toko!"</div>
@@ -1073,6 +1395,7 @@
     <div class="footer-col">
       <h4>Navigasi</h4>
       <a href="#fitur">Fitur</a>
+      <a href="#multi-toko">Multi-Toko</a>
       <a href="#harga">Harga</a>
       <a href="#cara-kerja">Cara Kerja</a>
     </div>
@@ -1099,6 +1422,7 @@
 </footer>
 
 <script>
+  /* ─── MOBILE MENU ─── */
   function toggleMenu() {
     const m = document.getElementById('mob-menu');
     const ic = document.getElementById('burger-icon');
@@ -1106,32 +1430,165 @@
     ic.className = m.classList.contains('open') ? 'fas fa-xmark' : 'fas fa-bars';
   }
 
-  // Scroll reveal
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach((e, i) => {
-      if (e.isIntersecting) {
-        setTimeout(() => e.target.classList.add('visible'), i * 80);
-        obs.unobserve(e.target);
+  /* ─── SCROLL PROGRESS BAR ─── */
+  const progressBar = document.getElementById('scroll-progress');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+
+  /* ─── SECTION INDICATOR ─── */
+  const sections = ['home','fitur','multi-toko','cara-kerja','harga'];
+  const siDots = document.querySelectorAll('.si-dot');
+  siDots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      const target = document.getElementById(dot.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  function updateIndicator() {
+    let current = 0;
+    sections.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 200) current = i;
+    });
+    siDots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  /* ─── COUNTER ANIMATION ─── */
+  function animateCounter(el, target, suffix) {
+    const duration = 1800;
+    const start = performance.now();
+    const startVal = 0;
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(eased * target);
+      el.textContent = current.toLocaleString('id-ID') + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ─── INTERSECTION OBSERVER ─── */
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const delay = el.dataset.delay || 0;
+        setTimeout(() => {
+          el.classList.add('visible');
+
+          // Counter animation
+          if (el.dataset.count !== undefined) {
+            const target = parseFloat(el.dataset.count);
+            const suffix = el.dataset.suffix || '';
+            animateCounter(el, target, suffix);
+          }
+        }, parseInt(delay));
+        revealObs.unobserve(el);
       }
     });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
 
-  // Navbar scroll
-  window.addEventListener('scroll', () => {
+  // Stagger group observer
+  const staggerObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        staggerObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  // Register all reveal elements
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach((el, i) => {
+    revealObs.observe(el);
+  });
+  document.querySelectorAll('.stagger-children').forEach(el => {
+    staggerObs.observe(el);
+  });
+
+  /* ─── PARALLAX ─── */
+  const parallaxEls = document.querySelectorAll('.parallax-wrap');
+  function updateParallax() {
+    parallaxEls.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+      el.style.transform = `translateY(${center * 0.06}px)`;
+    });
+  }
+
+  /* ─── NAVBAR SCROLL ─── */
+  function updateNavbar() {
     const nav = document.getElementById('navbar');
     nav.style.background = window.scrollY > 40
       ? 'rgba(3,6,15,0.97)'
       : 'rgba(3,6,15,0.75)';
-  });
+  }
 
-  // Smooth scroll
+  /* ─── SMOOTH SCROLL LINKS ─── */
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const t = document.querySelector(a.getAttribute('href'));
       if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     });
   });
+
+  /* ─── MAIN SCROLL HANDLER ─── */
+  let ticking = false;
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        updateProgress();
+        updateNavbar();
+        updateIndicator();
+        updateParallax();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ─── COUNTER SETUP: wire up trust strip numbers ─── */
+  // We'll animate the trust strip numbers on first scroll reveal
+  const trustItems = document.querySelectorAll('.trust-num');
+  const trustData = [
+    { value: 500, suffix: '+' },
+    { value: 2, suffix: ' Jt+' },
+    { value: 99.9, suffix: '%' },
+    { value: 4.9, suffix: ' ★' },
+  ];
+  trustItems.forEach((el, i) => {
+    if (trustData[i]) {
+      el.dataset.count = trustData[i].value;
+      el.dataset.suffix = trustData[i].suffix;
+      revealObs.observe(el);
+      el.textContent = '0' + trustData[i].suffix;
+    }
+  });
+
+  /* ─── FEAT CARD TILT (subtle) ─── */
+  document.querySelectorAll('.feat-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `translateY(-4px) rotateX(${-y * 5}deg) rotateY(${x * 5}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+
+  /* ─── INITIAL CALL ─── */
+  updateProgress();
+  updateNavbar();
 </script>
 </body>
 </html>
