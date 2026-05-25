@@ -10927,10 +10927,18 @@
     try {
       await waitMTFirebase(8000);
 
+      // Debug: pastikan uid = Firebase Auth UID
+      const _authUid = window._fbAuth && window._fbAuth.currentUser ? window._fbAuth.currentUser.uid : null;
+      if (_authUid && _authUid !== uid) {
+        console.warn('[doTambahKasir] k_sid mismatch! localStorage:', uid, 'vs auth:', _authUid);
+        localStorage.setItem('k_sid', _authUid); // auto-fix
+      }
+      const _uid = _authUid || uid;
+
       // Cek duplikat username di toko ini
       const dupSnap = await window._fbFirestore
         .collection('kasir_accounts')
-        .where('owner_uid', '==', uid)
+        .where('owner_uid', '==', _uid)
         .where('username', '==', username)
         .get();
       if (!dupSnap.empty) return (_getMySwal()||Swal).fire('Error', 'Username "' + username + '" sudah digunakan di toko ini!', 'warning');
@@ -10940,7 +10948,7 @@
       const pwHash = _simpleHash(password);
 
       await window._fbFirestore.collection('kasir_accounts').add({
-        owner_uid    : uid,
+        owner_uid    : _uid,
         store_id     : storeId,
         store_name   : localStorage.getItem('k_store_name') || '',
         kode_toko    : getKodeToko(uid),
