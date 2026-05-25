@@ -514,23 +514,61 @@
     .kasir-field-input::placeholder { color:#cbd5e1; font-weight:600; }
     .kasir-field-input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
     select.kasir-field-input { appearance:auto; cursor:pointer; }
-    /* ===== KATEGORI CHIP DROPDOWN ===== */
-    #kd-kat-panel, #kf-kat-panel {
-      animation: katPanelSlide 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    /* ===== KATEGORI BOTTOM SHEET ===== */
+    #modal-kat-sheet { display:none; }
+    #kat-sheet-panel { font-family:'Plus Jakarta Sans',sans-serif; }
+    .kat-row {
+      display:flex; align-items:center; gap:14px;
+      padding:13px 20px; cursor:pointer;
+      transition:background 0.15s;
+      border:none; background:transparent; width:100%; text-align:left;
     }
-    @keyframes katPanelSlide {
-      from { opacity:0; transform:translateY(-6px); }
-      to   { opacity:1; transform:translateY(0); }
+    .kat-row:hover  { background:#f8fafc; }
+    .kat-row:active { background:#f1f5f9; }
+    .kat-row-icon {
+      width:38px; height:38px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex-shrink:0;
     }
-    .kat-chip:hover { filter:brightness(1.08); transform:scale(1.04) !important; }
-    .kat-chip:active { transform:scale(0.96) !important; }
-    [data-theme="dark"] #kd-kat-card,
-    [data-theme="dark"] #kf-kat-card {
+    .kat-radio {
+      width:22px; height:22px; border-radius:50%;
+      border:2px solid #e2e8f0; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; transition:all 0.2s; margin-left:auto;
+    }
+    .kat-radio.active {
+      border-color:var(--kat-color,#6366f1);
+      background:var(--kat-color,#6366f1);
+    }
+    .kat-radio.active::after {
+      content:''; width:8px; height:8px;
+      border-radius:50%; background:white;
+    }
+    .kat-row-active-row { background:rgba(99,102,241,0.04) !important; }
+    /* Dark mode */
+    [data-theme="dark"] #kat-sheet-panel {
       background:#1e293b !important;
-      border-color:rgba(255,255,255,0.06) !important;
+      box-shadow:0 -8px 40px rgba(0,0,0,0.4) !important;
     }
+    [data-theme="dark"] #kat-sheet-header { border-bottom-color:rgba(255,255,255,0.07) !important; }
+    [data-theme="dark"] #kat-sheet-title  { color:#e2e8f0 !important; }
+    [data-theme="dark"] #kat-sheet-sub    { color:#475569 !important; }
+    [data-theme="dark"] #kat-sheet-search {
+      background:#0f172a !important; border-color:rgba(255,255,255,0.08) !important;
+      color:#e2e8f0 !important;
+    }
+    [data-theme="dark"] .kat-row:hover  { background:rgba(255,255,255,0.04) !important; }
+    [data-theme="dark"] .kat-row:active { background:rgba(255,255,255,0.07) !important; }
+    [data-theme="dark"] .kat-row-active-row { background:rgba(99,102,241,0.08) !important; }
+    [data-theme="dark"] .kat-row-name   { color:#e2e8f0 !important; }
+    [data-theme="dark"] .kat-row-sub    { color:#475569 !important; }
+    [data-theme="dark"] #kd-kat-card,
+    [data-theme="dark"] #kf-kat-card   { background:#1e293b !important; border-color:rgba(255,255,255,0.06) !important; }
     [data-theme="dark"] #kd-kat-label-text,
     [data-theme="dark"] #kf-kat-label-text { color:#e2e8f0 !important; }
+    [data-theme="dark"] #stok-kat-trigger {
+      background:#1e293b !important; border-color:rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #stok-kat-trigger-label { color:#e2e8f0 !important; }
     .kasir-price-badge {
       background:linear-gradient(135deg,#f0f9ff,#e0f2fe);
       border:1.5px solid #bae6fd; border-radius:14px; padding:12px 14px;
@@ -4786,32 +4824,28 @@
         <!-- ===== FORM DIGITAL ===== -->
         <div id="form-k-digital" class="space-y-3">
 
-          <!-- Filter Kategori Digital — Custom Dropdown Chip -->
-          <div class="kasir-field-card" id="kd-kat-card">
-            <div class="kasir-field-row" style="border:none; cursor:pointer;" onclick="toggleKatDropdown('digital')">
+          <!-- Filter Kategori Digital — Bottom Sheet Trigger -->
+          <div class="kasir-field-card" id="kd-kat-card" onclick="openKatSheet('digital')" style="cursor:pointer;">
+            <div class="kasir-field-row" style="border:none;">
               <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
                 <i class="fas fa-layer-group" style="color:#6366f1;"></i>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="kasir-field-label">Filter Kategori Digital</p>
-                <div class="flex items-center gap-2">
-                  <span id="kd-kat-label" class="kasir-field-input" style="cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;">
-                    <span id="kd-kat-label-icon" style="font-size:10px;">🔵</span>
-                    <span id="kd-kat-label-text" style="font-size:13px;font-weight:700;color:#1e293b;">Semua Produk</span>
-                  </span>
-                  <i id="kd-kat-chevron" class="fas fa-chevron-down" style="font-size:10px;color:#94a3b8;transition:transform 0.25s;flex-shrink:0;"></i>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span id="kd-kat-badge" style="display:none;width:22px;height:22px;border-radius:8px;background:rgba(99,102,241,0.15);align-items:center;justify-content:center;font-size:12px;flex-shrink:0;"></span>
+                    <span id="kd-kat-label-text" class="kasir-field-input" style="padding:0;cursor:pointer;font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Semua Produk</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span id="kd-kat-count-badge" style="display:none;padding:2px 8px;border-radius:100px;font-size:9px;font-weight:900;background:rgba(99,102,241,0.12);color:#6366f1;"></span>
+                    <i class="fas fa-chevron-right" style="font-size:10px;color:#cbd5e1;"></i>
+                  </div>
                 </div>
               </div>
             </div>
-            <!-- Hidden dropdown panel -->
-            <div id="kd-kat-panel" style="display:none;padding:0 12px 12px;">
-              <div id="kd-kat-chips" class="flex flex-wrap gap-1.5"></div>
-            </div>
           </div>
-          <!-- Hidden select for compatibility -->
-          <select id="kd-kategori-filter" style="display:none;" onchange="filterKasirByKategori('digital')">
-            <option value="">Semua Produk</option>
-          </select>
+          <select id="kd-kategori-filter" style="display:none;" onchange="filterKasirByKategori('digital')"><option value="">Semua Produk</option></select>
 
           <!-- Produk & Harga -->
           <div class="kasir-field-card">
@@ -4959,32 +4993,28 @@
         <!-- ===== FORM FISIK ===== -->
         <div id="form-k-fisik" class="hidden space-y-3">
 
-          <!-- Filter Kategori Fisik — Custom Dropdown Chip -->
-          <div class="kasir-field-card" id="kf-kat-card">
-            <div class="kasir-field-row" style="border:none; cursor:pointer;" onclick="toggleKatDropdown('fisik')">
-              <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
-                <i class="fas fa-layer-group" style="color:#6366f1;"></i>
+          <!-- Filter Kategori Fisik — Bottom Sheet Trigger -->
+          <div class="kasir-field-card" id="kf-kat-card" onclick="openKatSheet('fisik')" style="cursor:pointer;">
+            <div class="kasir-field-row" style="border:none;">
+              <div class="kasir-field-icon" style="background:rgba(124,58,237,0.1);">
+                <i class="fas fa-layer-group" style="color:#7c3aed;"></i>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="kasir-field-label">Filter Kategori Fisik</p>
-                <div class="flex items-center gap-2">
-                  <span id="kf-kat-label" class="kasir-field-input" style="cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;">
-                    <span id="kf-kat-label-icon" style="font-size:10px;">🟢</span>
-                    <span id="kf-kat-label-text" style="font-size:13px;font-weight:700;color:#1e293b;">Semua Produk</span>
-                  </span>
-                  <i id="kf-kat-chevron" class="fas fa-chevron-down" style="font-size:10px;color:#94a3b8;transition:transform 0.25s;flex-shrink:0;"></i>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span id="kf-kat-badge" style="display:none;width:22px;height:22px;border-radius:8px;background:rgba(124,58,237,0.15);align-items:center;justify-content:center;font-size:12px;flex-shrink:0;"></span>
+                    <span id="kf-kat-label-text" class="kasir-field-input" style="padding:0;cursor:pointer;font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Semua Produk</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span id="kf-kat-count-badge" style="display:none;padding:2px 8px;border-radius:100px;font-size:9px;font-weight:900;background:rgba(124,58,237,0.12);color:#7c3aed;"></span>
+                    <i class="fas fa-chevron-right" style="font-size:10px;color:#cbd5e1;"></i>
+                  </div>
                 </div>
               </div>
             </div>
-            <!-- Hidden dropdown panel -->
-            <div id="kf-kat-panel" style="display:none;padding:0 12px 12px;">
-              <div id="kf-kat-chips" class="flex flex-wrap gap-1.5"></div>
-            </div>
           </div>
-          <!-- Hidden select for compatibility -->
-          <select id="kf-kategori-filter" style="display:none;" onchange="filterKasirByKategori('fisik')">
-            <option value="">Semua Produk</option>
-          </select>
+          <select id="kf-kategori-filter" style="display:none;" onchange="filterKasirByKategori('fisik')"><option value="">Semua Produk</option></select>
 
           <!-- Scan Barcode Banner -->
           <div style="background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(167,139,250,0.05));border:1.5px dashed rgba(167,139,250,0.35);border-radius:16px;padding:12px 14px;">
@@ -5443,10 +5473,28 @@
               style="padding-left:34px;font-size:13px;"
               oninput="renderStok()">
           </div>
-          <!-- Filter kategori (chips scroll horizontal) -->
+          <!-- Filter kategori (bottom sheet trigger) -->
           <div>
             <p style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Filter Kategori</p>
-            <div id="stok-kategori-chips" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
+            <button onclick="openKatSheet('stok')"
+              style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+                     background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;
+                     padding:10px 14px;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;"
+              id="stok-kat-trigger">
+              <div class="flex items-center gap-2.5">
+                <div style="width:28px;height:28px;border-radius:9px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-layer-group" style="color:#6366f1;font-size:11px;"></i>
+                </div>
+                <div style="text-align:left;">
+                  <p id="stok-kat-trigger-label" style="font-size:12px;font-weight:800;color:#1e293b;">Semua Kategori</p>
+                  <p id="stok-kat-trigger-sub" style="font-size:9px;font-weight:600;color:#94a3b8;">Tap untuk filter</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="stok-kat-active-badge" style="display:none;padding:3px 9px;border-radius:100px;font-size:9px;font-weight:900;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;"></span>
+                <i class="fas fa-chevron-right" style="font-size:10px;color:#cbd5e1;"></i>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -7783,43 +7831,28 @@
 
     function setStokKtgFilter(ktg) {
       activeStokKtgFilter = ktg;
-      // Update chip active state
-      document.querySelectorAll('.stok-ktg-chip').forEach(el => {
-        const isActive = el.dataset.ktg === ktg;
-        el.style.background = isActive ? '#6366f1' : 'white';
-        el.style.color      = isActive ? 'white'   : '#94a3b8';
-        el.style.borderColor= isActive ? '#6366f1' : '#f1f5f9';
-      });
       renderStok();
     }
 
     function renderStokKtgChips(tipe) {
-      const wrap = document.getElementById('stok-kategori-chips');
-      if (!wrap) return;
-      // Kumpulkan kategori yang benar-benar ada di produk tipe ini
-      const produk = (window.db?.inventory || []).filter(p => p.tipe === tipe);
-      const ktgSet = new Set();
-      produk.forEach(p => { if (p.kategori) ktgSet.add(p.kategori); });
-      const ktgList = [...ktgSet].sort();
-
-      let html = `<button class="stok-ktg-chip filter-chip active" data-ktg="" onclick="setStokKtgFilter('')"
-        style="background:#6366f1;color:white;border-color:#6366f1;flex-shrink:0;">Semua</button>`;
-      ktgList.forEach(k => {
-        html += `<button class="stok-ktg-chip filter-chip" data-ktg="${k}" onclick="setStokKtgFilter('${k.replace(/'/g,"\\'")}'"
-          style="flex-shrink:0;">${k}</button>`;
-      });
-      if (produk.some(p => !p.kategori)) {
-        html += `<button class="stok-ktg-chip filter-chip" data-ktg="__tanpa__" onclick="setStokKtgFilter('__tanpa__')"
-          style="flex-shrink:0;">Tanpa Kategori</button>`;
+      // Fungsi ini tidak lagi merender chips horizontal.
+      // Tombol trigger sudah di HTML, cukup update label-nya.
+      const triggerLabel = document.getElementById('stok-kat-trigger-label');
+      const triggerSub   = document.getElementById('stok-kat-trigger-sub');
+      const activeBadge  = document.getElementById('stok-kat-active-badge');
+      const triggerBtn   = document.getElementById('stok-kat-trigger');
+      const ktg = activeStokKtgFilter;
+      const s = getKatStyle(ktg);
+      if (triggerLabel) triggerLabel.textContent = ktg === '' ? 'Semua Kategori' : (ktg === '__tanpa__' ? 'Tanpa Kategori' : ktg);
+      if (triggerSub)   triggerSub.textContent   = ktg ? '1 filter aktif — tap untuk ubah' : 'Tap untuk filter';
+      if (activeBadge) {
+        activeBadge.style.display = ktg ? 'inline-block' : 'none';
+        activeBadge.textContent   = ktg === '__tanpa__' ? 'Tanpa Kategori' : ktg;
       }
-      wrap.innerHTML = html;
-      // Re-apply active state
-      document.querySelectorAll('.stok-ktg-chip').forEach(el => {
-        const isActive = el.dataset.ktg === activeStokKtgFilter;
-        el.style.background = isActive ? '#6366f1' : 'white';
-        el.style.color      = isActive ? 'white'   : '#94a3b8';
-        el.style.borderColor= isActive ? '#6366f1' : '#f1f5f9';
-      });
+      if (triggerBtn) {
+        triggerBtn.style.borderColor = ktg ? '#6366f1' : '#e2e8f0';
+        triggerBtn.style.background  = ktg ? 'rgba(99,102,241,0.05)' : '#f8fafc';
+      }
     }
 
     function setStokTab(tab) {
@@ -13684,145 +13717,221 @@
 
     // Emoji & warna per kategori
     const KAT_STYLE = {
-      'Pulsa':           { emoji:'📱', color:'#0ea5e9', bg:'rgba(14,165,233,0.1)',  border:'rgba(14,165,233,0.25)'  },
-      'Paket Data':      { emoji:'📡', color:'#6366f1', bg:'rgba(99,102,241,0.1)', border:'rgba(99,102,241,0.25)' },
-      'Token PLN':       { emoji:'⚡', color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.25)'  },
-      'Voucher Game':    { emoji:'🎮', color:'#8b5cf6', bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.25)'  },
-      'BPJS':            { emoji:'🏥', color:'#10b981', bg:'rgba(16,185,129,0.1)',  border:'rgba(16,185,129,0.25)'  },
-      'TV Kabel':        { emoji:'📺', color:'#3b82f6', bg:'rgba(59,130,246,0.1)',  border:'rgba(59,130,246,0.25)'  },
-      'E-Money':         { emoji:'💳', color:'#ec4899', bg:'rgba(236,72,153,0.1)',  border:'rgba(236,72,153,0.25)'  },
-      'Tagihan':         { emoji:'🧾', color:'#ef4444', bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.25)'   },
-      'Lainnya':         { emoji:'📦', color:'#64748b', bg:'rgba(100,116,139,0.1)', border:'rgba(100,116,139,0.25)' },
-      'Aksesoris HP':    { emoji:'🔌', color:'#0ea5e9', bg:'rgba(14,165,233,0.1)',  border:'rgba(14,165,233,0.25)'  },
-      'Casing & Cover':  { emoji:'🛡️', color:'#6366f1', bg:'rgba(99,102,241,0.1)', border:'rgba(99,102,241,0.25)' },
-      'Charger & Kabel': { emoji:'🔋', color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.25)'  },
-      'Earphone':        { emoji:'🎧', color:'#8b5cf6', bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.25)'  },
-      'Memory Card':     { emoji:'💾', color:'#10b981', bg:'rgba(16,185,129,0.1)',  border:'rgba(16,185,129,0.25)'  },
-      'Baterai':         { emoji:'🔦', color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.25)'  },
-      'Tempered Glass':  { emoji:'🪟', color:'#38bdf8', bg:'rgba(56,189,248,0.1)',  border:'rgba(56,189,248,0.25)'  },
-      'Spare Part':      { emoji:'🔧', color:'#ef4444', bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.25)'   },
+      'Pulsa':           { emoji:'📱', color:'#0ea5e9', bg:'rgba(14,165,233,0.12)'  },
+      'Paket Data':      { emoji:'📡', color:'#6366f1', bg:'rgba(99,102,241,0.12)'  },
+      'Token PLN':       { emoji:'⚡', color:'#f59e0b', bg:'rgba(245,158,11,0.12)'  },
+      'Voucher Game':    { emoji:'🎮', color:'#8b5cf6', bg:'rgba(139,92,246,0.12)'  },
+      'BPJS':            { emoji:'🏥', color:'#10b981', bg:'rgba(16,185,129,0.12)'  },
+      'TV Kabel':        { emoji:'📺', color:'#3b82f6', bg:'rgba(59,130,246,0.12)'  },
+      'E-Money':         { emoji:'💳', color:'#ec4899', bg:'rgba(236,72,153,0.12)'  },
+      'Tagihan':         { emoji:'🧾', color:'#ef4444', bg:'rgba(239,68,68,0.12)'   },
+      'Aksesoris HP':    { emoji:'🔌', color:'#0ea5e9', bg:'rgba(14,165,233,0.12)'  },
+      'Casing & Cover':  { emoji:'🛡️', color:'#6366f1', bg:'rgba(99,102,241,0.12)'  },
+      'Charger & Kabel': { emoji:'🔋', color:'#f59e0b', bg:'rgba(245,158,11,0.12)'  },
+      'Earphone':        { emoji:'🎧', color:'#8b5cf6', bg:'rgba(139,92,246,0.12)'  },
+      'Memory Card':     { emoji:'💾', color:'#10b981', bg:'rgba(16,185,129,0.12)'  },
+      'Baterai':         { emoji:'🔦', color:'#f59e0b', bg:'rgba(245,158,11,0.12)'  },
+      'Tempered Glass':  { emoji:'🪟', color:'#38bdf8', bg:'rgba(56,189,248,0.12)'  },
+      'Spare Part':      { emoji:'🔧', color:'#ef4444', bg:'rgba(239,68,68,0.12)'   },
     };
-    function getKatStyle(nama) {
-      return KAT_STYLE[nama] || { emoji:'🏷️', color:'#6366f1', bg:'rgba(99,102,241,0.1)', border:'rgba(99,102,241,0.25)' };
+    window.getKatStyle = function getKatStyle(nama) {
+      return KAT_STYLE[nama] || { emoji:'🏷️', color:'#6366f1', bg:'rgba(99,102,241,0.12)' };
     }
 
-    // Toggle show/hide kategori dropdown panel
-    window.toggleKatDropdown = function(tipe) {
-      const panelId  = tipe === 'digital' ? 'kd-kat-panel'   : 'kf-kat-panel';
-      const chevId   = tipe === 'digital' ? 'kd-kat-chevron'  : 'kf-kat-chevron';
-      const panel    = document.getElementById(panelId);
-      const chev     = document.getElementById(chevId);
-      if (!panel) return;
-      const isOpen = panel.style.display !== 'none';
-      panel.style.display = isOpen ? 'none' : 'block';
-      if (chev) chev.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    };
+    // ── State bottom sheet ──
+    let _katSheetMode  = 'digital'; // 'digital' | 'fisik' | 'stok'
+    let _katSheetItems = [];        // [{val, nama, count}]
+    let _katSheetSel   = '';        // value yg sedang aktif
 
-    // Select kategori dari chip
-    window.selectKatChip = function(tipe, value, labelText, emoji) {
-      const filterId  = tipe === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
-      const labelIcon = tipe === 'digital' ? 'kd-kat-label-icon'  : 'kf-kat-label-icon';
-      const labelTxt  = tipe === 'digital' ? 'kd-kat-label-text'  : 'kf-kat-label-text';
-      const panelId   = tipe === 'digital' ? 'kd-kat-panel'       : 'kf-kat-panel';
-      const chevId    = tipe === 'digital' ? 'kd-kat-chevron'      : 'kf-kat-chevron';
+    window.openKatSheet = function(mode) {
+      _katSheetMode = mode;
+      const tipe = (mode === 'stok') ? activeStokTab : mode;
 
-      // Update hidden select
-      const sel = document.getElementById(filterId);
-      if (sel) { sel.value = value; }
+      // Kumpulkan kategori yg ada di inventory
+      const inv = window.db?.inventory || [];
+      const prodAll = inv.filter(p => p.tipe === tipe);
+      const ktgSet = new Set();
+      prodAll.forEach(p => { if (p.kategori) ktgSet.add(p.kategori); });
+      const list = getKategoriList(tipe);
+      const hasTanpa = prodAll.some(p => !p.kategori);
 
-      // Update label
-      const iconEl = document.getElementById(labelIcon);
-      const txtEl  = document.getElementById(labelTxt);
-      if (iconEl) iconEl.textContent = emoji;
-      if (txtEl)  txtEl.textContent  = labelText;
-
-      // Update chip active states
-      const chipsContainer = tipe === 'digital' ? 'kd-kat-chips' : 'kf-kat-chips';
-      document.querySelectorAll(`#${chipsContainer} .kat-chip`).forEach(c => {
-        const isActive = c.dataset.val === value;
-        const s = getKatStyle(c.dataset.nama || '');
-        if (isActive) {
-          c.style.background   = s.color;
-          c.style.color        = 'white';
-          c.style.borderColor  = s.color;
-          c.style.transform    = 'scale(1.05)';
-          c.style.boxShadow    = `0 4px 12px ${s.bg.replace('0.1','0.5')}`;
-        } else {
-          c.style.background   = s.bg;
-          c.style.color        = s.color;
-          c.style.borderColor  = s.border;
-          c.style.transform    = 'scale(1)';
-          c.style.boxShadow    = 'none';
+      _katSheetItems = [
+        { val:'', nama:'Semua Kategori', count: prodAll.length }
+      ];
+      list.forEach(k => {
+        const count = prodAll.filter(p => p.kategori === k).length;
+        if (count > 0 || ktgSet.has(k)) _katSheetItems.push({ val:k, nama:k, count });
+      });
+      // tambah kategori yg ada di produk tapi tidak di list default
+      ktgSet.forEach(k => {
+        if (!_katSheetItems.find(i => i.val === k)) {
+          const count = prodAll.filter(p => p.kategori === k).length;
+          _katSheetItems.push({ val:k, nama:k, count });
         }
       });
+      if (hasTanpa) _katSheetItems.push({ val:'__tanpa__', nama:'Tanpa Kategori', count: prodAll.filter(p=>!p.kategori).length });
 
-      // Close panel
-      const panel = document.getElementById(panelId);
-      const chev  = document.getElementById(chevId);
-      if (panel) panel.style.display = 'none';
-      if (chev)  chev.style.transform = 'rotate(0deg)';
+      // Baca current value
+      if (mode === 'stok') {
+        _katSheetSel = activeStokKtgFilter;
+      } else {
+        const filterId = mode === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
+        _katSheetSel = document.getElementById(filterId)?.value || '';
+      }
 
-      // Run filter
-      filterKasirByKategori(tipe);
+      // Set header
+      const titles = { digital:'Filter Produk Digital', fisik:'Filter Produk Fisik', stok:'Filter Stok Produk' };
+      document.getElementById('kat-sheet-title').textContent = titles[mode] || 'Pilih Kategori';
+      document.getElementById('kat-sheet-sub').textContent = `${_katSheetItems.length - 1} kategori tersedia`;
+      document.getElementById('kat-sheet-search').value = '';
+
+      renderKatSheetList();
+
+      const modal = document.getElementById('modal-kat-sheet');
+      const panel = document.getElementById('kat-sheet-panel');
+      modal.style.display = 'flex';
+      setTimeout(() => { panel.style.transform = 'translateY(0)'; }, 10);
     };
 
-    // Refresh filter dropdown di kasir (update hidden select + rebuild chips)
+    window.closeKatSheet = function() {
+      const panel = document.getElementById('kat-sheet-panel');
+      panel.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        document.getElementById('modal-kat-sheet').style.display = 'none';
+      }, 320);
+    };
+
+    // Close sheet when tapping backdrop
+    document.addEventListener('DOMContentLoaded', function() {
+      const _katSheetModal = document.getElementById('modal-kat-sheet');
+      if (_katSheetModal) {
+        _katSheetModal.addEventListener('click', function(e) {
+          if (e.target === this) closeKatSheet();
+        });
+      }
+    });
+
+    window.renderKatSheetList = function() {
+      const q = (document.getElementById('kat-sheet-search')?.value || '').toLowerCase().trim();
+      const filtered = q
+        ? _katSheetItems.filter(i => i.nama.toLowerCase().includes(q))
+        : _katSheetItems;
+
+      const listEl = document.getElementById('kat-sheet-list');
+      if (!filtered.length) {
+        listEl.innerHTML = `<div style="text-align:center;padding:32px 20px;">
+          <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+          <p style="font-size:12px;font-weight:700;color:#94a3b8;">Kategori tidak ditemukan</p>
+        </div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map((item, idx) => {
+        const s = getKatStyle(item.nama);
+        const isActive = item.val === _katSheetSel;
+        const isFirst = idx === 0;
+        const accentColor = isFirst ? '#6366f1' : s.color;
+        const iconBg = isFirst ? 'rgba(99,102,241,0.12)' : s.bg;
+        const iconEmoji = isFirst ? '⚡' : s.emoji;
+        const divider = idx < filtered.length - 1
+          ? `<div style="height:1px;background:#f1f5f9;margin:0 20px;"></div>` : '';
+        return `
+          <button class="kat-row${isActive ? ' kat-row-active-row' : ''}"
+            onclick="selectKatItem('${item.val.replace(/'/g,"\\'")}','${item.nama.replace(/'/g,"\\'")}')">
+            <div class="kat-row-icon" style="background:${iconBg};">
+              <span style="font-size:17px;">${iconEmoji}</span>
+            </div>
+            <div style="flex:1;min-width:0;text-align:left;">
+              <p class="kat-row-name" style="font-size:13px;font-weight:${isActive?'900':'700'};color:${isActive?accentColor:'#1e293b'};font-family:'Plus Jakarta Sans',sans-serif;">${item.nama}</p>
+              <p class="kat-row-sub" style="font-size:10px;font-weight:600;color:#94a3b8;font-family:'Plus Jakarta Sans',sans-serif;">${item.count} produk</p>
+            </div>
+            <div class="kat-radio${isActive?' active':''}" style="--kat-color:${accentColor};"></div>
+          </button>${divider}`;
+      }).join('');
+    };
+
+    window.selectKatItem = function(val, nama) {
+      _katSheetSel = val;
+
+      if (_katSheetMode === 'stok') {
+        // Update stok filter
+        activeStokKtgFilter = val;
+        const triggerLabel = document.getElementById('stok-kat-trigger-label');
+        const triggerSub   = document.getElementById('stok-kat-trigger-sub');
+        const activeBadge  = document.getElementById('stok-kat-active-badge');
+        const triggerBtn   = document.getElementById('stok-kat-trigger');
+        if (triggerLabel) triggerLabel.textContent = nama;
+        if (triggerSub)   triggerSub.textContent   = val ? '1 filter aktif — tap untuk ubah' : 'Tap untuk filter';
+        if (activeBadge) {
+          activeBadge.style.display = val ? 'inline-block' : 'none';
+          activeBadge.textContent   = nama;
+        }
+        if (triggerBtn) {
+          triggerBtn.style.borderColor = val ? '#6366f1' : '#e2e8f0';
+          triggerBtn.style.background  = val ? 'rgba(99,102,241,0.05)' : '#f8fafc';
+        }
+        renderStok();
+      } else {
+        // Update kasir filter
+        const filterId   = _katSheetMode === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
+        const labelId    = _katSheetMode === 'digital' ? 'kd-kat-label-text'   : 'kf-kat-label-text';
+        const badgeId    = _katSheetMode === 'digital' ? 'kd-kat-count-badge'  : 'kf-kat-count-badge';
+        const iconBadgeId= _katSheetMode === 'digital' ? 'kd-kat-badge'        : 'kf-kat-badge';
+        const cardId     = _katSheetMode === 'digital' ? 'kd-kat-card'         : 'kf-kat-card';
+        const s = getKatStyle(nama);
+
+        const sel = document.getElementById(filterId);
+        if (sel) sel.value = val;
+
+        const labelEl = document.getElementById(labelId);
+        if (labelEl) labelEl.textContent = nama;
+
+        const countBadge = document.getElementById(badgeId);
+        const item = _katSheetItems.find(i => i.val === val);
+        if (countBadge) {
+          countBadge.style.display = val ? 'inline-block' : 'none';
+          if (item) countBadge.textContent = item.count + ' produk';
+          countBadge.style.background = s.bg;
+          countBadge.style.color      = s.color;
+        }
+
+        const iconBadge = document.getElementById(iconBadgeId);
+        if (iconBadge) {
+          iconBadge.style.display = val ? 'inline-flex' : 'none';
+          iconBadge.textContent   = val ? s.emoji : '';
+          iconBadge.style.background = s.bg;
+        }
+
+        const card = document.getElementById(cardId);
+        if (card) {
+          card.style.borderColor = val ? s.color.replace(')',',0.35)').replace('rgb','rgba') : '';
+          card.style.background  = val ? s.bg : '';
+        }
+
+        filterKasirByKategori(_katSheetMode);
+      }
+
+      // Re-render list untuk update radio button
+      renderKatSheetList();
+      // Delay close
+      setTimeout(closeKatSheet, 160);
+    };
+
+    // Refresh filter dropdown di kasir (update hidden select)
     window.refreshKategoriFilters = function() {
       ['digital', 'fisik'].forEach(tipe => {
         const filterId  = tipe === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
-        const chipsId   = tipe === 'digital' ? 'kd-kat-chips'       : 'kf-kat-chips';
-        const labelIcon = tipe === 'digital' ? 'kd-kat-label-icon'  : 'kf-kat-label-icon';
-        const labelTxt  = tipe === 'digital' ? 'kd-kat-label-text'  : 'kf-kat-label-text';
         const filterSel = document.getElementById(filterId);
-        const chipsWrap = document.getElementById(chipsId);
-        if (!filterSel || !chipsWrap) return;
-
+        if (!filterSel) return;
         const prev = filterSel.value;
         const list = getKategoriList(tipe);
         const hasTanpa = (window.db?.inventory||[]).some(p => p.tipe === tipe && !p.kategori);
-
-        // Rebuild hidden select
         filterSel.innerHTML = '<option value="">Semua Produk</option>' +
           list.map(k => {
             const count = (window.db?.inventory||[]).filter(p => p.tipe === tipe && p.kategori === k).length;
-            return count > 0 ? `<option value="${k}" ${k===prev?'selected':''}>${k} (${count})</option>` : '';
+            return count > 0 ? `<option value="${k}" ${k===prev?'selected':''}>${k}</option>` : '';
           }).join('') +
           (hasTanpa ? `<option value="__tanpa__" ${'__tanpa__'===prev?'selected':''}>Tanpa Kategori</option>` : '');
-
-        // Build chip items: "Semua" + categories
-        const allEmoji = tipe === 'digital' ? '⚡' : '📦';
-        const items = [
-          { val: '', nama: 'Semua Produk', emoji: allEmoji, count: (window.db?.inventory||[]).filter(p => p.tipe === tipe).length }
-        ];
-        list.forEach(k => {
-          const count = (window.db?.inventory||[]).filter(p => p.tipe === tipe && p.kategori === k).length;
-          if (count > 0) {
-            const s = getKatStyle(k);
-            items.push({ val: k, nama: k, emoji: s.emoji, count });
-          }
-        });
-        if (hasTanpa) {
-          items.push({ val: '__tanpa__', nama: 'Tanpa Kategori', emoji: '🏷️', count: (window.db?.inventory||[]).filter(p => p.tipe === tipe && !p.kategori).length });
-        }
-
-        chipsWrap.innerHTML = items.map(item => {
-          const s    = getKatStyle(item.nama);
-          const isActive = item.val === prev;
-          const bg   = isActive ? s.color : s.bg;
-          const col  = isActive ? 'white'  : s.color;
-          const bord = isActive ? s.color  : s.border;
-          const shad = isActive ? `0 4px 12px ${s.bg.replace('0.1','0.45')}` : 'none';
-          return `<button class="kat-chip" data-val="${item.val}" data-nama="${item.nama}"
-            onclick="selectKatChip('${tipe}','${item.val}','${item.nama}','${item.emoji}')"
-            style="display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:100px;
-                   font-size:10px;font-weight:800;border:1.5px solid ${bord};background:${bg};color:${col};
-                   cursor:pointer;white-space:nowrap;transition:all 0.2s;box-shadow:${shad};
-                   font-family:'Plus Jakarta Sans',sans-serif;">
-            <span style="font-size:11px;">${item.emoji}</span>
-            <span>${item.nama}</span>
-            <span style="opacity:0.7;font-size:9px;font-weight:700;">${item.count}</span>
-          </button>`;
-        }).join('');
       });
     };
 
@@ -14195,7 +14304,46 @@
   })();
   </script>
 
-  <!-- ===== PERPANJANG AKUN — SCRIPTS ===== -->
+  <!-- ===== MODAL PILIH KATEGORI (Bottom Sheet) ===== -->
+  <div id="modal-kat-sheet" style="position:fixed;inset:0;z-index:5500;display:none;align-items:flex-end;justify-content:center;background:rgba(10,15,30,0.55);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);"
+       onclick="e => { if(e.target===this) closeKatSheet(); }">
+    <div id="kat-sheet-panel"
+         style="width:100%;max-width:600px;background:white;border-radius:28px 28px 0 0;
+                display:flex;flex-direction:column;max-height:82vh;
+                transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.34,1.20,0.64,1);
+                box-shadow:0 -8px 40px rgba(0,0,0,0.18);">
+      <!-- Handle bar -->
+      <div style="display:flex;justify-content:center;padding:12px 0 4px;">
+        <div style="width:36px;height:4px;border-radius:4px;background:#e2e8f0;"></div>
+      </div>
+      <!-- Header -->
+      <div id="kat-sheet-header" style="padding:12px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
+        <div>
+          <p id="kat-sheet-title" style="font-size:15px;font-weight:900;color:#0f172a;font-family:'Plus Jakarta Sans',sans-serif;">Pilih Kategori</p>
+          <p id="kat-sheet-sub" style="font-size:10px;font-weight:600;color:#94a3b8;font-family:'Plus Jakarta Sans',sans-serif;margin-top:1px;"></p>
+        </div>
+        <button onclick="closeKatSheet()"
+          style="width:32px;height:32px;border-radius:10px;background:#f1f5f9;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-times" style="color:#64748b;font-size:13px;"></i>
+        </button>
+      </div>
+      <!-- Search bar -->
+      <div style="padding:12px 16px 8px;">
+        <div style="position:relative;">
+          <i class="fas fa-search" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:12px;pointer-events:none;"></i>
+          <input id="kat-sheet-search" type="text" placeholder="Cari kategori..."
+            oninput="renderKatSheetList()"
+            style="width:100%;padding:11px 14px 11px 36px;border-radius:14px;border:1.5px solid #e2e8f0;
+                   background:#f8fafc;font-size:13px;font-weight:600;color:#1e293b;outline:none;
+                   font-family:'Plus Jakarta Sans',sans-serif;box-sizing:border-box;">
+        </div>
+      </div>
+      <!-- List scroll area -->
+      <div id="kat-sheet-list" style="flex:1;overflow-y:auto;padding:4px 0 20px;overscroll-behavior:contain;"></div>
+    </div>
+  </div>
+
+
   <script>
   // Pilih paket
   window.selectPaket = function(el) {
