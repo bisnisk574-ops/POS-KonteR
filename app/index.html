@@ -5473,25 +5473,48 @@
               style="padding-left:34px;font-size:13px;"
               oninput="renderStok()">
           </div>
-          <!-- Filter kategori (bottom sheet trigger) -->
-          <div>
-            <p style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Filter Kategori</p>
+          <!-- Filter kategori Digital -->
+          <div id="stok-kat-wrap-digital">
+            <p style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Filter Kategori Digital</p>
             <button onclick="openKatSheet('stok')"
               style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
                      background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;
                      padding:10px 14px;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;"
-              id="stok-kat-trigger">
+              id="stok-kat-trigger-digital">
               <div class="flex items-center gap-2.5">
-                <div style="width:28px;height:28px;border-radius:9px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <i class="fas fa-layer-group" style="color:#6366f1;font-size:11px;"></i>
+                <div style="width:28px;height:28px;border-radius:9px;background:rgba(56,189,248,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-bolt" style="color:#38bdf8;font-size:11px;"></i>
                 </div>
                 <div style="text-align:left;">
-                  <p id="stok-kat-trigger-label" style="font-size:12px;font-weight:800;color:#1e293b;">Semua Kategori</p>
-                  <p id="stok-kat-trigger-sub" style="font-size:9px;font-weight:600;color:#94a3b8;">Tap untuk filter</p>
+                  <p id="stok-kat-trigger-label-digital" style="font-size:12px;font-weight:800;color:#1e293b;">Semua Kategori</p>
+                  <p id="stok-kat-trigger-sub-digital" style="font-size:9px;font-weight:600;color:#94a3b8;">Tap untuk filter digital</p>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <span id="stok-kat-active-badge" style="display:none;padding:3px 9px;border-radius:100px;font-size:9px;font-weight:900;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;"></span>
+                <span id="stok-kat-active-badge-digital" style="display:none;padding:3px 9px;border-radius:100px;font-size:9px;font-weight:900;background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;"></span>
+                <i class="fas fa-chevron-right" style="font-size:10px;color:#cbd5e1;"></i>
+              </div>
+            </button>
+          </div>
+          <!-- Filter kategori Fisik -->
+          <div id="stok-kat-wrap-fisik" style="display:none;">
+            <p style="font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Filter Kategori Fisik</p>
+            <button onclick="openKatSheet('stok')"
+              style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+                     background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:14px;
+                     padding:10px 14px;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;"
+              id="stok-kat-trigger-fisik">
+              <div class="flex items-center gap-2.5">
+                <div style="width:28px;height:28px;border-radius:9px;background:rgba(167,139,250,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-box" style="color:#a78bfa;font-size:11px;"></i>
+                </div>
+                <div style="text-align:left;">
+                  <p id="stok-kat-trigger-label-fisik" style="font-size:12px;font-weight:800;color:#1e293b;">Semua Kategori</p>
+                  <p id="stok-kat-trigger-sub-fisik" style="font-size:9px;font-weight:600;color:#94a3b8;">Tap untuk filter fisik</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="stok-kat-active-badge-fisik" style="display:none;padding:3px 9px;border-radius:100px;font-size:9px;font-weight:900;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;"></span>
                 <i class="fas fa-chevron-right" style="font-size:10px;color:#cbd5e1;"></i>
               </div>
             </button>
@@ -7829,40 +7852,64 @@
 
     // ---- RENDER STOK ----
     let activeStokTab = 'digital';
-    let activeStokKtgFilter = ''; // '' = semua
+    let activeStokKtgFilter = ''; // '' = semua (computed dari dua state di bawah)
+    let activeStokKtgFilterDigital = ''; // filter khusus tab digital
+    let activeStokKtgFilterFisik   = ''; // filter khusus tab fisik
     // Expose ke window agar bisa dibaca dari script block lain
     Object.defineProperty(window, 'activeStokTab', { get: () => activeStokTab, set: v => { activeStokTab = v; } });
-    Object.defineProperty(window, 'activeStokKtgFilter', { get: () => activeStokKtgFilter, set: v => { activeStokKtgFilter = v; } });
+    Object.defineProperty(window, 'activeStokKtgFilter', {
+      get: () => activeStokTab === 'digital' ? activeStokKtgFilterDigital : activeStokKtgFilterFisik,
+      set: v => {
+        if (activeStokTab === 'digital') activeStokKtgFilterDigital = v;
+        else activeStokKtgFilterFisik = v;
+        activeStokKtgFilter = v;
+      }
+    });
+    Object.defineProperty(window, 'activeStokKtgFilterDigital', { get: () => activeStokKtgFilterDigital, set: v => { activeStokKtgFilterDigital = v; } });
+    Object.defineProperty(window, 'activeStokKtgFilterFisik',   { get: () => activeStokKtgFilterFisik,   set: v => { activeStokKtgFilterFisik   = v; } });
 
     function setStokKtgFilter(ktg) {
+      // Tulis ke filter tab yang aktif
+      if (activeStokTab === 'digital') activeStokKtgFilterDigital = ktg;
+      else activeStokKtgFilterFisik = ktg;
       activeStokKtgFilter = ktg;
       renderStok();
     }
 
-    function renderStokKtgChips(tipe) {
-      // Fungsi ini tidak lagi merender chips horizontal.
-      // Tombol trigger sudah di HTML, cukup update label-nya.
-      const triggerLabel = document.getElementById('stok-kat-trigger-label');
-      const triggerSub   = document.getElementById('stok-kat-trigger-sub');
-      const activeBadge  = document.getElementById('stok-kat-active-badge');
-      const triggerBtn   = document.getElementById('stok-kat-trigger');
-      const ktg = activeStokKtgFilter;
-      const s = getKatStyle(ktg);
+    function _updateKatTrigger(tipeSuffix, ktg, accentColor, accentBg) {
+      const triggerLabel = document.getElementById('stok-kat-trigger-label-' + tipeSuffix);
+      const triggerSub   = document.getElementById('stok-kat-trigger-sub-'   + tipeSuffix);
+      const activeBadge  = document.getElementById('stok-kat-active-badge-'  + tipeSuffix);
+      const triggerBtn   = document.getElementById('stok-kat-trigger-'       + tipeSuffix);
       if (triggerLabel) triggerLabel.textContent = ktg === '' ? 'Semua Kategori' : (ktg === '__tanpa__' ? 'Tanpa Kategori' : ktg);
-      if (triggerSub)   triggerSub.textContent   = ktg ? '1 filter aktif — tap untuk ubah' : 'Tap untuk filter';
+      if (triggerSub)   triggerSub.textContent   = ktg ? '1 filter aktif — tap untuk ubah' : ('Tap untuk filter ' + tipeSuffix);
       if (activeBadge) {
         activeBadge.style.display = ktg ? 'inline-block' : 'none';
         activeBadge.textContent   = ktg === '__tanpa__' ? 'Tanpa Kategori' : ktg;
       }
       if (triggerBtn) {
-        triggerBtn.style.borderColor = ktg ? '#6366f1' : '#e2e8f0';
-        triggerBtn.style.background  = ktg ? 'rgba(99,102,241,0.05)' : '#f8fafc';
+        triggerBtn.style.borderColor = ktg ? accentColor : '#e2e8f0';
+        triggerBtn.style.background  = ktg ? accentBg    : '#f8fafc';
       }
+    }
+
+    function renderStokKtgChips(tipe) {
+      // Update tombol filter digital
+      _updateKatTrigger('digital', activeStokKtgFilterDigital, '#0061C2', 'rgba(0,97,194,0.05)');
+      // Update tombol filter fisik
+      _updateKatTrigger('fisik',   activeStokKtgFilterFisik,   '#7c3aed', 'rgba(124,58,237,0.05)');
+      // Tampilkan wrap yang sesuai tab aktif, sembunyikan yang lain
+      const wrapDig = document.getElementById('stok-kat-wrap-digital');
+      const wrapFis = document.getElementById('stok-kat-wrap-fisik');
+      if (wrapDig) wrapDig.style.display = activeStokTab === 'digital' ? '' : 'none';
+      if (wrapFis) wrapFis.style.display = activeStokTab === 'fisik'   ? '' : 'none';
     }
 
     function setStokTab(tab) {
       activeStokTab = tab;
-      activeStokKtgFilter = ''; // reset filter saat ganti tab
+      // Tidak reset filter — tiap tab punya filter masing-masing
+      // Sync activeStokKtgFilter ke filter tab yang aktif
+      activeStokKtgFilter = (tab === 'digital') ? activeStokKtgFilterDigital : activeStokKtgFilterFisik;
       // Reset search
       const searchEl = document.getElementById('stok-search-nama');
       if (searchEl) searchEl.value = '';
@@ -7916,11 +7963,12 @@
 
       let produk = activeStokTab === 'digital' ? digital : fisik;
 
-      // Terapkan filter kategori chip
-      if (activeStokKtgFilter === '__tanpa__') {
+      // Terapkan filter kategori sesuai tab aktif (digital/fisik terpisah)
+      const _ktgFilter = activeStokTab === 'digital' ? activeStokKtgFilterDigital : activeStokKtgFilterFisik;
+      if (_ktgFilter === '__tanpa__') {
         produk = produk.filter(p => !p.kategori);
-      } else if (activeStokKtgFilter) {
-        produk = produk.filter(p => p.kategori === activeStokKtgFilter);
+      } else if (_ktgFilter) {
+        produk = produk.filter(p => p.kategori === _ktgFilter);
       }
 
       // Terapkan filter nama
@@ -7929,11 +7977,12 @@
         produk = produk.filter(p => (p.nama||'').toLowerCase().includes(searchQ));
       }
 
-      if (sub) sub.innerText = `${produk.length} produk ${activeStokTab}${searchQ || activeStokKtgFilter ? ' (difilter)' : ''}`;
+      const _ktgFilterActive = activeStokTab === 'digital' ? activeStokKtgFilterDigital : activeStokKtgFilterFisik;
+      if (sub) sub.innerText = `${produk.length} produk ${activeStokTab}${searchQ || _ktgFilterActive ? ' (difilter)' : ''}`;
 
       if (produk.length === 0) {
         const isDigital = activeStokTab === 'digital';
-        const hasFilter = searchQ || activeStokKtgFilter;
+        const hasFilter = searchQ || (activeStokTab === 'digital' ? activeStokKtgFilterDigital : activeStokKtgFilterFisik);
         list.innerHTML = `
           <div class="text-center py-16">
             <div class="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4"
@@ -13781,9 +13830,12 @@
       });
       if (hasTanpa) _katSheetItems.push({ val:'__tanpa__', nama:'Tanpa Kategori', count: prodAll.filter(p=>!p.kategori).length });
 
-      // Baca current value
+      // Baca current value (sesuai tab aktif untuk mode stok)
       if (mode === 'stok') {
-        _katSheetSel = window.activeStokKtgFilter || '';
+        const _curTab2 = window.activeStokTab || 'digital';
+        _katSheetSel = _curTab2 === 'digital'
+          ? (window.activeStokKtgFilterDigital || '')
+          : (window.activeStokKtgFilterFisik   || '');
       } else {
         const filterId = mode === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
         _katSheetSel = document.getElementById(filterId)?.value || '';
@@ -13864,21 +13916,31 @@
       _katSheetSel = val;
 
       if (_katSheetMode === 'stok') {
-        // Update stok filter (via window untuk lintas script block)
+        // Tulis ke state filter tab yang sedang aktif
+        const _curTab = window.activeStokTab || 'digital';
+        if (_curTab === 'digital') {
+          window.activeStokKtgFilterDigital = val;
+        } else {
+          window.activeStokKtgFilterFisik = val;
+        }
         window.activeStokKtgFilter = val;
-        const triggerLabel = document.getElementById('stok-kat-trigger-label');
-        const triggerSub   = document.getElementById('stok-kat-trigger-sub');
-        const activeBadge  = document.getElementById('stok-kat-active-badge');
-        const triggerBtn   = document.getElementById('stok-kat-trigger');
-        if (triggerLabel) triggerLabel.textContent = nama;
-        if (triggerSub)   triggerSub.textContent   = val ? '1 filter aktif — tap untuk ubah' : 'Tap untuk filter';
+        // Update UI trigger sesuai tab aktif
+        const _suffix = _curTab;
+        const _accentColor = _curTab === 'digital' ? '#0061C2' : '#7c3aed';
+        const _accentBg    = _curTab === 'digital' ? 'rgba(0,97,194,0.05)' : 'rgba(124,58,237,0.05)';
+        const triggerLabel = document.getElementById('stok-kat-trigger-label-' + _suffix);
+        const triggerSub   = document.getElementById('stok-kat-trigger-sub-'   + _suffix);
+        const activeBadge  = document.getElementById('stok-kat-active-badge-'  + _suffix);
+        const triggerBtn   = document.getElementById('stok-kat-trigger-'       + _suffix);
+        if (triggerLabel) triggerLabel.textContent = val === '' ? 'Semua Kategori' : (val === '__tanpa__' ? 'Tanpa Kategori' : nama);
+        if (triggerSub)   triggerSub.textContent   = val ? '1 filter aktif — tap untuk ubah' : ('Tap untuk filter ' + _suffix);
         if (activeBadge) {
           activeBadge.style.display = val ? 'inline-block' : 'none';
-          activeBadge.textContent   = nama;
+          activeBadge.textContent   = val === '__tanpa__' ? 'Tanpa Kategori' : nama;
         }
         if (triggerBtn) {
-          triggerBtn.style.borderColor = val ? '#6366f1' : '#e2e8f0';
-          triggerBtn.style.background  = val ? 'rgba(99,102,241,0.05)' : '#f8fafc';
+          triggerBtn.style.borderColor = val ? _accentColor : '#e2e8f0';
+          triggerBtn.style.background  = val ? _accentBg    : '#f8fafc';
         }
         if (typeof window.renderStok === 'function') window.renderStok();
       } else {
