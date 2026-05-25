@@ -1283,10 +1283,7 @@
     // Jalankan SEBELUM DOM selesai — cegah flash login screen saat refresh
     (function() {
       if (localStorage.getItem('k_logged') === 'true') {
-        // Sembunyikan login screen secepat mungkin
         document.addEventListener('DOMContentLoaded', function() {
-          var ls = document.getElementById('login-screen');
-          if (ls) ls.style.display = 'none';
           var splash = document.getElementById('refresh-splash');
           var storeName = localStorage.getItem('k_store_name') || '';
           var kasirNama = localStorage.getItem('k_kasir_nama') || '';
@@ -1521,6 +1518,12 @@
   </div>
 
   <!-- ==================== LOGIN SCREEN ==================== -->
+  <script>
+    // Jalankan SEBELUM login-screen dirender — cegah flash sama sekali
+    if (localStorage.getItem('k_logged') === 'true') {
+      document.write('<style>#login-screen{display:none!important}</style>');
+    }
+  </script>
   <div id="login-screen" class="fixed inset-0 z-[2000] overflow-hidden" style="background:var(--login-bg);">
     <!-- Animated BG particles -->
     <canvas id="login-canvas" class="absolute inset-0 w-full h-full pointer-events-none" style="opacity:0.5;"></canvas>
