@@ -10833,8 +10833,14 @@
 
   // ─── LOAD & RENDER DAFTAR KASIR ───
   async function loadKasirList() {
-    const uid = localStorage.getItem('k_sid');
+    let uid = localStorage.getItem('k_sid');
     if (!uid || uid === 'DEMO') return;
+
+    // Selalu pakai Firebase Auth UID yang aktif
+    if (window._fbAuth && window._fbAuth.currentUser) {
+      uid = window._fbAuth.currentUser.uid;
+      localStorage.setItem('k_sid', uid); // sync localStorage
+    }
 
     const container = document.getElementById('kasir-list-container');
     const subtitle  = document.getElementById('kasir-list-subtitle');
@@ -10951,7 +10957,7 @@
         owner_uid    : _uid,
         store_id     : storeId,
         store_name   : localStorage.getItem('k_store_name') || '',
-        kode_toko    : getKodeToko(uid),
+        kode_toko    : getKodeToko(_uid),
         nama         : nama,
         username     : username,
         pw_hash      : pwHash,
