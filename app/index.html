@@ -10942,6 +10942,7 @@
       await window._fbFirestore.collection('kasir_accounts').add({
         owner_uid    : uid,
         store_id     : storeId,
+        store_name   : localStorage.getItem('k_store_name') || '',
         kode_toko    : getKodeToko(uid),
         nama         : nama,
         username     : username,
@@ -11164,21 +11165,27 @@
         // Tidak fatal — sesi tetap jalan via localStorage
       }
 
-      // Ambil nama toko dari user_stores
+      // Ambil nama toko + plan owner — HARUS selesai sebelum initApp
       try {
+        // 1. Ambil store_name dari user_stores
         if (storeId) {
           const storeSnap = await window._fbFirestore.collection('user_stores').doc(storeId).get();
           if (storeSnap.exists) {
             const sName = storeSnap.data().store_name || '';
-            if (sName) localStorage.setItem('k_store_name', sName);
+            if (sName) {
+              localStorage.setItem('k_store_name', sName);
+              ['display-store-name','sidebar-store-name','akun-store-name-display'].forEach(function(id) {
+                const el = document.getElementById(id); if (el) el.textContent = sName;
+              });
+            }
           }
         }
-        // Ambil plan dari subscriptions owner
+        // 2. Ambil plan dari subscriptions milik owner toko
         const subSnap = await window._fbFirestore.collection('subscriptions').doc(ownerUid).get();
         if (subSnap.exists) {
           const sub = subSnap.data();
-          if (sub.plan)        localStorage.setItem('k_plan', sub.plan);
-          if (sub.expired_at)  {
+          if (sub.plan) localStorage.setItem('k_plan', sub.plan);
+          if (sub.expired_at) {
             let exp = sub.expired_at;
             if (exp && exp.toDate) exp = exp.toDate();
             else exp = new Date(exp);
@@ -11189,7 +11196,7 @@
         console.warn('[KasirLogin] Gagal ambil info toko/plan:', e2.message);
       }
 
-      // Masuk ke app
+      // Masuk ke app — store_name dan plan sudah tersimpan di localStorage
       _triggerLoginBtnSuccess('btn-kasir-login');
       initApp(false);
 
