@@ -9644,18 +9644,220 @@
         setTimeout(() => document.body.removeChild(a), 1000);
       }
 
-      // ── Thermer (Android) ────────────────────────────────────────
-      function printThermer(data) {
-        let binary = '';
-        for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
-        const b64 = btoa(binary);
-        const uri = 'thermer:escpos,' + b64;
-        const a = document.createElement('a');
-        a.href = uri;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => document.body.removeChild(a), 1000);
+      // ── Bagikan Gambar Struk (Share API) ──────────────────────────
+      async function shareReceiptImage(t, opts = {}) {
+        const Swal2loc = (_getMySwal() || Swal);
+
+        // Tampilkan loading
+        Swal2loc.fire({
+          title: '⏳ Membuat gambar...',
+          text: 'Sedang menyiapkan struk, mohon tunggu.',
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          customClass: { popup: 'swal2-ku' },
+          didOpen: () => Swal2loc.showLoading()
+        });
+
+        try {
+          // Build receipt HTML (sama dengan printBrowser)
+          const storeName  = (opts.storeName  || 'KONTERKU').toUpperCase();
+          const alamat     = opts.alamat     || '';
+          const tagline    = opts.tagline    || 'Terima kasih atas kepercayaan Anda';
+          const kasirName  = opts.kasirName  || '';
+          const rp = n => 'Rp\u00A0' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
+          const isLunas    = t.status === 'Lunas';
+          const tipeLabel  = t.tipe === 'ewallet' ? 'E-WALLET / TRANSFER'
+                           : t.tipe === 'digital'  ? 'DIGITAL' : 'FISIK';
+          const namaProduk = (t.produk || '-').replace(/^(DIG:|FIS:|EWL:)\s*/i, '');
+          const now  = new Date();
+          const wib  = new Date(now.getTime() + now.getTimezoneOffset()*60000 + 3600000*7);
+          const pad2 = x => String(x).padStart(2,'0');
+          const waktu = `${pad2(wib.getDate())}/${pad2(wib.getMonth()+1)}/${wib.getFullYear()} ` +
+                        `${pad2(wib.getHours())}:${pad2(wib.getMinutes())}`;
+          const alamatLines = alamat
+            ? alamat.split('\n').map(l => `<p style="font-size:10px;color:#555;margin:1px 0;">${l}</p>`).join('')
+            : '';
+
+          // Build struk sebagai HTML di iframe tersembunyi lalu screenshot via canvas
+          const strutHTML = `
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    width: 320px;
+    background: #fff;
+    color: #111;
+    padding: 16px 14px 24px;
+    line-height: 1.5;
+  }
+  .center { text-align:center; }
+  .bold { font-weight:700; }
+  .store-name { font-size:17px; font-weight:900; letter-spacing:1px; text-align:center; margin-bottom:2px; }
+  .tagline { font-size:9px; color:#777; text-align:center; margin-bottom:6px; }
+  .divider-solid { border:none; border-top:2px solid #111; margin:6px 0; }
+  .divider-dash { border:none; border-top:1px dashed #aaa; margin:5px 0; }
+  .badge {
+    display:inline-block; background:#111; color:#fff;
+    font-size:8px; font-weight:700; letter-spacing:1px;
+    padding:2px 10px; border-radius:3px; margin:3px 0;
+  }
+  .product { font-size:13px; font-weight:900; margin:4px 0 3px; }
+  .row { display:flex; justify-content:space-between; margin:2px 0; }
+  .lbl { color:#777; font-size:10px; }
+  .val { font-size:10px; font-weight:600; text-align:right; }
+  .total-box {
+    background:#111; color:#fff; border-radius:8px;
+    padding:8px 12px; margin:8px 0 6px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .total-lbl { font-size:10px; font-weight:700; letter-spacing:1px; color:rgba(255,255,255,0.7); }
+  .total-val { font-size:16px; font-weight:900; }
+  .status-box {
+    text-align:center; margin:4px 0;
+  }
+  .status-lunas {
+    display:inline-block; font-size:10px; font-weight:800; letter-spacing:1px;
+    padding:3px 16px; border-radius:4px; border:1.5px solid #86efac;
+    background:#f0fdf4; color:#15803d;
+  }
+  .status-hutang {
+    display:inline-block; font-size:10px; font-weight:800; letter-spacing:1px;
+    padding:3px 16px; border-radius:4px; border:1.5px solid #fed7aa;
+    background:#fff7ed; color:#c2410c;
+  }
+  .footer { text-align:center; font-size:9px; color:#999; margin-top:8px; }
+  .powered { text-align:center; font-size:8px; color:#bbb; margin-top:4px; }
+  .addr { text-align:center; font-size:9px; color:#666; }
+  .txid { font-size:8px; color:#aaa; text-align:center; font-family:monospace; }
+</style></head>
+<body>
+  <div class="store-name">${storeName}</div>
+  ${alamatLines ? `<div class="addr">${alamatLines}</div>` : ''}
+  <div class="tagline">${tagline}</div>
+  <hr class="divider-solid">
+  <div class="center"><span class="badge">${tipeLabel}</span></div>
+  <div class="product center">${namaProduk}</div>
+  ${t.nomor ? `<div class="row"><span class="lbl">Nomor</span><span class="val">${t.nomor}</span></div>` : ''}
+  ${t.nominal ? `<div class="row"><span class="lbl">Nominal</span><span class="val">${rp(t.nominal)}</span></div>` : ''}
+  <hr class="divider-dash">
+  <div class="row"><span class="lbl">Harga Pokok</span><span class="val">${rp(t.hargaPokok||0)}</span></div>
+  <div class="row"><span class="lbl">Harga Jual</span><span class="val">${rp(t.hargaJual||t.total||0)}</span></div>
+  ${(t.diskon && Number(t.diskon)>0) ? `<div class="row"><span class="lbl">Diskon</span><span class="val">- ${rp(t.diskon)}</span></div>` : ''}
+  <div class="total-box">
+    <span class="total-lbl">TOTAL</span>
+    <span class="total-val">${rp(t.hargaJual||t.total||0)}</span>
+  </div>
+  <div class="status-box">
+    <span class="${isLunas?'status-lunas':'status-hutang'}">${isLunas?'✓ LUNAS':'⚠ BELUM LUNAS'}</span>
+  </div>
+  <hr class="divider-dash">
+  <div class="row"><span class="lbl">Tanggal</span><span class="val">${waktu}</span></div>
+  ${kasirName ? `<div class="row"><span class="lbl">Kasir</span><span class="val">${kasirName}</span></div>` : ''}
+  ${t.pelanggan ? `<div class="row"><span class="lbl">Pelanggan</span><span class="val">${t.pelanggan}</span></div>` : ''}
+  <hr class="divider-dash">
+  <div class="txid"># ${t.id||'-'}</div>
+  <div class="footer">Struk ini adalah bukti transaksi yang sah.</div>
+  <div class="powered">KonterKU Cloud POS</div>
+</body></html>`;
+
+          // Render ke canvas via iframe + html2canvas-style approach
+          // Gunakan iframe tersembunyi + canvas
+          const scale = 2; // retina quality
+          const W = 320;
+
+          // Buat iframe tersembunyi
+          const iframe = document.createElement('iframe');
+          iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:320px;height:1px;border:none;';
+          document.body.appendChild(iframe);
+
+          await new Promise(res => {
+            iframe.onload = res;
+            iframe.srcdoc = strutHTML;
+          });
+
+          // Tunggu font load
+          await new Promise(r => setTimeout(r, 600));
+
+          const iDoc = iframe.contentDocument;
+          const iBody = iDoc.body;
+          const H = iBody.scrollHeight;
+
+          // Buat canvas
+          const canvas = document.createElement('canvas');
+          canvas.width  = W * scale;
+          canvas.height = (H + 32) * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.scale(scale, scale);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, W, H + 32);
+
+          // Gunakan foreignObject di SVG untuk render HTML ke canvas
+          const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H+32}">
+            <foreignObject width="100%" height="100%">
+              <div xmlns="http://www.w3.org/1999/xhtml">${strutHTML}</div>
+            </foreignObject>
+          </svg>`;
+
+          const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+          const url  = URL.createObjectURL(blob);
+
+          await new Promise((res, rej) => {
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, W, H + 32);
+              URL.revokeObjectURL(url);
+              res();
+            };
+            img.onerror = rej;
+            img.src = url;
+          });
+
+          document.body.removeChild(iframe);
+
+          // Convert canvas ke Blob PNG
+          const pngBlob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+
+          Swal2loc.close();
+
+          // Nama file struk
+          const fileName = `Struk_${(t.id||'TRX').replace(/\//g,'-')}_${pad2(wib.getDate())}${pad2(wib.getMonth()+1)}${wib.getFullYear()}.png`;
+
+          // Web Share API
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([pngBlob], fileName, { type:'image/png' })] })) {
+            const file = new File([pngBlob], fileName, { type:'image/png' });
+            await navigator.share({
+              title: `Struk ${storeName}`,
+              text: `Struk transaksi ${namaProduk} – ${waktu}`,
+              files: [file]
+            });
+          } else if (navigator.share) {
+            // Fallback: share URL saja
+            const imgUrl = URL.createObjectURL(pngBlob);
+            await Swal2loc.fire({
+              icon: 'info',
+              title: 'Unduh Gambar Struk',
+              html: `<div style="text-align:center;">
+                <img src="${imgUrl}" style="max-width:100%;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:10px;">
+                <p style="font-size:12px;color:#64748b;">Tekan tahan gambar lalu pilih <b>Simpan</b> atau <b>Bagikan</b></p>
+              </div>`,
+              confirmButtonText: 'Tutup',
+              customClass: { popup: 'swal2-ku' }
+            });
+          } else {
+            // Desktop: download otomatis
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(pngBlob);
+            a.download = fileName;
+            a.click();
+            Swal2loc.fire({ icon:'success', title:'Gambar Diunduh!', text:'Struk berhasil disimpan sebagai gambar PNG.', timer:2000, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+          }
+
+        } catch(err) {
+          console.error('[shareReceiptImage]', err);
+          Swal2loc.fire({ icon:'error', title:'Gagal Buat Gambar', text:'Tidak dapat membuat gambar struk: ' + (err.message||err), customClass:{popup:'swal2-ku'} });
+        }
       }
 
       // ── Fallback: window.print() via popup ──────────────────────
@@ -10019,7 +10221,7 @@ ${t.tipe === 'ewallet' ? `
         return true;
       }
 
-      return { buildEscPos, printWebUSB, printBluetooth, printRawBT, printThermer, printBrowser };
+      return { buildEscPos, printWebUSB, printBluetooth, printRawBT, shareReceiptImage, printBrowser };
     })();
 
     // ── Modal pilih metode cetak ─────────────────────────────────
@@ -10047,23 +10249,30 @@ ${t.tipe === 'ewallet' ? `
       methods.push({ key:'browser',  icon:'🌐', label:'Print Browser (window.print)' });
       if (isAndroid) {
         methods.push({ key:'rawbt',    icon:'📱', label:'RawBT App (Android)' });
-        methods.push({ key:'thermer',  icon:'🔥', label:'Thermer App (Android)' });
+        methods.push({ key:'shareimage', icon:'📸', label:'Bagikan Gambar Struk' });
       }
       if (hasBT)  methods.push({ key:'bluetooth', icon:'🔵', label:'Bluetooth Thermal (BLE)' });
       if (hasUSB) methods.push({ key:'usb',       icon:'🔌', label:'USB Thermal (WebUSB)' });
 
-      const btnHTML = methods.map(m =>
-        `<button data-key="${m.key}" style="
-          display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;
-          margin-bottom:8px;border:1.5px solid #e2e8f0;border-radius:12px;
-          background:#f8fafc;font-size:13px;font-weight:600;color:#1e293b;
-          cursor:pointer;text-align:left;transition:background .15s;"
-          onmouseover="this.style.background='#eff6ff'"
-          onmouseout="this.style.background='#f8fafc'">
-          <span style="font-size:20px;">${m.icon}</span>
-          <span>${m.label}</span>
-        </button>`
-      ).join('');
+      const btnHTML = methods.map(m => {
+        const isShare = m.key === 'shareimage';
+        const baseBg  = isShare ? 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)' : '#f8fafc';
+        const baseClr = isShare ? '#ffffff' : '#1e293b';
+        const baseBdr = isShare ? '#764ba2' : '#e2e8f0';
+        const hoverBg = isShare ? 'linear-gradient(135deg,#5a6fd6 0%,#6b3fa0 100%)' : '#eff6ff';
+        return `<button data-key="${m.key}" style="
+          display:flex;align-items:center;gap:10px;width:100%;padding:${isShare?'13px 14px':'11px 14px'};
+          margin-bottom:8px;border:1.5px solid ${baseBdr};border-radius:${isShare?'14px':'12px'};
+          background:${baseBg};font-size:13px;font-weight:${isShare?'700':'600'};color:${baseClr};
+          cursor:pointer;text-align:left;transition:all .18s;
+          ${isShare?'box-shadow:0 4px 15px rgba(102,126,234,0.35);':''}"
+          onmouseover="this.style.background='${hoverBg}';${isShare?'this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 6px 20px rgba(102,126,234,0.45)\'':''}"
+          onmouseout="this.style.background='${baseBg}';${isShare?'this.style.transform=\'translateY(0)\';this.style.boxShadow=\'0 4px 15px rgba(102,126,234,0.35)\'':''}">
+          <span style="font-size:${isShare?'22px':'20px'};">${m.icon}</span>
+          <span style="${isShare?'font-size:13.5px;letter-spacing:0.2px;':''}">${m.label}</span>
+          ${isShare?'<span style="margin-left:auto;font-size:10px;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.5px;">PREMIUM</span>':''}
+        </button>`;
+      }).join('');
 
       // Opsi tambahan
       const extraHTML = `
@@ -10127,9 +10336,8 @@ ${t.tipe === 'ewallet' ? `
         return;
       }
 
-      if (chosen === 'thermer') {
-        ThermalPrinter.printThermer(escData);
-        Swal2.fire({ icon:'success', title:'Dikirim ke Thermer', text:'Pastikan app Thermer terbuka dan printer terhubung.', timer:2500, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+      if (chosen === 'shareimage') {
+        await ThermalPrinter.shareReceiptImage(t, opts);
         return;
       }
 
