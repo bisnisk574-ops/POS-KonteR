@@ -276,6 +276,14 @@
       pointer-events: none;
     }
     .card-premium { background: white; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
+    [data-theme="dark"] .card-premium { background: #1e293b; border-color: rgba(255,255,255,0.06); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+
+    /* ===== WALLET TAB SWITCH ===== */
+    .wallet-tab-wrap { background: #EEF2FF; border: 1px solid #E0E7FF; }
+    [data-theme="dark"] .wallet-tab-wrap { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+    /* Inactive tab teks mengikuti tema */
+    .wallet-tab-inactive { color: #94A3B8; }
+    [data-theme="dark"] .wallet-tab-inactive { color: rgba(255,255,255,0.35); }
     /* ===== BOTTOM NAV ===== */
     .bottom-nav {
       position: fixed; bottom: 16px; left: 12px; right: 12px;
@@ -5481,7 +5489,7 @@
         <!-- ===== END SUMMARY CARDS ===== -->
 
         <!-- ===== SWITCH TAB PREMIUM ===== -->
-        <div class="relative flex p-1 mb-6 rounded-2xl gap-1" style="background:#EEF2FF;border:1px solid #E0E7FF;">
+        <div class="relative flex p-1 mb-6 rounded-2xl gap-1 wallet-tab-wrap">
           <!-- Sliding pill indicator -->
           <div id="wallet-tab-pill" class="absolute top-1 bottom-1 rounded-xl transition-all duration-300 ease-out pointer-events-none"
             style="width:calc(50% - 4px);left:4px;background:linear-gradient(135deg,#0061C2,#0284c7);box-shadow:0 4px 14px rgba(0,97,194,0.35);"></div>
@@ -6381,11 +6389,13 @@
       if (pill) {
         pill.style.left   = isList ? '4px' : 'calc(50%)';
       }
-      // Update button text colors
+      // Update button text colors — reaktif terhadap tema
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const inactiveColor = isDark ? 'rgba(255,255,255,0.35)' : '#94A3B8';
       const btnList   = document.getElementById('btn-w-list');
       const btnMutasi = document.getElementById('btn-w-mutasi');
-      if (btnList)   btnList.style.color   = isList  ? 'white' : '#94A3B8';
-      if (btnMutasi) btnMutasi.style.color = !isList ? 'white' : '#94A3B8';
+      if (btnList)   btnList.style.color   = isList  ? 'white' : inactiveColor;
+      if (btnMutasi) btnMutasi.style.color = !isList ? 'white' : inactiveColor;
       const listCont   = document.getElementById('wallet-list-container');
       const mutasiCont = document.getElementById('wallet-mutasi-container');
       if (listCont)   listCont.classList.toggle('hidden', !isList);
@@ -6419,15 +6429,15 @@
       list.innerHTML = data.slice(0, 50).map(m => `
         <div class="card-premium p-4 flex justify-between items-center">
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center ${m.type==='in' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="${m.type==='in' ? 'background:rgba(16,185,129,0.12);color:#10b981;' : 'background:rgba(239,68,68,0.12);color:#ef4444;'}">
               <i class="fas ${m.type==='in' ? 'fa-arrow-down' : 'fa-arrow-up'} text-[10px]"></i>
             </div>
             <div>
-              <p class="text-[10px] font-black uppercase text-slate-700">${m.ket}</p>
-              <p class="text-[8px] font-bold text-slate-400 uppercase">${m.tgl} • ${m.wNama}</p>
+              <p class="text-[10px] font-black uppercase" style="color:var(--sb-text-title);">${m.ket}</p>
+              <p class="text-[8px] font-bold uppercase" style="color:var(--sb-text-sub);">${m.tgl} • ${m.wNama}</p>
             </div>
           </div>
-          <p class="text-xs font-black ${m.type==='in' ? 'text-emerald-600' : 'text-red-600'}">${m.type==='in' ? '+' : '-'} Rp ${fmt(m.amount)}</p>
+          <p class="text-xs font-black" style="color:${m.type==='in' ? '#10b981' : '#ef4444'};">${m.type==='in' ? '+' : '-'} Rp ${fmt(m.amount)}</p>
         </div>
       `).join('') || '<p class="text-center py-20 text-[10px] opacity-30 tracking-widest uppercase">Belum ada mutasi</p>';
     }
@@ -7431,7 +7441,7 @@
       const theme = getWalletTheme(w.nama, w.tipe, index);
       const pct = Math.min(100, Math.max(5, (Number(w.saldo||0) / 5000000) * 100));
       return `
-        <div class="relative overflow-hidden rounded-[22px] p-5 bg-gradient-to-br ${theme.grad} shadow-xl ${theme.glow}/50 text-white">
+        <div class="relative overflow-hidden rounded-[22px] p-5 bg-gradient-to-br ${theme.grad} text-white" style="box-shadow:0 4px 18px rgba(0,0,0,0.25);">
           <!-- Ornamen lingkaran -->
           <div class="absolute -right-5 -top-5 w-28 h-28 bg-white/10 rounded-full pointer-events-none"></div>
           <div class="absolute right-6 -bottom-8 w-20 h-20 bg-white/10 rounded-full pointer-events-none"></div>
