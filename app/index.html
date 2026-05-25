@@ -9665,9 +9665,9 @@
         const tagline    = opts.tagline    || 'Terima kasih atas kepercayaan Anda';
         const kasirName  = opts.kasirName  || '';
 
-        const rp = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
+        const rp = n => 'Rp\u00A0' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
         const isLunas    = t.status === 'Lunas';
-        const tipeLabel  = t.tipe === 'ewallet' ? 'E-WALLET/TRANSFER'
+        const tipeLabel  = t.tipe === 'ewallet' ? 'E-WALLET / TRANSFER'
                          : t.tipe === 'digital'  ? 'DIGITAL' : 'FISIK';
         const namaProduk = (t.produk || '-').replace(/^(DIG:|FIS:|EWL:)\s*/i, '');
 
@@ -9678,58 +9678,336 @@
                       `${pad2(wib.getHours())}:${pad2(wib.getMinutes())}`;
 
         const alamatLines = alamat
-          ? alamat.split('\n').map(l => `<div class="c s8">${l}</div>`).join('')
+          ? alamat.split('\n').map(l => `<p class="addr-line">${l}</p>`).join('')
           : '';
 
         const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Struk ${t.id}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @page { margin:0; size:58mm auto; }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Courier New',monospace;font-size:9pt;width:58mm;
-       padding:4mm 3mm 8mm;color:#000;background:#fff;
-       -webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .c{text-align:center;} .r{text-align:right;} .b{font-weight:bold;}
-  .s8{font-size:8pt;} .s7{font-size:7pt;}
-  .line{border-top:1px dashed #000;margin:3px 0;}
-  .dline{border-top:2px solid #000;margin:3px 0;}
-  .row{display:flex;justify-content:space-between;margin:1px 0;}
-  .row .lbl{flex:1;} .row .val{text-align:right;white-space:nowrap;}
-  .big{font-size:11pt;font-weight:bold;}
-  @media print{button,.noprint{display:none!important;} html,body{width:58mm;}}
+  @page { margin: 0; size: 58mm auto; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0a0a0a;
+    --ink-mid: #4a4a4a;
+    --ink-soft: #8a8a8a;
+    --accent: #1a1a1a;
+    --paper: #ffffff;
+    --rule: #d0d0d0;
+    --rule-dash: #b8b8b8;
+    --badge-bg: #0a0a0a;
+    --badge-fg: #ffffff;
+    --total-bg: #0a0a0a;
+    --total-fg: #ffffff;
+    --lunas-bg: #f0fdf4;
+    --lunas-border: #bbf7d0;
+    --lunas-ink: #15803d;
+    --hutang-bg: #fff7ed;
+    --hutang-border: #fed7aa;
+    --hutang-ink: #c2410c;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+    font-size: 8.5pt;
+    width: 58mm;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 5mm 4mm 10mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    line-height: 1.4;
+  }
+
+  /* ── HEADER ── */
+  .header { text-align: center; padding-bottom: 4px; }
+  .store-name {
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .addr-line {
+    font-size: 7.5pt;
+    color: var(--ink-mid);
+    margin-top: 1px;
+    font-weight: 500;
+  }
+  .meta-row {
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-size: 7pt;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    line-height: 1.6;
+  }
+  .tx-id {
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-size: 6.5pt;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── DIVIDERS ── */
+  .rule-solid { border: none; border-top: 1.5px solid var(--ink); margin: 5px 0; }
+  .rule-dash  { border: none; border-top: 1px dashed var(--rule-dash); margin: 4px 0; }
+  .rule-thin  { border: none; border-top: 1px solid var(--rule); margin: 3px 0; }
+
+  /* ── TYPE BADGE ── */
+  .type-badge {
+    display: inline-block;
+    background: var(--badge-bg);
+    color: var(--badge-fg);
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin: 3px 0;
+  }
+  .type-wrap { text-align: center; }
+
+  /* ── PRODUCT ── */
+  .product-name {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 3px 0 2px;
+    line-height: 1.3;
+  }
+
+  /* ── INFO ROWS ── */
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 1.5px 0;
+    gap: 4px;
+  }
+  .info-lbl {
+    font-size: 7.5pt;
+    color: var(--ink-soft);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .info-dots {
+    flex: 1;
+    border-bottom: 1px dotted var(--rule);
+    height: 0.6em;
+    margin: 0 3px;
+  }
+  .info-val {
+    font-size: 7.5pt;
+    color: var(--ink-mid);
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+    font-family: 'DM Mono', 'Courier New', monospace;
+  }
+
+  /* ── PRICE ROWS ── */
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2px 0;
+  }
+  .price-lbl { font-size: 8pt; font-weight: 600; color: var(--ink-mid); }
+  .price-val {
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-size: 8pt;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* ── TOTAL BLOCK ── */
+  .total-block {
+    background: var(--total-bg);
+    color: var(--total-fg);
+    border-radius: 6px;
+    padding: 6px 8px 5px;
+    margin: 5px 0 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .total-lbl {
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.75);
+  }
+  .total-val {
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-size: 12pt;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── STATUS BADGE ── */
+  .status-wrap { text-align: center; margin: 4px 0; }
+  .status-badge {
+    display: inline-block;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 3px 12px;
+    border-radius: 4px;
+    border: 1.5px solid;
+  }
+  .status-badge.lunas {
+    background: var(--lunas-bg);
+    border-color: var(--lunas-border);
+    color: var(--lunas-ink);
+  }
+  .status-badge.hutang {
+    background: var(--hutang-bg);
+    border-color: var(--hutang-border);
+    color: var(--hutang-ink);
+  }
+
+  /* ── FOOTER ── */
+  .footer { text-align: center; margin-top: 5px; }
+  .footer-tagline {
+    font-size: 7.5pt;
+    color: var(--ink-mid);
+    font-weight: 500;
+    font-style: italic;
+  }
+  .footer-note {
+    font-size: 7pt;
+    color: var(--ink-soft);
+    margin-top: 1.5px;
+  }
+  .footer-brand {
+    font-size: 6.5pt;
+    color: #aaaaaa;
+    margin-top: 4px;
+    font-family: 'DM Mono', 'Courier New', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── PRINT BUTTON ── */
+  .noprint-bar {
+    margin-top: 14px;
+    text-align: center;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .btn-print {
+    padding: 9px 22px;
+    background: #0a0a0a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 9pt;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.03em;
+  }
+  .btn-close {
+    padding: 9px 16px;
+    background: #f1f5f9;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-size: 9pt;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  @media print {
+    .noprint-bar { display: none !important; }
+    html, body { width: 58mm; }
+  }
 </style></head><body>
-<div class="c b" style="font-size:12pt;margin-bottom:1px;">${storeName}</div>
-${alamatLines}
-${kasirName ? `<div class="c s8">Kasir: ${kasirName}</div>` : ''}
-<div class="c s8">${waktu}</div>
-<div class="c s8">No. ${t.id}</div>
-<div class="dline"></div>
-<div class="c b s8" style="margin:2px 0;">[${tipeLabel}]</div>
-<div class="line"></div>
-<div class="b" style="margin:2px 0;font-size:9pt;">${namaProduk}</div>
-<div class="row s8"><span class="lbl">Pelanggan</span><span class="val">${t.pelanggan||'Umum'}</span></div>
-<div class="row s8"><span class="lbl">Tgl Trx</span><span class="val">${t.tgl||'-'}</span></div>
-<div class="line"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="store-name">${storeName}</div>
+  ${alamatLines}
+  ${kasirName ? `<p class="meta-row">Kasir: ${kasirName}</p>` : ''}
+  <p class="meta-row">${waktu}</p>
+  <p class="tx-id">No: ${t.id}</p>
+</div>
+
+<hr class="rule-solid">
+
+<!-- TIPE -->
+<div class="type-wrap">
+  <span class="type-badge">${tipeLabel}</span>
+</div>
+
+<hr class="rule-dash">
+
+<!-- PRODUK -->
+<div class="product-name">${namaProduk}</div>
+
+<div class="info-row">
+  <span class="info-lbl">Pelanggan</span>
+  <span class="info-dots"></span>
+  <span class="info-val">${t.pelanggan||'Umum'}</span>
+</div>
+<div class="info-row">
+  <span class="info-lbl">Tgl Transaksi</span>
+  <span class="info-dots"></span>
+  <span class="info-val">${t.tgl||'-'}</span>
+</div>
+
+<hr class="rule-dash">
+
 ${t.tipe === 'ewallet' ? `
-<div class="row"><span class="lbl">Nominal</span><span class="val">${rp(t.nominal)}</span></div>
-<div class="row"><span class="lbl">Admin Bank</span><span class="val">${rp(t.adminBank)}</span></div>
-<div class="row b"><span class="lbl">Total Bayar</span><span class="val">${rp(t.jual)}</span></div>
+<div class="price-row">
+  <span class="price-lbl">Nominal</span>
+  <span class="price-val">${rp(t.nominal)}</span>
+</div>
+<div class="price-row">
+  <span class="price-lbl">Admin Bank</span>
+  <span class="price-val">${rp(t.adminBank)}</span>
+</div>
+<hr class="rule-thin">
+<div class="price-row">
+  <span class="price-lbl">Total Bayar</span>
+  <span class="price-val">${rp(t.jual)}</span>
+</div>
 ` : `
-<div class="row b"><span class="lbl">Harga Jual</span><span class="val">${rp(t.jual)}</span></div>
+<div class="price-row">
+  <span class="price-lbl">Harga Jual</span>
+  <span class="price-val">${rp(t.jual)}</span>
+</div>
 `}
-<div class="dline"></div>
-<div class="row big"><span class="lbl">TOTAL</span><span class="val">${rp(t.jual)}</span></div>
-<div class="c b" style="margin:4px 0;font-size:10pt;letter-spacing:2px;">
-  ${isLunas ? '*** LUNAS ***' : '-- BELUM LUNAS --'}
+
+<!-- TOTAL BLOCK -->
+<div class="total-block">
+  <span class="total-lbl">TOTAL</span>
+  <span class="total-val">${rp(t.jual)}</span>
 </div>
-<div class="dline"></div>
-<div class="c s8" style="margin-top:4px;">${tagline}</div>
-<div class="c s8">Barang yg dibeli tidak dapat dikembalikan</div>
-<div class="c s7" style="margin-top:3px;color:#666;">powered by KonterPro</div>
-<div class="noprint" style="margin-top:12px;text-align:center;">
-  <button onclick="window.print()" style="padding:8px 24px;background:#0061C2;color:#fff;border:none;border-radius:8px;font-size:10pt;font-weight:bold;cursor:pointer;">🖨️ Cetak</button>
-  <button onclick="window.close()" style="margin-left:8px;padding:8px 16px;background:#e2e8f0;color:#333;border:none;border-radius:8px;font-size:10pt;cursor:pointer;">Tutup</button>
+
+<!-- STATUS -->
+<div class="status-wrap">
+  <span class="status-badge ${isLunas ? 'lunas' : 'hutang'}">
+    ${isLunas ? '✓ LUNAS' : '⚠ BELUM LUNAS'}
+  </span>
 </div>
+
+<hr class="rule-solid">
+
+<!-- FOOTER -->
+<div class="footer">
+  <p class="footer-tagline">${tagline}</p>
+  <p class="footer-note">Barang yang dibeli tidak dapat dikembalikan</p>
+  <p class="footer-brand">powered by KonterPro</p>
+</div>
+
+<div class="noprint-bar">
+  <button class="btn-print" onclick="window.print()">🖨️ Cetak</button>
+  <button class="btn-close" onclick="window.close()">Tutup</button>
+</div>
+
 </body></html>`;
 
         const win = window.open('', '_blank', 'width=320,height=620,scrollbars=yes');
