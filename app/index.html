@@ -6041,6 +6041,8 @@
     }
 
     let db = { dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
+    // Expose db ke window agar script block lain bisa membacanya
+    Object.defineProperty(window, 'db', { get: () => db, set: v => { db = v; }, configurable: true });
 
     let activeHutangTab = 'pelanggan';
     let currentTrFilter = 'all';
@@ -7828,6 +7830,9 @@
     // ---- RENDER STOK ----
     let activeStokTab = 'digital';
     let activeStokKtgFilter = ''; // '' = semua
+    // Expose ke window agar bisa dibaca dari script block lain
+    Object.defineProperty(window, 'activeStokTab', { get: () => activeStokTab, set: v => { activeStokTab = v; } });
+    Object.defineProperty(window, 'activeStokKtgFilter', { get: () => activeStokKtgFilter, set: v => { activeStokKtgFilter = v; } });
 
     function setStokKtgFilter(ktg) {
       activeStokKtgFilter = ktg;
@@ -8014,6 +8019,8 @@
         </div>`;
       }).join('');
     }
+    // Expose renderStok ke window agar bisa dipanggil dari script block lain
+    window.renderStok = renderStok;
 
     // ---- RENDER CUSTOMERS ----
     // ---- CUSTOMER PAGINATION STATE ----
@@ -13748,7 +13755,7 @@
 
     window.openKatSheet = function(mode) {
       _katSheetMode = mode;
-      const tipe = (mode === 'stok') ? activeStokTab : mode;
+      const tipe = (mode === 'stok') ? (window.activeStokTab || 'digital') : mode;
 
       // Kumpulkan kategori yg ada di inventory
       const inv = window.db?.inventory || [];
@@ -13776,7 +13783,7 @@
 
       // Baca current value
       if (mode === 'stok') {
-        _katSheetSel = activeStokKtgFilter;
+        _katSheetSel = window.activeStokKtgFilter || '';
       } else {
         const filterId = mode === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
         _katSheetSel = document.getElementById(filterId)?.value || '';
@@ -13857,8 +13864,8 @@
       _katSheetSel = val;
 
       if (_katSheetMode === 'stok') {
-        // Update stok filter
-        activeStokKtgFilter = val;
+        // Update stok filter (via window untuk lintas script block)
+        window.activeStokKtgFilter = val;
         const triggerLabel = document.getElementById('stok-kat-trigger-label');
         const triggerSub   = document.getElementById('stok-kat-trigger-sub');
         const activeBadge  = document.getElementById('stok-kat-active-badge');
@@ -13873,7 +13880,7 @@
           triggerBtn.style.borderColor = val ? '#6366f1' : '#e2e8f0';
           triggerBtn.style.background  = val ? 'rgba(99,102,241,0.05)' : '#f8fafc';
         }
-        renderStok();
+        if (typeof window.renderStok === 'function') window.renderStok();
       } else {
         // Update kasir filter
         const filterId   = _katSheetMode === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
