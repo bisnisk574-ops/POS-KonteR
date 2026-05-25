@@ -8389,6 +8389,9 @@
         produk = produk.filter(p => (p.nama||'').toLowerCase().includes(searchQ));
       }
 
+      // Urutkan abjad (A–Z)
+      produk = produk.slice().sort((a, b) => (a.nama||'').localeCompare(b.nama||'', 'id', { sensitivity: 'base' }));
+
       const _ktgFilterActive = activeStokTab === 'digital' ? activeStokKtgFilterDigital : activeStokKtgFilterFisik;
       if (sub) sub.innerText = `${produk.length} produk ${activeStokTab}${searchQ || _ktgFilterActive ? ' (difilter)' : ''}`;
 
@@ -14165,9 +14168,12 @@
       const key = 'ktg_' + tipe;
       try {
         const saved = JSON.parse(localStorage.getItem(key));
-        if (Array.isArray(saved) && saved.length) return saved;
+        if (Array.isArray(saved) && saved.length) {
+          return saved.slice().sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+        }
       } catch(e) {}
-      return tipe === 'digital' ? [...DEFAULT_DIGITAL] : [...DEFAULT_FISIK];
+      const defaults = tipe === 'digital' ? [...DEFAULT_DIGITAL] : [...DEFAULT_FISIK];
+      return defaults.slice().sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
     }
 
     function saveKategoriList(tipe, list) {
