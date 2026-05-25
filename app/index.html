@@ -514,6 +514,23 @@
     .kasir-field-input::placeholder { color:#cbd5e1; font-weight:600; }
     .kasir-field-input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
     select.kasir-field-input { appearance:auto; cursor:pointer; }
+    /* ===== KATEGORI CHIP DROPDOWN ===== */
+    #kd-kat-panel, #kf-kat-panel {
+      animation: katPanelSlide 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes katPanelSlide {
+      from { opacity:0; transform:translateY(-6px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .kat-chip:hover { filter:brightness(1.08); transform:scale(1.04) !important; }
+    .kat-chip:active { transform:scale(0.96) !important; }
+    [data-theme="dark"] #kd-kat-card,
+    [data-theme="dark"] #kf-kat-card {
+      background:#1e293b !important;
+      border-color:rgba(255,255,255,0.06) !important;
+    }
+    [data-theme="dark"] #kd-kat-label-text,
+    [data-theme="dark"] #kf-kat-label-text { color:#e2e8f0 !important; }
     .kasir-price-badge {
       background:linear-gradient(135deg,#f0f9ff,#e0f2fe);
       border:1.5px solid #bae6fd; border-radius:14px; padding:12px 14px;
@@ -4769,20 +4786,32 @@
         <!-- ===== FORM DIGITAL ===== -->
         <div id="form-k-digital" class="space-y-3">
 
-          <!-- Filter Kategori Digital -->
-          <div class="kasir-field-card">
-            <div class="kasir-field-row" style="border:none;">
+          <!-- Filter Kategori Digital — Custom Dropdown Chip -->
+          <div class="kasir-field-card" id="kd-kat-card">
+            <div class="kasir-field-row" style="border:none; cursor:pointer;" onclick="toggleKatDropdown('digital')">
               <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
                 <i class="fas fa-layer-group" style="color:#6366f1;"></i>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="kasir-field-label">Filter Kategori Digital</p>
-                <select id="kd-kategori-filter" class="kasir-field-input" onchange="filterKasirByKategori('digital')">
-                  <option value="">Semua Produk Digital</option>
-                </select>
+                <div class="flex items-center gap-2">
+                  <span id="kd-kat-label" class="kasir-field-input" style="cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;">
+                    <span id="kd-kat-label-icon" style="font-size:10px;">🔵</span>
+                    <span id="kd-kat-label-text" style="font-size:13px;font-weight:700;color:#1e293b;">Semua Produk</span>
+                  </span>
+                  <i id="kd-kat-chevron" class="fas fa-chevron-down" style="font-size:10px;color:#94a3b8;transition:transform 0.25s;flex-shrink:0;"></i>
+                </div>
               </div>
             </div>
+            <!-- Hidden dropdown panel -->
+            <div id="kd-kat-panel" style="display:none;padding:0 12px 12px;">
+              <div id="kd-kat-chips" class="flex flex-wrap gap-1.5"></div>
+            </div>
           </div>
+          <!-- Hidden select for compatibility -->
+          <select id="kd-kategori-filter" style="display:none;" onchange="filterKasirByKategori('digital')">
+            <option value="">Semua Produk</option>
+          </select>
 
           <!-- Produk & Harga -->
           <div class="kasir-field-card">
@@ -4930,20 +4959,32 @@
         <!-- ===== FORM FISIK ===== -->
         <div id="form-k-fisik" class="hidden space-y-3">
 
-          <!-- Filter Kategori Fisik -->
-          <div class="kasir-field-card">
-            <div class="kasir-field-row" style="border:none;">
+          <!-- Filter Kategori Fisik — Custom Dropdown Chip -->
+          <div class="kasir-field-card" id="kf-kat-card">
+            <div class="kasir-field-row" style="border:none; cursor:pointer;" onclick="toggleKatDropdown('fisik')">
               <div class="kasir-field-icon" style="background:rgba(99,102,241,0.1);">
                 <i class="fas fa-layer-group" style="color:#6366f1;"></i>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="kasir-field-label">Filter Kategori Fisik</p>
-                <select id="kf-kategori-filter" class="kasir-field-input" onchange="filterKasirByKategori('fisik')">
-                  <option value="">Semua Produk Fisik</option>
-                </select>
+                <div class="flex items-center gap-2">
+                  <span id="kf-kat-label" class="kasir-field-input" style="cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;">
+                    <span id="kf-kat-label-icon" style="font-size:10px;">🟢</span>
+                    <span id="kf-kat-label-text" style="font-size:13px;font-weight:700;color:#1e293b;">Semua Produk</span>
+                  </span>
+                  <i id="kf-kat-chevron" class="fas fa-chevron-down" style="font-size:10px;color:#94a3b8;transition:transform 0.25s;flex-shrink:0;"></i>
+                </div>
               </div>
             </div>
+            <!-- Hidden dropdown panel -->
+            <div id="kf-kat-panel" style="display:none;padding:0 12px 12px;">
+              <div id="kf-kat-chips" class="flex flex-wrap gap-1.5"></div>
+            </div>
           </div>
+          <!-- Hidden select for compatibility -->
+          <select id="kf-kategori-filter" style="display:none;" onchange="filterKasirByKategori('fisik')">
+            <option value="">Semua Produk</option>
+          </select>
 
           <!-- Scan Barcode Banner -->
           <div style="background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(167,139,250,0.05));border:1.5px dashed rgba(167,139,250,0.35);border-radius:16px;padding:12px 14px;">
@@ -13641,22 +13682,147 @@
     // Called when tipe switch changes in product form
     window.onKategoriChange = function() {}; // placeholder, bisa diperluas
 
-    // Refresh filter dropdown di kasir
+    // Emoji & warna per kategori
+    const KAT_STYLE = {
+      'Pulsa':           { emoji:'📱', color:'#0ea5e9', bg:'rgba(14,165,233,0.1)',  border:'rgba(14,165,233,0.25)'  },
+      'Paket Data':      { emoji:'📡', color:'#6366f1', bg:'rgba(99,102,241,0.1)', border:'rgba(99,102,241,0.25)' },
+      'Token PLN':       { emoji:'⚡', color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.25)'  },
+      'Voucher Game':    { emoji:'🎮', color:'#8b5cf6', bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.25)'  },
+      'BPJS':            { emoji:'🏥', color:'#10b981', bg:'rgba(16,185,129,0.1)',  border:'rgba(16,185,129,0.25)'  },
+      'TV Kabel':        { emoji:'📺', color:'#3b82f6', bg:'rgba(59,130,246,0.1)',  border:'rgba(59,130,246,0.25)'  },
+      'E-Money':         { emoji:'💳', color:'#ec4899', bg:'rgba(236,72,153,0.1)',  border:'rgba(236,72,153,0.25)'  },
+      'Tagihan':         { emoji:'🧾', color:'#ef4444', bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.25)'   },
+      'Lainnya':         { emoji:'📦', color:'#64748b', bg:'rgba(100,116,139,0.1)', border:'rgba(100,116,139,0.25)' },
+      'Aksesoris HP':    { emoji:'🔌', color:'#0ea5e9', bg:'rgba(14,165,233,0.1)',  border:'rgba(14,165,233,0.25)'  },
+      'Casing & Cover':  { emoji:'🛡️', color:'#6366f1', bg:'rgba(99,102,241,0.1)', border:'rgba(99,102,241,0.25)' },
+      'Charger & Kabel': { emoji:'🔋', color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.25)'  },
+      'Earphone':        { emoji:'🎧', color:'#8b5cf6', bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.25)'  },
+      'Memory Card':     { emoji:'💾', color:'#10b981', bg:'rgba(16,185,129,0.1)',  border:'rgba(16,185,129,0.25)'  },
+      'Baterai':         { emoji:'🔦', color:'#f59e0b', bg:'rgba(245,158,11,0.1)',  border:'rgba(245,158,11,0.25)'  },
+      'Tempered Glass':  { emoji:'🪟', color:'#38bdf8', bg:'rgba(56,189,248,0.1)',  border:'rgba(56,189,248,0.25)'  },
+      'Spare Part':      { emoji:'🔧', color:'#ef4444', bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.25)'   },
+    };
+    function getKatStyle(nama) {
+      return KAT_STYLE[nama] || { emoji:'🏷️', color:'#6366f1', bg:'rgba(99,102,241,0.1)', border:'rgba(99,102,241,0.25)' };
+    }
+
+    // Toggle show/hide kategori dropdown panel
+    window.toggleKatDropdown = function(tipe) {
+      const panelId  = tipe === 'digital' ? 'kd-kat-panel'   : 'kf-kat-panel';
+      const chevId   = tipe === 'digital' ? 'kd-kat-chevron'  : 'kf-kat-chevron';
+      const panel    = document.getElementById(panelId);
+      const chev     = document.getElementById(chevId);
+      if (!panel) return;
+      const isOpen = panel.style.display !== 'none';
+      panel.style.display = isOpen ? 'none' : 'block';
+      if (chev) chev.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    };
+
+    // Select kategori dari chip
+    window.selectKatChip = function(tipe, value, labelText, emoji) {
+      const filterId  = tipe === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
+      const labelIcon = tipe === 'digital' ? 'kd-kat-label-icon'  : 'kf-kat-label-icon';
+      const labelTxt  = tipe === 'digital' ? 'kd-kat-label-text'  : 'kf-kat-label-text';
+      const panelId   = tipe === 'digital' ? 'kd-kat-panel'       : 'kf-kat-panel';
+      const chevId    = tipe === 'digital' ? 'kd-kat-chevron'      : 'kf-kat-chevron';
+
+      // Update hidden select
+      const sel = document.getElementById(filterId);
+      if (sel) { sel.value = value; }
+
+      // Update label
+      const iconEl = document.getElementById(labelIcon);
+      const txtEl  = document.getElementById(labelTxt);
+      if (iconEl) iconEl.textContent = emoji;
+      if (txtEl)  txtEl.textContent  = labelText;
+
+      // Update chip active states
+      const chipsContainer = tipe === 'digital' ? 'kd-kat-chips' : 'kf-kat-chips';
+      document.querySelectorAll(`#${chipsContainer} .kat-chip`).forEach(c => {
+        const isActive = c.dataset.val === value;
+        const s = getKatStyle(c.dataset.nama || '');
+        if (isActive) {
+          c.style.background   = s.color;
+          c.style.color        = 'white';
+          c.style.borderColor  = s.color;
+          c.style.transform    = 'scale(1.05)';
+          c.style.boxShadow    = `0 4px 12px ${s.bg.replace('0.1','0.5')}`;
+        } else {
+          c.style.background   = s.bg;
+          c.style.color        = s.color;
+          c.style.borderColor  = s.border;
+          c.style.transform    = 'scale(1)';
+          c.style.boxShadow    = 'none';
+        }
+      });
+
+      // Close panel
+      const panel = document.getElementById(panelId);
+      const chev  = document.getElementById(chevId);
+      if (panel) panel.style.display = 'none';
+      if (chev)  chev.style.transform = 'rotate(0deg)';
+
+      // Run filter
+      filterKasirByKategori(tipe);
+    };
+
+    // Refresh filter dropdown di kasir (update hidden select + rebuild chips)
     window.refreshKategoriFilters = function() {
       ['digital', 'fisik'].forEach(tipe => {
-        const filterId = tipe === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
+        const filterId  = tipe === 'digital' ? 'kd-kategori-filter' : 'kf-kategori-filter';
+        const chipsId   = tipe === 'digital' ? 'kd-kat-chips'       : 'kf-kat-chips';
+        const labelIcon = tipe === 'digital' ? 'kd-kat-label-icon'  : 'kf-kat-label-icon';
+        const labelTxt  = tipe === 'digital' ? 'kd-kat-label-text'  : 'kf-kat-label-text';
         const filterSel = document.getElementById(filterId);
-        if (!filterSel) return;
+        const chipsWrap = document.getElementById(chipsId);
+        if (!filterSel || !chipsWrap) return;
+
         const prev = filterSel.value;
         const list = getKategoriList(tipe);
-        // Tambah "Tanpa Kategori" jika ada produk tanpa kategori
         const hasTanpa = (window.db?.inventory||[]).some(p => p.tipe === tipe && !p.kategori);
+
+        // Rebuild hidden select
         filterSel.innerHTML = '<option value="">Semua Produk</option>' +
           list.map(k => {
             const count = (window.db?.inventory||[]).filter(p => p.tipe === tipe && p.kategori === k).length;
             return count > 0 ? `<option value="${k}" ${k===prev?'selected':''}>${k} (${count})</option>` : '';
           }).join('') +
           (hasTanpa ? `<option value="__tanpa__" ${'__tanpa__'===prev?'selected':''}>Tanpa Kategori</option>` : '');
+
+        // Build chip items: "Semua" + categories
+        const allEmoji = tipe === 'digital' ? '⚡' : '📦';
+        const items = [
+          { val: '', nama: 'Semua Produk', emoji: allEmoji, count: (window.db?.inventory||[]).filter(p => p.tipe === tipe).length }
+        ];
+        list.forEach(k => {
+          const count = (window.db?.inventory||[]).filter(p => p.tipe === tipe && p.kategori === k).length;
+          if (count > 0) {
+            const s = getKatStyle(k);
+            items.push({ val: k, nama: k, emoji: s.emoji, count });
+          }
+        });
+        if (hasTanpa) {
+          items.push({ val: '__tanpa__', nama: 'Tanpa Kategori', emoji: '🏷️', count: (window.db?.inventory||[]).filter(p => p.tipe === tipe && !p.kategori).length });
+        }
+
+        chipsWrap.innerHTML = items.map(item => {
+          const s    = getKatStyle(item.nama);
+          const isActive = item.val === prev;
+          const bg   = isActive ? s.color : s.bg;
+          const col  = isActive ? 'white'  : s.color;
+          const bord = isActive ? s.color  : s.border;
+          const shad = isActive ? `0 4px 12px ${s.bg.replace('0.1','0.45')}` : 'none';
+          return `<button class="kat-chip" data-val="${item.val}" data-nama="${item.nama}"
+            onclick="selectKatChip('${tipe}','${item.val}','${item.nama}','${item.emoji}')"
+            style="display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:100px;
+                   font-size:10px;font-weight:800;border:1.5px solid ${bord};background:${bg};color:${col};
+                   cursor:pointer;white-space:nowrap;transition:all 0.2s;box-shadow:${shad};
+                   font-family:'Plus Jakarta Sans',sans-serif;">
+            <span style="font-size:11px;">${item.emoji}</span>
+            <span>${item.nama}</span>
+            <span style="opacity:0.7;font-size:9px;font-weight:700;">${item.count}</span>
+          </button>`;
+        }).join('');
       });
     };
 
