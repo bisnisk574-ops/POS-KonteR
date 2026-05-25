@@ -9412,161 +9412,468 @@
     }
 
     // ---- CETAK STRUK THERMAL 58mm ----
-    function cetakThermal(id) {
+    // ============================================================
+    // ESC/POS THERMAL PRINT ENGINE
+    // Supports: WebUSB, Web Bluetooth, RawBT (Android), window.print
+    // ============================================================
+    const ThermalPrinter = (() => {
+      // ── ESC/POS byte constants ──────────────────────────────────
+      const ESC = 0x1B, GS = 0x1D, FS = 0x1C, NL = 0x0A;
+      const CMD = {
+        INIT:          [ESC, 0x40],
+        ALIGN_LEFT:    [ESC, 0x61, 0x00],
+        ALIGN_CENTER:  [ESC, 0x61, 0x01],
+        ALIGN_RIGHT:   [ESC, 0x61, 0x02],
+        BOLD_ON:       [ESC, 0x45, 0x01],
+        BOLD_OFF:      [ESC, 0x45, 0x00],
+        DOUBLE_ON:     [GS,  0x21, 0x11],  // double width + height
+        DOUBLE_OFF:    [GS,  0x21, 0x00],
+        UNDERLINE_ON:  [ESC, 0x2D, 0x01],
+        UNDERLINE_OFF: [ESC, 0x2D, 0x00],
+        CUT_FULL:      [GS,  0x56, 0x00],  // full cut
+        CUT_PARTIAL:   [GS,  0x56, 0x01],  // partial cut (safe default)
+        FEED_3:        [ESC, 0x64, 0x03],  // feed 3 lines before cut
+        CASH_DRAWER:   [ESC, 0x70, 0x00, 0x19, 0xFA], // pin 2
+        CASH_DRAWER2:  [ESC, 0x70, 0x01, 0x19, 0xFA], // pin 5
+      };
+
+      // ── Encode UTF-8 string → Uint8Array ───────────────────────
+      function enc(str) { return new TextEncoder().encode(str); }
+
+      // ── Flatten array of (arrays|Uint8Arrays|numbers) ──────────
+      function build(...parts) {
+        const out = [];
+        for (const p of parts) {
+          if (typeof p === 'number') { out.push(p); }
+          else if (p instanceof Uint8Array) { out.push(...p); }
+          else if (Array.isArray(p)) { out.push(...p); }
+        }
+        return new Uint8Array(out);
+      }
+
+      // ── Pad/wrap text to 32 cols (58mm) ────────────────────────
+      const COLS = 32;
+      function padLine(left, right, cols = COLS) {
+        const space = cols - left.length - right.length;
+        return left + ' '.repeat(Math.max(1, space)) + right;
+      }
+      function center(str, cols = COLS) {
+        const pad = Math.max(0, Math.floor((cols - str.length) / 2));
+        return ' '.repeat(pad) + str;
+      }
+      function divider(char = '-', cols = COLS) { return char.repeat(cols); }
+
+      // ── Build ESC/POS bytes from transaksi object ───────────────
+      function buildEscPos(t, opts = {}) {
+        const storeName  = (opts.storeName  || 'KONTERKU').toUpperCase();
+        const alamat     = opts.alamat     || '';
+        const tagline    = opts.tagline    || 'Terima kasih atas kepercayaan Anda';
+        const kasirName  = opts.kasirName  || '';
+        const autoCut    = opts.autoCut    !== false;   // default true
+        const openDrawer = opts.openDrawer || false;
+
+        const rp = n => 'Rp' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
+        const isLunas    = t.status === 'Lunas';
+        const tipeLabel  = t.tipe === 'ewallet' ? 'E-WALLET/TRANSFER'
+                         : t.tipe === 'digital'  ? 'DIGITAL' : 'FISIK';
+        const namaProduk = (t.produk || '-').replace(/^(DIG:|FIS:|EWL:)\s*/i, '');
+
+        // Waktu WIB
+        const now   = new Date();
+        const wib   = new Date(now.getTime() + now.getTimezoneOffset()*60000 + 3600000*7);
+        const pad2  = x => String(x).padStart(2,'0');
+        const waktu = `${pad2(wib.getDate())}/${pad2(wib.getMonth()+1)}/${wib.getFullYear()} ` +
+                      `${pad2(wib.getHours())}:${pad2(wib.getMinutes())}`;
+
+        const bytes = [];
+        const $ = (...x) => bytes.push(build(...x));
+
+        // Init
+        $(...CMD.INIT);
+
+        // Open cash drawer BEFORE print if requested
+        if (openDrawer) { $(...CMD.CASH_DRAWER); }
+
+        // ── Header ──────────────────────────────────────
+        $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON, ...CMD.DOUBLE_ON);
+        $(enc(storeName), NL);
+        $(...CMD.DOUBLE_OFF, ...CMD.BOLD_OFF);
+
+        if (alamat) {
+          alamat.split('\n').forEach(l => {
+            $(enc(l.trim().substring(0, COLS)), NL);
+          });
+        }
+        if (kasirName) $(enc(`Kasir: ${kasirName}`), NL);
+        $(enc(waktu), NL);
+        $(enc(`No: ${t.id}`), NL);
+        $(...CMD.ALIGN_LEFT);
+        $(enc(divider('=')), NL);
+
+        // ── Tipe ────────────────────────────────────────
+        $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON);
+        $(enc(`[ ${tipeLabel} ]`), NL);
+        $(...CMD.BOLD_OFF, ...CMD.ALIGN_LEFT);
+        $(enc(divider()), NL);
+
+        // ── Produk & pelanggan ───────────────────────────
+        $(...CMD.BOLD_ON);
+        $(enc(namaProduk.substring(0, COLS)), NL);
+        $(...CMD.BOLD_OFF);
+        $(enc(padLine('Pelanggan', t.pelanggan || 'Umum')), NL);
+        $(enc(padLine('Tgl Trx',   t.tgl || '-')), NL);
+        $(enc(divider()), NL);
+
+        // ── Rincian harga (TANPA info bank/modal) ────────
+        if (t.tipe === 'ewallet') {
+          $(enc(padLine('Nominal',     rp(t.nominal))), NL);
+          $(enc(padLine('Admin Bank',  rp(t.adminBank))), NL);
+          $(...CMD.BOLD_ON);
+          $(enc(padLine('Total Bayar', rp(t.jual))), NL);
+          $(...CMD.BOLD_OFF);
+        } else {
+          $(...CMD.BOLD_ON);
+          $(enc(padLine('Harga Jual', rp(t.jual))), NL);
+          $(...CMD.BOLD_OFF);
+        }
+
+        // ── Total ────────────────────────────────────────
+        $(enc(divider('=')), NL);
+        $(...CMD.BOLD_ON, ...CMD.DOUBLE_ON);
+        $(enc(center(`TOTAL: ${rp(t.jual)}`)), NL);
+        $(...CMD.DOUBLE_OFF, ...CMD.BOLD_OFF);
+
+        // ── Status ───────────────────────────────────────
+        $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON);
+        $(enc(isLunas ? '*** LUNAS ***' : '-- BELUM LUNAS --'), NL);
+        $(...CMD.BOLD_OFF);
+        $(enc(divider('=')), NL);
+
+        // ── Footer ───────────────────────────────────────
+        $(enc(center(tagline.substring(0, COLS))), NL);
+        $(enc(center('Barang yg dibeli tdk dpt dikembalikan')), NL);
+        $(enc(center('- powered by KonterPro -')), NL);
+
+        // Feed + cut
+        if (autoCut) {
+          $(...CMD.FEED_3, ...CMD.CUT_PARTIAL);
+        } else {
+          $(...CMD.FEED_3);
+        }
+
+        // Gabung semua chunk
+        const total = bytes.reduce((s, b) => s + b.length, 0);
+        const result = new Uint8Array(total);
+        let offset = 0;
+        for (const b of bytes) { result.set(b, offset); offset += b.length; }
+        return result;
+      }
+
+      // ── WebUSB print ────────────────────────────────────────────
+      async function printWebUSB(data) {
+        if (!navigator.usb) throw new Error('WebUSB tidak didukung browser ini.');
+        const device = await navigator.usb.requestDevice({ filters: [] });
+        await device.open();
+        if (device.configuration === null) await device.selectConfiguration(1);
+        await device.claimInterface(0);
+        // Cari endpoint OUT bulk
+        const iface = device.configuration.interfaces[0].alternate;
+        const ep    = iface.endpoints.find(e => e.direction === 'out');
+        if (!ep) throw new Error('Endpoint OUT tidak ditemukan.');
+        await device.transferOut(ep.endpointNumber, data);
+        await device.releaseInterface(0);
+        await device.close();
+      }
+
+      // ── Web Bluetooth print ─────────────────────────────────────
+      // Kompatibel dengan printer BLE thermal (Nordic UART Service)
+      async function printBluetooth(data) {
+        if (!navigator.bluetooth) throw new Error('Web Bluetooth tidak didukung browser ini. Gunakan Chrome/Edge dengan flag experimental.');
+        const NUS_SERVICE  = '000018f0-0000-1000-8000-00805f9b34fb'; // common thermal BLE
+        const NUS_CHAR_TX  = '00002af1-0000-1000-8000-00805f9b34fb';
+        // Fallback Nordic UART
+        const NORDIC_SVC   = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+        const NORDIC_TX    = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+
+        let device, server, characteristic;
+        try {
+          device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [NUS_SERVICE] }],
+            optionalServices: [NORDIC_SVC]
+          });
+        } catch(e) {
+          // Coba Nordic UART fallback
+          device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [NUS_SERVICE, NORDIC_SVC]
+          });
+        }
+        server = await device.gatt.connect();
+
+        // Coba service utama dulu, fallback ke Nordic
+        let service;
+        try { service = await server.getPrimaryService(NUS_SERVICE); }
+        catch(e) { service = await server.getPrimaryService(NORDIC_SVC); }
+
+        try { characteristic = await service.getCharacteristic(NUS_CHAR_TX); }
+        catch(e) { characteristic = await service.getCharacteristic(NORDIC_TX); }
+
+        // Kirim dalam chunk 512 bytes (BLE MTU limit)
+        const CHUNK = 512;
+        for (let i = 0; i < data.length; i += CHUNK) {
+          await characteristic.writeValueWithoutResponse(data.slice(i, i + CHUNK));
+          await new Promise(r => setTimeout(r, 30)); // delay antar chunk
+        }
+        await device.gatt.disconnect();
+      }
+
+      // ── RawBT (Android) ─────────────────────────────────────────
+      // RawBT app menerima intent via deep link rawbt://
+      function printRawBT(data) {
+        // Convert ke base64
+        let binary = '';
+        for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
+        const b64 = btoa(binary);
+        // Buka RawBT intent
+        const uri = 'rawbt:base64,' + b64;
+        const a = document.createElement('a');
+        a.href = uri;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 1000);
+      }
+
+      // ── Thermer (Android) ────────────────────────────────────────
+      function printThermer(data) {
+        let binary = '';
+        for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
+        const b64 = btoa(binary);
+        const uri = 'thermer:escpos,' + b64;
+        const a = document.createElement('a');
+        a.href = uri;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 1000);
+      }
+
+      // ── Fallback: window.print() via popup ──────────────────────
+      function printBrowser(t, opts = {}) {
+        const storeName  = (opts.storeName  || 'KONTERKU').toUpperCase();
+        const alamat     = opts.alamat     || '';
+        const tagline    = opts.tagline    || 'Terima kasih atas kepercayaan Anda';
+        const kasirName  = opts.kasirName  || '';
+
+        const rp = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
+        const isLunas    = t.status === 'Lunas';
+        const tipeLabel  = t.tipe === 'ewallet' ? 'E-WALLET/TRANSFER'
+                         : t.tipe === 'digital'  ? 'DIGITAL' : 'FISIK';
+        const namaProduk = (t.produk || '-').replace(/^(DIG:|FIS:|EWL:)\s*/i, '');
+
+        const now  = new Date();
+        const wib  = new Date(now.getTime() + now.getTimezoneOffset()*60000 + 3600000*7);
+        const pad2 = x => String(x).padStart(2,'0');
+        const waktu = `${pad2(wib.getDate())}/${pad2(wib.getMonth()+1)}/${wib.getFullYear()} ` +
+                      `${pad2(wib.getHours())}:${pad2(wib.getMinutes())}`;
+
+        const alamatLines = alamat
+          ? alamat.split('\n').map(l => `<div class="c s8">${l}</div>`).join('')
+          : '';
+
+        const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<title>Struk ${t.id}</title>
+<style>
+  @page { margin:0; size:58mm auto; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Courier New',monospace;font-size:9pt;width:58mm;
+       padding:4mm 3mm 8mm;color:#000;background:#fff;
+       -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .c{text-align:center;} .r{text-align:right;} .b{font-weight:bold;}
+  .s8{font-size:8pt;} .s7{font-size:7pt;}
+  .line{border-top:1px dashed #000;margin:3px 0;}
+  .dline{border-top:2px solid #000;margin:3px 0;}
+  .row{display:flex;justify-content:space-between;margin:1px 0;}
+  .row .lbl{flex:1;} .row .val{text-align:right;white-space:nowrap;}
+  .big{font-size:11pt;font-weight:bold;}
+  @media print{button,.noprint{display:none!important;} html,body{width:58mm;}}
+</style></head><body>
+<div class="c b" style="font-size:12pt;margin-bottom:1px;">${storeName}</div>
+${alamatLines}
+${kasirName ? `<div class="c s8">Kasir: ${kasirName}</div>` : ''}
+<div class="c s8">${waktu}</div>
+<div class="c s8">No. ${t.id}</div>
+<div class="dline"></div>
+<div class="c b s8" style="margin:2px 0;">[${tipeLabel}]</div>
+<div class="line"></div>
+<div class="b" style="margin:2px 0;font-size:9pt;">${namaProduk}</div>
+<div class="row s8"><span class="lbl">Pelanggan</span><span class="val">${t.pelanggan||'Umum'}</span></div>
+<div class="row s8"><span class="lbl">Tgl Trx</span><span class="val">${t.tgl||'-'}</span></div>
+<div class="line"></div>
+${t.tipe === 'ewallet' ? `
+<div class="row"><span class="lbl">Nominal</span><span class="val">${rp(t.nominal)}</span></div>
+<div class="row"><span class="lbl">Admin Bank</span><span class="val">${rp(t.adminBank)}</span></div>
+<div class="row b"><span class="lbl">Total Bayar</span><span class="val">${rp(t.jual)}</span></div>
+` : `
+<div class="row b"><span class="lbl">Harga Jual</span><span class="val">${rp(t.jual)}</span></div>
+`}
+<div class="dline"></div>
+<div class="row big"><span class="lbl">TOTAL</span><span class="val">${rp(t.jual)}</span></div>
+<div class="c b" style="margin:4px 0;font-size:10pt;letter-spacing:2px;">
+  ${isLunas ? '*** LUNAS ***' : '-- BELUM LUNAS --'}
+</div>
+<div class="dline"></div>
+<div class="c s8" style="margin-top:4px;">${tagline}</div>
+<div class="c s8">Barang yg dibeli tidak dapat dikembalikan</div>
+<div class="c s7" style="margin-top:3px;color:#666;">powered by KonterPro</div>
+<div class="noprint" style="margin-top:12px;text-align:center;">
+  <button onclick="window.print()" style="padding:8px 24px;background:#0061C2;color:#fff;border:none;border-radius:8px;font-size:10pt;font-weight:bold;cursor:pointer;">🖨️ Cetak</button>
+  <button onclick="window.close()" style="margin-left:8px;padding:8px 16px;background:#e2e8f0;color:#333;border:none;border-radius:8px;font-size:10pt;cursor:pointer;">Tutup</button>
+</div>
+</body></html>`;
+
+        const win = window.open('', '_blank', 'width=320,height=620,scrollbars=yes');
+        if (!win) return false;
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        win.onload = () => setTimeout(() => win.print(), 300);
+        return true;
+      }
+
+      return { buildEscPos, printWebUSB, printBluetooth, printRawBT, printThermer, printBrowser };
+    })();
+
+    // ── Modal pilih metode cetak ─────────────────────────────────
+    async function cetakThermal(id) {
       const t = db.transaksi.find(x => x.id === id);
       if (!t) return;
 
-      const storeName = localStorage.getItem('k_store_name') || 'KONTERKU';
-      const kasirName = localStorage.getItem('k_kasir_nama') || localStorage.getItem('k_email') || '';
-      const logoB64   = localStorage.getItem('k_struk_logo')    || '';
+      const Swal2    = _getMySwal() || Swal;
+      const storeName = localStorage.getItem('k_store_name')  || 'KONTERKU';
+      const kasirName = localStorage.getItem('k_kasir_nama')  || localStorage.getItem('k_email') || '';
       const alamat    = localStorage.getItem('k_struk_alamat')  || '';
       const tagline   = localStorage.getItem('k_struk_tagline') || 'Terima kasih atas kepercayaan Anda';
+      const autoCut   = localStorage.getItem('k_thermal_autocut')  !== '0';
+      const openDrawer= localStorage.getItem('k_thermal_drawer')   === '1';
 
-      // Hitung nilai-nilai transaksi
-      const isLunas = t.status === 'Lunas';
-      const tipeLabel = t.tipe === 'ewallet' ? 'E-WALLET/TRANSFER' : t.tipe === 'digital' ? 'DIGITAL' : 'FISIK';
-      const namaProduk = (t.produk || '-').replace(/^(DIG:|FIS:|EWL:)\s*/i, '');
-      const wModal = t.walletModal ? (db.dompet.find(w => w.id === t.walletModal)?.nama || '') : '';
-      const wJual  = t.walletJual  ? (db.dompet.find(w => w.id === t.walletJual)?.nama  || '') : '';
-      const rp = (n) => 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n) || 0);
+      const opts = { storeName, kasirName, alamat, tagline, autoCut, openDrawer };
 
-      // Waktu cetak WIB
-      const now = new Date();
-      const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-      const wib = new Date(utcMs + 3600000 * 7);
-      const pad = (x) => String(x).padStart(2,'0');
-      const waktuCetak = `${wib.getDate()}/${pad(wib.getMonth()+1)}/${wib.getFullYear()} ${pad(wib.getHours())}:${pad(wib.getMinutes())}`;
+      // Deteksi Android
+      const isAndroid = /android/i.test(navigator.userAgent);
+      const hasUSB     = !!navigator.usb;
+      const hasBT      = !!navigator.bluetooth;
 
-      // Baris logo HTML
-      const logoHTML = logoB64
-        ? `<div style="text-align:center;margin-bottom:4px;">
-             <img src="${logoB64}" style="max-width:48mm;max-height:20mm;object-fit:contain;" alt="logo">
-           </div>`
-        : '';
+      // Bangun pilihan metode
+      const methods = [];
+      methods.push({ key:'browser',  icon:'🌐', label:'Print Browser (window.print)' });
+      if (isAndroid) {
+        methods.push({ key:'rawbt',    icon:'📱', label:'RawBT App (Android)' });
+        methods.push({ key:'thermer',  icon:'🔥', label:'Thermer App (Android)' });
+      }
+      if (hasBT)  methods.push({ key:'bluetooth', icon:'🔵', label:'Bluetooth Thermal (BLE)' });
+      if (hasUSB) methods.push({ key:'usb',       icon:'🔌', label:'USB Thermal (WebUSB)' });
 
-      // Baris alamat HTML
-      const alamatLines = alamat ? alamat.split('\n').map(l => `<div class="center" style="font-size:7.5pt;">${l}</div>`).join('') : '';
+      const btnHTML = methods.map(m =>
+        `<button data-key="${m.key}" style="
+          display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;
+          margin-bottom:8px;border:1.5px solid #e2e8f0;border-radius:12px;
+          background:#f8fafc;font-size:13px;font-weight:600;color:#1e293b;
+          cursor:pointer;text-align:left;transition:background .15s;"
+          onmouseover="this.style.background='#eff6ff'"
+          onmouseout="this.style.background='#f8fafc'">
+          <span style="font-size:20px;">${m.icon}</span>
+          <span>${m.label}</span>
+        </button>`
+      ).join('');
 
-      const struHTML = `<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>Struk ${t.id}</title>
-<style>
-  @page { margin: 0; size: 58mm auto; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 9pt;
-    width: 58mm;
-    padding: 4mm 3mm 6mm 3mm;
-    color: #000;
-    background: #fff;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .center { text-align: center; }
-  .right  { text-align: right; }
-  .bold   { font-weight: bold; }
-  .line   { border-top: 1px dashed #000; margin: 3px 0; }
-  .dline  { border-top: 2px solid #000; margin: 3px 0; }
-  .row    { display: flex; justify-content: space-between; margin: 1px 0; }
-  .row .label { flex: 1; }
-  .row .val   { text-align: right; white-space: nowrap; }
-  .big    { font-size: 11pt; font-weight: bold; }
-  .status-lunas  { font-size: 10pt; font-weight: bold; letter-spacing: 2px; }
-  .status-hutang { font-size: 10pt; font-weight: bold; letter-spacing: 2px; }
-  @media print {
-    html, body { width: 58mm; }
-    button, .no-print { display: none !important; }
-  }
-</style>
-</head>
-<body>
+      // Opsi tambahan
+      const extraHTML = `
+        <div style="margin-top:4px;padding-top:10px;border-top:1px solid #f1f5f9;font-size:12px;color:#64748b;">
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;">
+            <input type="checkbox" id="chk_autocut" ${autoCut?'checked':''} style="width:15px;height:15px;">
+            Auto Cut Paper (ESC/POS)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="chk_drawer" ${openDrawer?'checked':''} style="width:15px;height:15px;">
+            Buka Cash Drawer otomatis
+          </label>
+        </div>`;
 
-  <!-- LOGO -->
-  ${logoHTML}
+      const { value: chosen } = await Swal2.fire({
+        title: '🖨️ Pilih Metode Cetak',
+        html: `<div style="text-align:left;">${btnHTML}${extraHTML}</div>`,
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Batal',
+        customClass: { popup: 'swal2-ku' },
+        didOpen: (popup) => {
+          popup.querySelectorAll('button[data-key]').forEach(btn => {
+            btn.addEventListener('click', () => {
+              // Simpan preferensi checkbox
+              const ac = popup.querySelector('#chk_autocut')?.checked ?? true;
+              const dr = popup.querySelector('#chk_drawer')?.checked ?? false;
+              localStorage.setItem('k_thermal_autocut', ac ? '1' : '0');
+              localStorage.setItem('k_thermal_drawer',  dr ? '1' : '0');
+              opts.autoCut    = ac;
+              opts.openDrawer = dr;
+              Swal2.clickConfirm();
+              // Simpan pilihan di elemen tersembunyi
+              popup._chosenKey = btn.dataset.key;
+            });
+          });
+        },
+        preConfirm: () => {
+          const popup = Swal2.getPopup();
+          return popup._chosenKey || null;
+        }
+      });
 
-  <!-- HEADER -->
-  <div class="center bold" style="font-size:12pt;margin-bottom:1px;">${storeName.toUpperCase()}</div>
-  ${alamatLines}
-  ${kasirName ? `<div class="center" style="font-size:8pt;">Kasir: ${kasirName}</div>` : ''}
-  <div class="center" style="font-size:8pt;">${waktuCetak}</div>
-  <div class="center" style="font-size:8pt;">No. ${t.id}</div>
-  <div class="dline"></div>
+      if (!chosen) return;
 
-  <!-- TIPE -->
-  <div class="center bold" style="font-size:8pt;margin:2px 0;">[${tipeLabel}]</div>
-  <div class="line"></div>
-
-  <!-- DETAIL PRODUK -->
-  <div class="bold" style="margin:2px 0;">${namaProduk}</div>
-  <div class="row" style="font-size:8pt;">
-    <span class="label">Pelanggan</span>
-    <span class="val">${t.pelanggan || 'Umum'}</span>
-  </div>
-  <div class="row" style="font-size:8pt;">
-    <span class="label">Tanggal Trx</span>
-    <span class="val">${t.tgl || '-'}</span>
-  </div>
-  <div class="line"></div>
-
-  <!-- RINCIAN EWALLET -->
-  ${t.tipe === 'ewallet' ? `
-  <div class="row"><span class="label">Nominal</span><span class="val">${rp(t.nominal)}</span></div>
-  <div class="row"><span class="label">Admin Bank</span><span class="val">${rp(t.adminBank)}</span></div>
-  <div class="row bold"><span class="label">Total Bayar</span><span class="val">${rp(t.jual)}</span></div>
-  <div class="row" style="font-size:8pt;"><span class="label">Keuntungan</span><span class="val">${rp(t.adminAgen)}</span></div>
-  ` : `
-  <div class="row"><span class="label">Harga Jual</span><span class="val">${rp(t.jual)}</span></div>
-  `}
-
-  ${wModal ? `<div class="row" style="font-size:8pt;"><span class="label">Modal dari</span><span class="val">${wModal}</span></div>` : ''}
-  ${wJual && isLunas ? `<div class="row" style="font-size:8pt;"><span class="label">Dana masuk</span><span class="val">${wJual}</span></div>` : ''}
-
-  <div class="dline"></div>
-
-  <!-- TOTAL -->
-  <div class="row big">
-    <span class="label">TOTAL</span>
-    <span class="val">${rp(t.jual)}</span>
-  </div>
-
-  <!-- STATUS -->
-  <div class="center" style="margin:4px 0;">
-    <span class="status-${isLunas ? 'lunas' : 'hutang'}">${isLunas ? '*** LUNAS ***' : '--- BELUM LUNAS ---'}</span>
-  </div>
-
-  <div class="dline"></div>
-
-  <!-- FOOTER / TAGLINE -->
-  <div class="center" style="font-size:8pt;margin-top:4px;">${tagline}</div>
-  <div class="center" style="font-size:8pt;">Barang yang sudah dibeli</div>
-  <div class="center" style="font-size:8pt;">tidak dapat dikembalikan</div>
-  <div style="margin-top:6px;text-align:center;font-size:7pt;color:#666;">powered by KonterPro</div>
-
-  <!-- Tombol cetak (hanya di layar) -->
-  <div class="no-print" style="margin-top:10px;text-align:center;">
-    <button onclick="window.print()" style="padding:8px 24px;background:#0061C2;color:#fff;border:none;border-radius:8px;font-size:10pt;font-weight:bold;cursor:pointer;">
-      🖨️ Cetak Sekarang
-    </button>
-    <button onclick="window.close()" style="margin-left:8px;padding:8px 16px;background:#e2e8f0;color:#333;border:none;border-radius:8px;font-size:10pt;cursor:pointer;">
-      Tutup
-    </button>
-  </div>
-
-</body>
-</html>`;
-
-      const win = window.open('', '_blank', 'width=320,height=600,scrollbars=yes');
-      if (!win) {
-        (_getMySwal()||Swal).fire('Gagal', 'Popup diblokir browser. Harap izinkan popup untuk mencetak struk.', 'warning');
+      // Jalankan sesuai metode
+      if (chosen === 'browser') {
+        const ok = ThermalPrinter.printBrowser(t, opts);
+        if (!ok) Swal2.fire('Gagal', 'Popup diblokir. Izinkan popup di browser Anda.', 'warning');
         return;
       }
-      win.document.open();
-      win.document.write(struHTML);
-      win.document.close();
-      win.onload = () => { setTimeout(() => win.print(), 300); };
+
+      // ESC/POS path
+      let escData;
+      try { escData = ThermalPrinter.buildEscPos(t, opts); }
+      catch(e) { Swal2.fire('Error', 'Gagal membuat data ESC/POS: ' + e.message, 'error'); return; }
+
+      if (chosen === 'rawbt') {
+        ThermalPrinter.printRawBT(escData);
+        Swal2.fire({ icon:'success', title:'Dikirim ke RawBT', text:'Pastikan app RawBT terbuka dan printer terhubung.', timer:2500, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+        return;
+      }
+
+      if (chosen === 'thermer') {
+        ThermalPrinter.printThermer(escData);
+        Swal2.fire({ icon:'success', title:'Dikirim ke Thermer', text:'Pastikan app Thermer terbuka dan printer terhubung.', timer:2500, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+        return;
+      }
+
+      if (chosen === 'bluetooth') {
+        try {
+          await ThermalPrinter.printBluetooth(escData);
+          Swal2.fire({ icon:'success', title:'Berhasil dicetak!', text:'Struk terkirim via Bluetooth.', timer:2000, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+        } catch(e) {
+          Swal2.fire('Gagal Bluetooth', e.message, 'error');
+        }
+        return;
+      }
+
+      if (chosen === 'usb') {
+        try {
+          await ThermalPrinter.printWebUSB(escData);
+          Swal2.fire({ icon:'success', title:'Berhasil dicetak!', text:'Struk terkirim via USB.', timer:2000, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+        } catch(e) {
+          Swal2.fire('Gagal USB', e.message, 'error');
+        }
+        return;
+      }
     }
 
     // ---- LOGOUT ----
