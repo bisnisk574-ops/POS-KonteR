@@ -6960,9 +6960,8 @@
           _syncedVersion = _syncVersion;
           saveLocalData();
 
-          // ── Refresh store_name & plan dari subscriptions agar selalu up-to-date ──
-          // Hanya untuk pemilik toko (bukan kasir) — kasir tidak punya auth token Firestore
-          if (sid !== 'DEMO' && window._fbFirestore && localStorage.getItem('k_kasir_mode') !== 'true') {
+          // ── Refresh store_name dari subscriptions agar selalu up-to-date ──
+          if (sid !== 'DEMO' && window._fbFirestore) {
             try {
               const subSnap = await window._fbFirestore.collection('subscriptions').doc(sid).get();
               if (subSnap.exists) {
@@ -8780,31 +8779,24 @@
 
     // ---- LOGOUT ----
     function logout() {
-      (_getMySwal()||Swal).fire({ title: 'Keluar?', text: 'Anda akan keluar dari sesi ini.', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal' }).then(res => {
+      (_getMySwal()||Swal).fire({ title: 'Keluar?', text: 'Anda akan keluar dari sesi ini.', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal' }).then(async res => {
         if (res.isConfirmed) {
-          // Sign out dari Firebase Auth
+          // ── Hapus sesi kasir dari Firestore (jika ada) ──
+          const _sessId = localStorage.getItem('k_session_doc_id');
+          if (_sessId && window._fbFirestore) {
+            try { await window._fbFirestore.collection('kasir_sessions').doc(_sessId).delete(); } catch(e) {}
+          }
           if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
-
-          // ── Hapus SEMUA data sesi akun agar tidak bocor ke akun lain ──
-          const _keysToRemove = [
-            'k_logged', 'k_token', 'k_sid', 'k_email',
-            'k_store_name', 'k_plan', 'k_expired_date',
-            'k_owner_uid',
-            'k_active_store_id', 'k_sync_version', 'k_pending_sync', 'k_last_sync',
-            'k_kasir_mode', 'k_kasir_id', 'k_kasir_nama',
-            'k_kasir_username', 'k_kasir_izin',
-            'k_struk_alamat', 'k_struk_tagline', 'k_struk_logo'
-          ];
-          _keysToRemove.forEach(k => localStorage.removeItem(k));
-
-          // Hapus cache DB per-sid (konterku_db_* dan ktg_*)
-          const _allKeys = Object.keys(localStorage);
-          _allKeys.forEach(k => {
-            if (k.startsWith('konterku_db_') || k.startsWith('ktg_')) {
-              localStorage.removeItem(k);
-            }
+          // ── Hapus SEMUA key sesi ──
+          ['k_logged','k_token','k_sid','k_email','k_store_name','k_plan','k_expired_date',
+           'k_owner_uid','k_session_doc_id',
+           'k_active_store_id','k_sync_version','k_pending_sync','k_last_sync',
+           'k_kasir_mode','k_kasir_id','k_kasir_nama','k_kasir_username','k_kasir_izin',
+           'k_kasir_anon_uid','k_struk_alamat','k_struk_tagline','k_struk_logo'
+          ].forEach(k => localStorage.removeItem(k));
+          Object.keys(localStorage).forEach(k => {
+            if (k.startsWith('konterku_db_') || k.startsWith('ktg_')) localStorage.removeItem(k);
           });
-
           location.reload();
         }
       });
@@ -8939,14 +8931,12 @@
         document.getElementById('akun-store-id').innerText = sid;
 
         // ── BACA SUBSCRIPTION DARI FIRESTORE (real-time, fallback ke localStorage) ──
-        // Mode kasir: tidak ada Firebase Auth token → langsung pakai localStorage
         (async () => {
           let expiredDate = localStorage.getItem('k_expired_date');
           let planLabel   = localStorage.getItem('k_plan') || 'trial';
 
-          // Coba ambil dari Firestore HANYA jika bukan mode kasir & online
-          const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
-          if (!isKasirMode && navigator.onLine && window._fbFirestore && sid && sid !== 'DEMO' && sid !== '—') {
+          // Coba ambil dari Firestore jika online
+          if (navigator.onLine && window._fbFirestore && sid && sid !== 'DEMO' && sid !== '—') {
             try {
               const snap = await window._fbFirestore
                 .collection('subscriptions')
@@ -8954,17 +8944,19 @@
                 .get();
               if (snap.exists) {
                 const sub = snap.data();
+                // expired_at bisa Timestamp Firestore atau string ISO
                 let expTs = sub.expired_at;
-                if (expTs && expTs.toDate) expTs = expTs.toDate();
+                if (expTs && expTs.toDate) expTs = expTs.toDate(); // Firestore Timestamp
                 else if (expTs) expTs = new Date(expTs);
                 if (expTs) {
                   expiredDate = expTs.toISOString().split('T')[0];
-                  localStorage.setItem('k_expired_date', expiredDate);
+                  localStorage.setItem('k_expired_date', expiredDate); // update cache
                 }
                 planLabel = sub.plan || planLabel;
                 localStorage.setItem('k_plan', planLabel);
               }
             } catch(e) {
+              // Offline / error → pakai localStorage
               console.warn('[Akun] Gagal baca subscription dari Firestore:', e.message);
             }
           }
@@ -11112,16 +11104,65 @@
       const ownerUid = kasir.owner_uid;
       const storeId  = kasir.store_id;
 
+      // ── Sign in anonymous ke Firebase Auth agar request.auth tersedia di Rules ──
+      let anonUid = '';
+      try {
+        if (window._fbAuth.currentUser && window._fbAuth.currentUser.isAnonymous) {
+          anonUid = window._fbAuth.currentUser.uid;
+        } else {
+          const anonCred = await window._fbAuth.signInAnonymously();
+          anonUid = anonCred.user.uid;
+        }
+        localStorage.setItem('k_kasir_anon_uid', anonUid);
+      } catch(eAnon) {
+        console.warn('[KasirLogin] signInAnonymously gagal:', eAnon.message);
+      }
+
+      // ── Buat device ID unik untuk device ini ──
+      let deviceId = localStorage.getItem('k_device_id');
+      if (!deviceId) {
+        deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        localStorage.setItem('k_device_id', deviceId);
+      }
+
       localStorage.setItem('k_logged', 'true');
-      localStorage.setItem('k_sid', ownerUid);               // data toko milik owner
-      localStorage.setItem('k_owner_uid', ownerUid);         // UID pemilik toko (untuk baca subscription)
-      localStorage.setItem('k_kasir_mode', 'true');          // flag mode kasir
+      localStorage.setItem('k_sid', ownerUid);
+      localStorage.setItem('k_owner_uid', ownerUid);
+      localStorage.setItem('k_kasir_mode', 'true');
       localStorage.setItem('k_kasir_id', kasirDoc.id);
       localStorage.setItem('k_kasir_nama', kasir.nama || username);
       localStorage.setItem('k_kasir_username', username);
       localStorage.setItem('k_kasir_izin', JSON.stringify(kasir.izin || {}));
       localStorage.setItem('k_active_store_id', storeId);
       localStorage.setItem('k_store_name', kasir.store_name || '');
+
+      // ── Simpan sesi kasir ke Firestore (lintas device) ──
+      try {
+        const sessionData = {
+          kasir_id       : kasirDoc.id,
+          kasir_nama     : kasir.nama || username,
+          kasir_username : username,
+          owner_uid      : ownerUid,
+          store_id       : storeId,
+          kode_toko      : storeCode,
+          izin           : kasir.izin || {},
+          device_id      : deviceId,
+          anon_uid       : anonUid,
+          login_at       : new Date(),
+          last_seen      : new Date(),
+          is_active      : true,
+        };
+        // Doc ID = anonUid (= request.auth.uid) agar Rules bisa validasi
+        const sessDocId = anonUid || deviceId;
+        await window._fbFirestore
+          .collection('kasir_sessions')
+          .doc(sessDocId)
+          .set(sessionData, { merge: false });
+        localStorage.setItem('k_session_doc_id', sessDocId);
+      } catch(eSess) {
+        console.warn('[KasirLogin] Gagal simpan sesi ke Firestore:', eSess.message);
+        // Tidak fatal — sesi tetap jalan via localStorage
+      }
 
       // Ambil nama toko dari user_stores
       try {
@@ -11132,31 +11173,20 @@
             if (sName) localStorage.setItem('k_store_name', sName);
           }
         }
-        // Ambil plan dari subscriptions owner — WAJIB menggunakan ownerUid, bukan UID kasir
+        // Ambil plan dari subscriptions owner
         const subSnap = await window._fbFirestore.collection('subscriptions').doc(ownerUid).get();
         if (subSnap.exists) {
           const sub = subSnap.data();
-          if (sub.plan) {
-            localStorage.setItem('k_plan', sub.plan);
-          } else {
-            localStorage.setItem('k_plan', 'trial');
-          }
-          if (sub.expired_at) {
+          if (sub.plan)        localStorage.setItem('k_plan', sub.plan);
+          if (sub.expired_at)  {
             let exp = sub.expired_at;
             if (exp && exp.toDate) exp = exp.toDate();
             else exp = new Date(exp);
-            if (!isNaN(exp.getTime())) {
-              localStorage.setItem('k_expired_date', exp.toISOString().split('T')[0]);
-            }
+            localStorage.setItem('k_expired_date', exp.toISOString().split('T')[0]);
           }
-        } else {
-          // Subscription tidak ditemukan — set trial sebagai aman
-          localStorage.setItem('k_plan', 'trial');
         }
       } catch(e2) {
         console.warn('[KasirLogin] Gagal ambil info toko/plan:', e2.message);
-        // Jangan overwrite k_plan jika sudah ada dari cache sebelumnya
-        if (!localStorage.getItem('k_plan')) localStorage.setItem('k_plan', 'trial');
       }
 
       // Masuk ke app
@@ -11278,17 +11308,24 @@
       icon: 'question', showCancelButton: true,
       confirmButtonText: 'Ya, Keluar',
       cancelButtonText: 'Batal'
-    }).then(res => {
+    }).then(async res => {
       if (res.isConfirmed) {
+        // ── Hapus sesi kasir dari Firestore ──
+        const sessionDocId = localStorage.getItem('k_session_doc_id');
+        if (sessionDocId && window._fbFirestore) {
+          try {
+            await window._fbFirestore.collection('kasir_sessions').doc(sessionDocId).delete();
+          } catch(e) { console.warn('[Logout] Gagal hapus sesi Firestore:', e.message); }
+        }
         if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
-        // Bersihkan SEMUA data sesi agar tidak bocor ke akun lain
+        // Bersihkan SEMUA data sesi
         const _kKeys = [
           'k_logged','k_token','k_sid','k_email',
           'k_store_name','k_plan','k_expired_date',
-          'k_owner_uid',
+          'k_owner_uid', 'k_session_doc_id',
           'k_active_store_id','k_sync_version','k_pending_sync','k_last_sync',
           'k_kasir_mode','k_kasir_id','k_kasir_nama','k_kasir_username','k_kasir_izin',
-          'k_struk_alamat','k_struk_tagline','k_struk_logo'
+          'k_kasir_anon_uid','k_struk_alamat','k_struk_tagline','k_struk_logo'
         ];
         _kKeys.forEach(k => localStorage.removeItem(k));
         Object.keys(localStorage).forEach(k => {
@@ -11306,6 +11343,147 @@
       setTimeout(applyKasirRestrictions, 1500);
     }
   });
+
+  // ─── AUTO-DETECT SESI KASIR DARI FIRESTORE (lintas device) ───
+  // Jika device ini belum login tapi punya device_id yang masih aktif di Firestore,
+  // restore sesi otomatis tanpa perlu login ulang.
+  (function() {
+    // Hanya jalankan jika belum login
+    if (localStorage.getItem('k_logged') === 'true') return;
+
+    const deviceId = localStorage.getItem('k_device_id');
+    if (!deviceId) return; // Device baru tanpa sesi sebelumnya
+
+    async function _tryRestoreSession() {
+      try {
+        // Tunggu Firebase siap
+        await new Promise(resolve => {
+          const t = setInterval(() => {
+            if (window._fbFirestore) { clearInterval(t); resolve(); }
+          }, 200);
+          setTimeout(() => { clearInterval(t); resolve(); }, 8000);
+        });
+        if (!window._fbFirestore) return;
+
+        const sessSnap = await window._fbFirestore
+          .collection('kasir_sessions')
+          .doc(deviceId)
+          .get();
+
+        if (!sessSnap.exists) return; // Sesi sudah dihapus / belum ada
+
+        const sess = sessSnap.data();
+        if (!sess.is_active) return; // Sesi sudah dinonaktifkan
+
+        // Cek apakah sesi tidak terlalu lama (max 24 jam)
+        const loginAt = sess.login_at && sess.login_at.toDate ? sess.login_at.toDate() : new Date(sess.login_at);
+        const ageHours = (Date.now() - loginAt.getTime()) / 3600000;
+        if (ageHours > 24) {
+          // Sesi expired — hapus dari Firestore
+          await window._fbFirestore.collection('kasir_sessions').doc(deviceId).delete().catch(()=>{});
+          return;
+        }
+
+        // Ambil data kasir terkini dari kasir_accounts
+        const kasirSnap = await window._fbFirestore
+          .collection('kasir_accounts')
+          .doc(sess.kasir_id)
+          .get();
+
+        if (!kasirSnap.exists) return;
+        const kasir = kasirSnap.data();
+        if (!kasir.is_active) return; // Kasir dinonaktifkan oleh pemilik
+
+        // Ambil plan dari subscriptions owner
+        let planLabel = 'trial', expiredDate = '';
+        try {
+          const subSnap = await window._fbFirestore
+            .collection('subscriptions')
+            .doc(sess.owner_uid)
+            .get();
+          if (subSnap.exists) {
+            const sub = subSnap.data();
+            planLabel = sub.plan || 'trial';
+            if (sub.expired_at) {
+              let exp = sub.expired_at;
+              if (exp && exp.toDate) exp = exp.toDate(); else exp = new Date(exp);
+              expiredDate = exp.toISOString().split('T')[0];
+            }
+          }
+        } catch(e) { /* plan tetap trial jika gagal */ }
+
+        // Ambil nama toko
+        let storeName = sess.store_name || kasir.store_name || '';
+        try {
+          if (sess.store_id) {
+            const storeSnap = await window._fbFirestore
+              .collection('user_stores')
+              .doc(sess.store_id)
+              .get();
+            if (storeSnap.exists) storeName = storeSnap.data().store_name || storeName;
+          }
+        } catch(e) {}
+
+        // Update last_seen di Firestore
+        window._fbFirestore.collection('kasir_sessions').doc(deviceId)
+          .update({ last_seen: new Date() }).catch(()=>{});
+
+        // ── Re-sign-in anonymous agar request.auth.uid ada kembali setelah reload ──
+        let restoredAnonUid = sess.anon_uid || '';
+        try {
+          if (window._fbAuth) {
+            if (window._fbAuth.currentUser && window._fbAuth.currentUser.isAnonymous) {
+              restoredAnonUid = window._fbAuth.currentUser.uid;
+            } else {
+              const anonCred = await window._fbAuth.signInAnonymously();
+              restoredAnonUid = anonCred.user.uid;
+            }
+            localStorage.setItem('k_kasir_anon_uid', restoredAnonUid);
+          }
+        } catch(eAnon) {
+          console.warn('[KasirSession] signInAnonymously gagal saat restore:', eAnon.message);
+        }
+
+        // Restore semua sesi ke localStorage
+        localStorage.setItem('k_logged',           'true');
+        localStorage.setItem('k_sid',              sess.owner_uid);
+        localStorage.setItem('k_owner_uid',        sess.owner_uid);
+        localStorage.setItem('k_kasir_mode',       'true');
+        localStorage.setItem('k_kasir_id',         sess.kasir_id);
+        localStorage.setItem('k_kasir_nama',       sess.kasir_nama || '');
+        localStorage.setItem('k_kasir_username',   sess.kasir_username || '');
+        localStorage.setItem('k_kasir_izin',       JSON.stringify(kasir.izin || {}));
+        localStorage.setItem('k_active_store_id',  sess.store_id || '');
+        localStorage.setItem('k_store_name',       storeName);
+        localStorage.setItem('k_plan',             planLabel);
+        localStorage.setItem('k_session_doc_id',   restoredAnonUid || deviceId);
+        if (expiredDate) localStorage.setItem('k_expired_date', expiredDate);
+
+        // Langsung masuk ke app
+        console.log('[KasirSession] Sesi dipulihkan otomatis untuk:', sess.kasir_nama);
+        (_getMySwal()||Swal).fire({
+          icon: 'success',
+          title: '👋 Halo, ' + (sess.kasir_nama || 'Kasir') + '!',
+          html: 'Sesi kasir dipulihkan otomatis.<br><small style="color:#94a3b8;">Toko: <b>' + storeName + '</b></small>',
+          timer: 2200, showConfirmButton: false,
+          customClass: { popup: 'swal2-ku' }
+        });
+
+        initApp(false);
+        setTimeout(applyKasirRestrictions, 1200);
+
+      } catch(e) {
+        console.warn('[KasirSession] Gagal restore sesi:', e.message);
+      }
+    }
+
+    // Jalankan setelah DOM siap
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(_tryRestoreSession, 800));
+    } else {
+      setTimeout(_tryRestoreSession, 800);
+    }
+  })();
 
   // ─── HOOK: Tambahkan handle 'absensi-kasir' di openSidebarMenu ───
   // (ditambah setelah patch kelola-kasir)
