@@ -5590,7 +5590,11 @@
             <p style="font-size:9px;font-weight:900;color:rgba(56,189,248,0.6);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;"><i class="fas fa-wallet mr-1.5"></i>Dompet Penerima Pembayaran</p>
             <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
               <i class="fas fa-money-bill-wave" style="color:#38BDF8;font-size:13px;"></i>
-              <select id="cart-all-wallet" class="kasir-field-input" style="background:transparent;color:white;font-size:13px;flex:1;border:none;padding:0;"></select>
+              <div class="ewl-custom-select-wrap" style="flex:1;" id="cart-all-wallet-wrap">
+                <select id="cart-all-wallet" class="kasir-field-input ewl-hidden-select" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;z-index:2;" onchange="syncCartWalletLabel()"></select>
+                <span id="cart-all-wallet-label" style="font-size:13px;font-weight:700;color:white;pointer-events:none;">— Pilih Dompet Penerima —</span>
+                <i class="fas fa-chevron-down" style="font-size:9px;color:rgba(255,255,255,0.4);pointer-events:none;"></i>
+              </div>
             </div>
           </div>
 
@@ -7365,6 +7369,15 @@
         o.textContent = (w.icon || '💼') + ' ' + w.nama + ' (Rp ' + fmt(w.saldo) + ')';
         sel.appendChild(o);
       });
+      syncCartWalletLabel();
+    }
+
+    function syncCartWalletLabel() {
+      const sel = document.getElementById('cart-all-wallet');
+      const lbl = document.getElementById('cart-all-wallet-label');
+      if (!sel || !lbl) return;
+      const opt = sel.options[sel.selectedIndex];
+      lbl.textContent = opt && opt.value ? opt.text : '— Pilih Dompet Penerima —';
     }
 
     function hapusItemKeranjangAll(itemId) {
@@ -7473,9 +7486,9 @@
       const konfirm = await (_getMySwal()||Swal).fire({
         title: 'Proses Semua?',
         html: `<p style="font-size:13px;color:#475569;">
-          Memproses <b>\${items.length} transaksi</b> dari <b>\${items.filter(i=>i.tipe==='digital').length} digital</b>,
-          <b>\${items.filter(i=>i.tipe==='fisik').length} fisik</b>, <b>\${items.filter(i=>i.tipe==='ewallet').length} e-wallet</b><br>
-          Total bayar: <b style="color:#0061C2;">Rp \${fmt(totalBayar)}</b> · Laba: <b style="color:#059669;">Rp \${fmt(totalLaba)}</b>
+          Memproses <b>${items.length} transaksi</b> dari <b>${items.filter(i=>i.tipe==='digital').length} digital</b>,
+          <b>${items.filter(i=>i.tipe==='fisik').length} fisik</b>, <b>${items.filter(i=>i.tipe==='ewallet').length} e-wallet</b><br>
+          Total bayar: <b style="color:#0061C2;">Rp ${fmt(totalBayar)}</b> · Laba: <b style="color:#059669;">Rp ${fmt(totalLaba)}</b>
         </p>`,
         icon: 'question',
         showCancelButton: true,
@@ -7541,7 +7554,7 @@
 
       (_getMySwal()||Swal).fire({
         title: 'Sukses! 🎉', icon: 'success',
-        html: `<p style="font-size:13px;color:#475569;"><b>\${berhasil} transaksi</b> berhasil diproses!<br>Total: <b style="color:#0061C2;">Rp \${fmt(totalBayar)}</b> · Laba: <b style="color:#059669;">Rp \${fmt(totalLaba)}</b></p>`,
+        html: `<p style="font-size:13px;color:#475569;"><b>${berhasil} transaksi</b> berhasil diproses!<br>Total: <b style="color:#0061C2;">Rp ${fmt(totalBayar)}</b> · Laba: <b style="color:#059669;">Rp ${fmt(totalLaba)}</b></p>`,
         timer: 2500, showConfirmButton: false, customClass: { popup: 'swal2-ku' }
       });
       syncImmediate().then(ok => { if (!ok && navigator.onLine) console.warn('[Kasir] Cloud sync gagal'); });
