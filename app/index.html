@@ -10613,33 +10613,25 @@ ${t.tipe === 'ewallet' ? `
           if (k.startsWith('konterku_db_') || k.startsWith('ktg_')) localStorage.removeItem(k);
         });
 
-        // Reset db in-memory
-        if (window.db) {
-          window.db.transaksi   = [];
-          window.db.produk      = window.db.produk      ? [] : window.db.produk;
-          window.db.inventory   = [];
-          window.db.pelanggan   = [];
-          window.db.hutang      = [];
-          window.db.hutang_lunas= [];
-          window.db.dompet      = [];
-          window.db.mutasi      = [];
-          window.db.notes       = [];
-          window.db.riwayat_hutang = [];
-        }
+        // Reset db in-memory — FIXED: assign ulang seluruh objek agar referensi sinkron
+        db = {
+          dompet: [], transaksi: [], inventory: [], hutang: [],
+          hutang_lunas: [], pelanggan: [], mutasi: [], notes: [],
+          riwayat_hutang: []
+        };
+        window.db = db;
+        saveLocalData(); // simpan state kosong ke localStorage sebelum reload
 
-        // Hapus dari Firestore (jika online)
-        const uid = localStorage.getItem('k_sid');
+        // Hapus dari Firestore (jika online) — FIXED: pakai path 'stores' sesuai saveFirebaseData()
+        const uid = _resolveStoreId(localStorage.getItem('k_sid'));
         if (uid && uid !== 'DEMO' && window._fbFirestore) {
-          const colls = ['transaksi','produk','inventory','pelanggan','hutang','hutang_lunas','dompet','mutasi','notes'];
-          for (const coll of colls) {
-            try {
-              const snap = await window._fbFirestore
-                .collection('toko').doc(uid).collection(coll).get();
-              const batch = window._fbFirestore.batch();
-              snap.docs.forEach(d => batch.delete(d.ref));
-              if (snap.docs.length) await batch.commit();
-            } catch(e) { /* lanjut */ }
-          }
+          try {
+            await window._fbFirestore.collection('stores').doc(uid).set({
+              dompet: [], transaksi: [], inventory: [], hutang: [],
+              hutang_lunas: [], pelanggan: [], mutasi: [], notes: [],
+              riwayat_hutang: []
+            });
+          } catch(e) { console.warn('[hapusSemuaData] Gagal reset Firestore:', e.message); }
         }
 
         Swal2.close();
