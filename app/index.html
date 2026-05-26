@@ -7390,13 +7390,13 @@
         const laba = it.tipe === 'ewallet' ? it.ewlData.adminAgen : (it.jual - it.modal);
         let detail = '';
         if (it.tipe === 'ewallet') {
-          detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Nominal: <b style="color:#7c3aed;">Rp \${fmt(it.ewlData.nominal)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Admin bank: <b style="color:#f97316;">Rp \${fmt(it.ewlData.adminBank)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Untung: <b style="color:#10b981;">Rp \${fmt(it.ewlData.adminAgen)}</b></span>`;
+          detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Nominal: <b style="color:#7c3aed;">Rp ${fmt(it.ewlData.nominal)}</b></span>
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Admin bank: <b style="color:#f97316;">Rp ${fmt(it.ewlData.adminBank)}</b></span>
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Untung: <b style="color:#10b981;">Rp ${fmt(it.ewlData.adminAgen)}</b></span>`;
         } else {
-          detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Modal: <b style="color:#64748b;">Rp \${fmt(it.modal)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Jual: <b style="color:#0061C2;">Rp \${fmt(it.jual)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Laba: <b style="color:#10b981;">Rp \${fmt(laba)}</b></span>`;
+          detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Modal: <b style="color:#64748b;">Rp ${fmt(it.modal)}</b></span>
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Jual: <b style="color:#0061C2;">Rp ${fmt(it.jual)}</b></span>
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Laba: <b style="color:#10b981;">Rp ${fmt(laba)}</b></span>`;
         }
         return `
         <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #f1f5f9;background:white;">
