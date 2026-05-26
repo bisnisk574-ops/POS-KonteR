@@ -280,6 +280,40 @@
 
     /* ===== WALLET TAB SWITCH ===== */
     .wallet-tab-wrap { background: #EEF2FF; border: 1px solid #E0E7FF; }
+    /* ── Tab Switch Wrap — adaptive light/dark ── */
+    .tab-switch-wrap {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+    }
+    [data-theme="dark"] .tab-switch-wrap {
+      background: rgba(255,255,255,0.07) !important;
+      border: 1px solid rgba(255,255,255,0.09) !important;
+    }
+    /* Tombol inactive di dalam switch wrap — dark mode */
+    [data-theme="dark"] .tab-switch-wrap button.bg-transparent,
+    [data-theme="dark"] .tab-switch-wrap button[style*="background:transparent"] {
+      color: rgba(255,255,255,0.35) !important;
+    }
+    [data-theme="dark"] .tab-switch-wrap .bg-transparent { color: rgba(255,255,255,0.35) !important; }
+    [data-theme="dark"] .tab-switch-wrap .text-slate-400 { color: rgba(255,255,255,0.35) !important; }
+
+    /* kasir-tab-btn wrap (kasir Digital/Fisik/E-Wallet) */
+    .kasir-tab-wrap {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+    }
+    [data-theme="light"] .kasir-tab-wrap {
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+    }
+    [data-theme="light"] .kasir-tab-btn.k-inactive {
+      color: #94a3b8 !important;
+    }
+
     [data-theme="dark"] .wallet-tab-wrap { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
     /* Inactive tab teks mengikuti tema */
     .wallet-tab-inactive { color: #94A3B8; }
@@ -5937,7 +5971,7 @@
         </div>
 
         <!-- Switch Toggle -->
-        <div class="flex bg-slate-100 p-1 rounded-2xl mb-5 gap-1">
+        <div class="flex tab-switch-wrap p-1 rounded-2xl mb-5 gap-1">
           <button id="stok-switch-digital" onclick="setStokTab('digital')"
             class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[11px] transition-all duration-200 cursor-pointer border-0"
             style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 14px rgba(0,97,194,0.35);">
@@ -6282,7 +6316,7 @@
           <!-- Tipe Switch -->
           <div>
             <label>Tipe Produk</label>
-            <div class="flex bg-slate-100 p-1 rounded-2xl gap-1 mt-1">
+            <div class="flex tab-switch-wrap p-1 rounded-2xl gap-1 mt-1">
               <button id="modal-switch-digital" onclick="setModalTipe('digital')"
                 class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[11px] cursor-pointer border-0 transition-all duration-200"
                 style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);">
@@ -8739,6 +8773,13 @@
       if (wrapFis) wrapFis.style.display = activeStokTab === 'fisik'   ? '' : 'none';
     }
 
+
+    // ── Tab Switch Helper: warna inactive adaptif tema ──
+    function _tabInactiveStyle() {
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      return dark ? 'background:transparent;color:rgba(255,255,255,0.3);box-shadow:none;'
+                  : 'background:transparent;color:#64748b;box-shadow:none;';
+    }
     function setStokTab(tab) {
       activeStokTab = tab;
       // Tidak reset filter — tiap tab punya filter masing-masing
@@ -8752,10 +8793,10 @@
       if (btnDig && btnFis) {
         if (tab === 'digital') {
           btnDig.style.cssText = 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 14px rgba(0,97,194,0.35);';
-          btnFis.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+          btnFis.style.cssText = _tabInactiveStyle();
         } else {
           btnFis.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 14px rgba(124,58,237,0.35);';
-          btnDig.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+          btnDig.style.cssText = _tabInactiveStyle();
         }
       }
       renderStokKtgChips(tab);
@@ -8770,10 +8811,10 @@
       if (btnDig && btnFis) {
         if (tipe === 'digital') {
           btnDig.style.cssText = 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);';
-          btnFis.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+          btnFis.style.cssText = _tabInactiveStyle();
         } else {
           btnFis.style.cssText = 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 12px rgba(124,58,237,0.3);';
-          btnDig.style.cssText = 'background:transparent;color:#94a3b8;box-shadow:none;';
+          btnDig.style.cssText = _tabInactiveStyle();
         }
       }
       if (stokWrap) stokWrap.style.display = (tipe === 'digital') ? 'none' : 'block';
@@ -15642,7 +15683,7 @@ ${t.tipe === 'ewallet' ? `
       </div>
 
       <!-- Tab Pilih Tipe Kategori -->
-      <div class="flex bg-slate-100 p-1 rounded-2xl gap-1 mb-4">
+      <div class="flex tab-switch-wrap p-1 rounded-2xl gap-1 mb-4">
         <button id="ktg-tab-digital" onclick="switchKtgTab('digital')"
           class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-black text-[10px] cursor-pointer border-0 transition-all"
           style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);">
@@ -15982,10 +16023,10 @@ ${t.tipe === 'ewallet' ? `
       const label = document.getElementById('ktg-modal-tipe-label');
       if (tabDig) tabDig.style.cssText = isDig
         ? 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;box-shadow:0 4px 12px rgba(0,97,194,0.3);'
-        : 'background:transparent;color:#94a3b8;box-shadow:none;';
+        : _tabInactiveStyle();
       if (tabFis) tabFis.style.cssText = !isDig
         ? 'background:linear-gradient(135deg,#7c3aed,#a78bfa);color:white;box-shadow:0 4px 12px rgba(124,58,237,0.3);'
-        : 'background:transparent;color:#94a3b8;box-shadow:none;';
+        : _tabInactiveStyle();
       if (label) label.innerHTML = isDig
         ? '<i class="fas fa-bolt mr-1" style="color:#0ea5e9;"></i>Kategori Produk Digital'
         : '<i class="fas fa-box mr-1" style="color:#a78bfa;"></i>Kategori Produk Fisik';
