@@ -323,7 +323,7 @@
     /* Active state */
     .nav-item.active .nav-icon-wrap {
       background: linear-gradient(135deg, #0061C2, #38BDF8);
-      box-shadow: 0 6px 18px rgba(0,97,194,0.55), 0 2px 6px rgba(56,189,248,0.3);
+      box-shadow: 0 6px 18px rgba(0,97,194,0.55);
       transform: translateY(-4px);
     }
     .nav-item.active .nav-icon { color: white; font-size: 1.1rem; }
@@ -5693,7 +5693,7 @@
                   <i class="fas fa-bolt" style="color:#38bdf8;font-size:11px;"></i>
                 </div>
                 <div style="text-align:left;">
-                  <p id="stok-kat-trigger-label-digital" style="font-size:12px;font-weight:800;color:#1e293b;">Semua Kategori</p>
+                  <p id="stok-kat-trigger-label-digital" style="font-size:14px;font-weight:900;color:#0f172a;letter-spacing:-0.01em;">Semua Kategori</p>
                   <p id="stok-kat-trigger-sub-digital" style="font-size:9px;font-weight:600;color:#94a3b8;">Tap untuk filter digital</p>
                 </div>
               </div>
@@ -5716,7 +5716,7 @@
                   <i class="fas fa-box" style="color:#a78bfa;font-size:11px;"></i>
                 </div>
                 <div style="text-align:left;">
-                  <p id="stok-kat-trigger-label-fisik" style="font-size:12px;font-weight:800;color:#1e293b;">Semua Kategori</p>
+                  <p id="stok-kat-trigger-label-fisik" style="font-size:14px;font-weight:900;color:#0f172a;letter-spacing:-0.01em;">Semua Kategori</p>
                   <p id="stok-kat-trigger-sub-fisik" style="font-size:9px;font-weight:600;color:#94a3b8;">Tap untuk filter fisik</p>
                 </div>
               </div>
@@ -8580,7 +8580,7 @@
           </div>
           <!-- Info -->
           <div class="flex-1 min-w-0">
-            <p class="text-[12px] font-black text-slate-800 truncate">${p.nama||''}</p>
+            <p style="font-size:14px;font-weight:900;color:#0f172a;letter-spacing:-0.01em;line-height:1.3;" class="truncate">${p.nama||''}</p>
             <div class="flex items-center gap-2 mt-1 flex-wrap">
               ${p.kategori ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);"><i class="fas fa-tag text-[7px]" style="color:#6366f1;"></i><span class="font-black text-[8px]" style="color:#4f46e5;">${p.kategori}</span></span>` : ''}
               <span class="text-[9px] font-bold text-slate-400">Modal <span class="text-slate-600 font-black">Rp ${fmt(p.modal)}</span></span>
