@@ -641,6 +641,238 @@
       background:#1e293b !important; border-color:rgba(255,255,255,0.08) !important;
     }
     [data-theme="dark"] #stok-kat-trigger-label { color:#e2e8f0 !important; }
+    /* ============================================================
+       DARK MODE — Form, Modal, Kasir, Dompet (adaptive)
+    ============================================================ */
+
+    /* Modal content (bottom sheet) */
+    [data-theme="dark"] .modal-content {
+      background: #0f172a !important;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* Judul & teks di dalam modal */
+    [data-theme="dark"] .modal-content h2,
+    [data-theme="dark"] .modal-content h3,
+    [data-theme="dark"] .modal-content label,
+    [data-theme="dark"] .modal-content p:not(.kasir-field-label) {
+      color: #e2e8f0 !important;
+    }
+
+    /* input-premium (Tambah Produk, Tambah Dompet, dll) */
+    [data-theme="dark"] .input-premium {
+      background: rgba(255,255,255,0.06) !important;
+      color: #f1f5f9 !important;
+      border-color: rgba(255,255,255,0.1) !important;
+    }
+    [data-theme="dark"] .input-premium:focus {
+      background: rgba(255,255,255,0.09) !important;
+      border-color: #0061C2 !important;
+    }
+    [data-theme="dark"] .input-premium::placeholder { color: rgba(255,255,255,0.25) !important; }
+    [data-theme="dark"] select.input-premium option { background: #1e293b; color: #f1f5f9; }
+
+    /* kasir-field-card */
+    [data-theme="dark"] .kasir-field-card {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.07) !important;
+    }
+    [data-theme="dark"] .kasir-field-row {
+      border-bottom-color: rgba(255,255,255,0.06) !important;
+    }
+    [data-theme="dark"] .kasir-field-row:focus-within {
+      background: rgba(255,255,255,0.04) !important;
+    }
+    [data-theme="dark"] .kasir-field-input {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .kasir-field-input::placeholder { color: rgba(255,255,255,0.25) !important; }
+    [data-theme="dark"] select.kasir-field-input option { background: #1e293b; color: #f1f5f9; }
+
+    /* filter-chip */
+    [data-theme="dark"] .filter-chip {
+      background: rgba(255,255,255,0.06) !important;
+      border-color: rgba(255,255,255,0.1) !important;
+      color: #94a3b8 !important;
+    }
+    [data-theme="dark"] .filter-chip.active {
+      background: #0061C2 !important;
+      color: white !important;
+      border-color: #0061C2 !important;
+    }
+
+    /* Tambah Produk — tab tipe Digital/Fisik */
+    [data-theme="dark"] #modal-produk .bg-white,
+    [data-theme="dark"] #modal-wallet .bg-white,
+    [data-theme="dark"] #modal-adj-wallet .bg-white,
+    [data-theme="dark"] #modal-tr-wallet .bg-white {
+      background: rgba(255,255,255,0.06) !important;
+    }
+
+    /* Semua modal-content dark: teks label uppercase */
+    [data-theme="dark"] .modal-content p[style*="font-size:9px"],
+    [data-theme="dark"] .modal-content p[style*="font-size: 9px"] {
+      color: #64748b !important;
+    }
+
+    /* Tab pill toggle di modal (Digital/Fisik, dll) */
+    [data-theme="dark"] .modal-content [style*="background:#f1f5f9"],
+    [data-theme="dark"] .modal-content [style*="background: #f1f5f9"],
+    [data-theme="dark"] .modal-content [style*="background:#f8fafc"],
+    [data-theme="dark"] .modal-content [style*="background: #f8fafc"] {
+      background: rgba(255,255,255,0.07) !important;
+    }
+
+    /* Tab toggle di form (Digital/Fisik) */
+    [data-theme="dark"] .modal-content [style*="background:white"],
+    [data-theme="dark"] .modal-content [style*="background: white"],
+    [data-theme="dark"] .modal-content [style*="background:#fff"],
+    [data-theme="dark"] .modal-content [style*="background: #fff"] {
+      background: rgba(255,255,255,0.06) !important;
+    }
+    [data-theme="dark"] .modal-content [style*="background:#f8fafc"],
+    [data-theme="dark"] .modal-content [style*="background: #f8fafc"],
+    [data-theme="dark"] .modal-content [style*="background:#f1f5f9"],
+    [data-theme="dark"] .modal-content [style*="background: #f1f5f9"] {
+      background: rgba(255,255,255,0.05) !important;
+    }
+    [data-theme="dark"] .modal-content [style*="color:#1e293b"],
+    [data-theme="dark"] .modal-content [style*="color: #1e293b"],
+    [data-theme="dark"] .modal-content [style*="color:#0f172a"],
+    [data-theme="dark"] .modal-content [style*="color: #0f172a"] {
+      color: #e2e8f0 !important;
+    }
+    [data-theme="dark"] .modal-content [style*="border-color:#e2e8f0"],
+    [data-theme="dark"] .modal-content [style*="border:1.5px solid #e2e8f0"],
+    [data-theme="dark"] .modal-content [style*="border: 1.5px solid #e2e8f0"] {
+      border-color: rgba(255,255,255,0.1) !important;
+    }
+
+    /* Stok filter card (search + kategori) di dark mode */
+    [data-theme="dark"] .stok-kat-trigger-btn {
+      background: rgba(255,255,255,0.06) !important;
+      border-color: rgba(255,255,255,0.12) !important;
+    }
+    [data-theme="dark"] #stok-search-nama {
+      background: rgba(255,255,255,0.06) !important;
+      color: #f1f5f9 !important;
+      border-color: rgba(255,255,255,0.1) !important;
+    }
+
+    /* SweetAlert dark mode */
+    [data-theme="dark"] .swal2-popup.swal2-ku {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] .swal2-popup.swal2-ku .swal2-title { color: #f1f5f9 !important; }
+    [data-theme="dark"] .swal2-popup.swal2-ku .swal2-html-container,
+    [data-theme="dark"] .swal2-popup.swal2-ku .swal2-content { color: #94a3b8 !important; }
+    [data-theme="dark"] .swal2-popup.swal2-ku input,
+    [data-theme="dark"] .swal2-popup.swal2-ku select,
+    [data-theme="dark"] .swal2-popup.swal2-ku textarea {
+      background: rgba(255,255,255,0.07) !important;
+      color: #f1f5f9 !important;
+      border-color: rgba(255,255,255,0.12) !important;
+    }
+
+    /* Kasir modal harga badge (MODAL/JUAL) */
+    [data-theme="dark"] .kasir-price-badge {
+      background: rgba(14,165,233,0.08) !important;
+      border-color: rgba(14,165,233,0.2) !important;
+    }
+    [data-theme="dark"] .kasir-laba-badge {
+      background: rgba(16,185,129,0.08) !important;
+      border-color: rgba(16,185,129,0.2) !important;
+    }
+    [data-theme="dark"] .kasir-status-lunas {
+      background: rgba(16,185,129,0.1) !important;
+      border-color: rgba(16,185,129,0.25) !important;
+    }
+    [data-theme="dark"] .kasir-status-hutang {
+      background: rgba(239,68,68,0.1) !important;
+      border-color: rgba(239,68,68,0.25) !important;
+    }
+
+    /* ── Hutang card list (renderHutang) ── */
+    [data-theme="dark"] #hutang-list .bg-white,
+    [data-theme="dark"] #hutang-list [class*="bg-white"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.07) !important;
+    }
+    [data-theme="dark"] #hutang-list .text-slate-800,
+    [data-theme="dark"] #hutang-list .text-slate-700 { color: #e2e8f0 !important; }
+    [data-theme="dark"] #hutang-list .text-slate-400 { color: #64748b !important; }
+
+    /* tombol EDIT & HAPUS di card hutang */
+    [data-theme="dark"] #hutang-list [style*="background:#eff6ff"] {
+      background: rgba(37,99,235,0.15) !important;
+      color: #93c5fd !important;
+    }
+    [data-theme="dark"] #hutang-list [style*="background:#fef2f2"] {
+      background: rgba(239,68,68,0.12) !important;
+      color: #fca5a5 !important;
+    }
+    /* badge riwayat: DIBAYAR / SISA */
+    [data-theme="dark"] #hutang-list [style*="background:#f0fdf4"] {
+      background: rgba(16,185,129,0.12) !important;
+      border-color: rgba(16,185,129,0.2) !important;
+    }
+    [data-theme="dark"] #hutang-list [style*="background:#fff1f2"] {
+      background: rgba(239,68,68,0.12) !important;
+      border-color: rgba(239,68,68,0.2) !important;
+    }
+    /* chip Semua/Lunas/Cicilan */
+    [data-theme="dark"] #hutang-list [style*="background:white"] {
+      background: rgba(255,255,255,0.07) !important;
+      border-color: rgba(255,255,255,0.1) !important;
+      color: #94a3b8 !important;
+    }
+    /* badge LUNAS hijau */
+    [data-theme="dark"] #hutang-list [style*="background:#d1fae5"] {
+      background: rgba(16,185,129,0.15) !important;
+      color: #6ee7b7 !important;
+    }
+    /* badge CICILAN oranye */
+    [data-theme="dark"] #hutang-list [style*="background:#fff7ed"] {
+      background: rgba(245,158,11,0.15) !important;
+      color: #fcd34d !important;
+    }
+    /* divider SUDAH LUNAS */
+    [data-theme="dark"] #hutang-list [style*="background:#d1fae5;color:#065f46"] {
+      background: rgba(16,185,129,0.15) !important;
+      color: #6ee7b7 !important;
+    }
+
+    /* ── Label form di modal-content ── */
+    [data-theme="dark"] .modal-content label {
+      color: #94a3b8 !important;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    [data-theme="dark"] .modal-content h4 { color: #f1f5f9 !important; }
+
+    /* ── Tab toggle Piutang/Hutang Toko di form ── */
+    [data-theme="dark"] #modal-add-hutang .bg-slate-100,
+    [data-theme="dark"] [style*="background:#f1f5f9"][style*="rounded"] {
+      background: rgba(255,255,255,0.07) !important;
+    }
+    [data-theme="dark"] #m-h-type-plg,
+    [data-theme="dark"] #m-h-type-toko {
+      color: #94a3b8 !important;
+    }
+    [data-theme="dark"] #m-h-type-plg.bg-white {
+      background: rgba(255,255,255,0.12) !important;
+      color: #f1f5f9 !important;
+    }
+
+    /* ── Riwayat filter chips ── */
+    [data-theme="dark"] #hutang-list [style*="background:white;color:#94A3B8"] {
+      background: rgba(255,255,255,0.07) !important;
+      border-color: rgba(255,255,255,0.1) !important;
+      color: #94a3b8 !important;
+    }
+
+
     /* Stok item nama — light/dark adaptive */
     .stok-item-nama { color: #0f172a; }
     [data-theme="dark"] .stok-item-nama { color: #f1f5f9 !important; }
@@ -5962,9 +6194,9 @@
           <button onclick="closeModal('modal-add-hutang')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
         </div>
         <div class="space-y-4">
-          <div class="flex bg-slate-100 p-1 rounded-xl mb-2">
-            <button onclick="setManualHutangType('pelanggan')" id="m-h-type-plg" class="flex-1 py-2 text-[9px] font-black rounded-lg bg-white shadow-sm cursor-pointer border-0">PIUTANG PELANGGAN</button>
-            <button onclick="setManualHutangType('toko')" id="m-h-type-toko" class="flex-1 py-2 text-[9px] font-black rounded-lg text-slate-400 cursor-pointer border-0 bg-transparent">HUTANG TOKO</button>
+          <div class="flex p-1 rounded-xl mb-2" style="background:rgba(255,255,255,0.08);" id="h-type-toggle">
+            <button onclick="setManualHutangType('pelanggan')" id="m-h-type-plg" class="flex-1 py-2 text-[9px] font-black rounded-lg cursor-pointer border-0" style="background:rgba(0,97,194,0.15);color:#38bdf8;">PIUTANG PELANGGAN</button>
+            <button onclick="setManualHutangType('toko')" id="m-h-type-toko" class="flex-1 py-2 text-[9px] font-black rounded-lg cursor-pointer border-0" style="color:#64748b;background:transparent;">HUTANG TOKO</button>
           </div>
           <div>
             <label>Nama (Pelanggan/Supplier)</label>
@@ -6777,8 +7009,11 @@
     function setManualHutangType(type) {
       currentManualHutangType = type;
       const isPlg = type === 'pelanggan';
-      document.getElementById('m-h-type-plg').className = `flex-1 py-2 text-[9px] font-black rounded-lg cursor-pointer border-0 ${isPlg ? 'bg-white shadow-sm text-slate-800' : 'bg-transparent text-slate-400'}`;
-      document.getElementById('m-h-type-toko').className = `flex-1 py-2 text-[9px] font-black rounded-lg cursor-pointer border-0 ${!isPlg ? 'bg-white shadow-sm text-slate-800' : 'bg-transparent text-slate-400'}`;
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const activeStyle  = dark ? 'background:rgba(0,97,194,0.2);color:#38bdf8;box-shadow:none;' : 'background:white;color:#0f172a;box-shadow:0 1px 4px rgba(0,0,0,0.1);';
+      const inactiveStyle = dark ? 'background:transparent;color:#64748b;' : 'background:transparent;color:#94a3b8;';
+      document.getElementById('m-h-type-plg').style.cssText += isPlg  ? activeStyle  : inactiveStyle;
+      document.getElementById('m-h-type-toko').style.cssText += !isPlg ? activeStyle  : inactiveStyle;
       document.getElementById('label-h-wallet').innerText = isPlg ? 'Dompet (Modal Keluar)' : 'Dompet (Dana Masuk)';
     }
 
@@ -7342,10 +7577,13 @@
       _syncCartWallet();
 
       (_getMySwal()||Swal).fire({
-        toast: true, position: 'top-end', icon: 'success',
-        title: '✅ ' + item.produkNama + ' ditambahkan',
-        showConfirmButton: false, timer: 1200,
-        customClass: { popup: 'swal2-ku-toast' }
+        icon: 'success',
+        title: '✅ Ditambahkan!',
+        text: item.produkNama + ' berhasil masuk keranjang.',
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true,
+        customClass: { popup: 'swal2-ku' }
       });
     }
 
