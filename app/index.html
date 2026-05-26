@@ -9965,26 +9965,29 @@
               text: `Struk transaksi ${namaProduk} – ${waktu}`,
               files: [file]
             });
-          } else if (navigator.share) {
-            // Fallback: share URL saja
-            const imgUrl = URL.createObjectURL(pngBlob);
-            await Swal2loc.fire({
-              icon: 'info',
-              title: 'Unduh Gambar Struk',
-              html: `<div style="text-align:center;">
-                <img src="${imgUrl}" style="max-width:100%;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:10px;">
-                <p style="font-size:12px;color:#64748b;">Tekan tahan gambar lalu pilih <b>Simpan</b> atau <b>Bagikan</b></p>
-              </div>`,
-              confirmButtonText: 'Tutup',
-              customClass: { popup: 'swal2-ku' }
-            });
           } else {
-            // Desktop: download otomatis
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(pngBlob);
-            a.download = fileName;
-            a.click();
-            Swal2loc.fire({ icon:'success', title:'Gambar Diunduh!', text:'Struk berhasil disimpan sebagai gambar PNG.', timer:2000, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+            // Mobile tanpa Web Share API / Desktop: tampilkan gambar + tombol unduh
+            const imgUrl = URL.createObjectURL(pngBlob);
+            const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+            if (isMobile) {
+              // Mobile: tampilkan gambar, user tekan-tahan untuk simpan/bagikan
+              await Swal2loc.fire({
+                title: 'Struk Siap',
+                html: `<div style="text-align:center;">
+                  <img src="${imgUrl}" style="max-width:100%;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:10px;" id="struk-img-preview">
+                  <p style="font-size:12px;color:#64748b;margin:0;">📌 Tekan & tahan gambar lalu pilih <b>Simpan</b> atau <b>Bagikan</b></p>
+                </div>`,
+                confirmButtonText: 'Tutup',
+                customClass: { popup: 'swal2-ku' }
+              });
+            } else {
+              // Desktop: download otomatis
+              const a = document.createElement('a');
+              a.href = imgUrl;
+              a.download = fileName;
+              a.click();
+              Swal2loc.fire({ icon:'success', title:'Gambar Diunduh!', text:'Struk berhasil disimpan sebagai gambar PNG.', timer:2000, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+            }
           }
 
         } catch(err) {
