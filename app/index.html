@@ -14582,10 +14582,18 @@ ${t.tipe === 'ewallet' ? `
 
   // ─── LOAD SHIFT AKTIF UNTUK DROPDOWN TUTUP ───
   async function _loadShiftAktifUntukTutup() {
-    // Ambil uid: coba auth user dulu, fallback ke k_sid
-    const uid = (window._fbAuth && window._fbAuth.currentUser && window._fbAuth.currentUser.uid)
-      ? window._fbAuth.currentUser.uid
-      : localStorage.getItem('k_sid');
+    // Ambil uid yang benar:
+    // - Jika mode kasir → pakai k_owner_uid (uid pemilik toko)
+    // - Jika pemilik    → pakai auth.currentUser.uid atau k_sid
+    const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
+    let uid;
+    if (isKasirMode) {
+      uid = localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid');
+    } else {
+      uid = (window._fbAuth && window._fbAuth.currentUser && window._fbAuth.currentUser.uid)
+        ? window._fbAuth.currentUser.uid
+        : localStorage.getItem('k_sid');
+    }
     const sel = document.getElementById('absensi-tutup-shift-id');
     if (!sel) return;
     sel.innerHTML = '<option value="">-- Memuat... --</option>';
@@ -14687,7 +14695,12 @@ ${t.tipe === 'ewallet' ? `
 
   // ─── PROSES BUKA SHIFT ───
   async function prosesAbsensiBuka() {
-    const uid    = localStorage.getItem('k_sid');
+    // Gunakan owner_uid (uid pemilik toko) agar konsisten antara kasir & pemilik
+    const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
+    const uid = isKasirMode
+      ? (localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid'))
+      : ((window._fbAuth && window._fbAuth.currentUser && window._fbAuth.currentUser.uid)
+          || localStorage.getItem('k_sid'));
     const nama   = (document.getElementById('absensi-buka-nama')?.value || '').trim();
     const tgl    = document.getElementById('absensi-buka-tgl')?.value || '';
     const jam    = document.getElementById('absensi-buka-jam')?.value || '';
