@@ -19822,7 +19822,599 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 ================================================================ -->
 
 </body>
-                                           <!-- Modul Keamanan & Audit Trail -->
+/**
+ * ═══════════════════════════════════════════════════════════════════
+ *  KEAMANAN & AUDIT TRAIL — KonterKU Cloud
+ *  Versi : 1.0.0
+ *
+ *  Fitur:
+ *    1. PIN wajib untuk: hapus transaksi, edit harga/transaksi,
+ *       hapus produk, edit stok/harga produk
+ *    2. Audit log — setiap aksi hapus/edit tercatat di Firestore
+ *       koleksi: audit_logs/{storeId}  (sub-collection: entries)
+ *    3. Layar Audit Log di sidebar — filter by aksi, periode
+ *    4. Pengaturan PIN (ubah PIN, versi owner)
+ *    5. Review Firestore rules: rekomendasi penambahan koleksi
+ *       audit_logs agar hanya owner yg bisa baca/tulis
+ *
+ *  Cara pasang:
+ *    Tambahkan tag <script src="keamanan-audit-trail.js"></script>
+ *    SEBELUM </body> pada index.html, SETELAH semua script lain.
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+(function () {
+  'use strict';
+
+  /* ─────────────────────────────────────────────
+   *  KONSTANTA & STATE
+   * ───────────────────────────────────────────── */
+  const MODULE = 'KonterKU Keamanan';
+  const PIN_KEY = 'k_security_pin';          // localStorage
+  const PIN_DEFAULT = '1234';
+  const AUDIT_KEY = 'k_audit_logs';          // localStorage (cache offline)
+  const MAX_LOCAL_LOGS = 500;
+
+  // Daftar aksi yang butuh PIN
+  const PROTECTED_ACTIONS = {
+    deleteTr:      { label: 'Refund / Hapus Transaksi', icon: 'fa-rotate-left',  color: '#ef4444' },
+    saveEditTr:    { label: 'Edit Transaksi',            icon: 'fa-edit',         color: '#3b82f6' },
+    deleteProduct: { label: 'Hapus Produk',              icon: 'fa-box-open',     color: '#f59e0b' },
+    saveProduct:   { label: 'Edit Harga/Stok Produk',   icon: 'fa-tag',          color: '#8b5cf6' },
+    deleteWallet:  { label: 'Hapus Dompet',              icon: 'fa-wallet',       color: '#ec4899' },
+    adjWallet:     { label: 'Penyesuaian Saldo Dompet', icon: 'fa-sliders',      color: '#06b6d4' },
+  };
+
+  /* ─────────────────────────────────────────────
+   *  HELPER: tunggu app siap
+   * ───────────────────────────────────────────── */
+  function waitApp(cb) {
+    const check = () => {
+      if (window.db && window._fbFirestore && window._fbAuth) { cb(); }
+      else { setTimeout(check, 300); }
+    };
+    check();
+  }
+
+  /* ─────────────────────────────────────────────
+   *  HELPER: PIN dari localStorage
+   * ───────────────────────────────────────────── */
+  function getPin() {
+    return localStorage.getItem(PIN_KEY) || PIN_DEFAULT;
+  }
+
+  function _getSwal() {
+    return window._getMySwal ? window._getMySwal() : window.Swal;
+  }
+
+  /* ─────────────────────────────────────────────
+   *  DIALOG: minta PIN sebelum aksi sensitif
+   *  Mengembalikan Promise<boolean>
+   * ───────────────────────────────────────────── */
+  async function askPin(actionKey) {
+    const info = PROTECTED_ACTIONS[actionKey] || { label: actionKey, icon: 'fa-lock', color: '#64748b' };
+    const S = _getSwal();
+    if (!S) return true; // fallback jika Swal belum load
+
+    const result = await S.fire({
+      title: '🔒 Konfirmasi Keamanan',
+      html: `
+        <div style="text-align:left;padding:4px 0 8px;">
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(239,68,68,0.06);border:1.5px solid rgba(239,68,68,0.15);border-radius:12px;padding:10px 14px;margin-bottom:14px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas ${info.icon}" style="color:${info.color};font-size:13px;"></i>
+            </div>
+            <div>
+              <p style="font-size:11px;font-weight:900;color:#0f172a;margin:0;">${info.label}</p>
+              <p style="font-size:9px;color:#64748b;margin:2px 0 0;font-weight:700;">Aksi ini membutuhkan konfirmasi PIN pemilik</p>
+            </div>
+          </div>
+          <label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">PIN KEAMANAN</label>
+          <input id="swal-security-pin"
+            type="password"
+            maxlength="8"
+            inputmode="numeric"
+            placeholder="••••"
+            autocomplete="off"
+            style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:12px;font-size:26px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#0061C2';this.style.boxShadow='0 0 0 3px rgba(0,97,194,0.12)';"
+            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';"
+          >
+          <p style="font-size:9px;color:#94a3b8;margin:8px 0 0;text-align:center;font-weight:700;">
+            <i class="fas fa-shield-halved" style="margin-right:3px;"></i>
+            Ubah PIN di menu <b>Keamanan & Audit</b>
+          </p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-lock-open mr-1"></i> Konfirmasi',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#0061C2',
+      customClass: { popup: 'swal2-ku' },
+      didOpen: () => {
+        const el = document.getElementById('swal-security-pin');
+        if (el) {
+          el.focus();
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              const btn = document.querySelector('.swal2-confirm');
+              if (btn) btn.click();
+            }
+          });
+        }
+      },
+      preConfirm: () => {
+        const val = (document.getElementById('swal-security-pin')?.value || '').trim();
+        if (!val) {
+          window.Swal.showValidationMessage('PIN tidak boleh kosong!');
+          return false;
+        }
+        if (val !== getPin()) {
+          window.Swal.showValidationMessage('PIN salah! Coba lagi.');
+          document.getElementById('swal-security-pin').value = '';
+          return false;
+        }
+        return true;
+      }
+    });
+    return result.isConfirmed;
+  }
+
+  /* ─────────────────────────────────────────────
+   *  AUDIT LOG: tulis ke localStorage + Firestore
+   * ───────────────────────────────────────────── */
+  function writeAuditLog(actionKey, detail = {}) {
+    try {
+      const sid = localStorage.getItem('k_sid') || 'unknown';
+      const entry = {
+        id: 'AL-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+        actionKey,
+        actionLabel: (PROTECTED_ACTIONS[actionKey] || { label: actionKey }).label,
+        detail,               // { id, produk, jual, modal, ... }
+        actor: localStorage.getItem('k_kasir_name') || localStorage.getItem('k_store_name') || 'Pemilik',
+        device: navigator.userAgent.slice(0, 80),
+        ts: new Date().toISOString(),
+        tgl: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        jam: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        store: sid,
+      };
+
+      // ── Simpan lokal ──
+      let logs = [];
+      try { logs = JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]'); } catch (_) { logs = []; }
+      logs.unshift(entry);
+      if (logs.length > MAX_LOCAL_LOGS) logs = logs.slice(0, MAX_LOCAL_LOGS);
+      localStorage.setItem(AUDIT_KEY, JSON.stringify(logs));
+
+      // ── Simpan ke Firestore (non-blocking) ──
+      if (window._fbFirestore && sid && sid !== 'unknown') {
+        window._fbFirestore
+          .collection('audit_logs')
+          .doc(sid)
+          .collection('entries')
+          .doc(entry.id)
+          .set(entry)
+          .catch(err => console.warn(`[${MODULE}] Firestore audit log gagal:`, err.message));
+      }
+
+      console.log(`[${MODULE}] Audit log:`, entry.actionLabel, detail);
+    } catch (e) {
+      console.warn(`[${MODULE}] writeAuditLog error:`, e.message);
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+   *  PATCH: intercept fungsi-fungsi sensitif
+   * ───────────────────────────────────────────── */
+
+  /** Helper: wrap async fungsi dengan PIN guard + audit */
+  function guardAsync(fnName, actionKey, getFnArgs) {
+    const origFn = window[fnName];
+    if (typeof origFn !== 'function') {
+      // Retry setelah app siap
+      setTimeout(() => guardAsync(fnName, actionKey, getFnArgs), 500);
+      return;
+    }
+    window[fnName] = async function (...args) {
+      const confirmed = await askPin(actionKey);
+      if (!confirmed) return;
+      // Tulis audit SEBELUM eksekusi (catat intent)
+      let auditDetail = {};
+      if (typeof getFnArgs === 'function') {
+        try { auditDetail = getFnArgs(...args); } catch (_) {}
+      }
+      writeAuditLog(actionKey, auditDetail);
+      return origFn.apply(this, args);
+    };
+    console.log(`[${MODULE}] Guard aktif: ${fnName}`);
+  }
+
+  /* ─────────────────────────────────────────────
+   *  SEMUA PATCH
+   * ───────────────────────────────────────────── */
+  function patchAll() {
+
+    // 1. deleteTr — refund transaksi
+    guardAsync('deleteTr', 'deleteTr', (id) => {
+      const t = (window.db?.transaksi || []).find(x => x.id === id) || {};
+      return {
+        id,
+        produk: t.produk || '-',
+        jual: t.jual,
+        tgl: t.tgl,
+        status: t.status,
+      };
+    });
+
+    // 2. saveEditTr — simpan edit transaksi
+    guardAsync('saveEditTr', 'saveEditTr', () => {
+      const id = document.getElementById('edit-tr-id')?.value || '-';
+      const jual = document.getElementById('edit-tr-jual')?.value || '-';
+      const modal = document.getElementById('edit-tr-modal')?.value || '-';
+      return { id, jual_baru: jual, modal_baru: modal };
+    });
+
+    // 3. deleteProduct / saveProduk — cek apakah ada fungsi tsb
+    ['deleteProduk', 'deleteProduct', 'hapusProduk'].forEach(fn => {
+      if (typeof window[fn] === 'function') {
+        guardAsync(fn, 'deleteProduct', (id) => {
+          const p = (window.db?.inventory || []).find(x => x.id === id) || {};
+          return { id, nama: p.nama || '-', harga: p.harga_jual || p.harga };
+        });
+      }
+    });
+
+    // Patch saveProduk untuk deteksi edit harga (bukan tambah baru)
+    const origSaveProduk = window.saveProduk;
+    if (typeof origSaveProduk === 'function') {
+      window.saveProduk = async function (...args) {
+        // Cek apakah ini edit (ada id di form) atau tambah baru
+        const isEdit = !!(document.getElementById('produk-id')?.value);
+        if (isEdit) {
+          const confirmed = await askPin('saveProduct');
+          if (!confirmed) return;
+          const id = document.getElementById('produk-id')?.value || '-';
+          const nama = document.getElementById('produk-nama')?.value || '-';
+          const hargaJual = document.getElementById('produk-harga-jual')?.value || '-';
+          writeAuditLog('saveProduct', { id, nama, harga_jual_baru: hargaJual });
+        }
+        return origSaveProduk.apply(this, args);
+      };
+      console.log(`[${MODULE}] Guard aktif: saveProduk (edit only)`);
+    }
+
+    // 4. deleteWallet / hapusDompet
+    ['deleteDompet', 'deleteWallet', 'hapusDompet'].forEach(fn => {
+      if (typeof window[fn] === 'function') {
+        guardAsync(fn, 'deleteWallet', (id) => {
+          const w = (window.db?.dompet || []).find(x => x.id === id) || {};
+          return { id, nama: w.nama || '-', saldo: w.saldo };
+        });
+      }
+    });
+
+    // 5. saveAdjWallet — penyesuaian saldo dompet
+    ['saveAdjWallet', 'simpanAdjWallet', 'saveAdjustment'].forEach(fn => {
+      if (typeof window[fn] === 'function') {
+        guardAsync(fn, 'adjWallet', () => {
+          const wid = document.getElementById('adj-wallet-id')?.value || document.getElementById('adj-wallet')?.value || '-';
+          const jumlah = document.getElementById('adj-jumlah')?.value || document.getElementById('adj-amount')?.value || '-';
+          const keterangan = document.getElementById('adj-ket')?.value || '-';
+          return { wallet_id: wid, jumlah, keterangan };
+        });
+      }
+    });
+  }
+
+  /* ─────────────────────────────────────────────
+   *  UI: Layar Audit Log
+   * ───────────────────────────────────────────── */
+  function renderAuditUI() {
+    let logs = [];
+    try { logs = JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]'); } catch (_) { logs = []; }
+
+    const filter = window._auditFilter || 'all';
+    const filtered = filter === 'all' ? logs : logs.filter(l => l.actionKey === filter);
+
+    const colorMap = {
+      deleteTr:      '#ef4444',
+      saveEditTr:    '#3b82f6',
+      deleteProduct: '#f59e0b',
+      saveProduct:   '#8b5cf6',
+      deleteWallet:  '#ec4899',
+      adjWallet:     '#06b6d4',
+    };
+
+    const iconMap = {
+      deleteTr:      'fa-rotate-left',
+      saveEditTr:    'fa-edit',
+      deleteProduct: 'fa-box-open',
+      saveProduct:   'fa-tag',
+      deleteWallet:  'fa-wallet',
+      adjWallet:     'fa-sliders',
+    };
+
+    const filterOpts = [
+      { k: 'all', l: 'Semua Aksi' },
+      ...Object.entries(PROTECTED_ACTIONS).map(([k, v]) => ({ k, l: v.label }))
+    ];
+
+    return `
+      <div style="padding:0 0 80px;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#0a0f1e,#0d1f42,#0061C2);padding:20px 16px 24px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 80% 0%,rgba(56,189,248,0.18),transparent);pointer-events:none;"></div>
+          <div style="display:flex;align-items:center;gap:12px;position:relative;">
+            <div style="width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-shield-halved" style="color:#38bdf8;font-size:18px;"></i>
+            </div>
+            <div>
+              <h2 style="font-size:15px;font-weight:900;color:#fff;margin:0;">Audit Trail</h2>
+              <p style="font-size:10px;color:rgba(255,255,255,0.55);margin:2px 0 0;font-weight:700;">
+                ${logs.length} log tercatat · ${filtered.length} ditampilkan
+              </p>
+            </div>
+          </div>
+          <!-- Stats -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;position:relative;">
+            ${[
+              { k:'deleteTr',   l:'Refund',   c:'#ef4444' },
+              { k:'saveEditTr', l:'Edit Tr',  c:'#3b82f6' },
+              { k:'saveProduct',l:'Edit Prod',c:'#8b5cf6' },
+            ].map(s => `
+              <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 8px;text-align:center;">
+                <p style="font-size:18px;font-weight:900;color:${s.c};margin:0;">${logs.filter(l=>l.actionKey===s.k).length}</p>
+                <p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.5);margin:2px 0 0;">${s.l}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Filter pills -->
+        <div style="padding:12px 16px 0;overflow-x:auto;white-space:nowrap;scrollbar-width:none;">
+          ${filterOpts.map(f => `
+            <button onclick="window._auditFilter='${f.k}';window.bukaAuditLog()"
+              style="display:inline-block;margin-right:6px;padding:6px 12px;border-radius:20px;font-size:9px;font-weight:900;border:1.5px solid ${f.k==='all'?'#0061C2':'#e2e8f0'};background:${window._auditFilter===f.k||(!window._auditFilter&&f.k==='all')?'#0061C2':'transparent'};color:${window._auditFilter===f.k||(!window._auditFilter&&f.k==='all')?'#fff':'#64748b'};cursor:pointer;transition:all 0.2s;">
+              ${f.l}
+            </button>
+          `).join('')}
+        </div>
+
+        <!-- Logs list -->
+        <div style="padding:12px 16px 0;">
+          ${filtered.length === 0 ? `
+            <div style="text-align:center;padding:40px 20px;">
+              <div style="width:56px;height:56px;border-radius:18px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                <i class="fas fa-clipboard-check" style="color:#cbd5e1;font-size:22px;"></i>
+              </div>
+              <p style="font-size:12px;font-weight:700;color:#94a3b8;">Belum ada log tercatat</p>
+              <p style="font-size:9px;color:#cbd5e1;margin-top:4px;">Setiap aksi hapus/edit akan muncul di sini</p>
+            </div>
+          ` : filtered.map(log => {
+            const color = colorMap[log.actionKey] || '#64748b';
+            const icon  = iconMap[log.actionKey]  || 'fa-shield';
+            const det   = log.detail || {};
+            const detStr = Object.entries(det)
+              .filter(([k]) => k !== 'id')
+              .map(([k, v]) => `<b>${k}</b>: ${v}`)
+              .join(' · ');
+
+            return `
+              <div style="background:#fff;border:1.5px solid #f1f5f9;border-radius:16px;padding:12px 14px;margin-bottom:8px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${color};border-radius:4px 0 0 4px;"></div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding-left:6px;">
+                  <div style="width:34px;height:34px;border-radius:10px;background:${color}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas ${icon}" style="color:${color};font-size:13px;"></i>
+                  </div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+                      <p style="font-size:11px;font-weight:900;color:#0f172a;margin:0;">${log.actionLabel}</p>
+                      <span style="font-size:8px;font-weight:700;color:#94a3b8;background:#f8fafc;border-radius:6px;padding:2px 7px;">${log.tgl} ${log.jam}</span>
+                    </div>
+                    ${detStr ? `<p style="font-size:9px;font-weight:600;color:#64748b;margin:4px 0 0;word-break:break-all;">${detStr}</p>` : ''}
+                    <div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
+                      <span style="font-size:8px;font-weight:700;color:#0061C2;background:rgba(0,97,194,0.06);border-radius:5px;padding:2px 7px;">
+                        <i class="fas fa-user" style="font-size:7px;margin-right:3px;"></i>${log.actor}
+                      </span>
+                      <span style="font-size:8px;font-weight:600;color:#94a3b8;">${log.id}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Clear button -->
+        ${logs.length > 0 ? `
+          <div style="padding:8px 16px 0;text-align:center;">
+            <button onclick="window._clearAuditLogs()"
+              style="font-size:9px;font-weight:800;color:#94a3b8;background:transparent;border:1.5px solid #e2e8f0;border-radius:10px;padding:7px 18px;cursor:pointer;">
+              <i class="fas fa-trash mr-1"></i> Hapus Semua Log Lokal
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  /* ─────────────────────────────────────────────
+   *  UI: Pengaturan PIN
+   * ───────────────────────────────────────────── */
+  async function bukaUbahPin() {
+    const S = _getSwal();
+    if (!S) return;
+
+    const result = await S.fire({
+      title: '🔑 Ubah PIN Keamanan',
+      html: `
+        <div style="text-align:left;padding:4px 0;">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">PIN LAMA</label>
+            <input id="pin-old" type="password" maxlength="8" inputmode="numeric" placeholder="••••"
+              style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:22px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;"
+              onfocus="this.style.borderColor='#0061C2';" onblur="this.style.borderColor='#e2e8f0';">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">PIN BARU</label>
+            <input id="pin-new" type="password" maxlength="8" inputmode="numeric" placeholder="••••"
+              style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:22px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;"
+              onfocus="this.style.borderColor='#10b981';" onblur="this.style.borderColor='#e2e8f0';">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">KONFIRMASI PIN BARU</label>
+            <input id="pin-confirm" type="password" maxlength="8" inputmode="numeric" placeholder="••••"
+              style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:22px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;"
+              onfocus="this.style.borderColor='#10b981';" onblur="this.style.borderColor='#e2e8f0';">
+          </div>
+          <p style="font-size:9px;color:#94a3b8;margin-top:10px;text-align:center;">PIN disimpan lokal pada perangkat ini</p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-key mr-1"></i> Simpan PIN',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#0061C2',
+      customClass: { popup: 'swal2-ku' },
+      preConfirm: () => {
+        const old     = (document.getElementById('pin-old')?.value || '').trim();
+        const newPin  = (document.getElementById('pin-new')?.value || '').trim();
+        const confirm = (document.getElementById('pin-confirm')?.value || '').trim();
+
+        if (old !== getPin()) {
+          window.Swal.showValidationMessage('PIN lama salah!');
+          return false;
+        }
+        if (!newPin || newPin.length < 4) {
+          window.Swal.showValidationMessage('PIN baru minimal 4 digit!');
+          return false;
+        }
+        if (newPin !== confirm) {
+          window.Swal.showValidationMessage('Konfirmasi PIN tidak cocok!');
+          return false;
+        }
+        return newPin;
+      }
+    });
+
+    if (result.isConfirmed && result.value) {
+      localStorage.setItem(PIN_KEY, result.value);
+      writeAuditLog('changePin', { info: 'PIN keamanan diubah oleh pemilik' });
+      S.fire({
+        icon: 'success',
+        title: 'PIN Berhasil Diubah!',
+        text: 'PIN baru sudah aktif untuk semua aksi sensitif.',
+        timer: 2500,
+        showConfirmButton: false,
+        customClass: { popup: 'swal2-ku' }
+      });
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+   *  UI: buka layar Audit Trail (modal fullscreen)
+   * ───────────────────────────────────────────── */
+  window.bukaAuditLog = function () {
+    let overlay = document.getElementById('modal-audit-trail');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'modal-audit-trail';
+      overlay.className = 'modal-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML = `
+      <div class="modal-content" style="padding:0;max-width:480px;border-radius:24px;overflow:hidden;">
+        <!-- Sticky top bar -->
+        <div style="position:sticky;top:0;z-index:10;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #f1f5f9;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <button onclick="document.getElementById('modal-audit-trail').classList.remove('active')"
+            style="width:32px;height:32px;border-radius:10px;border:0;background:#f1f5f9;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-arrow-left" style="font-size:11px;color:#475569;"></i>
+          </button>
+          <div style="flex:1;">
+            <p style="font-size:13px;font-weight:900;color:#0f172a;margin:0;">Keamanan & Audit Trail</p>
+            <p style="font-size:9px;color:#64748b;margin:1px 0 0;font-weight:700;">Log semua aksi sensitif</p>
+          </div>
+          <button onclick="window.bukaUbahPin()"
+            style="padding:7px 12px;border-radius:10px;font-size:9px;font-weight:900;color:#fff;background:#0061C2;border:0;cursor:pointer;display:flex;align-items:center;gap:5px;">
+            <i class="fas fa-key" style="font-size:10px;"></i> Ubah PIN
+          </button>
+        </div>
+        <!-- Body -->
+        <div id="audit-trail-body" style="overflow-y:auto;max-height:calc(85vh - 56px);">
+          ${renderAuditUI()}
+        </div>
+      </div>
+    `;
+
+    overlay.classList.add('active');
+  };
+
+  /* ─────────────────────────────────────────────
+   *  Clear local logs
+   * ───────────────────────────────────────────── */
+  window._clearAuditLogs = async function () {
+    const S = _getSwal();
+    if (!S) return;
+    const ok = await S.fire({
+      title: 'Hapus Log Lokal?',
+      text: 'Log di Firestore tidak akan dihapus.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Ya, Hapus',
+      cancelButtonText: 'Batal',
+      customClass: { popup: 'swal2-ku' }
+    });
+    if (!ok.isConfirmed) return;
+    localStorage.removeItem(AUDIT_KEY);
+    window._auditFilter = 'all';
+    window.bukaAuditLog();
+  };
+
+  /* ─────────────────────────────────────────────
+   *  Expose ubah PIN
+   * ───────────────────────────────────────────── */
+  window.bukaUbahPin = bukaUbahPin;
+
+  /* ─────────────────────────────────────────────
+   *  INJECT SIDEBAR MENU
+   * ───────────────────────────────────────────── */
+  function injectSidebarMenu() {
+    const target = document.querySelector('.sidebar-panel .flex-1.py-2');
+    if (!target) { setTimeout(injectSidebarMenu, 600); return; }
+    if (document.getElementById('sb-menu-security-audit')) return;
+
+    const section = document.createElement('div');
+    section.id = 'sb-menu-security-audit';
+    section.innerHTML = `
+      <div class="sidebar-divider"></div>
+      <p class="sidebar-section-label">🔐 Keamanan</p>
+      <button onclick="bukaAuditLog(); closeSidebar && closeSidebar();" class="sidebar-menu-item">
+        <div class="sidebar-icon-wrap" style="background:rgba(239,68,68,0.1);">
+          <i class="fas fa-shield-halved" style="color:#ef4444;"></i>
+        </div>
+        <div>
+          <p class="text-[12px] font-black" style="color:var(--sb-text-title);">Keamanan & Audit Trail</p>
+          <p class="text-[9px] font-bold" style="color:var(--sb-text-sub);">Log hapus/edit · Ubah PIN</p>
+        </div>
+        <i class="fas fa-chevron-right text-xs ml-auto" style="color:var(--sb-chevron);"></i>
+      </button>
+    `;
+    target.appendChild(section);
+    console.log(`[${MODULE}] Menu sidebar disuntik ✓`);
+  }
+
+  /* ─────────────────────────────────────────────
+   *  BOOT
+   * ───────────────────────────────────────────── */
+  waitApp(() => {
+    patchAll();
+    injectSidebarMenu();
+    console.log(`[${MODULE}] v1.0.0 aktif ✓  PIN: ${getPin().replace(/./g, '•')}`);
+  });
+
+})();
+<!-- Modul Keamanan & Audit Trail -->
 <script src="keamanan-audit-trail.js"></script>
 </body>
 </html>
