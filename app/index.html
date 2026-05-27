@@ -1914,6 +1914,179 @@
     .header-desktop-only { display: none !important; }
     #sidebar-header-mobile { display: block; }  /* tampil di mobile */
     .desktop-sidenav { display: none; }
+
+    /* ══════════════════════════════════════════════════════════
+       DARK MODE MASTER FIX — Kelola Kasir, Panduan, Kasir Form
+    ══════════════════════════════════════════════════════════ */
+
+    /* ── 1. KELOLA KASIR MODAL ── */
+    [data-theme="dark"] #modal-kelola-kasir .modal-content {
+      background: #0f172a !important;
+    }
+    [data-theme="dark"] #modal-kelola-kasir h4,
+    [data-theme="dark"] #modal-kelola-kasir .text-lg { color: #e2e8f0 !important; }
+    /* Card kode toko (biru) */
+    [data-theme="dark"] #modal-kelola-kasir [style*="background:linear-gradient(135deg,#eff6ff"],
+    [data-theme="dark"] #modal-kelola-kasir [style*="background:linear-gradient(135deg,#f0f9ff"] {
+      background: rgba(0,97,194,0.15) !important;
+      border-color: rgba(0,97,194,0.25) !important;
+    }
+    [data-theme="dark"] #kasir-kode-toko { color: #93c5fd !important; }
+    [data-theme="dark"] #modal-kelola-kasir .text-blue-400 { color: #60a5fa !important; }
+    [data-theme="dark"] #modal-kelola-kasir .text-blue-800 { color: #93c5fd !important; }
+    [data-theme="dark"] #modal-kelola-kasir .text-blue-500 { color: #7dd3fc !important; }
+    /* List kasir card */
+    [data-theme="dark"] #kasir-list-container .rounded-2xl,
+    [data-theme="dark"] #kasir-list-container [style*="background:white"],
+    [data-theme="dark"] #kasir-list-container [style*="background:#f8fafc"],
+    [data-theme="dark"] #kasir-list-container [style*="background:#1e1b4b"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #kasir-list-container .text-slate-800,
+    [data-theme="dark"] #kasir-list-container .text-slate-700 { color: #e2e8f0 !important; }
+    [data-theme="dark"] #kasir-list-container .text-slate-400,
+    [data-theme="dark"] #kasir-list-container .text-slate-500 { color: #64748b !important; }
+    [data-theme="dark"] #kasir-list-container .font-black { color: #e2e8f0; }
+    /* Tambah Kasir form area */
+    [data-theme="dark"] #modal-kelola-kasir .rounded-2xl.overflow-hidden {
+      background: #1e293b !important;
+      border-color: rgba(124,58,237,0.2) !important;
+    }
+    [data-theme="dark"] #modal-kelola-kasir [style*="background:linear-gradient(135deg,#faf5ff"],
+    [data-theme="dark"] #modal-kelola-kasir [style*="background:linear-gradient(135deg,#f5f3ff"] {
+      background: #1e293b !important;
+    }
+    /* Izin akses checkbox rows */
+    [data-theme="dark"] #modal-kelola-kasir label[style*="background:white"],
+    [data-theme="dark"] #modal-kelola-kasir label .text-slate-700,
+    [data-theme="dark"] #modal-kelola-kasir label[style*="background:#fff"],
+    [data-theme="dark"] #modal-kelola-kasir .space-y-2 label {
+      background: rgba(255,255,255,0.05) !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #modal-kelola-kasir .text-slate-700 { color: #e2e8f0 !important; }
+    [data-theme="dark"] #modal-kelola-kasir .text-slate-400 { color: #64748b !important; }
+    [data-theme="dark"] #modal-kelola-kasir .input-premium {
+      background: rgba(255,255,255,0.06) !important;
+      color: #f1f5f9 !important;
+      border-color: rgba(255,255,255,0.1) !important;
+    }
+    [data-theme="dark"] #modal-kelola-kasir .input-premium::placeholder { color: rgba(255,255,255,0.25) !important; }
+
+    /* ── 2. PANDUAN PENGGUNAAN MODAL ── */
+    [data-theme="dark"] #modal-panduan .modal-content,
+    [data-theme="dark"] #modal-panduan > div {
+      background: #0f172a !important;
+    }
+    [data-theme="dark"] #modal-panduan .panduan-tab-content { background: #0f172a !important; }
+    /* Step cards putih */
+    [data-theme="dark"] .panduan-tab-content .rounded-2xl,
+    [data-theme="dark"] .panduan-tab-content [class*="bg-white"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:white"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#fff"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#f8fafc"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#f1f5f9"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#f0f9ff"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#eff6ff"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] .panduan-tab-content [style*="background:#f0fdf4"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#dcfce7"] {
+      background: rgba(16,185,129,0.1) !important;
+      border-color: rgba(16,185,129,0.2) !important;
+    }
+    [data-theme="dark"] .panduan-tab-content [style*="background:#fffbeb"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#fef3c7"] {
+      background: rgba(245,158,11,0.1) !important;
+      border-color: rgba(245,158,11,0.2) !important;
+    }
+    [data-theme="dark"] .panduan-tab-content [style*="background:#fef2f2"],
+    [data-theme="dark"] .panduan-tab-content [style*="background:#fee2e2"] {
+      background: rgba(239,68,68,0.1) !important;
+      border-color: rgba(239,68,68,0.2) !important;
+    }
+    /* Teks panduan */
+    [data-theme="dark"] .panduan-tab-content [style*="color:#1e293b"],
+    [data-theme="dark"] .panduan-tab-content [style*="color:#0f172a"],
+    [data-theme="dark"] .panduan-tab-content h2,
+    [data-theme="dark"] .panduan-tab-content h3,
+    [data-theme="dark"] .panduan-tab-content strong { color: #e2e8f0 !important; }
+    [data-theme="dark"] .panduan-tab-content [style*="color:#475569"],
+    [data-theme="dark"] .panduan-tab-content [style*="color:#64748b"],
+    [data-theme="dark"] .panduan-tab-content p { color: #94a3b8 !important; }
+    [data-theme="dark"] .panduan-text { color: #94a3b8 !important; }
+    [data-theme="dark"] .panduan-info { background: rgba(0,97,194,0.12) !important; color: #7dd3fc !important; border-color: rgba(0,97,194,0.2) !important; }
+    [data-theme="dark"] .panduan-warning { background: rgba(245,158,11,0.1) !important; color: #fbbf24 !important; border-color: rgba(245,158,11,0.2) !important; }
+    [data-theme="dark"] .panduan-step-num { background: #1d4ed8 !important; }
+    /* Tab filter scroll */
+    [data-theme="dark"] #modal-panduan .overflow-x-auto { background: transparent !important; }
+
+    /* ── 3. KASIR FORM: MODAL / JUAL / LABA NOMINAL ── */
+    /* JUAL badge (kuning) di dark mode */
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fef9c3"],
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fef08a"],
+    [data-theme="dark"] [id$="-jual"] ~ [style*="background:linear-gradient"] {
+      background: rgba(234,179,8,0.15) !important;
+      border-color: rgba(234,179,8,0.3) !important;
+    }
+    /* Supaya teks harga jual tetap kuning cerah di dark */
+    [data-theme="dark"] .kasir-field-input.text-amber-800 { color: #fbbf24 !important; }
+    [data-theme="dark"] .kasir-field-input.text-sky-700 { color: #38bdf8 !important; }
+    /* MODAL badge */
+    [data-theme="dark"] .kasir-price-badge {
+      background: rgba(14,165,233,0.12) !important;
+      border-color: rgba(14,165,233,0.25) !important;
+    }
+    [data-theme="dark"] .kasir-price-badge .text-[10px].font-black.text-slate-400 { color: #7dd3fc !important; }
+    [data-theme="dark"] .kasir-price-badge [style*="color:#0369a1"] { color: #38bdf8 !important; }
+    /* Laba badge */
+    [data-theme="dark"] .kasir-laba-badge {
+      background: rgba(16,185,129,0.12) !important;
+      border-color: rgba(16,185,129,0.25) !important;
+    }
+    [data-theme="dark"] .kasir-laba-badge .text-emerald-700 { color: #34d399 !important; }
+    /* Jual card inline style */
+    [data-theme="dark"] #kd-jual-wrap,
+    [data-theme="dark"] #kf-jual-wrap,
+    [data-theme="dark"] #ke-jual-wrap {
+      background: rgba(234,179,8,0.15) !important;
+      border-color: rgba(234,179,8,0.3) !important;
+    }
+    /* Override inline background kuning terang di dark mode */
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fef9c3,#fef08a)"] {
+      background: rgba(234,179,8,0.14) !important;
+      border-color: rgba(250,204,21,0.3) !important;
+    }
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fef9c3,#fef08a)"] .kasir-field-label,
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fef9c3,#fef08a)"] [style*="color:#92400e"] { color: #fbbf24 !important; }
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fef9c3,#fef08a)"] .text-amber-600 { color: #fcd34d !important; }
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fef9c3,#fef08a)"] input { color: #fef08a !important; }
+    /* Background header kasir (gradient biru gelap) */
+    [data-theme="dark"] .header-gradient { background: linear-gradient(160deg,#020c1b 0%,#061a3a 40%,#003d8f 100%) !important; }
+    /* Kasir section container bg */
+    [data-theme="dark"] #kasir-section { background: #0f172a !important; }
+    [data-theme="dark"] #kasir-section .bg-white { background: #1e293b !important; }
+    /* Estimasi laba text di page kasir (bukan di badge) */
+    [data-theme="dark"] #kd-laba-display,
+    [data-theme="dark"] #kf-laba-display,
+    [data-theme="dark"] #ke-laba-display { color: #34d399 !important; }
+    /* Tab switch kasir Digital/Fisik/E-Wallet sudah handled di .kasir-tab-wrap */
+
+    /* ── 4. FIX NOMINAL TIDAK TERBACA — input teks warna gelap jadi terang ── */
+    [data-theme="dark"] .kasir-field-input[style*="color:#1e293b"],
+    [data-theme="dark"] .kasir-field-input[style*="color: #1e293b"] { color: #f1f5f9 !important; }
+    /* Semua kasir-field-input dalam dark supaya tidak gelap */
+    [data-theme="dark"] input.kasir-field-input,
+    [data-theme="dark"] select.kasir-field-input { color: #f1f5f9 !important; }
+    /* Span Rp prefix */
+    [data-theme="dark"] .kasir-price-badge .text-slate-400 { color: #7dd3fc !important; }
+    /* Tombol scan barcode fisik */
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#f5f3ff,#ede9fe)"] {
+      background: rgba(124,58,237,0.12) !important;
+      border-color: rgba(124,58,237,0.25) !important;
+    }
   </style>
   <script>
     // ===== TEMA SISTEM (DARK / LIGHT) =====
@@ -17826,5 +17999,290 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   }
   </script>
   <!-- ===== END PERPANJANG AKUN ===== -->
+
+  <!-- ===== SMART NOTIFICATION SYSTEM v1.0 ===== -->
+  <script>
+  (function() {
+    'use strict';
+
+    const fmt = v => new Intl.NumberFormat('id-ID').format(Number(v)||0);
+    const isKasirMode = () => localStorage.getItem('k_kasir_mode') === 'true';
+    const isOwner     = () => !isKasirMode();
+    const getSwal     = () => window.MySwal || window.Swal;
+
+    function getToast() {
+      const S = getSwal();
+      if (!S) return null;
+      return S.mixin({
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
+        customClass: { popup: 'swal2-ku-toast' },
+        didOpen: (t) => {
+          t.addEventListener('mouseenter', S.stopTimer);
+          t.addEventListener('mouseleave', S.resumeTimer);
+        }
+      });
+    }
+
+    // ─── Cooldown — hindari spam notifikasi ─────────────────
+    const _notifShown = {};
+    const COOLDOWN_MS = {
+      saldo_warning  : 5  * 60 * 1000,
+      stok_menipis   : 10 * 60 * 1000,
+      hutang_jatuh   : 30 * 60 * 1000,
+      ringkasan_shift: 0,
+    };
+    function _shouldShow(key) {
+      const last = _notifShown[key] || 0;
+      return (Date.now() - last) > (COOLDOWN_MS[key] || 0);
+    }
+    function _markShown(key) { _notifShown[key] = Date.now(); }
+
+    // ============================================================
+    // 1. ⚠️  PERINGATAN SALDO — Owner & Kasir
+    // ============================================================
+    window.checkSaldoWarning = function(skipCooldown) {
+      if (!_shouldShow('saldo_warning') && !skipCooldown) return;
+      _checkSaldoFromShift();
+    };
+
+    function _checkSaldoFromShift() {
+      const activeShifts = window._absensiActiveShifts || [];
+      if (!activeShifts.length) return;
+      const db = window.db;
+      if (!db || !db.dompet) return;
+
+      const totalSaldoNow  = db.dompet.reduce((s, w) => s + (Number(w.saldo)||0), 0);
+      const shift          = activeShifts[0];
+      const saldoAwalKas   = shift.saldo_awal_kas  || shift.saldo_awal || 0;
+      const saldoAwalBank  = shift.saldo_awal_bank || 0;
+      const totalSaldoAwal = saldoAwalKas + saldoAwalBank;
+
+      if (totalSaldoNow < totalSaldoAwal) {
+        const selisih = totalSaldoAwal - totalSaldoNow;
+        const Toast = getToast();
+        if (!Toast) return;
+        Toast.fire({
+          icon : 'warning',
+          title: '⚠️ Peringatan Saldo!',
+          html : `Saldo lebih kecil dari awal shift <b>${shift.nama||'Aktif'}</b><br>
+                  <span style="color:#ef4444;font-size:11px;">Selisih: <b>Rp ${fmt(selisih)}</b></span>
+                  <br><span style="font-size:10px;color:#94a3b8;font-style:italic;">*Abaikan jika saldo memang sudah diambil</span>`,
+        });
+        _markShown('saldo_warning');
+      }
+    }
+
+    // ============================================================
+    // 2. 📦  STOK MENIPIS — Owner & Kasir (enhanced)
+    // ============================================================
+    const _origCheckLowStock = window.checkLowStockNotif;
+    window.checkLowStockNotif = function() {
+      if (typeof _origCheckLowStock === 'function') _origCheckLowStock();
+      _checkStokMenipisEnhanced();
+    };
+    window.checkStokMenipisEnhanced = _checkStokMenipisEnhanced;
+
+    function _checkStokMenipisEnhanced() {
+      if (!_shouldShow('stok_menipis')) return;
+      const db = window.db;
+      if (!db || !db.inventory) return;
+
+      const fisik   = db.inventory.filter(p => p.tipe === 'fisik');
+      const habis   = fisik.filter(p => (p.stok||0) === 0);
+      const menipis = fisik.filter(p => {
+        const stok  = p.stok || 0;
+        const batas = p.batas_stok !== undefined ? p.batas_stok : 5;
+        return stok > 0 && stok <= batas;
+      });
+      if (!habis.length && !menipis.length) return;
+
+      const Toast = getToast();
+      if (!Toast) return;
+
+      let html = '';
+      if (habis.length)   html += `<b style="color:#ef4444;">${habis.length} produk habis</b>`;
+      if (menipis.length) html += `${habis.length ? ' · ' : ''}<b style="color:#f59e0b;">${menipis.length} produk menipis</b>`;
+      const sample = [...habis, ...menipis].slice(0,3).map(p=>p.nama).join(', ');
+      if (sample) html += `<br><span style="font-size:10px;color:#94a3b8;">${sample}${(habis.length+menipis.length)>3?' ...':''}</span>`;
+
+      Toast.fire({ icon: 'warning', title: '📦 Stok Menipis!', html });
+      _markShown('stok_menipis');
+    }
+
+    // ============================================================
+    // 3. 💸  HUTANG JATUH TEMPO — Owner SAJA
+    // ============================================================
+    window.checkHutangJatuhTempo = function() {
+      if (isKasirMode()) return;
+      if (!_shouldShow('hutang_jatuh')) return;
+      const db = window.db;
+      if (!db || !db.hutang) return;
+
+      const today   = new Date(); today.setHours(0,0,0,0);
+      const in3days = new Date(today); in3days.setDate(in3days.getDate() + 3);
+
+      const mendekati = (db.hutang||[]).filter(h => {
+        if (h.status === 'lunas' || !h.tgl_jatuh_tempo) return false;
+        const jt = new Date(h.tgl_jatuh_tempo + 'T23:59:59');
+        return jt <= in3days;
+      });
+      if (!mendekati.length) return;
+
+      const sudahLewat = mendekati.filter(h => new Date(h.tgl_jatuh_tempo+'T23:59:59') < today);
+      const mauJatuh   = mendekati.filter(h => new Date(h.tgl_jatuh_tempo+'T23:59:59') >= today);
+      const totalTagihan = mendekati.reduce((s,h) => s+(Number(h.jumlah)||0), 0);
+
+      const Toast = getToast();
+      if (!Toast) return;
+
+      let html = '';
+      if (sudahLewat.length) html += `<b style="color:#ef4444;">${sudahLewat.length} jatuh tempo terlewat</b>`;
+      if (mauJatuh.length)   html += `${sudahLewat.length?' · ':''}<b style="color:#f59e0b;">${mauJatuh.length} jatuh tempo dalam 3 hari</b>`;
+      html += `<br><span style="font-size:10px;color:#94a3b8;">Total: <b>Rp ${fmt(totalTagihan)}</b></span>`;
+
+      Toast.fire({ icon: 'error', title: '💸 Hutang Jatuh Tempo!', html, timer: 7000 });
+      _markShown('hutang_jatuh');
+    };
+
+    // ============================================================
+    // 4. 📊  RINGKASAN SHIFT — Owner & Kasir (popup setelah tutup)
+    // ============================================================
+    window.showRingkasanShift = function(d) {
+      const S = getSwal();
+      if (!S || !d) return;
+      const plusMin = d.selisih_saldo >= 0 ? '+' : '';
+      const color   = d.selisih_saldo >= 0 ? '#059669' : '#ef4444';
+      const icon    = d.selisih_saldo >= 0 ? 'success' : 'warning';
+      const totalAwal  = (d.saldo_awal_kas||0)  + (d.saldo_awal_bank||0);
+      const totalAkhir = (d.saldo_akhir_kas||0) + (d.saldo_akhir_bank||0);
+
+      S.fire({
+        title: `📊 Ringkasan Shift — ${d.nama||'Kasir'}`,
+        html: `
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;text-align:left;">
+            <div style="background:#f8fafc;border-radius:14px;padding:10px 14px;margin-bottom:12px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;">DURASI SHIFT</p>
+                <p style="font-size:16px;font-weight:900;color:#0f172a;">${d.durasi_jam||0}j ${d.durasi_menit||0}m</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:8px;font-weight:700;color:#94a3b8;">${d.buka_tgl||''} ${d.buka_jam||''}</p>
+                <p style="font-size:8px;font-weight:700;color:#94a3b8;">→ ${d.tutup_tgl||''} ${d.tutup_jam||''}</p>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px 12px;">
+                <p style="font-size:7.5px;font-weight:900;color:#16a34a;text-transform:uppercase;">KAS AWAL</p>
+                <p style="font-size:12px;font-weight:900;color:#15803d;">Rp ${fmt(d.saldo_awal_kas||0)}</p>
+                <p style="font-size:7.5px;font-weight:900;color:#16a34a;text-transform:uppercase;margin-top:4px;">KAS AKHIR</p>
+                <p style="font-size:13px;font-weight:900;color:#065f46;">Rp ${fmt(d.saldo_akhir_kas||0)}</p>
+              </div>
+              <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:10px 12px;">
+                <p style="font-size:7.5px;font-weight:900;color:#1d4ed8;text-transform:uppercase;">BANK AWAL</p>
+                <p style="font-size:12px;font-weight:900;color:#1d4ed8;">Rp ${fmt(d.saldo_awal_bank||0)}</p>
+                <p style="font-size:7.5px;font-weight:900;color:#1d4ed8;text-transform:uppercase;margin-top:4px;">BANK AKHIR</p>
+                <p style="font-size:13px;font-weight:900;color:#1e40af;">Rp ${fmt(d.saldo_akhir_bank||0)}</p>
+              </div>
+            </div>
+            <div style="background:${d.selisih_saldo>=0?'#f0fdf4':'#fef2f2'};border:1.5px solid ${d.selisih_saldo>=0?'#86efac':'#fca5a5'};border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <p style="font-size:8px;font-weight:900;color:${color};text-transform:uppercase;">SELISIH TOTAL</p>
+                <p style="font-size:20px;font-weight:900;color:${color};">${plusMin}Rp ${fmt(Math.abs(d.selisih_saldo||0))}</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:8px;color:#94a3b8;font-weight:700;">Total Awal</p>
+                <p style="font-size:11px;font-weight:900;color:#64748b;">Rp ${fmt(totalAwal)}</p>
+                <p style="font-size:8px;color:#94a3b8;font-weight:700;margin-top:2px;">Total Akhir</p>
+                <p style="font-size:11px;font-weight:900;color:#475569;">Rp ${fmt(totalAkhir)}</p>
+              </div>
+            </div>
+            ${isOwner() ? `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+              <div style="background:#f8fafc;border-radius:10px;padding:8px 10px;text-align:center;">
+                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;">SELISIH KAS</p>
+                <p style="font-size:12px;font-weight:900;color:${(d.selisih_kas||0)>=0?'#059669':'#ef4444'};">${(d.selisih_kas||0)>=0?'+':''}Rp ${fmt(Math.abs(d.selisih_kas||0))}</p>
+              </div>
+              <div style="background:#f8fafc;border-radius:10px;padding:8px 10px;text-align:center;">
+                <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;">SELISIH BANK</p>
+                <p style="font-size:12px;font-weight:900;color:${(d.selisih_bank||0)>=0?'#059669':'#ef4444'};">${(d.selisih_bank||0)>=0?'+':''}Rp ${fmt(Math.abs(d.selisih_bank||0))}</p>
+              </div>
+            </div>` : ''}
+          </div>`,
+        icon               : icon,
+        confirmButtonText  : '✅ Oke, Tutup',
+        confirmButtonColor : '#0061C2',
+        customClass        : { popup: 'swal2-ku' },
+      });
+    };
+
+    // ─── HOOK tutupShiftSubmit → auto ringkasan ──────────────
+    (function _hookTutupShift() {
+      const _orig = window.tutupShiftSubmit;
+      if (typeof _orig !== 'function') { setTimeout(_hookTutupShift, 2000); return; }
+      window.tutupShiftSubmit = async function() {
+        const shifts  = window._absensiActiveShifts || [];
+        const shiftId = (document.getElementById('absensi-tutup-shift-id')||{}).value || '';
+        const sb      = shifts.find(s => s.id === shiftId);
+        const sAkhirKas  = parseFloat((document.getElementById('absensi-tutup-saldo-kas') ||{}).value) || 0;
+        const sAkhirBank = parseFloat((document.getElementById('absensi-tutup-saldo-bank')||{}).value) || 0;
+        await _orig.apply(this, arguments);
+        if (!sb) return;
+        setTimeout(() => {
+          const sAwalKas  = sb.saldo_awal_kas  || sb.saldo_awal || 0;
+          const sAwalBank = sb.saldo_awal_bank || 0;
+          window.showRingkasanShift({
+            nama            : sb.nama || 'Kasir',
+            buka_tgl        : sb.buka_tgl || '',
+            buka_jam        : sb.buka_jam || '',
+            tutup_tgl       : (document.getElementById('absensi-tutup-tgl')||{}).value || '',
+            tutup_jam       : (document.getElementById('absensi-tutup-jam')||{}).value || '',
+            saldo_awal_kas  : sAwalKas,
+            saldo_awal_bank : sAwalBank,
+            saldo_akhir_kas : sAkhirKas,
+            saldo_akhir_bank: sAkhirBank,
+            selisih_kas     : sAkhirKas  - sAwalKas,
+            selisih_bank    : sAkhirBank - sAwalBank,
+            selisih_saldo   : (sAkhirKas + sAkhirBank) - (sAwalKas + sAwalBank),
+            durasi_jam      : sb.durasi_jam   || 0,
+            durasi_menit    : sb.durasi_menit || 0,
+          });
+        }, 2500);
+      };
+    })();
+
+    // ─── HOOK renderAll → jalankan semua cek notif ───────────
+    const _iv = setInterval(() => {
+      if (typeof window.renderAll !== 'function') return;
+      clearInterval(_iv);
+      const _origRA = window.renderAll;
+      window.renderAll = function() {
+        const r = _origRA.apply(this, arguments);
+        setTimeout(() => {
+          window.checkSaldoWarning();
+          window.checkStokMenipisEnhanced();
+          window.checkHutangJatuhTempo();
+        }, 800);
+        return r;
+      };
+      console.log('[KonterKU Notif] Hooks aktif ✓');
+    }, 500);
+
+    // ─── Debug helper ────────────────────────────────────────
+    window.KonterKUNotif = {
+      checkSaldo   : () => window.checkSaldoWarning(true),
+      checkStok    : () => { delete _notifShown['stok_menipis']; window.checkStokMenipisEnhanced(); },
+      checkHutang  : () => { delete _notifShown['hutang_jatuh']; window.checkHutangJatuhTempo(); },
+      showRingkasan: window.showRingkasanShift,
+      resetCooldown: () => Object.keys(_notifShown).forEach(k => delete _notifShown[k]),
+    };
+
+    console.log('[KonterKU Notif] Smart Notification System v1.0 dimuat ✓');
+  })();
+  </script>
+  <!-- ===== END SMART NOTIFICATION SYSTEM ===== -->
 </body>
 </html>
