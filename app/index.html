@@ -7479,6 +7479,13 @@
             <select id="m-h-wallet" class="input-premium"></select>
           </div>
           <div><label>Keterangan</label><input type="text" id="m-h-ket" class="input-premium" placeholder="Catatan"></div>
+          <div>
+            <label style="display:flex;align-items:center;gap:6px;">
+              <i class="fas fa-calendar-alt" style="font-size:11px;color:#ef4444;"></i>
+              Tanggal Jatuh Tempo <span style="font-size:9px;color:#94a3b8;font-weight:600;">(opsional)</span>
+            </label>
+            <input type="date" id="m-h-jatuh-tempo" class="input-premium" style="color-scheme:dark;">
+          </div>
           <button onclick="saveManualHutang()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg cursor-pointer border-0">SIMPAN</button>
         </div>
       </div>
@@ -7513,6 +7520,13 @@
           <div><label>Nama</label><input type="text" id="edit-h-nama" class="input-premium"></div>
           <div><label>Jumlah</label><input type="number" id="edit-h-jumlah" class="input-premium"></div>
           <div><label>Keterangan</label><input type="text" id="edit-h-ket" class="input-premium"></div>
+          <div>
+            <label style="display:flex;align-items:center;gap:6px;">
+              <i class="fas fa-calendar-alt" style="font-size:11px;color:#ef4444;"></i>
+              Tanggal Jatuh Tempo <span style="font-size:9px;color:#94a3b8;font-weight:600;">(opsional)</span>
+            </label>
+            <input type="date" id="edit-h-jatuh-tempo" class="input-premium" style="color-scheme:dark;">
+          </div>
           <button onclick="saveEditHutang()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">UPDATE DATA</button>
         </div>
       </div>
@@ -8411,6 +8425,8 @@
       if (jml) jml.value = "";
       const ket = document.getElementById('m-h-ket');
       if (ket) ket.value = "";
+      const jatuhTempo = document.getElementById('m-h-jatuh-tempo');
+      if (jatuhTempo) jatuhTempo.value = '';
       openModal('modal-add-hutang');
     }
 
@@ -8434,13 +8450,16 @@
       const jumlah = Number(document.getElementById('m-h-jumlah').value);
       const wId = document.getElementById('m-h-wallet').value;
       const ket = document.getElementById('m-h-ket').value || 'Manual';
+      const tglJatuhTempo = (document.getElementById('m-h-jatuh-tempo') && document.getElementById('m-h-jatuh-tempo').value) || null;
       const type = currentManualHutangType;
       if (!nama || jumlah <= 0 || !wId) { (_getMySwal()||Swal).fire('Gagal', 'Lengkapi semua data dengan benar', 'error'); return; }
       const wIdx = db.dompet.findIndex(w => w.id === wId);
       if (wIdx === -1) return;
       if (type === 'pelanggan') { db.dompet[wIdx].saldo -= jumlah; addMutasi(wId, jumlah, 'out', 'PIUTANG: '+nama); }
       else { db.dompet[wIdx].saldo += jumlah; addMutasi(wId, jumlah, 'in', 'HUTANG TOKO: '+nama); }
-      db.hutang.push({ id: 'H-'+Date.now(), tipe: type, nama, jumlah, tgl: getWIBDate(), ket });
+      const hutangEntry = { id: 'H-'+Date.now(), tipe: type, nama, jumlah, tgl: getWIBDate(), ket };
+      if (tglJatuhTempo) hutangEntry.tgl_jatuh_tempo = tglJatuhTempo;
+      db.hutang.push(hutangEntry);
       closeModal('modal-add-hutang');
       await sync();
     }
@@ -10766,6 +10785,8 @@
       document.getElementById('edit-h-nama').value = h.nama||'';
       document.getElementById('edit-h-jumlah').value = h.jumlah||0;
       document.getElementById('edit-h-ket').value = h.ket||'';
+      const editJTEl = document.getElementById('edit-h-jatuh-tempo');
+      if (editJTEl) editJTEl.value = h.tgl_jatuh_tempo || '';
       openModal('modal-edit-hutang');
     }
 
@@ -10776,6 +10797,9 @@
       db.hutang[idx].nama = document.getElementById('edit-h-nama').value;
       db.hutang[idx].jumlah = Number(document.getElementById('edit-h-jumlah').value);
       db.hutang[idx].ket = document.getElementById('edit-h-ket').value;
+      const editJatuhTempo = document.getElementById('edit-h-jatuh-tempo');
+      if (editJatuhTempo && editJatuhTempo.value) db.hutang[idx].tgl_jatuh_tempo = editJatuhTempo.value;
+      else if (editJatuhTempo && !editJatuhTempo.value) delete db.hutang[idx].tgl_jatuh_tempo;
       closeModal('modal-edit-hutang');
       await sync();
     }
@@ -19857,12 +19881,16 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 
   // Daftar aksi yang butuh PIN
   const PROTECTED_ACTIONS = {
-    deleteTr:      { label: 'Refund / Hapus Transaksi', icon: 'fa-rotate-left',  color: '#ef4444' },
-    saveEditTr:    { label: 'Edit Transaksi',            icon: 'fa-edit',         color: '#3b82f6' },
-    deleteProduct: { label: 'Hapus Produk',              icon: 'fa-box-open',     color: '#f59e0b' },
-    saveProduct:   { label: 'Edit Harga/Stok Produk',   icon: 'fa-tag',          color: '#8b5cf6' },
-    deleteWallet:  { label: 'Hapus Dompet',              icon: 'fa-wallet',       color: '#ec4899' },
-    adjWallet:     { label: 'Penyesuaian Saldo Dompet', icon: 'fa-sliders',      color: '#06b6d4' },
+    deleteTr:          { label: 'Refund / Hapus Transaksi',   icon: 'fa-rotate-left',         color: '#ef4444' },
+    saveEditTr:        { label: 'Edit Transaksi',              icon: 'fa-edit',                color: '#3b82f6' },
+    deleteProduct:     { label: 'Hapus Produk',                icon: 'fa-box-open',            color: '#f59e0b' },
+    saveProduct:       { label: 'Edit Harga/Stok Produk',     icon: 'fa-tag',                 color: '#8b5cf6' },
+    deleteWallet:      { label: 'Hapus Dompet',                icon: 'fa-wallet',              color: '#ec4899' },
+    adjWallet:         { label: 'Penyesuaian Saldo Dompet',   icon: 'fa-sliders',             color: '#06b6d4' },
+    deleteHutang:      { label: 'Hapus Data Hutang',           icon: 'fa-file-invoice-dollar', color: '#dc2626' },
+    deleteHutangLunas: { label: 'Hapus Riwayat Hutang Lunas', icon: 'fa-check-circle',        color: '#16a34a' },
+    deleteCustomer:    { label: 'Hapus Pelanggan',             icon: 'fa-user-minus',          color: '#db2777' },
+    deleteNote:        { label: 'Hapus Catatan',               icon: 'fa-note-sticky',         color: '#7c3aed' },
   };
 
   /* ─────────────────────────────────────────────
@@ -20037,45 +20065,34 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     // 1. deleteTr — refund transaksi
     guardAsync('deleteTr', 'deleteTr', (id) => {
       const t = (window.db?.transaksi || []).find(x => x.id === id) || {};
-      return {
-        id,
-        produk: t.produk || '-',
-        jual: t.jual,
-        tgl: t.tgl,
-        status: t.status,
-      };
+      return { id, produk: t.produk || '-', jual: t.jual, tgl: t.tgl, status: t.status };
     });
 
     // 2. saveEditTr — simpan edit transaksi
     guardAsync('saveEditTr', 'saveEditTr', () => {
-      const id = document.getElementById('edit-tr-id')?.value || '-';
-      const jual = document.getElementById('edit-tr-jual')?.value || '-';
-      const modal = document.getElementById('edit-tr-modal')?.value || '-';
+      const id   = document.getElementById('edit-tr-id')?.value    || '-';
+      const jual = document.getElementById('edit-tr-jual')?.value  || '-';
+      const modal= document.getElementById('edit-tr-modal')?.value || '-';
       return { id, jual_baru: jual, modal_baru: modal };
     });
 
-    // 3. deleteProduct / saveProduk — cek apakah ada fungsi tsb
-    ['deleteProduk', 'deleteProduct', 'hapusProduk'].forEach(fn => {
-      if (typeof window[fn] === 'function') {
-        guardAsync(fn, 'deleteProduct', (id) => {
-          const p = (window.db?.inventory || []).find(x => x.id === id) || {};
-          return { id, nama: p.nama || '-', harga: p.harga_jual || p.harga };
-        });
-      }
+    // 3. deleteProduk — FIX: nama fungsi aktual adalah deleteProduk
+    guardAsync('deleteProduk', 'deleteProduct', (id) => {
+      const p = (window.db?.inventory || []).find(x => x.id === id) || {};
+      return { id, nama: p.nama || '-', harga_jual: p.jual || p.harga_jual || '-' };
     });
 
-    // Patch saveProduk untuk deteksi edit harga (bukan tambah baru)
+    // 4. saveProduk — FIX: field form pakai p-id, p-nama, p-jual (bukan produk-id)
     const origSaveProduk = window.saveProduk;
     if (typeof origSaveProduk === 'function') {
       window.saveProduk = async function (...args) {
-        // Cek apakah ini edit (ada id di form) atau tambah baru
-        const isEdit = !!(document.getElementById('produk-id')?.value);
+        const isEdit = !!(document.getElementById('p-id')?.value);
         if (isEdit) {
           const confirmed = await askPin('saveProduct');
           if (!confirmed) return;
-          const id = document.getElementById('produk-id')?.value || '-';
-          const nama = document.getElementById('produk-nama')?.value || '-';
-          const hargaJual = document.getElementById('produk-harga-jual')?.value || '-';
+          const id      = document.getElementById('p-id')?.value    || '-';
+          const nama    = document.getElementById('p-nama')?.value  || '-';
+          const hargaJual = document.getElementById('p-jual')?.value || '-';
           writeAuditLog('saveProduct', { id, nama, harga_jual_baru: hargaJual });
         }
         return origSaveProduk.apply(this, args);
@@ -20083,26 +20100,64 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       console.log(`[${MODULE}] Guard aktif: saveProduk (edit only)`);
     }
 
-    // 4. deleteWallet / hapusDompet
-    ['deleteDompet', 'deleteWallet', 'hapusDompet'].forEach(fn => {
-      if (typeof window[fn] === 'function') {
-        guardAsync(fn, 'deleteWallet', (id) => {
-          const w = (window.db?.dompet || []).find(x => x.id === id) || {};
-          return { id, nama: w.nama || '-', saldo: w.saldo };
-        });
-      }
+    // 5. deleteWallet — nama fungsi aktual adalah deleteWallet
+    guardAsync('deleteWallet', 'deleteWallet', (id) => {
+      const w = (window.db?.dompet || []).find(x => x.id === id) || {};
+      return { id, nama: w.nama || '-', saldo: w.saldo };
     });
 
-    // 5. saveAdjWallet — penyesuaian saldo dompet
-    ['saveAdjWallet', 'simpanAdjWallet', 'saveAdjustment'].forEach(fn => {
-      if (typeof window[fn] === 'function') {
-        guardAsync(fn, 'adjWallet', () => {
-          const wid = document.getElementById('adj-wallet-id')?.value || document.getElementById('adj-wallet')?.value || '-';
-          const jumlah = document.getElementById('adj-jumlah')?.value || document.getElementById('adj-amount')?.value || '-';
-          const keterangan = document.getElementById('adj-ket')?.value || '-';
-          return { wallet_id: wid, jumlah, keterangan };
-        });
-      }
+    // 6. processAdjustment — FIX: nama fungsi aktual bukan saveAdjWallet
+    const origProcessAdj = window.processAdjustment;
+    if (typeof origProcessAdj === 'function') {
+      window.processAdjustment = async function (...args) {
+        const confirmed = await askPin('adjWallet');
+        if (!confirmed) return;
+        const wId    = document.getElementById('adj-wallet')?.value   || '-';
+        const type   = document.getElementById('adj-type')?.value     || '-';
+        const amount = document.getElementById('adj-amount')?.value   || '-';
+        const reason = document.getElementById('adj-reason')?.value   || '-';
+        const w = (window.db?.dompet || []).find(x => x.id === wId) || {};
+        writeAuditLog('adjWallet', { wallet: w.nama || wId, tipe: type, jumlah: amount, alasan: reason });
+        return origProcessAdj.apply(this, args);
+      };
+      console.log(`[${MODULE}] Guard aktif: processAdjustment`);
+    }
+
+    // 7. deleteHutang — FIX: sebelumnya tidak diproteksi
+    guardAsync('deleteHutang', 'deleteHutang', (id) => {
+      const h = (window.db?.hutang || []).find(x => x.id === id) || {};
+      return { id, nama: h.nama || '-', jumlah: h.jumlah || '-', tipe: h.tipe || '-' };
+    });
+
+    // 8. deleteHutangLunas — FIX: sebelumnya tidak diproteksi
+    guardAsync('deleteHutangLunas', 'deleteHutangLunas', (id) => {
+      const h = (window.db?.hutang_lunas || []).find(x => x.id === id) || {};
+      return { id, nama: h.nama || '-', jumlah: h.jumlah || '-' };
+    });
+
+    // 9. deleteCustomer — FIX: sebelumnya tidak diproteksi
+    guardAsync('deleteCustomer', 'deleteCustomer', () => {
+      const id = document.getElementById('c-id')?.value || '-';
+      const c = (window.db?.pelanggan || []).find(x => x.id === id) || {};
+      return { id, nama: c.nama || '-', phone: c.phone || '-' };
+    });
+
+    // 10. deleteCustomerDirect — FIX: sebelumnya tidak diproteksi
+    guardAsync('deleteCustomerDirect', 'deleteCustomer', (id) => {
+      const c = (window.db?.pelanggan || []).find(x => x.id === id) || {};
+      return { id, nama: c.nama || '-', phone: c.phone || '-' };
+    });
+
+    // 11. deleteNote — FIX: sebelumnya tidak diproteksi
+    guardAsync('deleteNote', 'deleteNote', (id) => {
+      const n = (window.db?.notes || []).find(x => x.id === id) || {};
+      return { id, judul: n.title || n.judul || '-' };
+    });
+
+    // 12. deleteNoteFromSidebar — FIX: sebelumnya tidak diproteksi
+    guardAsync('deleteNoteFromSidebar', 'deleteNote', (id) => {
+      const n = (window.db?.notes || []).find(x => x.id === id) || {};
+      return { id, judul: n.title || n.judul || '-' };
     });
   }
 
@@ -20117,21 +20172,29 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     const filtered = filter === 'all' ? logs : logs.filter(l => l.actionKey === filter);
 
     const colorMap = {
-      deleteTr:      '#ef4444',
-      saveEditTr:    '#3b82f6',
-      deleteProduct: '#f59e0b',
-      saveProduct:   '#8b5cf6',
-      deleteWallet:  '#ec4899',
-      adjWallet:     '#06b6d4',
+      deleteTr:          '#ef4444',
+      saveEditTr:        '#3b82f6',
+      deleteProduct:     '#f59e0b',
+      saveProduct:       '#8b5cf6',
+      deleteWallet:      '#ec4899',
+      adjWallet:         '#06b6d4',
+      deleteHutang:      '#dc2626',
+      deleteHutangLunas: '#16a34a',
+      deleteCustomer:    '#db2777',
+      deleteNote:        '#7c3aed',
     };
 
     const iconMap = {
-      deleteTr:      'fa-rotate-left',
-      saveEditTr:    'fa-edit',
-      deleteProduct: 'fa-box-open',
-      saveProduct:   'fa-tag',
-      deleteWallet:  'fa-wallet',
-      adjWallet:     'fa-sliders',
+      deleteTr:          'fa-rotate-left',
+      saveEditTr:        'fa-edit',
+      deleteProduct:     'fa-box-open',
+      saveProduct:       'fa-tag',
+      deleteWallet:      'fa-wallet',
+      adjWallet:         'fa-sliders',
+      deleteHutang:      'fa-file-invoice-dollar',
+      deleteHutangLunas: 'fa-check-circle',
+      deleteCustomer:    'fa-user-minus',
+      deleteNote:        'fa-note-sticky',
     };
 
     const filterOpts = [
@@ -20156,11 +20219,14 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
             </div>
           </div>
           <!-- Stats -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;position:relative;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;position:relative;row-gap:8px;">
             ${[
-              { k:'deleteTr',   l:'Refund',   c:'#ef4444' },
-              { k:'saveEditTr', l:'Edit Tr',  c:'#3b82f6' },
-              { k:'saveProduct',l:'Edit Prod',c:'#8b5cf6' },
+              { k:'deleteTr',      l:'Refund',      c:'#ef4444' },
+              { k:'saveEditTr',    l:'Edit Tr',      c:'#3b82f6' },
+              { k:'deleteHutang',  l:'Hapus Hutang', c:'#dc2626' },
+              { k:'deleteCustomer',l:'Hapus Plgn',   c:'#db2777' },
+              { k:'adjWallet',     l:'Adj Saldo',    c:'#06b6d4' },
+              { k:'saveProduct',   l:'Edit Produk',  c:'#8b5cf6' },
             ].map(s => `
               <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 8px;text-align:center;">
                 <p style="font-size:18px;font-weight:900;color:${s.c};margin:0;">${logs.filter(l=>l.actionKey===s.k).length}</p>
