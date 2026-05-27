@@ -1189,6 +1189,102 @@
     [data-theme="dark"] #modal-sidebar-panduan [style*="background:#f1f5f9"],
     [data-theme="dark"] #modal-sidebar-panduan [style*="background:#f8fafc"] { background: #1e293b !important; }
 
+    /* ════════════════════════════════════════════════════
+       FIX DARK MODE — PANDUAN PENGGUNAAN (modal-panduan)
+       ════════════════════════════════════════════════════ */
+    /* Body background panduan */
+    [data-theme="dark"] #panduan-body { background: #0f172a !important; }
+    /* Section title */
+    [data-theme="dark"] .panduan-section-title {
+      color: #e2e8f0 !important;
+      border-bottom-color: rgba(255,255,255,0.08) !important;
+    }
+    /* Kartu langkah */
+    [data-theme="dark"] .panduan-card {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.07) !important;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important;
+    }
+    /* Judul langkah */
+    [data-theme="dark"] .panduan-step-title { color: #e2e8f0 !important; }
+    /* Teks deskripsi & list */
+    [data-theme="dark"] .panduan-text,
+    [data-theme="dark"] .panduan-list li { color: #94a3b8 !important; }
+    /* Arrow pada list */
+    [data-theme="dark"] .panduan-list li::before { color: #60a5fa !important; }
+    /* Info box (biru) */
+    [data-theme="dark"] .panduan-info {
+      background: rgba(0,97,194,0.15) !important;
+      border-color: rgba(0,97,194,0.25) !important;
+      color: #7dd3fc !important;
+    }
+    /* Warning box (kuning) */
+    [data-theme="dark"] .panduan-warning {
+      background: rgba(245,158,11,0.12) !important;
+      border-color: rgba(245,158,11,0.25) !important;
+      color: #fbbf24 !important;
+    }
+
+    /* ════════════════════════════════════════════════════
+       FIX DARK MODE — FITUR CARDS di Modal Tentang
+       (warna background yang belum di-cover)
+       ════════════════════════════════════════════════════ */
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#f0fdf4"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#dcfce7"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#bbf7d0"] { background: rgba(21,128,61,0.12) !important; border-color: rgba(21,128,61,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#f5f3ff"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#ddd6fe"] { background: rgba(124,58,237,0.12) !important; border-color: rgba(124,58,237,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#fff1f2"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#fecdd3"] { background: rgba(190,18,60,0.12) !important; border-color: rgba(190,18,60,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#fffbeb"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#fde68a"] { background: rgba(180,83,9,0.12) !important; border-color: rgba(180,83,9,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#ecfeff"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#a5f3fc"] { background: rgba(14,116,144,0.12) !important; border-color: rgba(14,116,144,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#fdf4ff"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#e9d5ff"] { background: rgba(147,51,234,0.12) !important; border-color: rgba(147,51,234,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#eff6ff"],
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#bfdbfe"] { background: rgba(0,97,194,0.12) !important; border-color: rgba(0,97,194,0.2) !important; }
+    /* Teks judul & subtitle fitur cards */
+    [data-theme="dark"] #modal-sidebar-tentang [style*="color:#1e293b"] { color: #e2e8f0 !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="color:#94a3b8"] { color: #64748b !important; }
+    /* Ikon warna fitur cards */
+    [data-theme="dark"] #modal-sidebar-tentang [style*="color:#15803d"] { color: #4ade80 !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="color:#be123c"] { color: #fb7185 !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="color:#b45309"] { color: #fbbf24 !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="color:#0e7490"] { color: #22d3ee !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="color:#9333ea"] { color: #c084fc !important; }
+    /* Icon wrap background (rgba sudah relatif transparan, tapi perlu lebih terang) */
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:rgba(21,128,61"] { background: rgba(21,128,61,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:rgba(29,78,216"] { background: rgba(29,78,216,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:rgba(124,58,237"] { background: rgba(124,58,237,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:rgba(190,18,60"] { background: rgba(190,18,60,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:rgba(180,83,9"] { background: rgba(180,83,9,0.2) !important; }
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:rgba(14,116,144"] { background: rgba(14,116,144,0.2) !important; }
+    /* Body tentang */
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#f8fafc"] { background: #0f172a !important; }
+    /* Changelog check icon background */
+    [data-theme="dark"] #modal-sidebar-tentang [style*="background:#dcfce7"][style*="width:20px"] { background: rgba(21,128,61,0.2) !important; }
+    /* Info teknis section */
+    [data-theme="dark"] #modal-sidebar-tentang .text-slate-700 { color: #e2e8f0 !important; }
+    [data-theme="dark"] #modal-sidebar-tentang .text-slate-500 { color: #64748b !important; }
+
+    /* ════════════════════════════════════════════════════
+       FIX DARK MODE — ADMIN BANK & ADMIN AGEN (Kasir EWallet)
+       ════════════════════════════════════════════════════ */
+    [data-theme="dark"] .ewl-admin-bank {
+      background: rgba(234,88,12,0.12) !important;
+      border-color: rgba(234,88,12,0.25) !important;
+    }
+    [data-theme="dark"] .ewl-admin-agen {
+      background: rgba(21,128,61,0.12) !important;
+      border-color: rgba(21,128,61,0.25) !important;
+    }
+    /* Label teks admin bank & agen */
+    [data-theme="dark"] .ewl-admin-bank .kasir-field-label { color: #fb923c !important; }
+    [data-theme="dark"] .ewl-admin-bank .kasir-field-input { color: #fb923c !important; }
+    [data-theme="dark"] .ewl-admin-agen .kasir-field-label { color: #4ade80 !important; }
+    [data-theme="dark"] .ewl-admin-agen .kasir-field-input { color: #4ade80 !important; }
+
     /* Info nama toko (biru) */
     [data-theme="dark"] #modal-sidebar-akun .bg-blue-50 {
       background: rgba(0,97,194,0.15) !important;
@@ -2034,6 +2130,38 @@
     /* Supaya teks harga jual tetap kuning cerah di dark */
     [data-theme="dark"] .kasir-field-input.text-amber-800 { color: #fbbf24 !important; }
     [data-theme="dark"] .kasir-field-input.text-sky-700 { color: #38bdf8 !important; }
+    /* Fix: Harga Jual Fisik (emerald-800) tidak terlihat di dark mode */
+    [data-theme="dark"] .kasir-field-input.text-emerald-800 { color: #34d399 !important; }
+    /* Fix: Diskon & Biaya Tambahan card background di dark mode */
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fffbeb,#fef3c7)"] {
+      background: rgba(251,146,60,0.10) !important;
+      border-color: rgba(251,146,60,0.25) !important;
+    }
+    [data-theme="dark"] [style*="background:linear-gradient(135deg,#fffbeb,#fef3c7)"] [style*="color:#c2410c"] { color: #fb923c !important; }
+    /* Fix: Input Diskon & Biaya Tambahan — kotak putih jadi transparan gelap */
+    [data-theme="dark"] #kf-diskon-val,
+    [data-theme="dark"] #kf-biaya-tambahan {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] #kf-diskon-val ~ *,
+    [data-theme="dark"] [style*="background:white;border:1.5px solid #fed7aa"] {
+      background: rgba(255,255,255,0.07) !important;
+      border-color: rgba(251,146,60,0.35) !important;
+    }
+    /* Fix: wrapper kotak input diskon & biaya tambahan */
+    [data-theme="dark"] #kf-diskon-box,
+    [data-theme="dark"] #kf-biaya-box {
+      background: rgba(255,255,255,0.06) !important;
+      border-color: rgba(251,146,60,0.4) !important;
+    }
+    /* Fix: Select tipe diskon (Rp / %) di dark mode */
+    [data-theme="dark"] #kf-diskon-tipe {
+      background: rgba(30,41,59,0.9) !important;
+      border-color: rgba(251,146,60,0.35) !important;
+      color: #fb923c !important;
+    }
+    /* Fix: Total Pembayaran — text nominal terlihat di dark mode */
+    [data-theme="dark"] #kf-total-final { color: #ffffff !important; font-weight: 900 !important; }
     /* MODAL badge */
     [data-theme="dark"] .kasir-price-badge {
       background: rgba(14,165,233,0.12) !important;
@@ -6666,7 +6794,7 @@
 
             <!-- Diskon -->
             <div class="kasir-field-row" style="border:none;padding-top:4px;gap:8px;">
-              <div style="flex:1;background:white;border:1.5px solid #fed7aa;border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:6px;">
+              <div id="kf-diskon-box" style="flex:1;background:white;border:1.5px solid #fed7aa;border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:6px;">
                 <i class="fas fa-tag" style="color:#f97316;font-size:10px;"></i>
                 <input type="number" id="kf-diskon-val" class="kasir-field-input" placeholder="Diskon" min="0"
                   style="background:transparent;padding:0;font-size:13px;font-weight:700;color:#1e293b;border:none;outline:none;"
@@ -6682,7 +6810,7 @@
 
             <!-- Biaya Tambahan -->
             <div class="kasir-field-row" style="border:none;padding-top:10px;">
-              <div style="flex:1;background:white;border:1.5px solid #fed7aa;border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:6px;">
+              <div id="kf-biaya-box" style="flex:1;background:white;border:1.5px solid #fed7aa;border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:6px;">
                 <i class="fas fa-circle-plus" style="color:#f97316;font-size:10px;"></i>
                 <input type="number" id="kf-biaya-tambahan" class="kasir-field-input" placeholder="Biaya Tambahan" min="0"
                   style="background:transparent;padding:0;font-size:13px;font-weight:700;color:#1e293b;border:none;outline:none;"
@@ -18889,35 +19017,13 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
        2. Sistem Diskon & Voucher Promo
        3. Rekonsiliasi Dompet Otomatis
        4. Push Notifikasi PWA
-       5. Foto Produk di Katalog Stok
-       6. Auto-link Pelanggan di setiap transaksi kasir
+       5. Auto-link Pelanggan di setiap transaksi kasir
 ================================================================ -->
 
 <!-- ═══════════════════════════════════════════════════════
      CSS TAMBAHAN MODUL BISNIS LANJUTAN
 ═══════════════════════════════════════════════════════ -->
 <style>
-  /* ── Foto Produk ── */
-  .stok-foto-thumb {
-    width: 42px; height: 42px; border-radius: 12px; object-fit: cover;
-    border: 1.5px solid rgba(0,97,194,0.15); flex-shrink: 0;
-    background: #f1f5f9;
-  }
-  .stok-foto-placeholder {
-    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    border: 1.5px dashed #cbd5e1;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; color: #94a3b8;
-  }
-  .foto-upload-zone {
-    border: 2.5px dashed #e2e8f0; border-radius: 16px;
-    padding: 20px; text-align: center; cursor: pointer;
-    transition: all 0.2s; background: #fafafa;
-  }
-  .foto-upload-zone:hover { border-color: #0061C2; background: #eff6ff; }
-  .foto-upload-zone.has-foto { border-style: solid; border-color: #0061C2; background: #eff6ff; }
-
   /* ── Voucher / Diskon ── */
   .voucher-card {
     border-radius: 18px; overflow: hidden;
@@ -19079,34 +19185,6 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   </div>
 </div>
 
-<!-- ⑤ MODAL: Foto Produk (upload/preview) -->
-<div id="modal-foto-produk" class="modal-overlay">
-  <div class="modal-content">
-    <div class="flex justify-between items-center mb-5">
-      <h4 class="text-lg font-black" style="color:var(--sb-text-title);">📸 Foto Produk</h4>
-      <button onclick="closeModal('modal-foto-produk')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
-    </div>
-    <p id="fp-produk-nama" class="text-[11px] font-bold text-slate-500 mb-4"></p>
-    <div class="foto-upload-zone" id="foto-upload-zone" onclick="document.getElementById('foto-file-input').click()">
-      <img id="foto-preview-img" src="" style="max-height:160px;width:100%;object-fit:contain;border-radius:12px;display:none;margin-bottom:8px;">
-      <div id="foto-upload-placeholder">
-        <i class="fas fa-camera text-4xl text-slate-300 mb-2 block"></i>
-        <p class="text-[12px] font-black text-slate-400">Tap untuk upload foto</p>
-        <p class="text-[9px] font-bold text-slate-300 mt-1">JPG/PNG · Maks 500KB</p>
-      </div>
-    </div>
-    <input type="file" id="foto-file-input" accept="image/*" style="display:none;" onchange="handleFotoUpload(event)">
-    <input type="hidden" id="foto-produk-id">
-    <div class="flex gap-3 mt-4">
-      <button onclick="hapusFotoProduk()" id="btn-hapus-foto" class="flex-1 py-3 rounded-2xl text-[11px] font-black border-0 cursor-pointer" style="background:#fef2f2;color:#ef4444;">
-        <i class="fas fa-trash mr-1"></i>HAPUS
-      </button>
-      <button onclick="simpanFotoProduk()" class="flex-1 py-3 rounded-2xl text-[11px] font-black text-white border-0 cursor-pointer" style="background:linear-gradient(135deg,#0061C2,#0ea5e9);box-shadow:0 4px 16px rgba(0,97,194,0.35);">
-        <i class="fas fa-check mr-1"></i>SIMPAN FOTO
-      </button>
-    </div>
-  </div>
-</div>
 
 
 <!-- ═══════════════════════════════════════════════════════
@@ -19654,113 +19732,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   }
 
   // ═══════════════════════════════════════════════════
-  // ⑤  FOTO PRODUK DI KATALOG STOK
-  // ═══════════════════════════════════════════════════
-
-  function getFotoDb() {
-    try { return JSON.parse(localStorage.getItem('kku_foto_produk') || '{}'); } catch { return {}; }
-  }
-  function saveFotoDb(db) { localStorage.setItem('kku_foto_produk', JSON.stringify(db)); }
-
-  window.bukaFotoProduk = function(produkId) {
-    const inv  = window.db.inventory || [];
-    const prod = inv.find(p => p.id === produkId);
-    if (!prod) return;
-    const fotoDb = getFotoDb();
-    const foto   = fotoDb[produkId] || '';
-
-    document.getElementById('foto-produk-id').value = produkId;
-    document.getElementById('fp-produk-nama').textContent = '📦 ' + (prod.nama || '—');
-
-    const img  = document.getElementById('foto-preview-img');
-    const ph   = document.getElementById('foto-upload-placeholder');
-    const zone = document.getElementById('foto-upload-zone');
-    if (foto) {
-      img.src = foto; img.style.display = 'block'; ph.style.display = 'none';
-      zone.classList.add('has-foto');
-    } else {
-      img.src = ''; img.style.display = 'none'; ph.style.display = '';
-      zone.classList.remove('has-foto');
-    }
-    document.getElementById('foto-file-input').value = '';
-    window._fotoPending = foto || '';
-    openModal('modal-foto-produk');
-  };
-
-  window.handleFotoUpload = function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 512000) { _S()?.fire('Terlalu Besar', 'Foto maksimal 500KB. Kompres dulu.', 'warning'); return; }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      window._fotoPending = ev.target.result;
-      const img  = document.getElementById('foto-preview-img');
-      const ph   = document.getElementById('foto-upload-placeholder');
-      const zone = document.getElementById('foto-upload-zone');
-      img.src = ev.target.result; img.style.display = 'block'; ph.style.display = 'none';
-      zone.classList.add('has-foto');
-    };
-    reader.readAsDataURL(file);
-  };
-
-  window.simpanFotoProduk = function() {
-    const id     = document.getElementById('foto-produk-id').value;
-    const fotoDb = getFotoDb();
-    if (window._fotoPending) fotoDb[id] = window._fotoPending;
-    saveFotoDb(fotoDb);
-    closeModal('modal-foto-produk');
-    _S()?.fire({ icon:'success', title:'Foto Disimpan!', timer:1800, showConfirmButton:false });
-    if (typeof window.renderStok === 'function') window.renderStok();
-  };
-
-  window.hapusFotoProduk = function() {
-    const id     = document.getElementById('foto-produk-id').value;
-    const fotoDb = getFotoDb();
-    delete fotoDb[id];
-    saveFotoDb(fotoDb);
-    window._fotoPending = '';
-    const img  = document.getElementById('foto-preview-img');
-    const ph   = document.getElementById('foto-upload-placeholder');
-    const zone = document.getElementById('foto-upload-zone');
-    img.src = ''; img.style.display = 'none'; ph.style.display = '';
-    zone.classList.remove('has-foto');
-    if (typeof window.renderStok === 'function') window.renderStok();
-  };
-
-  // Patch renderStok agar tampilkan foto & tombol kamera
-  function patchRenderStok() {
-    const _origRenderStok = window.renderStok;
-    if (!_origRenderStok) { setTimeout(patchRenderStok, 800); return; }
-    window.renderStok = function() {
-      _origRenderStok.apply(this, arguments);
-      // Tambahkan foto ke tiap card stok yang ada
-      setTimeout(() => {
-        const fotoDb = getFotoDb();
-        document.querySelectorAll('[data-stok-item-id]').forEach(card => {
-          if (card.dataset.fotoInjected) return;
-          card.dataset.fotoInjected = '1';
-          const pid = card.dataset.stokItemId;
-          const foto = fotoDb[pid];
-          const camBtn = document.createElement('button');
-          camBtn.title = 'Foto Produk';
-          camBtn.onclick = (e) => { e.stopPropagation(); window.bukaFotoProduk(pid); };
-          camBtn.style.cssText = 'position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-radius:9px;background:rgba(0,97,194,0.1);border:1px solid rgba(0,97,194,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:2;';
-          camBtn.innerHTML = foto ? '<i class="fas fa-image" style="color:#0061C2;"></i>' : '<i class="fas fa-camera" style="color:#94a3b8;"></i>';
-          if (foto) {
-            const thumb = document.createElement('img');
-            thumb.src = foto;
-            thumb.className = 'stok-foto-thumb';
-            thumb.style.cssText = 'position:absolute;top:8px;right:8px;width:36px;height:36px;border-radius:10px;object-fit:cover;border:1.5px solid rgba(0,97,194,0.2);z-index:1;';
-            card.style.position = 'relative';
-            card.appendChild(thumb);
-          }
-        });
-      }, 100);
-    };
-  }
-
-  // ═══════════════════════════════════════════════════
-  // ⑥  INJECT TOMBOL DI SIDEBAR & UI LAINNYA
+  // ⑤  INJECT TOMBOL DI SIDEBAR & UI LAINNYA
   // ═══════════════════════════════════════════════════
 
   function injectSidebarMenu() {
@@ -19774,16 +19746,6 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     section.innerHTML = `
       <div class="sidebar-divider"></div>
       <p class="sidebar-section-label">⚡ Fitur Bisnis</p>
-      <button onclick="bukaModalVoucher(); closeSidebar && closeSidebar();" class="sidebar-menu-item">
-        <div class="sidebar-icon-wrap" style="background:rgba(239,68,68,0.1);">
-          <i class="fas fa-ticket" style="color:#ef4444;"></i>
-        </div>
-        <div>
-          <p class="text-[12px] font-black" style="color:var(--sb-text-title);">Voucher & Diskon</p>
-          <p class="text-[9px] font-bold" style="color:var(--sb-text-sub);">Kelola kode promo toko</p>
-        </div>
-        <i class="fas fa-chevron-right text-xs ml-auto" style="color:var(--sb-chevron);"></i>
-      </button>
       <button onclick="bukaRekon(); closeSidebar && closeSidebar();" class="sidebar-menu-item">
         <div class="sidebar-icon-wrap" style="background:rgba(124,58,237,0.1);">
           <i class="fas fa-calculator" style="color:#7c3aed;"></i>
@@ -19813,19 +19775,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   function injectDashboardShortcuts() {
     const target = document.querySelector('#view-dashboard .grid.grid-cols-2');
     if (!target) { setTimeout(injectDashboardShortcuts, 800); return; }
-    if (document.getElementById('dash-btn-voucher')) return;
-
-    const vBtn = document.createElement('button');
-    vBtn.id = 'dash-btn-voucher';
-    vBtn.onclick = window.bukaModalVoucher;
-    vBtn.className = 'bg-white rounded-[18px] p-4 text-left border border-slate-100';
-    vBtn.style.cssText = 'box-shadow:0 2px 12px rgba(0,0,0,0.04);cursor:pointer;';
-    vBtn.innerHTML = `
-      <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(248,113,113,0.08));display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-        <i class="fas fa-ticket" style="color:#ef4444;font-size:14px;"></i>
-      </div>
-      <p class="text-slate-700 font-black text-[12px]">Voucher</p>
-      <p class="text-slate-400 font-bold text-[9px] mt-0.5">Diskon & Promo</p>`;
+    if (document.getElementById('dash-btn-rekon')) return;
 
     const rekonBtn = document.createElement('button');
     rekonBtn.id = 'dash-btn-rekon';
@@ -19839,7 +19789,6 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       <p class="text-slate-700 font-black text-[12px]">Rekonsiliasi</p>
       <p class="text-slate-400 font-bold text-[9px] mt-0.5">Cocokkan Saldo</p>`;
 
-    target.appendChild(vBtn);
     target.appendChild(rekonBtn);
   }
 
@@ -19847,7 +19796,6 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   // BOOT: Jalankan semua modul setelah app siap
   // ═══════════════════════════════════════════════════
   waitApp(() => {
-    patchRenderStok();
     patchSidebarPelanggan();
     hookKirimNotifKeTranx();
     injectSidebarMenu();
@@ -19864,7 +19812,6 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     bukaRekon:           window.bukaRekon,
     bukaNotifPWA:        window.bukaNotifPWA,
     kirimNotif:          window.kirimNotif,
-    bukaFotoProduk:      window.bukaFotoProduk,
     getVouchers,
   };
 
