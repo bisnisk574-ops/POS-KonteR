@@ -19845,5 +19845,542 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
      END MODUL BISNIS LANJUTAN KonterKU v1.0
 ================================================================ -->
 
+<!-- ================================================================
+     MODUL KEAMANAN & AUDIT TRAIL KonterKU v1.0.0
+     Dipasang inline agar tidak ada dependency loading eksternal
+================================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  const MODULE = 'KonterKU Keamanan';
+  const PIN_KEY = 'k_security_pin';
+  const PIN_DEFAULT = '1234';
+  const AUDIT_KEY = 'k_audit_logs';
+  const MAX_LOCAL_LOGS = 500;
+
+  const PROTECTED_ACTIONS = {
+    deleteTr:          { label: 'Refund / Hapus Transaksi',   icon: 'fa-rotate-left',         color: '#ef4444' },
+    saveEditTr:        { label: 'Edit Transaksi',              icon: 'fa-edit',                color: '#3b82f6' },
+    deleteProduct:     { label: 'Hapus Produk',                icon: 'fa-box-open',            color: '#f59e0b' },
+    saveProduct:       { label: 'Edit Harga/Stok Produk',     icon: 'fa-tag',                 color: '#8b5cf6' },
+    deleteWallet:      { label: 'Hapus Dompet',                icon: 'fa-wallet',              color: '#ec4899' },
+    adjWallet:         { label: 'Penyesuaian Saldo Dompet',   icon: 'fa-sliders',             color: '#06b6d4' },
+    deleteHutang:      { label: 'Hapus Data Hutang',           icon: 'fa-file-invoice-dollar', color: '#dc2626' },
+    deleteHutangLunas: { label: 'Hapus Riwayat Hutang Lunas', icon: 'fa-check-circle',        color: '#16a34a' },
+    deleteCustomer:    { label: 'Hapus Pelanggan',             icon: 'fa-user-minus',          color: '#db2777' },
+    deleteNote:        { label: 'Hapus Catatan',               icon: 'fa-note-sticky',         color: '#7c3aed' },
+  };
+
+  /* ── tunggu app siap ── */
+  function waitApp(cb) {
+    const check = () => {
+      if (window.db && window._fbFirestore && window._fbAuth) { cb(); }
+      else { setTimeout(check, 300); }
+    };
+    check();
+  }
+
+  function getPin() {
+    return localStorage.getItem(PIN_KEY) || PIN_DEFAULT;
+  }
+
+  function _getSwal() {
+    return window._getMySwal ? window._getMySwal() : window.Swal;
+  }
+
+  /* ── Dialog PIN ── */
+  async function askPin(actionKey) {
+    const info = PROTECTED_ACTIONS[actionKey] || { label: actionKey, icon: 'fa-lock', color: '#64748b' };
+    const S = _getSwal();
+    if (!S) return true;
+
+    const result = await S.fire({
+      title: '🔒 Konfirmasi Keamanan',
+      html: `
+        <div style="text-align:left;padding:4px 0 8px;">
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(239,68,68,0.06);border:1.5px solid rgba(239,68,68,0.15);border-radius:12px;padding:10px 14px;margin-bottom:14px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas ${info.icon}" style="color:${info.color};font-size:13px;"></i>
+            </div>
+            <div>
+              <p style="font-size:11px;font-weight:900;color:#0f172a;margin:0;">${info.label}</p>
+              <p style="font-size:9px;color:#64748b;margin:2px 0 0;font-weight:700;">Aksi ini membutuhkan konfirmasi PIN pemilik</p>
+            </div>
+          </div>
+          <label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">PIN KEAMANAN</label>
+          <input id="swal-security-pin"
+            type="password"
+            maxlength="8"
+            inputmode="numeric"
+            placeholder="••••"
+            autocomplete="off"
+            style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:12px;font-size:26px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#0061C2';this.style.boxShadow='0 0 0 3px rgba(0,97,194,0.12)';"
+            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';"
+          >
+          <p style="font-size:9px;color:#94a3b8;margin:8px 0 0;text-align:center;font-weight:700;">
+            <i class="fas fa-shield-halved" style="margin-right:3px;"></i>
+            Ubah PIN di menu <b>Keamanan &amp; Audit</b>
+          </p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-lock-open" style="margin-right:4px;"></i> Konfirmasi',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#0061C2',
+      customClass: { popup: 'swal2-ku' },
+      didOpen: () => {
+        const el = document.getElementById('swal-security-pin');
+        if (el) {
+          el.focus();
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              const btn = document.querySelector('.swal2-confirm');
+              if (btn) btn.click();
+            }
+          });
+        }
+      },
+      preConfirm: () => {
+        const val = (document.getElementById('swal-security-pin')?.value || '').trim();
+        if (!val) {
+          Swal.showValidationMessage('PIN tidak boleh kosong!');
+          return false;
+        }
+        if (val !== getPin()) {
+          Swal.showValidationMessage('PIN salah! Coba lagi.');
+          const el = document.getElementById('swal-security-pin');
+          if (el) el.value = '';
+          return false;
+        }
+        return true;
+      }
+    });
+    return result.isConfirmed;
+  }
+
+  /* ── Audit Log ── */
+  function writeAuditLog(actionKey, detail) {
+    detail = detail || {};
+    try {
+      const sid = localStorage.getItem('k_sid') || 'unknown';
+      const now = new Date();
+      const entry = {
+        id: 'AL-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+        actionKey,
+        actionLabel: (PROTECTED_ACTIONS[actionKey] || { label: actionKey }).label,
+        detail,
+        actor: localStorage.getItem('k_kasir_name') || localStorage.getItem('k_store_name') || 'Pemilik',
+        device: navigator.userAgent.slice(0, 80),
+        ts: now.toISOString(),
+        tgl: now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        jam: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        store: sid,
+      };
+
+      var logs = [];
+      try { logs = JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]'); } catch (_) { logs = []; }
+      logs.unshift(entry);
+      if (logs.length > MAX_LOCAL_LOGS) logs = logs.slice(0, MAX_LOCAL_LOGS);
+      localStorage.setItem(AUDIT_KEY, JSON.stringify(logs));
+
+      if (window._fbFirestore && sid && sid !== 'unknown') {
+        window._fbFirestore
+          .collection('audit_logs')
+          .doc(sid)
+          .collection('entries')
+          .doc(entry.id)
+          .set(entry)
+          .catch(function(err) { console.warn('[' + MODULE + '] Firestore audit log gagal:', err.message); });
+      }
+
+      console.log('[' + MODULE + '] Audit log:', entry.actionLabel, detail);
+    } catch (e) {
+      console.warn('[' + MODULE + '] writeAuditLog error:', e.message);
+    }
+  }
+
+  /* ── Guard helper ── */
+  function guardAsync(fnName, actionKey, getFnArgs) {
+    var origFn = window[fnName];
+    if (typeof origFn !== 'function') {
+      setTimeout(function() { guardAsync(fnName, actionKey, getFnArgs); }, 500);
+      return;
+    }
+    window[fnName] = async function () {
+      var args = Array.prototype.slice.call(arguments);
+      var confirmed = await askPin(actionKey);
+      if (!confirmed) return;
+      var auditDetail = {};
+      if (typeof getFnArgs === 'function') {
+        try { auditDetail = getFnArgs.apply(null, args); } catch (_) {}
+      }
+      writeAuditLog(actionKey, auditDetail);
+      return origFn.apply(this, args);
+    };
+    console.log('[' + MODULE + '] Guard aktif: ' + fnName);
+  }
+
+  /* ── Pasang semua guard ── */
+  function patchAll() {
+    guardAsync('deleteTr', 'deleteTr', function(id) {
+      var t = ((window.db && window.db.transaksi) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, produk: t.produk || '-', jual: t.jual, tgl: t.tgl, status: t.status };
+    });
+
+    guardAsync('saveEditTr', 'saveEditTr', function() {
+      return {
+        id:        (document.getElementById('edit-tr-id')    || {}).value || '-',
+        jual_baru: (document.getElementById('edit-tr-jual')  || {}).value || '-',
+        modal_baru:(document.getElementById('edit-tr-modal') || {}).value || '-',
+      };
+    });
+
+    guardAsync('deleteProduk', 'deleteProduct', function(id) {
+      var p = ((window.db && window.db.inventory) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, nama: p.nama || '-', harga_jual: p.jual || p.harga_jual || '-' };
+    });
+
+    var origSaveProduk = window.saveProduk;
+    if (typeof origSaveProduk === 'function') {
+      window.saveProduk = async function() {
+        var args = Array.prototype.slice.call(arguments);
+        var isEdit = !!((document.getElementById('p-id') || {}).value);
+        if (isEdit) {
+          var confirmed = await askPin('saveProduct');
+          if (!confirmed) return;
+          writeAuditLog('saveProduct', {
+            id:            (document.getElementById('p-id')   || {}).value || '-',
+            nama:          (document.getElementById('p-nama') || {}).value || '-',
+            harga_jual_baru:(document.getElementById('p-jual') || {}).value || '-',
+          });
+        }
+        return origSaveProduk.apply(this, args);
+      };
+      console.log('[' + MODULE + '] Guard aktif: saveProduk (edit only)');
+    } else {
+      setTimeout(function() {
+        var fn = window.saveProduk;
+        if (typeof fn === 'function' && !fn._guarded) {
+          var orig = fn;
+          fn._guarded = true;
+          window.saveProduk = async function() {
+            var args = Array.prototype.slice.call(arguments);
+            var isEdit = !!((document.getElementById('p-id') || {}).value);
+            if (isEdit) {
+              var ok = await askPin('saveProduct');
+              if (!ok) return;
+              writeAuditLog('saveProduct', {
+                id:  (document.getElementById('p-id')   || {}).value || '-',
+                nama:(document.getElementById('p-nama') || {}).value || '-',
+                harga_jual_baru:(document.getElementById('p-jual') || {}).value || '-',
+              });
+            }
+            return orig.apply(this, args);
+          };
+        }
+      }, 800);
+    }
+
+    guardAsync('deleteWallet', 'deleteWallet', function(id) {
+      var w = ((window.db && window.db.dompet) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, nama: w.nama || '-', saldo: w.saldo };
+    });
+
+    var origProcessAdj = window.processAdjustment;
+    if (typeof origProcessAdj === 'function') {
+      window.processAdjustment = async function() {
+        var args = Array.prototype.slice.call(arguments);
+        var confirmed = await askPin('adjWallet');
+        if (!confirmed) return;
+        var wId    = (document.getElementById('adj-wallet') || {}).value || '-';
+        var type   = (document.getElementById('adj-type')   || {}).value || '-';
+        var amount = (document.getElementById('adj-amount') || {}).value || '-';
+        var reason = (document.getElementById('adj-reason') || {}).value || '-';
+        var w = ((window.db && window.db.dompet) || []).find(function(x){ return x.id === wId; }) || {};
+        writeAuditLog('adjWallet', { wallet: w.nama || wId, tipe: type, jumlah: amount, alasan: reason });
+        return origProcessAdj.apply(this, args);
+      };
+      console.log('[' + MODULE + '] Guard aktif: processAdjustment');
+    } else {
+      setTimeout(function() {
+        guardAsync('processAdjustment', 'adjWallet', function() {
+          var wId = (document.getElementById('adj-wallet') || {}).value || '-';
+          var w = ((window.db && window.db.dompet) || []).find(function(x){ return x.id === wId; }) || {};
+          return { wallet: w.nama || wId };
+        });
+      }, 800);
+    }
+
+    guardAsync('deleteHutang', 'deleteHutang', function(id) {
+      var h = ((window.db && window.db.hutang) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, nama: h.nama || '-', jumlah: h.jumlah || '-', tipe: h.tipe || '-' };
+    });
+
+    guardAsync('deleteHutangLunas', 'deleteHutangLunas', function(id) {
+      var h = ((window.db && window.db.hutang_lunas) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, nama: h.nama || '-', jumlah: h.jumlah || '-' };
+    });
+
+    guardAsync('deleteCustomer', 'deleteCustomer', function() {
+      var id = (document.getElementById('c-id') || {}).value || '-';
+      var c = ((window.db && window.db.pelanggan) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, nama: c.nama || '-', phone: c.phone || '-' };
+    });
+
+    guardAsync('deleteCustomerDirect', 'deleteCustomer', function(id) {
+      var c = ((window.db && window.db.pelanggan) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, nama: c.nama || '-', phone: c.phone || '-' };
+    });
+
+    guardAsync('deleteNote', 'deleteNote', function(id) {
+      var n = ((window.db && window.db.notes) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, judul: n.title || n.judul || '-' };
+    });
+
+    guardAsync('deleteNoteFromSidebar', 'deleteNote', function(id) {
+      var n = ((window.db && window.db.notes) || []).find(function(x){ return x.id === id; }) || {};
+      return { id: id, judul: n.title || n.judul || '-' };
+    });
+  }
+
+  /* ── Render UI Audit Log ── */
+  function renderAuditUI() {
+    var logs = [];
+    try { logs = JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]'); } catch (_) { logs = []; }
+
+    var filter = window._auditFilter || 'all';
+    var filtered = filter === 'all' ? logs : logs.filter(function(l) { return l.actionKey === filter; });
+
+    var colorMap = {
+      deleteTr: '#ef4444', saveEditTr: '#3b82f6', deleteProduct: '#f59e0b',
+      saveProduct: '#8b5cf6', deleteWallet: '#ec4899', adjWallet: '#06b6d4',
+      deleteHutang: '#dc2626', deleteHutangLunas: '#16a34a',
+      deleteCustomer: '#db2777', deleteNote: '#7c3aed',
+    };
+    var iconMap = {
+      deleteTr: 'fa-rotate-left', saveEditTr: 'fa-edit', deleteProduct: 'fa-box-open',
+      saveProduct: 'fa-tag', deleteWallet: 'fa-wallet', adjWallet: 'fa-sliders',
+      deleteHutang: 'fa-file-invoice-dollar', deleteHutangLunas: 'fa-check-circle',
+      deleteCustomer: 'fa-user-minus', deleteNote: 'fa-note-sticky',
+    };
+
+    var filterOpts = [{ k: 'all', l: 'Semua Aksi' }].concat(
+      Object.keys(PROTECTED_ACTIONS).map(function(k) {
+        return { k: k, l: PROTECTED_ACTIONS[k].label };
+      })
+    );
+
+    var statsHtml = [
+      { k:'deleteTr', l:'Refund', c:'#ef4444' },
+      { k:'saveEditTr', l:'Edit Tr', c:'#3b82f6' },
+      { k:'deleteHutang', l:'Hapus Hutang', c:'#dc2626' },
+      { k:'deleteCustomer', l:'Hapus Plgn', c:'#db2777' },
+      { k:'adjWallet', l:'Adj Saldo', c:'#06b6d4' },
+      { k:'saveProduct', l:'Edit Produk', c:'#8b5cf6' },
+    ].map(function(s) {
+      var count = logs.filter(function(l){ return l.actionKey === s.k; }).length;
+      return '<div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 8px;text-align:center;">' +
+        '<p style="font-size:18px;font-weight:900;color:' + s.c + ';margin:0;">' + count + '</p>' +
+        '<p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.5);margin:2px 0 0;">' + s.l + '</p>' +
+        '</div>';
+    }).join('');
+
+    var filterPillsHtml = filterOpts.map(function(f) {
+      var isActive = (window._auditFilter === f.k) || (!window._auditFilter && f.k === 'all');
+      return '<button onclick="window._auditFilter=\'' + f.k + '\';window.bukaAuditLog()" ' +
+        'style="display:inline-block;margin-right:6px;padding:6px 12px;border-radius:20px;font-size:9px;font-weight:900;' +
+        'border:1.5px solid ' + (isActive ? '#0061C2' : '#e2e8f0') + ';' +
+        'background:' + (isActive ? '#0061C2' : 'transparent') + ';' +
+        'color:' + (isActive ? '#fff' : '#64748b') + ';cursor:pointer;">' +
+        f.l + '</button>';
+    }).join('');
+
+    var logsHtml;
+    if (filtered.length === 0) {
+      logsHtml = '<div style="text-align:center;padding:40px 20px;">' +
+        '<div style="width:56px;height:56px;border-radius:18px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">' +
+        '<i class="fas fa-clipboard-check" style="color:#cbd5e1;font-size:22px;"></i></div>' +
+        '<p style="font-size:12px;font-weight:700;color:#94a3b8;">Belum ada log tercatat</p>' +
+        '<p style="font-size:9px;color:#cbd5e1;margin-top:4px;">Setiap aksi hapus/edit akan muncul di sini</p></div>';
+    } else {
+      logsHtml = filtered.map(function(log) {
+        var color = colorMap[log.actionKey] || '#64748b';
+        var icon  = iconMap[log.actionKey]  || 'fa-shield';
+        var det   = log.detail || {};
+        var detStr = Object.keys(det).filter(function(k){ return k !== 'id'; })
+          .map(function(k){ return '<b>' + k + '</b>: ' + det[k]; }).join(' · ');
+        return '<div style="background:#fff;border:1.5px solid #f1f5f9;border-radius:16px;padding:12px 14px;margin-bottom:8px;position:relative;overflow:hidden;">' +
+          '<div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:' + color + ';border-radius:4px 0 0 4px;"></div>' +
+          '<div style="display:flex;align-items:flex-start;gap:10px;padding-left:6px;">' +
+          '<div style="width:34px;height:34px;border-radius:10px;background:' + color + '18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+          '<i class="fas ' + icon + '" style="color:' + color + ';font-size:13px;"></i></div>' +
+          '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">' +
+          '<p style="font-size:11px;font-weight:900;color:#0f172a;margin:0;">' + log.actionLabel + '</p>' +
+          '<span style="font-size:8px;font-weight:700;color:#94a3b8;background:#f8fafc;border-radius:6px;padding:2px 7px;">' + log.tgl + ' ' + log.jam + '</span></div>' +
+          (detStr ? '<p style="font-size:9px;font-weight:600;color:#64748b;margin:4px 0 0;word-break:break-all;">' + detStr + '</p>' : '') +
+          '<div style="display:flex;align-items:center;gap:6px;margin-top:5px;">' +
+          '<span style="font-size:8px;font-weight:700;color:#0061C2;background:rgba(0,97,194,0.06);border-radius:5px;padding:2px 7px;">' +
+          '<i class="fas fa-user" style="font-size:7px;margin-right:3px;"></i>' + (log.actor || '-') + '</span>' +
+          '<span style="font-size:8px;font-weight:600;color:#94a3b8;">' + log.id + '</span>' +
+          '</div></div></div></div>';
+      }).join('');
+    }
+
+    var clearBtn = logs.length > 0
+      ? '<div style="padding:8px 16px 0;text-align:center;">' +
+        '<button onclick="window._clearAuditLogs()" style="font-size:9px;font-weight:800;color:#94a3b8;background:transparent;border:1.5px solid #e2e8f0;border-radius:10px;padding:7px 18px;cursor:pointer;">' +
+        '<i class="fas fa-trash" style="margin-right:4px;"></i> Hapus Semua Log Lokal</button></div>' : '';
+
+    return '<div style="padding:0 0 80px;">' +
+      '<div style="background:linear-gradient(135deg,#0a0f1e,#0d1f42,#0061C2);padding:20px 16px 24px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;">' +
+      '<div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 80% 0%,rgba(56,189,248,0.18),transparent);pointer-events:none;"></div>' +
+      '<div style="display:flex;align-items:center;gap:12px;position:relative;">' +
+      '<div style="width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;">' +
+      '<i class="fas fa-shield-halved" style="color:#38bdf8;font-size:18px;"></i></div>' +
+      '<div><h2 style="font-size:15px;font-weight:900;color:#fff;margin:0;">Audit Trail</h2>' +
+      '<p style="font-size:10px;color:rgba(255,255,255,0.55);margin:2px 0 0;font-weight:700;">' +
+      logs.length + ' log tercatat &middot; ' + filtered.length + ' ditampilkan</p></div></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;position:relative;">' +
+      statsHtml + '</div></div>' +
+      '<div style="padding:12px 16px 0;overflow-x:auto;white-space:nowrap;scrollbar-width:none;">' + filterPillsHtml + '</div>' +
+      '<div style="padding:12px 16px 0;">' + logsHtml + '</div>' +
+      clearBtn + '</div>';
+  }
+
+  /* ── Buka modal Audit Trail ── */
+  window.bukaAuditLog = function () {
+    var overlay = document.getElementById('modal-audit-trail');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'modal-audit-trail';
+      overlay.className = 'modal-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML =
+      '<div class="modal-content" style="padding:0;max-width:480px;border-radius:24px;overflow:hidden;">' +
+      '<div style="position:sticky;top:0;z-index:10;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #f1f5f9;padding:14px 16px;display:flex;align-items:center;gap:12px;">' +
+      '<button onclick="document.getElementById(\'modal-audit-trail\').classList.remove(\'active\')" ' +
+      'style="width:32px;height:32px;border-radius:10px;border:0;background:#f1f5f9;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+      '<i class="fas fa-arrow-left" style="font-size:11px;color:#475569;"></i></button>' +
+      '<div style="flex:1;"><p style="font-size:13px;font-weight:900;color:#0f172a;margin:0;">Keamanan &amp; Audit Trail</p>' +
+      '<p style="font-size:9px;color:#64748b;margin:1px 0 0;font-weight:700;">Log semua aksi sensitif</p></div>' +
+      '<button onclick="window.bukaUbahPin()" ' +
+      'style="padding:7px 12px;border-radius:10px;font-size:9px;font-weight:900;color:#fff;background:#0061C2;border:0;cursor:pointer;display:flex;align-items:center;gap:5px;">' +
+      '<i class="fas fa-key" style="font-size:10px;"></i> Ubah PIN</button></div>' +
+      '<div id="audit-trail-body" style="overflow-y:auto;max-height:calc(85vh - 56px);">' +
+      renderAuditUI() + '</div></div>';
+
+    overlay.classList.add('active');
+  };
+
+  /* ── Clear logs ── */
+  window._clearAuditLogs = async function () {
+    var S = _getSwal();
+    if (!S) return;
+    var ok = await S.fire({
+      title: 'Hapus Log Lokal?',
+      text: 'Log di Firestore tidak akan dihapus.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Ya, Hapus',
+      cancelButtonText: 'Batal',
+      customClass: { popup: 'swal2-ku' }
+    });
+    if (!ok.isConfirmed) return;
+    localStorage.removeItem(AUDIT_KEY);
+    window._auditFilter = 'all';
+    window.bukaAuditLog();
+  };
+
+  /* ── Ubah PIN ── */
+  window.bukaUbahPin = async function () {
+    var S = _getSwal();
+    if (!S) return;
+
+    var result = await S.fire({
+      title: '🔑 Ubah PIN Keamanan',
+      html:
+        '<div style="text-align:left;padding:4px 0;">' +
+        '<div style="margin-bottom:12px;">' +
+        '<label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">PIN LAMA</label>' +
+        '<input id="pin-old" type="password" maxlength="8" inputmode="numeric" placeholder="••••" ' +
+        'style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:22px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;" ' +
+        'onfocus="this.style.borderColor=\'#0061C2\';" onblur="this.style.borderColor=\'#e2e8f0\';"></div>' +
+        '<div style="margin-bottom:12px;">' +
+        '<label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">PIN BARU</label>' +
+        '<input id="pin-new" type="password" maxlength="8" inputmode="numeric" placeholder="••••" ' +
+        'style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:22px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;" ' +
+        'onfocus="this.style.borderColor=\'#10b981\';" onblur="this.style.borderColor=\'#e2e8f0\';"></div>' +
+        '<div>' +
+        '<label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;letter-spacing:0.05em;">KONFIRMASI PIN BARU</label>' +
+        '<input id="pin-confirm" type="password" maxlength="8" inputmode="numeric" placeholder="••••" ' +
+        'style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:10px;font-size:22px;letter-spacing:0.4em;font-weight:900;text-align:center;font-family:monospace;outline:none;box-sizing:border-box;" ' +
+        'onfocus="this.style.borderColor=\'#10b981\';" onblur="this.style.borderColor=\'#e2e8f0\';"></div>' +
+        '<p style="font-size:9px;color:#94a3b8;margin-top:10px;text-align:center;">PIN disimpan lokal pada perangkat ini</p></div>',
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-key" style="margin-right:4px;"></i> Simpan PIN',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#0061C2',
+      customClass: { popup: 'swal2-ku' },
+      preConfirm: function() {
+        var old     = ((document.getElementById('pin-old')     || {}).value || '').trim();
+        var newPin  = ((document.getElementById('pin-new')     || {}).value || '').trim();
+        var confirm = ((document.getElementById('pin-confirm') || {}).value || '').trim();
+        if (old !== getPin()) { Swal.showValidationMessage('PIN lama salah!'); return false; }
+        if (!newPin || newPin.length < 4) { Swal.showValidationMessage('PIN baru minimal 4 digit!'); return false; }
+        if (newPin !== confirm) { Swal.showValidationMessage('Konfirmasi PIN tidak cocok!'); return false; }
+        return newPin;
+      }
+    });
+
+    if (result.isConfirmed && result.value) {
+      localStorage.setItem(PIN_KEY, result.value);
+      writeAuditLog('changePin', { info: 'PIN keamanan diubah oleh pemilik' });
+      S.fire({ icon:'success', title:'PIN Berhasil Diubah!', text:'PIN baru sudah aktif untuk semua aksi sensitif.', timer:2500, showConfirmButton:false, customClass:{ popup:'swal2-ku' } });
+    }
+  };
+
+  /* ── Inject sidebar menu ── */
+  function injectSidebarMenu() {
+    var target = document.querySelector('.sidebar-panel .flex-1.py-2');
+    if (!target) { setTimeout(injectSidebarMenu, 600); return; }
+    if (document.getElementById('sb-menu-security-audit')) return;
+
+    var section = document.createElement('div');
+    section.id = 'sb-menu-security-audit';
+    section.innerHTML =
+      '<div class="sidebar-divider"></div>' +
+      '<p class="sidebar-section-label">🔐 Keamanan</p>' +
+      '<button onclick="bukaAuditLog(); if(window.closeSidebar) closeSidebar();" class="sidebar-menu-item">' +
+      '<div class="sidebar-icon-wrap" style="background:rgba(239,68,68,0.1);">' +
+      '<i class="fas fa-shield-halved" style="color:#ef4444;"></i></div>' +
+      '<div>' +
+      '<p class="text-[12px] font-black" style="color:var(--sb-text-title);">Keamanan &amp; Audit Trail</p>' +
+      '<p class="text-[9px] font-bold" style="color:var(--sb-text-sub);">Log hapus/edit &middot; Ubah PIN</p>' +
+      '</div>' +
+      '<i class="fas fa-chevron-right text-xs ml-auto" style="color:var(--sb-chevron);"></i>' +
+      '</button>';
+    target.appendChild(section);
+    console.log('[' + MODULE + '] Menu sidebar disuntik ✓');
+  }
+
+  /* ── BOOT ── */
+  waitApp(function() {
+    patchAll();
+    injectSidebarMenu();
+    console.log('[' + MODULE + '] v1.0.0 aktif ✓  PIN: ' + getPin().replace(/./g, '•'));
+  });
+
+})();
+</script>
+<!-- ================================================================
+     END MODUL KEAMANAN & AUDIT TRAIL KonterKU v1.0.0
+================================================================ -->
+
 </body>
 </html>
