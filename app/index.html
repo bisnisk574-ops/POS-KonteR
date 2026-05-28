@@ -14203,7 +14203,13 @@ ${t.tipe === 'ewallet' ? `
   // Pastikan token Firebase Auth aktif sebelum write ke Firestore
   // agar request.auth.uid selalu cocok dengan uid di dokumen
   async function _refreshAndGetUid(fallbackUid) {
-    if (window._fbAuth && window._fbAuth.currentUser) {
+    // [FIX] Jika mode kasir (anonymous), jangan pakai currentUser.uid (= anon uid)
+    // Pakai owner_uid karena semua operasi toko harus atas nama owner
+    const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
+    if (isKasirMode) {
+      return localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid') || fallbackUid;
+    }
+    if (window._fbAuth && window._fbAuth.currentUser && !window._fbAuth.currentUser.isAnonymous) {
       try {
         await window._fbAuth.currentUser.getIdToken(true); // paksa refresh token
         return window._fbAuth.currentUser.uid;
@@ -14391,6 +14397,11 @@ ${t.tipe === 'ewallet' ? `
   // UI: MODAL TAMBAH TOKO
   // =====================================================
   function openTambahTokoModal() {
+    // [FIX] Kasir tidak boleh tambah toko
+    if (localStorage.getItem('k_kasir_mode') === 'true') {
+      (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa menambah toko baru.', 'warning');
+      return;
+    }
     const plan = localStorage.getItem('k_plan') || 'trial';
     const max  = PLAN_STORE_LIMIT[plan] || 1;
     const el   = document.getElementById('tambah-toko-slot-info');
@@ -14404,6 +14415,11 @@ ${t.tipe === 'ewallet' ? `
   // ACTION: BUAT TOKO BARU
   // =====================================================
   async function doTambahToko() {
+    // [FIX] Kasir tidak boleh tambah toko — hanya owner
+    if (localStorage.getItem('k_kasir_mode') === 'true') {
+      (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa menambah toko baru.', 'warning');
+      return;
+    }
     const uid   = localStorage.getItem('k_sid');
     const email = localStorage.getItem('k_email') || '';
     const plan  = localStorage.getItem('k_plan') || 'trial';
@@ -15147,9 +15163,9 @@ ${t.tipe === 'ewallet' ? `
           last_seen      : new Date(),
           is_active      : true,
         };
-        // [FIX] Doc ID = deviceId agar konsisten lintas reload (anonUid bisa berubah tiap sesi)
-        // anonUid tetap disimpan di dalam dokumen untuk keperluan Rules validasi
-        const sessDocId = deviceId;
+        // Doc ID = anonUid agar cocok dengan request.auth.uid di Security Rules
+        // Fallback ke deviceId jika signInAnonymously gagal
+        const sessDocId = anonUid || deviceId;
         await window._fbFirestore
           .collection('kasir_sessions')
           .doc(sessDocId)
@@ -15476,7 +15492,7 @@ ${t.tipe === 'ewallet' ? `
         localStorage.setItem('k_active_store_id',  sess.store_id || '');
         localStorage.setItem('k_store_name',       storeName);
         localStorage.setItem('k_plan',             planLabel);
-        localStorage.setItem('k_session_doc_id',   deviceId); // [FIX] selalu pakai deviceId agar konsisten
+        localStorage.setItem('k_session_doc_id',   restoredAnonUid || deviceId); // anon uid agar cocok request.auth.uid
         if (expiredDate) localStorage.setItem('k_expired_date', expiredDate);
 
         // Langsung masuk ke app
