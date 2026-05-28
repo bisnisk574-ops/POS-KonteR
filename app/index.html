@@ -4068,6 +4068,19 @@
             <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
           </button>
 
+          <!-- Poin Pelanggan — hanya Admin/Owner -->
+          <button id="sidebar-poin-pelanggan-menu" class="sidebar-menu-item" onclick="openSidebarMenu('poin-pelanggan')" style="display:none;">
+            <div class="sidebar-icon-wrap" style="background:rgba(124,58,237,0.12);">
+              <i class="fas fa-star" style="color:#a855f7;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-800">Poin Pelanggan</p>
+              <p class="text-[9px] text-slate-400 font-bold">Konfigurasi reward & sistem poin</p>
+            </div>
+            <span style="font-size:7px;font-weight:900;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;padding:2px 7px;border-radius:20px;margin-right:4px;flex-shrink:0;">OWNER</span>
+            <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
+          </button>
+
           <p class="sidebar-section-label">LAINNYA</p>
 
           <!-- Tentang -->
@@ -4149,6 +4162,12 @@
           <button class="desktop-sidenav-item" onclick="openSidebarMenu('backup')">
             <div class="dsn-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-cloud-arrow-up" style="color:#6ee7b7;"></i></div>
             Backup & Restore
+          </button>
+
+          <!-- Poin Pelanggan — hanya Admin/Owner -->
+          <button id="dsn-poin-pelanggan" class="desktop-sidenav-item" onclick="openSidebarMenu('poin-pelanggan')" style="display:none;">
+            <div class="dsn-icon" style="background:rgba(124,58,237,0.15);"><i class="fas fa-star" style="color:#a78bfa;"></i></div>
+            Poin Pelanggan
           </button>
 
           <div class="sidebar-divider" style="margin:8px 4px;"></div>
@@ -8719,6 +8738,16 @@
       updateConnectionStatus();
       resetKasirForms();
       renderAll();
+
+      // ── Tampilkan menu Poin Pelanggan untuk Owner/Admin (bukan kasir) ──
+      if (!localStorage.getItem('k_kasir_mode')) {
+        setTimeout(function() {
+          const _pm = document.getElementById('sidebar-poin-pelanggan-menu');
+          const _pd = document.getElementById('dsn-poin-pelanggan');
+          if (_pm) _pm.style.display = '';
+          if (_pd) _pd.style.display = '';
+        }, 600);
+      }
 
       // ── RESTORE VIEW TERAKHIR saat refresh (isRefresh) ──
       if (isRefresh) {
@@ -15328,7 +15357,6 @@ ${t.tipe === 'ewallet' ? `
 
       // Setelah app tampil, terapkan batasan UI kasir
       setTimeout(applyKasirRestrictions, 1200);
-
     } catch(e) {
       showLoginError(e.message || 'Login kasir gagal.');
       setLoginBtnLoading('btn-kasir-login', 'btn-kasir-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK SEBAGAI KASIR');
@@ -15379,8 +15407,182 @@ ${t.tipe === 'ewallet' ? `
       icon: 'success',
       timer: 2500,
       showConfirmButton: false
+    }).then(() => {
+      // Cek absensi setelah notif selamat datang
+      setTimeout(_cekAbsensiKasirHariIni, 400);
     });
+
+    // Sembunyikan menu poin pelanggan untuk kasir
+    const _poinMenuMobile = document.getElementById('sidebar-poin-pelanggan-menu');
+    const _poinMenuDesktop = document.getElementById('dsn-poin-pelanggan');
+    if (_poinMenuMobile) _poinMenuMobile.style.display = 'none';
+    if (_poinMenuDesktop) _poinMenuDesktop.style.display = 'none';
+
+    // Sembunyikan poin-setting-wrap untuk kasir
+    const _poinWrap = document.getElementById('poin-setting-wrap');
+    if (_poinWrap) _poinWrap.style.display = 'none';
   }
+
+  // ─── CEK ABSENSI KASIR HARI INI ───
+  // Tampilkan SweetAlert jika kasir belum absensi, hilang otomatis setelah absensi
+  async function _cekAbsensiKasirHariIni() {
+    const isKasir = localStorage.getItem('k_kasir_mode') === 'true';
+    if (!isKasir) return;
+
+    const kasirNama = localStorage.getItem('k_kasir_nama') || 'Kasir';
+    const ownerUid  = localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid');
+    const today     = new Date().toISOString().split('T')[0];
+
+    // Cek flag lokal dulu (lebih cepat)
+    const localKey = 'k_absen_today_' + (localStorage.getItem('k_kasir_id') || '') + '_' + today;
+    if (localStorage.getItem(localKey) === 'true') return; // sudah absensi hari ini
+
+    // Cek ke Firestore
+    let sudahAbsensi = false;
+    try {
+      if (window._fbFirestore && ownerUid) {
+        const snap = await window._fbFirestore
+          .collection('absensi_kasir')
+          .where('owner_uid', '==', ownerUid)
+          .where('nama', '==', kasirNama)
+          .where('buka_tgl', '==', today)
+          .limit(1)
+          .get();
+        sudahAbsensi = !snap.empty;
+      }
+    } catch(e) {
+      console.warn('[AbsensiCek] Gagal cek Firestore:', e.message);
+    }
+
+    if (sudahAbsensi) {
+      localStorage.setItem(localKey, 'true');
+      return; // Sudah absensi — tidak perlu notif
+    }
+
+    // Belum absensi — tampilkan SweetAlert mencolok
+    const S = _getMySwal() || Swal;
+    const result = await S.fire({
+      title: '⏰ Belum Absensi!',
+      html: `
+        <div style="text-align:center;padding:8px 0;">
+          <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.08));border:3px solid rgba(245,158,11,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;animation:pulse 2s infinite;">
+            <i class="fas fa-user-clock" style="font-size:28px;color:#f59e0b;"></i>
+          </div>
+          <p style="font-size:14px;font-weight:800;color:#1e293b;margin:0 0 6px;">Halo, <b style="color:#0061C2;">${kasirNama}</b>!</p>
+          <p style="font-size:12px;font-weight:700;color:#475569;margin:0 0 14px;">Anda <b style="color:#ef4444;">belum melakukan absensi</b> hari ini.<br>Lakukan absensi terlebih dahulu sebelum memulai transaksi.</p>
+          <div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.25);border-radius:14px;padding:10px 14px;">
+            <p style="font-size:10px;font-weight:800;color:#92400e;margin:0;"><i class="fas fa-info-circle mr-1"></i>Absensi diperlukan sebagai catatan kehadiran &amp; laporan shift kasir.</p>
+          </div>
+        </div>`,
+      confirmButtonText: '<i class="fas fa-user-clock mr-2"></i> Absensi Sekarang',
+      confirmButtonColor: '#f59e0b',
+      showCancelButton: true,
+      cancelButtonText: 'Nanti',
+      allowOutsideClick: false,
+      customClass: { popup: 'swal2-ku' }
+    });
+
+    if (result.isConfirmed) {
+      // Buka modal absensi
+      closeSidebar && closeSidebar();
+      if (typeof openSidebarMenu === 'function') openSidebarMenu('absensi-kasir');
+      else if (typeof openAbsensiKasirModal === 'function') openAbsensiKasirModal();
+    } else {
+      // Kasir pilih "Nanti" — tampilkan banner peringatan kecil yang persistent
+      _tampilBannerAbsensi(kasirNama, localKey);
+    }
+  }
+
+  // ─── BANNER ABSENSI PERSISTENT (muncul jika kasir belum absensi) ───
+  function _tampilBannerAbsensi(kasirNama, localKey) {
+    // Jangan buat duplikat
+    if (document.getElementById('kasir-absensi-banner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'kasir-absensi-banner';
+    banner.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(245,158,11,0.45);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer;
+      animation: slideDown 0.3s ease;
+    `;
+
+    banner.innerHTML = `
+      <i class="fas fa-user-clock" style="font-size:16px;flex-shrink:0;"></i>
+      <p style="font-size:11px;font-weight:800;flex:1;margin:0;">⚠️ <b>${kasirNama}</b> belum absensi hari ini — Tap untuk absensi sekarang!</p>
+      <button id="kasir-banner-close" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:900;color:white;cursor:pointer;flex-shrink:0;">✕</button>
+    `;
+
+    // Style animasi
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideDown { from { transform:translateY(-100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
+      #kasir-absensi-banner:hover { filter: brightness(1.05); }
+    `;
+    document.head.appendChild(style);
+
+    document.body.prepend(banner);
+
+    // Klik banner → buka absensi
+    banner.addEventListener('click', function(e) {
+      if (e.target.id === 'kasir-banner-close') {
+        banner.remove();
+        return;
+      }
+      closeSidebar && closeSidebar();
+      if (typeof openSidebarMenu === 'function') openSidebarMenu('absensi-kasir');
+    });
+
+    // Monitor jika kasir sudah absensi — hilangkan banner
+    const today = new Date().toISOString().split('T')[0];
+    const interval = setInterval(async () => {
+      const ownerUid = localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid');
+      if (!window._fbFirestore || !ownerUid) return;
+      try {
+        const snap = await window._fbFirestore
+          .collection('absensi_kasir')
+          .where('owner_uid', '==', ownerUid)
+          .where('nama', '==', kasirNama)
+          .where('buka_tgl', '==', today)
+          .limit(1)
+          .get();
+        if (!snap.empty) {
+          clearInterval(interval);
+          localStorage.setItem(localKey, 'true');
+          // Animasi hilang
+          banner.style.transition = 'all 0.4s ease';
+          banner.style.transform = 'translateY(-100%)';
+          banner.style.opacity = '0';
+          setTimeout(() => banner.remove(), 400);
+          // Tampilkan notif sukses
+          const S = _getMySwal() || Swal;
+          S.fire({
+            icon: 'success',
+            title: '✅ Absensi Tercatat!',
+            html: '<p style="font-size:12px;color:#475569;">Selamat bekerja, <b>' + kasirNama + '</b>! Anda siap melakukan transaksi.</p>',
+            timer: 2200,
+            showConfirmButton: false,
+            customClass: { popup: 'swal2-ku' }
+          });
+        }
+      } catch(e) {}
+    }, 8000); // Cek setiap 8 detik
+  }
+
+  // ─── EXPOSE ke window agar bisa dipanggil dari luar ───
+  window._cekAbsensiKasirHariIni = _cekAbsensiKasirHariIni;
+  window._tampilBannerAbsensi = _tampilBannerAbsensi;
 
   // ─── HOOK: Tambahkan "Kelola Kasir" di openSidebarMenu ───
   // Extend fungsi openSidebarMenu yang sudah ada agar bisa handle 'kelola-kasir'
@@ -15394,6 +15596,35 @@ ${t.tipe === 'ewallet' ? `
       }
       closeSidebar();
       openKelolaKasirModal();
+      return;
+    }
+    if (menu === 'poin-pelanggan') {
+      // Hanya pemilik toko (bukan kasir) yang boleh buka
+      if (localStorage.getItem('k_kasir_mode') === 'true') {
+        (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengatur sistem poin.', 'warning');
+        return;
+      }
+      closeSidebar && closeSidebar();
+      // Buka modal Akun lalu scroll ke poin setting
+      if (_origOpenSidebarMenu) _origOpenSidebarMenu('akun');
+      setTimeout(function() {
+        const poinWrap = document.getElementById('poin-setting-wrap');
+        if (poinWrap) {
+          poinWrap.style.display = 'block';
+          poinWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Buka body poin setting otomatis
+          const body = document.getElementById('poin-setting-body');
+          const chevron = document.getElementById('poin-setting-chevron');
+          if (body && body.style.display === 'none') {
+            body.style.display = 'block';
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+          }
+          // Highlight dengan flash
+          poinWrap.style.transition = 'box-shadow 0.3s';
+          poinWrap.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.5)';
+          setTimeout(function() { poinWrap.style.boxShadow = ''; }, 1800);
+        }
+      }, 350);
       return;
     }
     if (_origOpenSidebarMenu) _origOpenSidebarMenu(menu);
@@ -15477,6 +15708,18 @@ ${t.tipe === 'ewallet' ? `
     if (localStorage.getItem('k_logged') === 'true' && localStorage.getItem('k_kasir_mode') === 'true') {
       // Sudah login sebagai kasir sebelumnya, terapkan batasan setelah app load
       setTimeout(applyKasirRestrictions, 1500);
+      // Cek absensi hari ini setelah app siap
+      setTimeout(function() {
+        if (typeof _cekAbsensiKasirHariIni === 'function') _cekAbsensiKasirHariIni();
+      }, 3000);
+    } else if (localStorage.getItem('k_logged') === 'true') {
+      // Bukan kasir — tampilkan menu Poin Pelanggan untuk owner/admin
+      setTimeout(function() {
+        const _poinMenuMobile = document.getElementById('sidebar-poin-pelanggan-menu');
+        const _poinMenuDesktop = document.getElementById('dsn-poin-pelanggan');
+        if (_poinMenuMobile) _poinMenuMobile.style.display = '';
+        if (_poinMenuDesktop) _poinMenuDesktop.style.display = '';
+      }, 800);
     }
   });
 
