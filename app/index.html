@@ -5726,6 +5726,74 @@
             <div id="pa-paket-selected" style="display:none;margin-top:10px;padding:9px 14px;border-radius:12px;background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.3);">
               <p style="font-size:10px;font-weight:900;color:#92400e;"><i class="fas fa-check-circle mr-1.5 text-amber-500"></i>Paket dipilih: <span id="pa-paket-label" style="color:#d97706;"></span></p>
             </div>
+
+            <!-- ===== PILIH DURASI LANGGANAN ===== -->
+            <div id="pa-durasi-section" style="display:none;margin-top:14px;">
+              <p style="font-size:8px;font-weight:900;color:#92400e;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:9px;"><i class="fas fa-calendar-alt mr-1.5 text-amber-500"></i>PILIH DURASI</p>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;" id="pa-durasi-grid">
+                <!-- 1 Bulan -->
+                <div class="pa-durasi-card" data-bulan="1" onclick="selectDurasi(this)"
+                  style="border-radius:13px;border:2px solid #fde68a;background:white;padding:9px 6px;cursor:pointer;text-align:center;transition:all 0.2s;">
+                  <p style="font-size:15px;font-weight:900;color:#1e293b;line-height:1;margin:0;">1</p>
+                  <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">bulan</p>
+                </div>
+                <!-- 2 Bulan -->
+                <div class="pa-durasi-card" data-bulan="2" onclick="selectDurasi(this)"
+                  style="border-radius:13px;border:2px solid #fde68a;background:white;padding:9px 6px;cursor:pointer;text-align:center;transition:all 0.2s;">
+                  <p style="font-size:15px;font-weight:900;color:#1e293b;line-height:1;margin:0;">2</p>
+                  <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">bulan</p>
+                </div>
+                <!-- 3 Bulan -->
+                <div class="pa-durasi-card" data-bulan="3" onclick="selectDurasi(this)"
+                  style="border-radius:13px;border:2px solid #fde68a;background:white;padding:9px 6px;cursor:pointer;text-align:center;transition:all 0.2s;position:relative;overflow:hidden;">
+                  <div style="position:absolute;top:0;right:0;background:linear-gradient(135deg,#10b981,#34d399);padding:1px 6px;border-radius:0 11px 0 7px;">
+                    <p style="font-size:6px;font-weight:900;color:white;">HEMAT</p>
+                  </div>
+                  <p style="font-size:15px;font-weight:900;color:#1e293b;line-height:1;margin:0;">3</p>
+                  <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">bulan</p>
+                </div>
+                <!-- 6 Bulan -->
+                <div class="pa-durasi-card" data-bulan="6" onclick="selectDurasi(this)"
+                  style="border-radius:13px;border:2px solid #fde68a;background:white;padding:9px 6px;cursor:pointer;text-align:center;transition:all 0.2s;position:relative;overflow:hidden;">
+                  <div style="position:absolute;top:0;right:0;background:linear-gradient(135deg,#0061C2,#38BDF8);padding:1px 6px;border-radius:0 11px 0 7px;">
+                    <p style="font-size:6px;font-weight:900;color:white;">POPULER</p>
+                  </div>
+                  <p style="font-size:15px;font-weight:900;color:#1e293b;line-height:1;margin:0;">6</p>
+                  <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">bulan</p>
+                </div>
+                <!-- 9 Bulan -->
+                <div class="pa-durasi-card" data-bulan="9" onclick="selectDurasi(this)"
+                  style="border-radius:13px;border:2px solid #fde68a;background:white;padding:9px 6px;cursor:pointer;text-align:center;transition:all 0.2s;">
+                  <p style="font-size:15px;font-weight:900;color:#1e293b;line-height:1;margin:0;">9</p>
+                  <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">bulan</p>
+                </div>
+                <!-- 12 Bulan -->
+                <div class="pa-durasi-card" data-bulan="12" onclick="selectDurasi(this)"
+                  style="border-radius:13px;border:2px solid #fde68a;background:white;padding:9px 6px;cursor:pointer;text-align:center;transition:all 0.2s;position:relative;overflow:hidden;">
+                  <div style="position:absolute;top:0;right:0;background:linear-gradient(135deg,#f59e0b,#d97706);padding:1px 6px;border-radius:0 11px 0 7px;">
+                    <p style="font-size:6px;font-weight:900;color:white;">TERBAIK</p>
+                  </div>
+                  <p style="font-size:15px;font-weight:900;color:#1e293b;line-height:1;margin:0;">12</p>
+                  <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">bulan</p>
+                </div>
+              </div>
+
+              <!-- Ringkasan Total -->
+              <div id="pa-durasi-total" style="display:none;margin-top:10px;border-radius:14px;background:linear-gradient(135deg,#1a0a00,#3b1500);padding:12px 14px;border:1.5px solid rgba(245,158,11,0.35);">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <p style="font-size:9px;font-weight:700;color:rgba(251,191,36,0.65);margin:0 0 2px;">Total Pembayaran</p>
+                    <p id="pa-total-label" style="font-size:20px;font-weight:900;color:#fbbf24;margin:0;line-height:1;"></p>
+                  </div>
+                  <div style="text-align:right;">
+                    <p id="pa-durasi-desc" style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.55);margin:0;"></p>
+                    <p id="pa-harga-per-bln" style="font-size:9px;font-weight:700;color:rgba(251,191,36,0.55);margin:3px 0 0;"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- ===== END PILIH DURASI ===== -->
+
           </div>
         </div>
 
@@ -19536,6 +19604,16 @@ ${t.tipe === 'ewallet' ? `
 
 
   <script>
+  // Harga per bulan tiap paket (dalam rupiah)
+  const _PA_HARGA = { 'basic': 20000, 'pro': 50000, 'unlimited': 125000 };
+  function _paGetHarga(label) {
+    const l = (label||'').toLowerCase();
+    if (l.includes('unlimited')) return _PA_HARGA.unlimited;
+    if (l.includes('pro'))       return _PA_HARGA.pro;
+    return _PA_HARGA.basic;
+  }
+  function _paFmt(n) { return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
   // Pilih paket
   window.selectPaket = function(el) {
     document.querySelectorAll('.pa-paket-card').forEach(c => {
@@ -19550,6 +19628,47 @@ ${t.tipe === 'ewallet' ? `
     document.getElementById('pa-paket-label').textContent = label;
     const _paSel = document.getElementById('pa-paket-selected'); if (_paSel) _paSel.style.display = 'block';
     window._paPaketTerpilih = label;
+    window._paDurasiTerpilih = null;
+
+    // Tampilkan section durasi & reset pilihan durasi
+    const sec = document.getElementById('pa-durasi-section');
+    if (sec) sec.style.display = 'block';
+    document.querySelectorAll('.pa-durasi-card').forEach(c => {
+      c.style.borderColor = '#fde68a';
+      c.style.background  = 'white';
+      c.style.transform   = 'scale(1)';
+    });
+    const tot = document.getElementById('pa-durasi-total');
+    if (tot) tot.style.display = 'none';
+
+    // Scroll ke section durasi agar terlihat
+    setTimeout(() => { if(sec) sec.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 120);
+  };
+
+  // Pilih durasi
+  window.selectDurasi = function(el) {
+    document.querySelectorAll('.pa-durasi-card').forEach(c => {
+      c.style.borderColor = '#fde68a';
+      c.style.background  = 'white';
+      c.style.transform   = 'scale(1)';
+    });
+    el.style.borderColor = '#f59e0b';
+    el.style.background  = '#fffbeb';
+    el.style.transform   = 'scale(1.04)';
+
+    const bulan = parseInt(el.getAttribute('data-bulan'));
+    window._paDurasiTerpilih = bulan;
+    const hargaBln = _paGetHarga(window._paPaketTerpilih || '');
+    const total    = hargaBln * bulan;
+
+    const tot = document.getElementById('pa-durasi-total');
+    if (tot) tot.style.display = 'block';
+    const tLabel = document.getElementById('pa-total-label');
+    if (tLabel) tLabel.textContent = _paFmt(total);
+    const desc = document.getElementById('pa-durasi-desc');
+    if (desc) desc.textContent = bulan + ' bulan × ' + _paFmt(hargaBln);
+    const pbl = document.getElementById('pa-harga-per-bln');
+    if (pbl) pbl.textContent = _paFmt(hargaBln) + ' / bulan';
   };
 
   // Handle file select
@@ -19599,6 +19718,7 @@ ${t.tipe === 'ewallet' ? `
     const idToko = _paVal('pa-id-toko');
     const nomorHP= _paVal('pa-nomor-hp');
     const paket  = window._paPaketTerpilih || '';
+    const durasi = window._paDurasiTerpilih || null;
     const catatan= _paVal('pa-catatan');
 
     // Validasi
@@ -19609,6 +19729,15 @@ ${t.tipe === 'ewallet' ? `
       (window.MySwal || Swal).fire({ icon:'warning', title:'Pilih Paket Dulu', text:'Silakan pilih paket langganan terlebih dahulu.', customClass:{popup:'swal2-ku'} });
       return;
     }
+    if (!durasi) {
+      (window.MySwal || Swal).fire({ icon:'warning', title:'Pilih Durasi Dulu', text:'Silakan pilih durasi langganan (1, 2, 3, 6, 9, atau 12 bulan).', customClass:{popup:'swal2-ku'} });
+      const sec = document.getElementById('pa-durasi-section');
+      if (sec) sec.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+
+    const hargaBln = _paGetHarga(paket);
+    const total    = hargaBln * durasi;
 
     const hasBukti = !!window._paBuktiFile;
     const now  = new Date();
@@ -19626,7 +19755,11 @@ ${t.tipe === 'ewallet' ? `
 💎 *Paket Dipilih*
 • ${paket}
 
-📅 *Waktu Pengiriman*
+📅 *Durasi Langganan*
+• ${durasi} bulan (${durasi} × ${_paFmt(hargaBln)})
+• *Total: ${_paFmt(total)}*
+
+🕐 *Waktu Pengiriman*
 • ${tgl}, ${jam} WIB
 
 ${catatan ? '📝 *Catatan*\n• ' + catatan + '\n\n' : ''}${hasBukti ? '📸 *Bukti Pembayaran*\n• [Screenshot terlampir — dikirim terpisah setelah chat ini]\n\n' : '⚠️ *Bukti Pembayaran*\n• Belum dilampirkan — akan dikirim menyusul\n\n'}━━━━━━━━━━━━━━━━━━━━━
