@@ -4345,6 +4345,99 @@
           </div>
           <!-- END SETTING STRUK THERMAL -->
 
+          <!-- ===== SETTING SISTEM POIN ===== -->
+          <div id="poin-setting-wrap" style="margin-bottom:12px;">
+            <div style="border-radius:20px;overflow:hidden;border:1.5px solid #e0e7ff;background:linear-gradient(135deg,#f5f3ff,#ede9fe);">
+              <!-- Header -->
+              <div style="padding:12px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e0e7ff;cursor:pointer;" onclick="togglePoinSettingBody()">
+                <div style="width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#7c3aed,#a78bfa);box-shadow:0 4px 12px rgba(124,58,237,0.3);">
+                  <i class="fas fa-star" style="font-size:14px;color:#fff;"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <p style="font-size:11px;font-weight:900;color:#1e293b;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2;">⚙️ Pengaturan Sistem Poin</p>
+                  <p style="font-size:9px;font-weight:700;color:#7c3aed;font-family:'Plus Jakarta Sans',sans-serif;margin-top:1px;">Aktifkan & konfigurasi poin reward pelanggan</p>
+                </div>
+                <i id="poin-setting-chevron" class="fas fa-chevron-down" style="font-size:12px;color:#7c3aed;transition:transform 0.3s;"></i>
+              </div>
+              <!-- Body -->
+              <div id="poin-setting-body" style="display:none;">
+                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+
+                  <!-- Toggle Aktif/Nonaktif -->
+                  <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;display:flex;align-items:center;gap:12px;">
+                    <div style="flex:1;">
+                      <p style="font-size:11px;font-weight:900;color:#1e293b;margin:0 0 2px;">Sistem Poin Aktif</p>
+                      <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">Poin otomatis diberikan setiap transaksi</p>
+                    </div>
+                    <label style="position:relative;width:44px;height:24px;flex-shrink:0;display:block;margin:0;">
+                      <input type="checkbox" id="poin-aktif-toggle" onchange="simpanSettingPoin()"
+                        style="opacity:0;width:0;height:0;position:absolute;">
+                      <span id="poin-toggle-track" onclick="document.getElementById('poin-aktif-toggle').click()"
+                        style="position:absolute;cursor:pointer;inset:0;border-radius:100px;background:#e2e8f0;transition:0.3s;">
+                        <span id="poin-toggle-thumb" style="position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <!-- Konten yang muncul jika aktif -->
+                  <div id="poin-config-detail" style="display:none;flex-direction:column;gap:10px;">
+
+                    <!-- Rasio poin -->
+                    <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
+                      <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0 0 8px;">💎 Rasio Pemberian Poin</p>
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <span style="font-size:10px;font-weight:700;color:#475569;">Setiap</span>
+                        <input type="number" id="poin-per-rupiah" min="500" step="500" value="1000"
+                          onchange="simpanSettingPoin()"
+                          style="width:90px;border:2px solid #e2e8f0;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
+                          onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
+                        <span style="font-size:10px;font-weight:700;color:#475569;">Rp = 1 Poin</span>
+                      </div>
+                      <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:6px 0 0;">Contoh: transaksi Rp 50.000 → 50 poin (jika 1000/poin)</p>
+                    </div>
+
+                    <!-- Poin per jenis transaksi -->
+                    <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
+                      <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0 0 10px;">🎯 Poin Bonus per Jenis Transaksi</p>
+                      <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:0 0 10px;">Poin tambahan (bonus) di luar poin otomatis dari nominal transaksi</p>
+                      <div style="display:flex;flex-direction:column;gap:6px;" id="poin-per-trx-list">
+                        <!-- diisi oleh JS -->
+                      </div>
+                      <button onclick="tambahItemPoinTrx()"
+                        style="margin-top:10px;width:100%;padding:8px;border-radius:10px;border:2px dashed rgba(124,58,237,0.4);background:rgba(124,58,237,0.04);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:900;color:#7c3aed;">
+                        <i class="fas fa-plus" style="font-size:9px;"></i> Tambah Jenis Transaksi
+                      </button>
+                    </div>
+
+                    <!-- Tukar poin -->
+                    <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
+                      <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0 0 8px;">🎁 Nilai Tukar Poin ke Diskon</p>
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <span style="font-size:10px;font-weight:700;color:#475569;">100 Poin =</span>
+                        <span style="font-size:10px;font-weight:700;color:#475569;">Rp</span>
+                        <input type="number" id="poin-nilai-tukar" min="100" step="100" value="1000"
+                          onchange="simpanSettingPoin()"
+                          style="width:90px;border:2px solid #e2e8f0;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
+                          onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
+                        <span style="font-size:10px;font-weight:700;color:#475569;">diskon</span>
+                      </div>
+                      <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:6px 0 0;">Min. poin untuk ditukar: 100 poin</p>
+                    </div>
+
+                  </div><!-- end poin-config-detail -->
+
+                  <!-- Simpan button -->
+                  <button onclick="simpanSettingPoin(true)"
+                    style="width:100%;padding:12px;border-radius:16px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:900;color:#fff;">
+                    <i class="fas fa-save"></i> Simpan Pengaturan Poin
+                  </button>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- END SETTING SISTEM POIN -->
+
           <!-- Hapus Semua Data — hanya tampil untuk Owner -->
           <div id="hapus-semua-data-wrap" style="display:none;">
             <div style="border-radius:20px;overflow:hidden;border:1.5px solid #fecaca;background:linear-gradient(135deg,#fff5f5,#fff1f2);margin-bottom:0;">
@@ -20249,6 +20342,171 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
      - Birthday reminder saat app dibuka
 ================================================================ -->
 <script>
+/* ================================================================
+   SETTING SISTEM POIN — UI & Logic
+================================================================ */
+(function() {
+  'use strict';
+
+  // Default config
+  const DEFAULT_POIN_CFG = {
+    aktif: false,
+    perRupiah: 1000,          // 1 poin per Rp 1.000
+    nilaiTukar: 1000,         // 100 poin = Rp 1.000
+    bonusTrx: [               // bonus poin per jenis transaksi
+      { nama: 'Pulsa / Paket Data',  poin: 2 },
+      { nama: 'Top Up DANA/OVO/Gopay', poin: 5 },
+      { nama: 'Aksesoris HP (ACC)',  poin: 5 },
+      { nama: 'Beli HP',             poin: 100 },
+      { nama: 'Print Dokumen',       poin: 1 },
+      { nama: 'Cetak Foto',          poin: 3 },
+    ]
+  };
+
+  /* ── Ambil & simpan config ke db ── */
+  function getPoinCfg() {
+    try {
+      const raw = window.db && window.db.poinConfig;
+      if (raw) return Object.assign({}, DEFAULT_POIN_CFG, raw);
+    } catch(e) {}
+    return Object.assign({}, DEFAULT_POIN_CFG);
+  }
+
+  function savePoinCfg(cfg) {
+    if (!window.db) return;
+    window.db.poinConfig = cfg;
+    if (window.sync) window.sync();
+  }
+
+  /* ── Toggle body ── */
+  window.togglePoinSettingBody = function() {
+    const body    = document.getElementById('poin-setting-body');
+    const chevron = document.getElementById('poin-setting-chevron');
+    if (!body) return;
+    const open = body.style.display === 'none' || body.style.display === '';
+    body.style.display = open ? 'block' : 'none';
+    if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+    if (open) loadPoinSettingForm();
+  };
+
+  /* ── Render form dari config ── */
+  function loadPoinSettingForm() {
+    const cfg = getPoinCfg();
+
+    // Toggle
+    const toggle  = document.getElementById('poin-aktif-toggle');
+    const track   = document.getElementById('poin-toggle-track');
+    const thumb   = document.getElementById('poin-toggle-thumb');
+    const detail  = document.getElementById('poin-config-detail');
+    if (toggle) toggle.checked = !!cfg.aktif;
+    updateToggleUI(!!cfg.aktif);
+
+    // Rasio & nilai tukar
+    const perRup  = document.getElementById('poin-per-rupiah');
+    const nilaiTk = document.getElementById('poin-nilai-tukar');
+    if (perRup)  perRup.value  = cfg.perRupiah  || 1000;
+    if (nilaiTk) nilaiTk.value = cfg.nilaiTukar || 1000;
+
+    // Bonus per transaksi
+    renderBonusTrxList(cfg.bonusTrx || []);
+  }
+
+  function updateToggleUI(aktif) {
+    const track = document.getElementById('poin-toggle-track');
+    const thumb = document.getElementById('poin-toggle-thumb');
+    const detail = document.getElementById('poin-config-detail');
+    if (track) track.style.background = aktif ? '#7c3aed' : '#e2e8f0';
+    if (thumb) thumb.style.transform  = aktif ? 'translateX(20px)' : 'translateX(0)';
+    if (detail) detail.style.display  = aktif ? 'flex' : 'none';
+  }
+
+  function renderBonusTrxList(list) {
+    const wrap = document.getElementById('poin-per-trx-list');
+    if (!wrap) return;
+    wrap.innerHTML = list.map((item, i) => `
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="text" value="${item.nama}" placeholder="Nama transaksi"
+          onchange="updateBonusTrxItem(${i},'nama',this.value)"
+          style="flex:1;border:1.5px solid #e2e8f0;border-radius:10px;padding:6px 10px;font-size:10px;font-weight:700;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
+          onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+          <input type="number" value="${item.poin}" min="1" placeholder="Poin"
+            onchange="updateBonusTrxItem(${i},'poin',parseInt(this.value)||1)"
+            style="width:52px;border:1.5px solid #e2e8f0;border-radius:10px;padding:6px 6px;font-size:10px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
+            onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
+          <span style="font-size:9px;font-weight:700;color:#7c3aed;">poin</span>
+        </div>
+        <button onclick="hapusBonusTrxItem(${i})"
+          style="width:26px;height:26px;border-radius:8px;border:none;background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;font-size:10px;flex-shrink:0;">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>`
+    ).join('');
+  }
+
+  window.updateBonusTrxItem = function(idx, key, val) {
+    const cfg = getPoinCfg();
+    if (cfg.bonusTrx && cfg.bonusTrx[idx]) cfg.bonusTrx[idx][key] = val;
+    savePoinCfg(cfg);
+  };
+
+  window.hapusBonusTrxItem = function(idx) {
+    const cfg = getPoinCfg();
+    cfg.bonusTrx.splice(idx, 1);
+    savePoinCfg(cfg);
+    renderBonusTrxList(cfg.bonusTrx);
+  };
+
+  window.tambahItemPoinTrx = function() {
+    const cfg = getPoinCfg();
+    if (!cfg.bonusTrx) cfg.bonusTrx = [];
+    cfg.bonusTrx.push({ nama: '', poin: 1 });
+    savePoinCfg(cfg);
+    renderBonusTrxList(cfg.bonusTrx);
+  };
+
+  /* ── Simpan semua setting dari form ── */
+  window.simpanSettingPoin = function(showToast) {
+    const toggle  = document.getElementById('poin-aktif-toggle');
+    const perRup  = document.getElementById('poin-per-rupiah');
+    const nilaiTk = document.getElementById('poin-nilai-tukar');
+    const cfg = getPoinCfg();
+
+    cfg.aktif      = toggle  ? toggle.checked          : cfg.aktif;
+    cfg.perRupiah  = perRup  ? parseInt(perRup.value)  || 1000 : cfg.perRupiah;
+    cfg.nilaiTukar = nilaiTk ? parseInt(nilaiTk.value) || 1000 : cfg.nilaiTukar;
+
+    updateToggleUI(cfg.aktif);
+    savePoinCfg(cfg);
+
+    if (showToast && window.Swal) {
+      window.Swal.fire({ icon:'success', title:'Pengaturan poin disimpan!', timer:1500, showConfirmButton:false,
+        customClass:{popup:'swal2-ku'} });
+    }
+  };
+
+  /* ── Init form setelah app siap ── */
+  function waitApp(cb) {
+    if (window.db) cb();
+    else setTimeout(() => waitApp(cb), 300);
+  }
+
+  waitApp(function() {
+    // Sembunyikan untuk kasir
+    const wrap = document.getElementById('poin-setting-wrap');
+    if (wrap) {
+      const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
+      if (isKasirMode) wrap.style.display = 'none';
+    }
+    loadPoinSettingForm();
+  });
+
+  /* ── Ekspor helper agar modul poin bisa membaca config ── */
+  window.getPoinConfig = getPoinCfg;
+
+})();
+</script>
+<script>
 (function() {
   'use strict';
   const MOD = 'KonterKU Pelanggan';
@@ -20270,12 +20528,17 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     return               { label:'BRONZE', icon:'fa-certificate', color:'#b45309', bg:'rgba(180,83,9,0.12)',    diskon: 1  };
   }
 
-  /* ── Poin dari transaksi (1 poin per Rp 1.000 belanja) ── */
+  /* ── Poin dari transaksi (menggunakan config yang bisa diatur owner) ── */
   function hitungPoinDariTrx(nama) {
+    // Cek apakah sistem poin aktif
+    const cfg = window.getPoinConfig ? window.getPoinConfig() : null;
+    if (cfg && cfg.aktif === false) return 0; // poin nonaktif
+
+    const perRupiah = (cfg && cfg.perRupiah) ? cfg.perRupiah : 1000;
     const total = (window.db.transaksi||[])
       .filter(t => t.pelanggan === nama && t.status !== 'gagal')
       .reduce((a, b) => a + Number(b.jual||0), 0);
-    return Math.floor(total / 1000);
+    return Math.floor(total / perRupiah);
   }
 
   /* ── Sinkronisasi poin semua pelanggan (jalankan setelah sync) ── */
@@ -20475,8 +20738,10 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       _S().fire({ icon:'info', title:'Poin Kurang', text:'Minimal 100 poin untuk ditukar. Saat ini: '+_fmt(poin)+' poin.', customClass:{popup:'swal2-ku'} });
       return;
     }
-    // 100 poin = Rp 1.000 diskon
-    const nilaiDiskon = Math.floor(poin / 100) * 1000;
+    // Ambil nilai tukar dari config (default 100 poin = Rp 1.000)
+    const cfg = window.getPoinConfig ? window.getPoinConfig() : null;
+    const nilaiPer100 = (cfg && cfg.nilaiTukar) ? cfg.nilaiTukar : 1000;
+    const nilaiDiskon = Math.floor(poin / 100) * nilaiPer100;
     const res = await _S().fire({
       title: 'Tukar Poin Diskon',
       html: `<div style="text-align:center;padding:8px 0;">
@@ -20484,7 +20749,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
         <p style="font-size:10px;color:#94a3b8;font-weight:700;margin:4px 0 12px;">poin dimiliki</p>
         <div style="background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.2);border-radius:14px;padding:12px;">
           <p style="font-size:11px;font-weight:900;color:#7c3aed;margin:0;">Nilai Diskon: <span style="font-size:16px;">Rp ${_fmt(nilaiDiskon)}</span></p>
-          <p style="font-size:9px;color:#94a3b8;margin:4px 0 0;font-weight:700;">100 poin = Rp 1.000</p>
+          <p style="font-size:9px;color:#94a3b8;margin:4px 0 0;font-weight:700;">100 poin = Rp ${_fmt(nilaiPer100)}</p>
         </div>
         <p style="font-size:9px;color:#ef4444;margin-top:10px;font-weight:700;">Semua poin akan di-reset ke 0 setelah ditukar</p>
       </div>`,
