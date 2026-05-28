@@ -16058,6 +16058,10 @@ ${t.tipe === 'ewallet' ? `
         ? window._fbAuth.currentUser.uid
         : localStorage.getItem('k_sid');
     }
+
+    // Nama kasir yang sedang login (hanya kasir yang bisa tutup shift miliknya sendiri)
+    const kasirNama = isKasirMode ? (localStorage.getItem('k_kasir_nama') || '') : '';
+
     const sel = document.getElementById('absensi-tutup-shift-id');
     if (!sel) return;
     sel.innerHTML = '<option value="">-- Memuat... --</option>';
@@ -16068,12 +16072,17 @@ ${t.tipe === 'ewallet' ? `
         return;
       }
       // Query tanpa orderBy agar tidak butuh composite index Firestore
-      const snap = await window._fbFirestore
+      let query = window._fbFirestore
         .collection('absensi_kasir')
         .where('owner_uid','==', uid)
-        .where('status','==','aktif')
-        .limit(30)
-        .get();
+        .where('status','==','aktif');
+
+      // Jika mode kasir: hanya tampilkan shift milik kasir ini sendiri
+      if (isKasirMode && kasirNama) {
+        query = query.where('nama', '==', kasirNama);
+      }
+
+      const snap = await query.limit(30).get();
       _absensiActiveShifts = [];
       snap.forEach(d => _absensiActiveShifts.push({ id: d.id, ...d.data() }));
       // Sort client-side: shift terbaru di atas
@@ -16083,7 +16092,9 @@ ${t.tipe === 'ewallet' ? `
         return tb - ta;
       });
       if (_absensiActiveShifts.length === 0) {
-        sel.innerHTML = '<option value="">-- Tidak ada shift aktif --</option>';
+        sel.innerHTML = isKasirMode
+          ? '<option value="">-- Tidak ada shift aktif milik Anda --</option>'
+          : '<option value="">-- Tidak ada shift aktif --</option>';
       } else {
         sel.innerHTML = '<option value="">-- Pilih shift aktif --</option>' +
           _absensiActiveShifts.map(s =>
@@ -16261,7 +16272,20 @@ ${t.tipe === 'ewallet' ? `
     const s = _absensiActiveShifts.find(x => x.id === shiftId);
     if (!s) return (_getMySwal()||Swal).fire('Error', 'Data shift tidak ditemukan.', 'error');
 
-    // ── PIN KONFIRMASI sebelum tutup shift ──
+    // ── KEAMANAN: Kasir hanya boleh menutup shift miliknya sendiri ──
+    const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
+    if (isKasirMode) {
+      const kasirNama = localStorage.getItem('k_kasir_nama') || '';
+      if (kasirNama && s.nama !== kasirNama) {
+        return (_getMySwal()||Swal).fire({
+          icon: 'error',
+          title: 'Akses Ditolak',
+          html: `<p style="font-size:12px;color:#475569;">Anda hanya bisa menutup shift <b>milik Anda sendiri</b>.<br>Shift ini milik <b style="color:#ef4444;">${s.nama}</b>.</p>`,
+          confirmButtonColor: '#ef4444',
+          customClass: { popup: 'swal2-ku' }
+        });
+      }
+    }
     const pinResult = await (_getMySwal()||Swal).fire({
       title: 'Konfirmasi Tutup Shift',
       html: `<p style="font-size:12px;color:#475569;margin-bottom:10px;">Masukkan PIN <b style="color:#7c3aed;">1234</b> untuk konfirmasi menutup shift <b>${s.nama}</b></p>
