@@ -1355,7 +1355,51 @@
     }
     [data-theme="dark"] #modal-sidebar-akun .text-red-600 { color: #fca5a5 !important; }
 
-    [data-theme="dark"] .admin-panel-body {
+    /* ══════════════════════════════════════════════════
+       DARK MODE — Modal Pengaturan (#modal-sidebar-setting)
+    ══════════════════════════════════════════════════ */
+    [data-theme="dark"] #modal-sidebar-setting .modal-content {
+      background: #0f172a !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting [style*="background:#f8fafc"] {
+      background: #0f172a !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting .border-violet-100 {
+      border-color: rgba(124,58,237,0.2) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting [style*="background:linear-gradient(135deg,#faf5ff"] {
+      background: rgba(124,58,237,0.08) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting [style*="background:linear-gradient(135deg,#fffbeb"] {
+      background: rgba(217,119,6,0.06) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting [style*="background:linear-gradient(135deg,#f5f3ff"] {
+      background: rgba(124,58,237,0.08) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting .border-amber-100 {
+      border-color: rgba(217,119,6,0.2) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting .text-slate-800 { color: #e2e8f0 !important; }
+    [data-theme="dark"] #modal-sidebar-setting .text-slate-400 { color: #94a3b8 !important; }
+    [data-theme="dark"] #modal-sidebar-setting [style*="background:#fff"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting input,
+    [data-theme="dark"] #modal-sidebar-setting textarea {
+      background: #1e293b !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255,255,255,0.1) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting .input-premium {
+      background: rgba(255,255,255,0.05) !important;
+      color: #e2e8f0 !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting [style*="background:#fff5f5"],
+    [data-theme="dark"] #modal-sidebar-setting [style*="background:linear-gradient(135deg,#fff5f5"] {
+      background: rgba(239,68,68,0.06) !important;
+    }
+    [data-theme="dark"] #modal-sidebar-setting .border-amber-100 { border-color:rgba(217,119,6,0.2) !important; }
       background: #0f172a !important;
     }
 
@@ -3911,10 +3955,20 @@
               <p id="sidebar-store-name" class="font-black text-white" style="font-size:16px;line-height:1.2;word-break:break-all;white-space:normal;overflow-wrap:anywhere;">DEMO</p>
               <p id="sidebar-store-email" class="font-bold truncate" style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:1px;margin-bottom:4px;"></p>
               <div class="flex items-center gap-1.5" style="margin-top:2px;flex-wrap:wrap;">
-              <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
-                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
-                <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
+                <div id="sidebar-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);">
+                  <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" id="sidebar-dot"></span>
+                  <span class="font-black" id="sidebar-status-text" style="font-size:8px;color:#6ee7b7;">ONLINE</span>
+                </div>
               </div>
+              <!-- Info nama kasir (hanya muncul saat login kasir) -->
+              <div id="sidebar-kasir-info" style="display:none;margin-top:7px;padding:7px 10px;border-radius:12px;background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(168,85,247,0.12));border:1px solid rgba(167,139,250,0.35);">
+                <p style="font-size:7px;font-weight:900;color:rgba(196,181,253,0.75);text-transform:uppercase;letter-spacing:0.14em;margin:0 0 2px;">KASIR AKTIF</p>
+                <div class="flex items-center gap-1.5">
+                  <div style="width:20px;height:20px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,0.4);">
+                    <i class="fas fa-user" style="font-size:9px;color:white;"></i>
+                  </div>
+                  <p id="sidebar-kasir-nama-display" style="font-size:12px;font-weight:900;color:#e9d5ff;margin:0;line-height:1.2;"></p>
+                </div>
               </div>
             </div>
             <!-- Kolom kanan: Toggle Tema (atas) + Jam Digital (bawah) -->
@@ -3984,6 +4038,21 @@
               <span class="font-black" style="font-size:7px;color:#6ee7b7;">ONLINE</span>
             </div>
           </div>
+          <!-- Info kasir desktop (hanya muncul saat login kasir) -->
+          <div id="sidebar-kasir-info-desktop" style="display:none;position:relative;z-index:1;margin-top:6px;padding:7px 10px;border-radius:10px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(168,85,247,0.12));border:1px solid rgba(167,139,250,0.3);">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div style="width:22px;height:22px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,0.45);">
+                  <i class="fas fa-user" style="font-size:9px;color:white;"></i>
+                </div>
+                <div>
+                  <p style="font-size:6px;font-weight:900;color:rgba(196,181,253,0.7);text-transform:uppercase;letter-spacing:0.12em;margin:0;">KASIR AKTIF</p>
+                  <p id="sidebar-kasir-nama-display-desktop" style="font-size:11px;font-weight:900;color:#e9d5ff;margin:0;line-height:1.2;"></p>
+                </div>
+              </div>
+              <span style="font-size:6px;font-weight:900;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;padding:2px 7px;border-radius:20px;">KASIR</span>
+            </div>
+          </div>
         </div>
 
         <!-- Menu Items -->
@@ -3999,6 +4068,18 @@
             <div class="flex-1 min-w-0">
               <p class="text-[12px] font-black text-slate-800">Akun Toko</p>
               <p class="text-[9px] text-slate-400 font-bold">Info & pengaturan akun</p>
+            </div>
+            <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
+          </button>
+
+          <!-- Pengaturan Aplikasi -->
+          <button class="sidebar-menu-item" onclick="openSidebarMenu('setting')">
+            <div class="sidebar-icon-wrap" style="background:rgba(15,118,110,0.12);">
+              <i class="fas fa-sliders" style="color:#0f766e;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[12px] font-black text-slate-800">Pengaturan</p>
+              <p class="text-[9px] text-slate-400 font-bold">Struk, notifikasi & data</p>
             </div>
             <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
           </button>
@@ -4139,6 +4220,12 @@
           <!-- ── Divider + Menu Pengaturan (mirip mobile) ── -->
           <div class="sidebar-divider" style="margin:8px 4px;"></div>
           <div class="sidebar-section-label" style="padding-left:4px;">Pengaturan</div>
+
+          <!-- Pengaturan -->
+          <button class="desktop-sidenav-item" onclick="openSidebarMenu('setting')">
+            <div class="dsn-icon" style="background:rgba(15,118,110,0.15);"><i class="fas fa-sliders" style="color:#0f766e;"></i></div>
+            Pengaturan
+          </button>
 
           <!-- Akun Toko -->
           <button class="desktop-sidenav-item" onclick="openSidebarMenu('akun')">
@@ -4285,6 +4372,59 @@
             </button>
           </div>
 
+          <!-- Shortcut ke Pengaturan -->
+          <button onclick="closeModal('modal-sidebar-akun'); setTimeout(()=>openSidebarMenu('setting'),150);"
+            class="w-full flex items-center gap-4 rounded-2xl border-0 cursor-pointer transition-all active:scale-95"
+            style="background:linear-gradient(135deg,#f0fdfa,#ccfbf1);border:1.5px solid #99f6e4;padding:14px 16px;">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style="background:linear-gradient(135deg,#0f766e,#14b8a6);box-shadow:0 4px 12px rgba(15,118,110,0.3);">
+              <i class="fas fa-sliders text-white" style="font-size:14px;"></i>
+            </div>
+            <div class="flex-1 text-left">
+              <p class="font-black text-teal-900" style="font-size:13px;">Pengaturan Aplikasi</p>
+              <p class="font-bold text-teal-600" style="font-size:9px;margin-top:2px;">Struk thermal, notifikasi & data</p>
+            </div>
+            <i class="fas fa-chevron-right" style="color:#0f766e;font-size:10px;"></i>
+          </button>
+
+          <button onclick="closeModal('modal-sidebar-akun'); logout();" class="w-full py-3.5 bg-red-50 text-red-600 rounded-2xl font-black text-sm border-0 cursor-pointer flex items-center justify-center gap-2 hover:bg-red-100 transition-all">
+            <i class="fas fa-right-from-bracket"></i> Keluar dari Akun
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== MODAL SIDEBAR: PENGATURAN ===== -->
+    <div id="modal-sidebar-setting" class="modal-overlay">
+      <div class="modal-content" style="max-height:90vh;overflow-y:auto;padding:0;border-radius:32px 32px 0 0;">
+
+        <!-- HERO BANNER -->
+        <div class="relative overflow-hidden text-white px-5 pt-8 pb-6"
+          style="background:linear-gradient(150deg,#042f2e 0%,#0f4a46 45%,#0f766e 100%);">
+          <div class="absolute inset-0 pointer-events-none" style="opacity:0.04;background-image:radial-gradient(circle,#99f6e4 1px,transparent 1px);background-size:18px 18px;"></div>
+          <div class="absolute right-0 top-0 w-40 h-40 pointer-events-none" style="background:radial-gradient(circle at 100% 0%,rgba(20,184,166,0.25) 0%,transparent 70%)"></div>
+          <button onclick="closeModal('modal-sidebar-setting')"
+            class="absolute right-4 top-4 flex items-center justify-center cursor-pointer border-0 transition-all"
+            style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:12px;backdrop-filter:blur(8px);">
+            <i class="fas fa-times text-white" style="font-size:13px;opacity:0.7;"></i>
+          </button>
+          <div class="flex items-center gap-4">
+            <div class="flex items-center justify-center flex-shrink-0"
+              style="width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#0f766e,#14b8a6);box-shadow:0 8px 24px rgba(15,118,110,0.55);">
+              <i class="fas fa-sliders text-white" style="font-size:22px;"></i>
+            </div>
+            <div>
+              <p class="font-black uppercase" style="font-size:8px;color:rgba(153,246,228,0.7);letter-spacing:0.18em;">KONFIGURASI</p>
+              <h3 class="font-black text-white" style="font-size:20px;letter-spacing:-0.5px;line-height:1.2;">Pengaturan</h3>
+              <p class="font-bold" style="font-size:9px;color:rgba(255,255,255,0.45);margin-top:2px;">Struk, notifikasi & manajemen data</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- KONTEN -->
+        <div class="p-4 space-y-4" style="background:#f8fafc;">
+
           <!-- ===== SETTING STRUK THERMAL ===== -->
           <div class="rounded-2xl overflow-hidden border border-violet-100" style="background:linear-gradient(135deg,#faf5ff,#f5f3ff);">
             <div class="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-violet-100">
@@ -4294,16 +4434,11 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-[11px] font-black text-slate-800">Setting Struk Thermal</p>
-                <p class="text-[8px] font-bold text-slate-400">Logo &amp; alamat tampil di struk 58mm</p>
+                <p class="text-[8px] font-bold text-slate-400">Logo & alamat tampil di struk 58mm</p>
               </div>
             </div>
-
-            <!-- LOCK OVERLAY (disembunyikan) -->
             <div id="struk-setting-lock" style="display:none;"></div>
-
-            <!-- FORM BODY -->
             <div id="struk-setting-body" class="p-4 space-y-4">
-
               <!-- Upload Logo -->
               <div>
                 <label style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:8px;">
@@ -4334,17 +4469,14 @@
                   </div>
                 </div>
               </div>
-
               <!-- Alamat Toko -->
               <div>
                 <label style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:6px;">
                   <i class="fas fa-location-dot mr-1"></i>Alamat Toko
                 </label>
                 <textarea id="struk-alamat-input" rows="2" placeholder="Jl. Contoh No. 1, Kota, Provinsi&#10;Telp: 08xx-xxxx-xxxx"
-                  class="input-premium resize-none"
-                  style="font-size:11px;line-height:1.5;border-radius:14px;"></textarea>
+                  class="input-premium resize-none" style="font-size:11px;line-height:1.5;border-radius:14px;"></textarea>
               </div>
-
               <!-- Tagline / Slogan -->
               <div>
                 <label style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:6px;">
@@ -4353,8 +4485,6 @@
                 <input type="text" id="struk-tagline-input" placeholder="Terima kasih sudah berbelanja!"
                   class="input-premium" style="font-size:11px;">
               </div>
-
-              <!-- Tombol Simpan -->
               <button onclick="simpanSettingStruk()"
                 class="w-full py-3 rounded-2xl font-black text-[12px] border-0 cursor-pointer text-white flex items-center justify-center gap-2 transition-all"
                 style="background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 6px 18px rgba(124,58,237,0.35);">
@@ -4364,103 +4494,165 @@
           </div>
           <!-- END SETTING STRUK THERMAL -->
 
-          <!-- ===== SETTING SISTEM POIN ===== -->
-          <div id="poin-setting-wrap" style="margin-bottom:12px;">
-            <div style="border-radius:20px;overflow:hidden;border:1.5px solid #e0e7ff;background:linear-gradient(135deg,#f5f3ff,#ede9fe);">
-              <!-- Header -->
-              <div style="padding:12px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e0e7ff;cursor:pointer;" onclick="togglePoinSettingBody()">
-                <div style="width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#7c3aed,#a78bfa);box-shadow:0 4px 12px rgba(124,58,237,0.3);">
-                  <i class="fas fa-star" style="font-size:14px;color:#fff;"></i>
-                </div>
-                <div style="flex:1;min-width:0;">
-                  <p style="font-size:11px;font-weight:900;color:#1e293b;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2;">⚙️ Pengaturan Sistem Poin</p>
-                  <p style="font-size:9px;font-weight:700;color:#7c3aed;font-family:'Plus Jakarta Sans',sans-serif;margin-top:1px;">Aktifkan & konfigurasi poin reward pelanggan</p>
-                </div>
-                <i id="poin-setting-chevron" class="fas fa-chevron-down" style="font-size:12px;color:#7c3aed;transition:transform 0.3s;"></i>
+          <!-- ===== PENGATURAN NOTIFIKASI ===== -->
+          <div class="rounded-2xl overflow-hidden border border-amber-100" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);">
+            <div class="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-amber-100">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style="background:linear-gradient(135deg,#d97706,#f59e0b);box-shadow:0 4px 12px rgba(217,119,6,0.3);">
+                <i class="fas fa-bell text-white" style="font-size:13px;"></i>
               </div>
-              <!-- Body -->
-              <div id="poin-setting-body" style="display:none;">
-                <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+              <div class="flex-1 min-w-0">
+                <p class="text-[11px] font-black text-slate-800">Pengaturan Notifikasi</p>
+                <p class="text-[8px] font-bold text-slate-400">Atur notifikasi push & peringatan stok</p>
+              </div>
+            </div>
+            <div class="p-4 space-y-3">
+              <!-- Baris notif stok menipis -->
+              <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #fde68a;display:flex;align-items:center;gap:12px;">
+                <div style="width:32px;height:32px;border-radius:10px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-box" style="color:#f59e0b;font-size:12px;"></i>
+                </div>
+                <div style="flex:1;">
+                  <p style="font-size:11px;font-weight:900;color:#1e293b;margin:0 0 1px;">Stok Menipis</p>
+                  <p style="font-size:8px;font-weight:700;color:#64748b;margin:0;">Notif saat stok ≤ batas minimal</p>
+                </div>
+                <label style="position:relative;width:40px;height:22px;flex-shrink:0;display:block;margin:0;">
+                  <input type="checkbox" id="notif-stok-toggle" onchange="simpanSettingNotif()"
+                    style="opacity:0;width:0;height:0;position:absolute;">
+                  <span onclick="document.getElementById('notif-stok-toggle').click()" id="notif-stok-track"
+                    style="position:absolute;cursor:pointer;inset:0;border-radius:100px;background:#e2e8f0;transition:0.3s;">
+                    <span id="notif-stok-thumb" style="position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+                  </span>
+                </label>
+              </div>
+              <!-- Baris notif saldo rendah -->
+              <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #fde68a;display:flex;align-items:center;gap:12px;">
+                <div style="width:32px;height:32px;border-radius:10px;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-wallet" style="color:#8b5cf6;font-size:12px;"></i>
+                </div>
+                <div style="flex:1;">
+                  <p style="font-size:11px;font-weight:900;color:#1e293b;margin:0 0 1px;">Saldo Dompet Rendah</p>
+                  <p style="font-size:8px;font-weight:700;color:#64748b;margin:0;">Notif jika saldo &lt; Rp 100K</p>
+                </div>
+                <label style="position:relative;width:40px;height:22px;flex-shrink:0;display:block;margin:0;">
+                  <input type="checkbox" id="notif-saldo-toggle" onchange="simpanSettingNotif()"
+                    style="opacity:0;width:0;height:0;position:absolute;">
+                  <span onclick="document.getElementById('notif-saldo-toggle').click()" id="notif-saldo-track"
+                    style="position:absolute;cursor:pointer;inset:0;border-radius:100px;background:#e2e8f0;transition:0.3s;">
+                    <span id="notif-saldo-thumb" style="position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+                  </span>
+                </label>
+              </div>
+              <!-- Baris notif transaksi -->
+              <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #fde68a;display:flex;align-items:center;gap:12px;">
+                <div style="width:32px;height:32px;border-radius:10px;background:rgba(0,97,194,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-cash-register" style="color:#0061C2;font-size:12px;"></i>
+                </div>
+                <div style="flex:1;">
+                  <p style="font-size:11px;font-weight:900;color:#1e293b;margin:0 0 1px;">Konfirmasi Transaksi</p>
+                  <p style="font-size:8px;font-weight:700;color:#64748b;margin:0;">Notif tiap transaksi berhasil</p>
+                </div>
+                <label style="position:relative;width:40px;height:22px;flex-shrink:0;display:block;margin:0;">
+                  <input type="checkbox" id="notif-trx-toggle" onchange="simpanSettingNotif()"
+                    style="opacity:0;width:0;height:0;position:absolute;">
+                  <span onclick="document.getElementById('notif-trx-toggle').click()" id="notif-trx-track"
+                    style="position:absolute;cursor:pointer;inset:0;border-radius:100px;background:#e2e8f0;transition:0.3s;">
+                    <span id="notif-trx-thumb" style="position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+                  </span>
+                </label>
+              </div>
+              <!-- Tombol izin notif PWA -->
+              <button onclick="mintaIzinNotifPWA()" id="btn-izin-notif"
+                style="width:100%;padding:11px;border-radius:14px;background:linear-gradient(135deg,#d97706,#f59e0b);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:900;color:#fff;box-shadow:0 4px 14px rgba(217,119,6,0.35);">
+                <i class="fas fa-bell"></i> Aktifkan Push Notifikasi PWA
+              </button>
+            </div>
+          </div>
+          <!-- END NOTIFIKASI -->
 
-                  <!-- Toggle Aktif/Nonaktif -->
-                  <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;display:flex;align-items:center;gap:12px;">
-                    <div style="flex:1;">
-                      <p style="font-size:11px;font-weight:900;color:#1e293b;margin:0 0 2px;">Sistem Poin Aktif</p>
-                      <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">Poin otomatis diberikan setiap transaksi</p>
+          <!-- ===== SISTEM POIN PELANGGAN ===== -->
+          <div id="poin-setting-wrap" class="rounded-2xl overflow-hidden" style="border:1.5px solid #e0e7ff;background:linear-gradient(135deg,#f5f3ff,#ede9fe);">
+            <!-- Header klik toggle -->
+            <div style="padding:12px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e0e7ff;cursor:pointer;" onclick="togglePoinSettingBody()">
+              <div style="width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#7c3aed,#a78bfa);box-shadow:0 4px 12px rgba(124,58,237,0.3);">
+                <i class="fas fa-star" style="font-size:14px;color:#fff;"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <p style="font-size:11px;font-weight:900;color:#1e293b;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2;">⭐ Sistem Poin Pelanggan</p>
+                <p style="font-size:9px;font-weight:700;color:#7c3aed;font-family:'Plus Jakarta Sans',sans-serif;margin-top:1px;">Setting transaksi & poin yang diberikan</p>
+              </div>
+              <i id="poin-setting-chevron" class="fas fa-chevron-down" style="font-size:12px;color:#7c3aed;transition:transform 0.3s;"></i>
+            </div>
+            <!-- Body -->
+            <div id="poin-setting-body" style="display:none;">
+              <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+
+                <!-- Toggle Aktif/Nonaktif -->
+                <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;display:flex;align-items:center;gap:12px;">
+                  <div style="flex:1;">
+                    <p style="font-size:11px;font-weight:900;color:#1e293b;margin:0 0 2px;">Aktifkan Sistem Poin</p>
+                    <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">Section poin muncul di kasir saat diaktifkan</p>
+                  </div>
+                  <label style="position:relative;width:44px;height:24px;flex-shrink:0;display:block;margin:0;">
+                    <input type="checkbox" id="poin-aktif-toggle" onchange="simpanSettingPoin()"
+                      style="opacity:0;width:0;height:0;position:absolute;">
+                    <span id="poin-toggle-track" onclick="document.getElementById('poin-aktif-toggle').click()"
+                      style="position:absolute;cursor:pointer;inset:0;border-radius:100px;background:#e2e8f0;transition:0.3s;">
+                      <span id="poin-toggle-thumb" style="position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
+                    </span>
+                  </label>
+                </div>
+
+                <!-- Konten yang muncul jika aktif -->
+                <div id="poin-config-detail" style="display:none;flex-direction:column;gap:10px;">
+
+                  <!-- Nilai tukar poin -->
+                  <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
+                    <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0 0 8px;">🎁 Nilai Tukar Poin ke Diskon</p>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                      <span style="font-size:10px;font-weight:700;color:#475569;">100 Poin =</span>
+                      <span style="font-size:10px;font-weight:700;color:#475569;">Rp</span>
+                      <input type="number" id="poin-nilai-tukar" min="100" step="100" value="1000"
+                        onchange="simpanSettingPoin()"
+                        style="width:80px;border:2px solid #e2e8f0;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
+                        onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
+                      <span style="font-size:10px;font-weight:700;color:#475569;">diskon</span>
                     </div>
-                    <label style="position:relative;width:44px;height:24px;flex-shrink:0;display:block;margin:0;">
-                      <input type="checkbox" id="poin-aktif-toggle" onchange="simpanSettingPoin()"
-                        style="opacity:0;width:0;height:0;position:absolute;">
-                      <span id="poin-toggle-track" onclick="document.getElementById('poin-aktif-toggle').click()"
-                        style="position:absolute;cursor:pointer;inset:0;border-radius:100px;background:#e2e8f0;transition:0.3s;">
-                        <span id="poin-toggle-thumb" style="position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
-                      </span>
-                    </label>
+                    <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:6px 0 0;">Min. poin untuk ditukar: 100 poin</p>
                   </div>
 
-                  <!-- Konten yang muncul jika aktif -->
-                  <div id="poin-config-detail" style="display:none;flex-direction:column;gap:10px;">
-
-                    <!-- Rasio poin -->
-                    <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
-                      <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0 0 8px;">💎 Rasio Pemberian Poin</p>
-                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                        <span style="font-size:10px;font-weight:700;color:#475569;">Setiap</span>
-                        <input type="number" id="poin-per-rupiah" min="500" step="500" value="1000"
-                          onchange="simpanSettingPoin()"
-                          style="width:90px;border:2px solid #e2e8f0;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
-                          onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
-                        <span style="font-size:10px;font-weight:700;color:#475569;">Rp = 1 Poin</span>
-                      </div>
-                      <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:6px 0 0;">Contoh: transaksi Rp 50.000 → 50 poin (jika 1000/poin)</p>
+                  <!-- Jenis transaksi & poin manual -->
+                  <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                      <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0;">🎯 Poin per Jenis Transaksi</p>
+                      <span style="font-size:8px;font-weight:700;color:#94a3b8;">Input manual</span>
                     </div>
-
-                    <!-- Poin per jenis transaksi -->
-                    <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
-                      <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0 0 10px;">🎯 Poin Bonus per Jenis Transaksi</p>
-                      <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:0 0 10px;">Poin tambahan (bonus) di luar poin otomatis dari nominal transaksi</p>
-                      <div style="display:flex;flex-direction:column;gap:6px;" id="poin-per-trx-list">
-                        <!-- diisi oleh JS -->
-                      </div>
-                      <button onclick="tambahItemPoinTrx()"
-                        style="margin-top:10px;width:100%;padding:8px;border-radius:10px;border:2px dashed rgba(124,58,237,0.4);background:rgba(124,58,237,0.04);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:900;color:#7c3aed;">
-                        <i class="fas fa-plus" style="font-size:9px;"></i> Tambah Jenis Transaksi
-                      </button>
+                    <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:0 0 10px;">Atur nama transaksi & berapa poin yang diberikan. Muncul sebagai pilihan di kasir.</p>
+                    <div style="display:flex;flex-direction:column;gap:6px;" id="poin-per-trx-list">
+                      <!-- diisi oleh JS -->
                     </div>
+                    <button onclick="tambahItemPoinTrx()"
+                      style="margin-top:10px;width:100%;padding:8px;border-radius:10px;border:2px dashed rgba(124,58,237,0.4);background:rgba(124,58,237,0.04);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:900;color:#7c3aed;">
+                      <i class="fas fa-plus" style="font-size:9px;"></i> Tambah Jenis Transaksi
+                    </button>
+                  </div>
 
-                    <!-- Tukar poin -->
-                    <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;">
-                      <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0 0 8px;">🎁 Nilai Tukar Poin ke Diskon</p>
-                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                        <span style="font-size:10px;font-weight:700;color:#475569;">100 Poin =</span>
-                        <span style="font-size:10px;font-weight:700;color:#475569;">Rp</span>
-                        <input type="number" id="poin-nilai-tukar" min="100" step="100" value="1000"
-                          onchange="simpanSettingPoin()"
-                          style="width:90px;border:2px solid #e2e8f0;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
-                          onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
-                        <span style="font-size:10px;font-weight:700;color:#475569;">diskon</span>
-                      </div>
-                      <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:6px 0 0;">Min. poin untuk ditukar: 100 poin</p>
-                    </div>
+                </div><!-- end poin-config-detail -->
 
-                  </div><!-- end poin-config-detail -->
+                <!-- Simpan -->
+                <button onclick="simpanSettingPoin(true)"
+                  style="width:100%;padding:12px;border-radius:16px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:900;color:#fff;">
+                  <i class="fas fa-save"></i> Simpan Pengaturan Poin
+                </button>
 
-                  <!-- Simpan button -->
-                  <button onclick="simpanSettingPoin(true)"
-                    style="width:100%;padding:12px;border-radius:16px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:900;color:#fff;">
-                    <i class="fas fa-save"></i> Simpan Pengaturan Poin
-                  </button>
-
-                </div>
               </div>
             </div>
           </div>
-          <!-- END SETTING SISTEM POIN -->
+          <!-- END SISTEM POIN -->
 
-          <!-- Hapus Semua Data — hanya tampil untuk Owner -->
+          <!-- ===== ZONA BERBAHAYA ===== -->
           <div id="hapus-semua-data-wrap" style="display:none;">
-            <div style="border-radius:20px;overflow:hidden;border:1.5px solid #fecaca;background:linear-gradient(135deg,#fff5f5,#fff1f2);margin-bottom:0;">
-              <!-- Header warning -->
+            <div style="border-radius:20px;overflow:hidden;border:1.5px solid #fecaca;background:linear-gradient(135deg,#fff5f5,#fff1f2);">
               <div style="padding:12px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #fecaca;">
                 <div style="width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:linear-gradient(135deg,#dc2626,#ef4444);box-shadow:0 4px 12px rgba(220,38,38,0.3);">
                   <i class="fas fa-triangle-exclamation" style="font-size:14px;color:#fff;"></i>
@@ -4471,7 +4663,6 @@
                 </div>
                 <span style="font-size:8px;font-weight:900;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;padding:3px 8px;border-radius:20px;flex-shrink:0;">OWNER</span>
               </div>
-              <!-- Body -->
               <div style="padding:12px 16px;">
                 <p style="font-size:10px;font-weight:700;color:#7f1d1d;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.5;margin-bottom:12px;">
                   Menghapus seluruh data toko: transaksi, produk, pelanggan, hutang, dompet, dan semua riwayat secara permanen dari perangkat ini.
@@ -4489,14 +4680,12 @@
               </div>
             </div>
           </div>
+          <!-- END ZONA BERBAHAYA -->
 
-          <button onclick="closeModal('modal-sidebar-akun'); logout();" class="w-full py-3.5 bg-red-50 text-red-600 rounded-2xl font-black text-sm border-0 cursor-pointer flex items-center justify-center gap-2 hover:bg-red-100 transition-all">
-            <i class="fas fa-right-from-bracket"></i> Keluar dari Akun
-          </button>
-        </div>
+        </div><!-- end .p-4 -->
       </div>
     </div>
-
+    <!-- ===== END MODAL SIDEBAR: PENGATURAN ===== -->
 
     <!-- ===== MODAL SIDEBAR: KELOLA TOKO ===== -->
     <div id="modal-sidebar-kelola-toko" class="modal-overlay">
@@ -7210,6 +7399,36 @@
 
           <!-- Ringkasan Total -->
           <div style="background:linear-gradient(135deg,#0a1628,#0d2550);border:1.5px solid rgba(56,189,248,0.15);border-top:none;border-radius:0 0 20px 20px;padding:14px 16px;">
+
+            <!-- Section Poin Pelanggan (muncul jika sistem poin aktif) -->
+            <div id="kasir-poin-section" style="display:none;margin-bottom:12px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.3);border-radius:14px;padding:12px 14px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <i class="fas fa-star" style="color:#a78bfa;font-size:12px;"></i>
+                <p style="font-size:10px;font-weight:900;color:#e9d5ff;margin:0;">Poin Pelanggan</p>
+                <span id="kasir-poin-customer-saldo" style="font-size:9px;font-weight:700;color:rgba(233,213,255,0.6);margin-left:auto;">Saldo: — poin</span>
+              </div>
+              <!-- Pilih jenis transaksi untuk poin -->
+              <div style="margin-bottom:8px;">
+                <p style="font-size:8px;font-weight:900;color:rgba(196,181,253,0.7);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;">Jenis Transaksi</p>
+                <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(124,58,237,0.3);border-radius:10px;padding:8px 12px;position:relative;">
+                  <select id="kasir-poin-jenis-trx"
+                    onchange="updateKasirPoinPreview()"
+                    style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;z-index:2;border:none;background:transparent;">
+                    <option value="">-- Pilih atau skip --</option>
+                  </select>
+                  <span id="kasir-poin-jenis-label" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);pointer-events:none;display:flex;align-items:center;justify-content:space-between;">
+                    <span>-- Pilih atau skip --</span>
+                    <i class="fas fa-chevron-down" style="font-size:9px;color:rgba(196,181,253,0.5);"></i>
+                  </span>
+                </div>
+              </div>
+              <!-- Preview poin yang akan diberikan -->
+              <div id="kasir-poin-preview" style="display:none;background:rgba(124,58,237,0.15);border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:10px;font-weight:700;color:rgba(196,181,253,0.8);">Poin didapat:</span>
+                <span id="kasir-poin-preview-val" style="font-size:13px;font-weight:900;color:#a78bfa;">+0 poin</span>
+              </div>
+            </div>
+
             <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
               <span style="font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;">Total Pelanggan Bayar</span>
               <span id="cart-all-total-bayar" style="font-size:12px;font-weight:900;color:#38BDF8;">Rp 0</span>
@@ -9073,6 +9292,9 @@
       populateCartWallet();
       if (countEl) countEl.textContent = items.length + ' item';
 
+      // Refresh section poin
+      if (window.refreshKasirPoinSection) window.refreshKasirPoinSection();
+
       let totalBayar = 0, totalLaba = 0;
       items.forEach(it => {
         totalBayar += it.jual;
@@ -9210,6 +9432,31 @@
       window._kasirCart.all = [];
       renderKeranjangAll();
       resetKasirForms();
+
+      // ── Catat poin pelanggan jika sistem poin aktif ──
+      const _poinCfg = window.getPoinConfig ? window.getPoinConfig() : null;
+      if (_poinCfg && _poinCfg.aktif && activeCust && activeCust !== 'Umum') {
+        const _poinSelIdx = parseInt(document.getElementById('kasir-poin-jenis-trx')?.value);
+        const _bonusTrx   = _poinCfg.bonusTrx || [];
+        if (!isNaN(_poinSelIdx) && _bonusTrx[_poinSelIdx]) {
+          const _poinDapat = _bonusTrx[_poinSelIdx].poin;
+          const _poinJenis = _bonusTrx[_poinSelIdx].nama;
+          // Tambah poin ke data pelanggan
+          if (window.db && window.db.customers) {
+            const _cIdx = window.db.customers.findIndex(c => c.nama === activeCust);
+            if (_cIdx !== -1) {
+              window.db.customers[_cIdx].poin = (window.db.customers[_cIdx].poin || 0) + _poinDapat;
+              if (!window.db.customers[_cIdx].poinLog) window.db.customers[_cIdx].poinLog = [];
+              window.db.customers[_cIdx].poinLog.push({
+                tgl: new Date().toISOString().split('T')[0],
+                jenis: _poinJenis,
+                poin: _poinDapat
+              });
+            }
+          }
+        }
+      }
+
       showView('dashboard');
 
       (_getMySwal()||Swal).fire({
@@ -10527,6 +10774,9 @@
             <div class="flex flex-col gap-1.5 flex-shrink-0">
               <button onclick="bukaProfilPelangganKu('${c.id}')" class="w-9 h-9 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Profil">
                 <i class="fas fa-user-circle text-[11px]"></i>
+              </button>
+              <button onclick="window.open('tukar-poin.html?id=${c.id}','_blank')" class="w-9 h-9 bg-violet-50 hover:bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Tukar Poin">
+                <i class="fas fa-gift text-[11px]"></i>
               </button>
               <button onclick="editCustomer('${c.id}')" class="w-9 h-9 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Edit">
                 <i class="fas fa-edit text-[11px]"></i>
@@ -12763,15 +13013,30 @@ ${t.tipe === 'ewallet' ? `
         setTimeout(function() {
           if (typeof renderMultiTokoSection === 'function') renderMultiTokoSection();
         }, 150);
-        // Load setting struk
-        _loadSettingStrukToForm();
 
-        // Tampilkan tombol Hapus Semua Data hanya untuk Owner (bukan kasir)
+        // Tampilkan tombol Hapus Semua Data — SUDAH dipindah ke modal Setting
+      }
+
+      else if (menu === 'setting') {
+        // Load setting struk ke form
+        _loadSettingStrukToForm();
+        // Load setting notif
+        _loadSettingNotif();
+        // Load setting poin
+        loadPoinSettingForm();
+        // Tampilkan Zona Berbahaya hanya untuk Owner
         const _hapusWrap = document.getElementById('hapus-semua-data-wrap');
         if (_hapusWrap) {
           const _isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
           _hapusWrap.style.display = _isKasirMode ? 'none' : 'block';
         }
+        // Sembunyikan Sistem Poin untuk kasir (hanya owner bisa setting)
+        const _poinWrap = document.getElementById('poin-setting-wrap');
+        if (_poinWrap) {
+          const _isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
+          _poinWrap.style.display = _isKasirMode ? 'none' : 'block';
+        }
+        openModal('modal-sidebar-setting');
       }
 
       else if (menu === 'catatan') {
@@ -15393,11 +15658,25 @@ ${t.tipe === 'ewallet' ? `
     if (multitokoSection) multitokoSection.style.display = 'none';
 
     // Sembunyikan menu backup, tentang (kasir tidak perlu ini)
-    // Tampilkan badge kasir di header
+    // Tampilkan badge kasir di header utama app
     const headerEl = document.getElementById('display-store-name');
     if (headerEl) {
       const storeName = localStorage.getItem('k_store_name') || '';
       headerEl.innerHTML = (storeName ? storeName + ' · ' : '') + '<span style="color:#a78bfa;font-size:11px;">👤 ' + kasirNama + '</span>';
+    }
+
+    // ── Tampilkan info kasir di sidebar header (mobile & desktop) ──
+    const kasirInfoMobile = document.getElementById('sidebar-kasir-info');
+    const kasirNamaDisplayMobile = document.getElementById('sidebar-kasir-nama-display');
+    if (kasirInfoMobile && kasirNamaDisplayMobile) {
+      kasirNamaDisplayMobile.textContent = kasirNama;
+      kasirInfoMobile.style.display = 'block';
+    }
+    const kasirInfoDesktop = document.getElementById('sidebar-kasir-info-desktop');
+    const kasirNamaDisplayDesktop = document.getElementById('sidebar-kasir-nama-display-desktop');
+    if (kasirInfoDesktop && kasirNamaDisplayDesktop) {
+      kasirNamaDisplayDesktop.textContent = kasirNama;
+      kasirInfoDesktop.style.display = 'block';
     }
 
     // Tampilkan notif mode kasir
@@ -15605,8 +15884,8 @@ ${t.tipe === 'ewallet' ? `
         return;
       }
       closeSidebar && closeSidebar();
-      // Buka modal Akun lalu scroll ke poin setting
-      if (_origOpenSidebarMenu) _origOpenSidebarMenu('akun');
+      // Buka modal Setting lalu scroll ke poin setting
+      if (_origOpenSidebarMenu) _origOpenSidebarMenu('setting');
       setTimeout(function() {
         const poinWrap = document.getElementById('poin-setting-wrap');
         if (poinWrap) {
@@ -20836,27 +21115,26 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 ================================================================ -->
 <script>
 /* ================================================================
-   SETTING SISTEM POIN — UI & Logic
+   SETTING SISTEM POIN — UI & Logic (revamp: manual per jenis trx)
 ================================================================ */
 (function() {
   'use strict';
 
-  // Default config
+  // Default config — tanpa rasio otomatis, hanya jenis transaksi manual
   const DEFAULT_POIN_CFG = {
     aktif: false,
-    perRupiah: 1000,          // 1 poin per Rp 1.000
-    nilaiTukar: 1000,         // 100 poin = Rp 1.000
-    bonusTrx: [               // bonus poin per jenis transaksi
-      { nama: 'Pulsa / Paket Data',  poin: 2 },
-      { nama: 'Top Up DANA/OVO/Gopay', poin: 5 },
-      { nama: 'Aksesoris HP (ACC)',  poin: 5 },
-      { nama: 'Beli HP',             poin: 100 },
-      { nama: 'Print Dokumen',       poin: 1 },
-      { nama: 'Cetak Foto',          poin: 3 },
+    nilaiTukar: 1000,           // 100 poin = Rp 1.000
+    bonusTrx: [                 // jenis transaksi & poin yang diberikan
+      { nama: 'Pulsa / Paket Data',      poin: 2  },
+      { nama: 'Top Up DANA/OVO/Gopay',   poin: 5  },
+      { nama: 'Aksesoris HP (ACC)',       poin: 5  },
+      { nama: 'Beli HP',                 poin: 100 },
+      { nama: 'Print Dokumen',           poin: 1  },
+      { nama: 'Cetak Foto',              poin: 3  },
     ]
   };
 
-  /* ── Ambil & simpan config ke db ── */
+  /* ── Ambil & simpan config ── */
   function getPoinCfg() {
     try {
       const raw = window.db && window.db.poinConfig;
@@ -20883,34 +21161,25 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   };
 
   /* ── Render form dari config ── */
-  function loadPoinSettingForm() {
+  window.loadPoinSettingForm = function loadPoinSettingForm() {
     const cfg = getPoinCfg();
-
-    // Toggle
     const toggle  = document.getElementById('poin-aktif-toggle');
-    const track   = document.getElementById('poin-toggle-track');
-    const thumb   = document.getElementById('poin-toggle-thumb');
-    const detail  = document.getElementById('poin-config-detail');
+    const nilaiTk = document.getElementById('poin-nilai-tukar');
     if (toggle) toggle.checked = !!cfg.aktif;
     updateToggleUI(!!cfg.aktif);
-
-    // Rasio & nilai tukar
-    const perRup  = document.getElementById('poin-per-rupiah');
-    const nilaiTk = document.getElementById('poin-nilai-tukar');
-    if (perRup)  perRup.value  = cfg.perRupiah  || 1000;
     if (nilaiTk) nilaiTk.value = cfg.nilaiTukar || 1000;
-
-    // Bonus per transaksi
     renderBonusTrxList(cfg.bonusTrx || []);
-  }
+  };
 
   function updateToggleUI(aktif) {
-    const track = document.getElementById('poin-toggle-track');
-    const thumb = document.getElementById('poin-toggle-thumb');
+    const track  = document.getElementById('poin-toggle-track');
+    const thumb  = document.getElementById('poin-toggle-thumb');
     const detail = document.getElementById('poin-config-detail');
-    if (track) track.style.background = aktif ? '#7c3aed' : '#e2e8f0';
-    if (thumb) thumb.style.transform  = aktif ? 'translateX(20px)' : 'translateX(0)';
-    if (detail) detail.style.display  = aktif ? 'flex' : 'none';
+    if (track)  track.style.background = aktif ? '#7c3aed' : '#e2e8f0';
+    if (thumb)  thumb.style.transform  = aktif ? 'translateX(20px)' : 'translateX(0)';
+    if (detail) detail.style.display   = aktif ? 'flex' : 'none';
+    // Update section poin di kasir
+    refreshKasirPoinSection();
   }
 
   function renderBonusTrxList(list) {
@@ -20918,19 +21187,19 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (!wrap) return;
     wrap.innerHTML = list.map((item, i) => `
       <div style="display:flex;align-items:center;gap:8px;">
-        <input type="text" value="${item.nama}" placeholder="Nama transaksi"
+        <input type="text" value="${item.nama || ''}" placeholder="Nama transaksi (cth: Pulsa)"
           onchange="updateBonusTrxItem(${i},'nama',this.value)"
-          style="flex:1;border:1.5px solid #e2e8f0;border-radius:10px;padding:6px 10px;font-size:10px;font-weight:700;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
+          style="flex:1;border:1.5px solid #e2e8f0;border-radius:10px;padding:7px 10px;font-size:10px;font-weight:700;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
           onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
         <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-          <input type="number" value="${item.poin}" min="1" placeholder="Poin"
+          <input type="number" value="${item.poin || 1}" min="1" placeholder="Poin"
             onchange="updateBonusTrxItem(${i},'poin',parseInt(this.value)||1)"
-            style="width:52px;border:1.5px solid #e2e8f0;border-radius:10px;padding:6px 6px;font-size:10px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
+            style="width:54px;border:1.5px solid #e2e8f0;border-radius:10px;padding:7px 6px;font-size:11px;font-weight:900;text-align:center;outline:none;font-family:'Plus Jakarta Sans',sans-serif;"
             onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e2e8f0'">
           <span style="font-size:9px;font-weight:700;color:#7c3aed;">poin</span>
         </div>
         <button onclick="hapusBonusTrxItem(${i})"
-          style="width:26px;height:26px;border-radius:8px;border:none;background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;font-size:10px;flex-shrink:0;">
+          style="width:28px;height:28px;border-radius:8px;border:none;background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;font-size:10px;flex-shrink:0;">
           <i class="fas fa-trash"></i>
         </button>
       </div>`
@@ -20958,44 +21227,170 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     renderBonusTrxList(cfg.bonusTrx);
   };
 
-  /* ── Simpan semua setting dari form ── */
+  /* ── Simpan setting dari form ── */
   window.simpanSettingPoin = function(showToast) {
     const toggle  = document.getElementById('poin-aktif-toggle');
-    const perRup  = document.getElementById('poin-per-rupiah');
     const nilaiTk = document.getElementById('poin-nilai-tukar');
     const cfg = getPoinCfg();
-
-    cfg.aktif      = toggle  ? toggle.checked          : cfg.aktif;
-    cfg.perRupiah  = perRup  ? parseInt(perRup.value)  || 1000 : cfg.perRupiah;
+    cfg.aktif      = toggle  ? toggle.checked                  : cfg.aktif;
     cfg.nilaiTukar = nilaiTk ? parseInt(nilaiTk.value) || 1000 : cfg.nilaiTukar;
-
     updateToggleUI(cfg.aktif);
     savePoinCfg(cfg);
-
     if (showToast && window.Swal) {
       window.Swal.fire({ icon:'success', title:'Pengaturan poin disimpan!', timer:1500, showConfirmButton:false,
         customClass:{popup:'swal2-ku'} });
     }
   };
 
-  /* ── Init form setelah app siap ── */
+  /* ── Section poin di kasir ── */
+  window.refreshKasirPoinSection = function() {
+    const cfg     = getPoinCfg();
+    const section = document.getElementById('kasir-poin-section');
+    if (!section) return;
+    if (!cfg.aktif) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+
+    // Isi dropdown jenis transaksi
+    const sel   = document.getElementById('kasir-poin-jenis-trx');
+    const label = document.getElementById('kasir-poin-jenis-label');
+    if (sel) {
+      sel.innerHTML = '<option value="">-- Pilih atau skip --</option>' +
+        (cfg.bonusTrx || []).map((t, i) =>
+          `<option value="${i}">${t.nama} (+${t.poin} poin)</option>`
+        ).join('');
+      // Sync label
+      sel.onchange = function() {
+        const idx = parseInt(this.value);
+        const span = label ? label.querySelector('span') : null;
+        if (!isNaN(idx) && cfg.bonusTrx[idx]) {
+          if (span) span.textContent = cfg.bonusTrx[idx].nama + ' (+' + cfg.bonusTrx[idx].poin + ' poin)';
+          window.updateKasirPoinPreview();
+        } else {
+          if (span) span.textContent = '-- Pilih atau skip --';
+          const prev = document.getElementById('kasir-poin-preview');
+          if (prev) prev.style.display = 'none';
+        }
+      };
+    }
+
+    // Saldo poin pelanggan aktif
+    const custEl = document.getElementById('kd-customer') || document.getElementById('kf-customer') || document.getElementById('ke-customer');
+    const custName = custEl ? custEl.value : '';
+    const saldoEl = document.getElementById('kasir-poin-customer-saldo');
+    if (saldoEl) {
+      if (custName && custName !== 'Umum' && window.db && window.db.customers) {
+        const cust = window.db.customers.find(c => c.nama === custName);
+        saldoEl.textContent = 'Saldo: ' + (cust ? (cust.poin || 0) : 0) + ' poin';
+      } else {
+        saldoEl.textContent = 'Pilih pelanggan dulu';
+      }
+    }
+  };
+
+  window.updateKasirPoinPreview = function() {
+    const cfg  = getPoinCfg();
+    const sel  = document.getElementById('kasir-poin-jenis-trx');
+    const prev = document.getElementById('kasir-poin-preview');
+    const val  = document.getElementById('kasir-poin-preview-val');
+    if (!sel || !prev) return;
+    const idx = parseInt(sel.value);
+    if (!isNaN(idx) && cfg.bonusTrx && cfg.bonusTrx[idx]) {
+      prev.style.display = 'flex';
+      if (val) val.textContent = '+' + cfg.bonusTrx[idx].poin + ' poin';
+    } else {
+      prev.style.display = 'none';
+    }
+  };
+
+  /* ── Init ── */
   function waitApp(cb) {
     if (window.db) cb();
     else setTimeout(() => waitApp(cb), 300);
   }
 
   waitApp(function() {
-    // Sembunyikan untuk kasir
-    const wrap = document.getElementById('poin-setting-wrap');
-    if (wrap) {
-      const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
-      if (isKasirMode) wrap.style.display = 'none';
-    }
-    loadPoinSettingForm();
+    window.loadPoinSettingForm();
+    window.refreshKasirPoinSection();
   });
 
-  /* ── Ekspor helper agar modul poin bisa membaca config ── */
+  /* ── Ekspor ── */
   window.getPoinConfig = getPoinCfg;
+
+})();
+</script>
+
+<script>
+/* ================================================================
+   SETTING NOTIFIKASI — UI & Logic
+================================================================ */
+(function() {
+  'use strict';
+
+  const KEY = 'k_notif_cfg';
+
+  function getNotifCfg() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return { stok: true, saldo: true, trx: false };
+  }
+
+  function saveNotifCfg(cfg) {
+    localStorage.setItem(KEY, JSON.stringify(cfg));
+  }
+
+  function updateNotifToggleUI(id, aktif) {
+    const track = document.getElementById(id + '-track');
+    const thumb = document.getElementById(id + '-thumb');
+    if (track) track.style.background = aktif ? '#d97706' : '#e2e8f0';
+    if (thumb) thumb.style.transform  = aktif ? 'translateX(18px)' : 'translateX(0)';
+  }
+
+  window._loadSettingNotif = function() {
+    const cfg = getNotifCfg();
+    const stok  = document.getElementById('notif-stok-toggle');
+    const saldo = document.getElementById('notif-saldo-toggle');
+    const trx   = document.getElementById('notif-trx-toggle');
+    if (stok)  { stok.checked  = !!cfg.stok;  updateNotifToggleUI('notif-stok',  !!cfg.stok);  }
+    if (saldo) { saldo.checked = !!cfg.saldo; updateNotifToggleUI('notif-saldo', !!cfg.saldo); }
+    if (trx)   { trx.checked   = !!cfg.trx;   updateNotifToggleUI('notif-trx',   !!cfg.trx);   }
+  };
+
+  window.simpanSettingNotif = function() {
+    const stok  = document.getElementById('notif-stok-toggle');
+    const saldo = document.getElementById('notif-saldo-toggle');
+    const trx   = document.getElementById('notif-trx-toggle');
+    const cfg = {
+      stok:  stok  ? stok.checked  : true,
+      saldo: saldo ? saldo.checked : true,
+      trx:   trx   ? trx.checked   : false,
+    };
+    updateNotifToggleUI('notif-stok',  cfg.stok);
+    updateNotifToggleUI('notif-saldo', cfg.saldo);
+    updateNotifToggleUI('notif-trx',   cfg.trx);
+    saveNotifCfg(cfg);
+    // Update ke modul notif jika ada
+    if (window._notifSetPrefs) window._notifSetPrefs(cfg);
+  };
+
+  window.mintaIzinNotifPWA = function() {
+    if (!('Notification' in window)) {
+      (window.Swal||window._getMySwal?.()).fire('Info', 'Browser tidak mendukung notifikasi.', 'info');
+      return;
+    }
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        (window.Swal||window._getMySwal?.()).fire({ icon:'success', title:'Notifikasi Diizinkan!', text:'Push notifikasi aktif ✅', timer:2000, showConfirmButton:false });
+        if (window.kirimNotif) window.kirimNotif('KonterKU', 'Notifikasi aktif! ✅');
+      } else {
+        (window.Swal||window._getMySwal?.()).fire('Ditolak', 'Aktifkan manual di pengaturan browser.', 'warning');
+      }
+    });
+  };
+
+  // Expose getter untuk modul lain
+  window.getNotifConfig = getNotifCfg;
 
 })();
 </script>
@@ -21176,6 +21571,12 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
                 style="flex:1;padding:8px;border-radius:10px;font-size:9px;font-weight:900;color:#7c3aed;background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.15);cursor:pointer;">
                 <i class="fas fa-gift" style="margin-right:4px;font-size:8px;"></i>Tukar Poin Diskon
               </button>
+            </div>
+            <div style="margin-top:8px;">
+              <a href="tukar-poin.html?id=${c.id}" target="_blank"
+                style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border-radius:10px;font-size:9px;font-weight:900;color:#059669;background:rgba(5,150,105,0.08);border:1.5px solid rgba(5,150,105,0.20);cursor:pointer;text-decoration:none;">
+                <i class="fas fa-external-link-alt" style="font-size:8px;"></i>Buka Halaman Tukar Poin
+              </a>
             </div>
           </div>
 

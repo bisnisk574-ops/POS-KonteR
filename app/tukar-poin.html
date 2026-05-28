@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tukar Poin – KonterKU</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- ===== FIREBASE ===== -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBgVPVwYJudzAMNmR011PlWZC0_P0SnK8w",
+      authDomain:        "konterkupro.firebaseapp.com",
+      projectId:         "konterkupro",
+      storageBucket:     "konterkupro.firebasestorage.app",
+      messagingSenderId: "819746888017",
+      appId:             "1:819746888017:web:437b6e5b4cbaf1aa821b70"
+    };
+    function _initFB() {
+      if (typeof firebase === 'undefined') { setTimeout(_initFB, 50); return; }
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      window._db   = firebase.firestore();
+      window._auth = firebase.auth();
+    }
+    _initFB();
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #050c1a;
+      min-height: 100vh;
+      color: #e2e8f0;
+    }
+
+    /* ── BACKGROUND MESH ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,97,194,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(124,58,237,0.14) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+    }
+
+    /* ── HEADER ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .back-btn {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: #94a3b8;
+      transition: all .2s;
+      text-decoration: none;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+    .page-title { font-size: 20px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+    .page-sub   { font-size: 11px; color: #64748b; font-weight: 600; margin-top: 1px; }
+
+    /* ── SEARCH BOX ── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: #4a6fa5; font-size: 14px;
+    }
+    .search-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 14px 14px 14px 42px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #e2e8f0;
+      outline: none;
+      transition: border-color .2s, background .2s;
+    }
+    .search-input::placeholder { color: #334155; }
+    .search-input:focus {
+      border-color: #0061C2;
+      background: rgba(0,97,194,0.07);
+    }
+
+    /* ── DROPDOWN HASIL CARI ── */
+    .search-results {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: #0f1c30;
+      border: 1.5px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      overflow: hidden;
+      z-index: 50;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      display: none;
+    }
+    .search-results.open { display: block; }
+    .search-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background .15s;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .search-item:last-child { border-bottom: none; }
+    .search-item:hover { background: rgba(0,97,194,0.10); }
+    .si-avatar {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0061C2, #38bdf8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900; color: #fff;
+      flex-shrink: 0;
+    }
+    .si-name  { font-size: 13px; font-weight: 800; color: #e2e8f0; }
+    .si-meta  { font-size: 10px; font-weight: 600; color: #64748b; margin-top: 1px; }
+    .si-poin  { margin-left: auto; font-size: 12px; font-weight: 900; color: #7c3aed; background: rgba(124,58,237,0.12); padding: 3px 10px; border-radius: 8px; white-space: nowrap; }
+
+    /* ── CARD PELANGGAN ── */
+    #card-wrap { transition: all .3s; }
+    .cust-card {
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.09);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    /* Header kartu */
+    .card-header {
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(0,97,194,0.20) 0%, rgba(124,58,237,0.15) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .cust-avatar {
+      width: 52px; height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0061C2, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: #fff;
+      flex-shrink: 0;
+    }
+    .cust-name { font-size: 17px; font-weight: 900; color: #fff; }
+    .cust-phone { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+    .tier-badge {
+      margin-left: auto;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    /* Poin besar */
+    .poin-section {
+      padding: 24px 20px 16px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .poin-label { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .poin-angka {
+      font-size: 56px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #a78bfa, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .poin-sub { font-size: 11px; color: #475569; font-weight: 700; margin-top: 6px; }
+
+    /* Progress bar tier */
+    .tier-progress-wrap { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .tier-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tier-from, .tier-to { font-size: 10px; font-weight: 800; }
+    .progress-track {
+      height: 6px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+    .tier-msg { font-size: 9px; color: #64748b; font-weight: 700; text-align: center; margin-top: 6px; }
+
+    /* Konversi info */
+    .konversi-box {
+      margin: 16px 20px;
+      background: rgba(124,58,237,0.08);
+      border: 1.5px solid rgba(124,58,237,0.18);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+    .konv-title { font-size: 11px; font-weight: 900; color: #a78bfa; margin-bottom: 10px; }
+    .konv-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .konv-lbl { font-size: 11px; font-weight: 700; color: #94a3b8; }
+    .konv-val { font-size: 13px; font-weight: 900; color: #e2e8f0; }
+    .konv-diskon { font-size: 16px; font-weight: 900; color: #a78bfa; }
+    .konv-note { font-size: 9px; color: #475569; font-weight: 700; margin-top: 6px; text-align: center; }
+
+    /* Tombol utama */
+    .btn-tukar {
+      margin: 0 20px 20px;
+      width: calc(100% - 40px);
+      padding: 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #7c3aed, #9333ea);
+      border: none;
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 8px 24px rgba(124,58,237,0.35);
+    }
+    .btn-tukar:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(124,58,237,0.45); }
+    .btn-tukar:active { transform: translateY(0); }
+    .btn-tukar:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* Riwayat */
+    .riwayat-wrap {
+      margin: 16px 20px 20px;
+    }
+    .riwayat-title { font-size: 12px; font-weight: 900; color: #94a3b8; margin-bottom: 10px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .riwayat-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .riwayat-item:last-child { border-bottom: none; }
+    .ri-icon {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .ri-icon.plus  { background: rgba(16,185,129,0.12); color: #10b981; }
+    .ri-icon.minus { background: rgba(124,58,237,0.12); color: #a78bfa; }
+    .ri-desc { font-size: 11px; font-weight: 800; color: #e2e8f0; }
+    .ri-date { font-size: 9px; color: #475569; font-weight: 600; margin-top: 1px; }
+    .ri-poin { margin-left: auto; font-size: 12px; font-weight: 900; }
+    .ri-poin.plus  { color: #10b981; }
+    .ri-poin.minus { color: #a78bfa; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-text { font-size: 13px; font-weight: 700; color: #334155; }
+
+    /* Toast notif */
+    .toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .swal2-container { z-index: 99999 !important; }
+    .swal2-popup.swal2-ku {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      border-radius: 28px !important;
+      padding: 32px 28px 28px !important;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.28), 0 8px 32px rgba(124,58,237,0.18) !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <a href="javascript:history.back()" class="back-btn">
+      <i class="fas fa-chevron-left" style="font-size:12px;"></i>
+    </a>
+    <div>
+      <div class="page-title">Tukar Poin</div>
+      <div class="page-sub">Cari pelanggan untuk cek & tukar poin</div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap" id="search-wrap">
+    <i class="fas fa-search search-icon"></i>
+    <input
+      type="text"
+      class="search-input"
+      id="search-input"
+      placeholder="Cari nama atau nomor telepon…"
+      autocomplete="off"
+    >
+    <div class="search-results" id="search-results"></div>
+  </div>
+
+  <!-- KARTU PELANGGAN (hidden dulu) -->
+  <div id="card-wrap"></div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle" style="color:#10b981;"></i>
+  <span id="toast-msg">Berhasil!</span>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────── */
+const fmt  = n => Number(n||0).toLocaleString('id-ID');
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+function showToast(msg, icon = '✅') {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span style="font-size:16px;">${icon}</span><span id="toast-msg">${msg}</span>`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ─────────────────────────────────────────────
+   TIER CONFIG  (mirror dari index utama)
+───────────────────────────────────────────── */
+const TIERS = [
+  { nama:'Bronze',  min:0,    max:999,   color:'#cd7f32', bg:'rgba(205,127,50,0.15)',  icon:'🥉' },
+  { nama:'Silver',  min:1000, max:4999,  color:'#94a3b8', bg:'rgba(148,163,184,0.15)', icon:'🥈' },
+  { nama:'Gold',    min:5000, max:14999, color:'#f59e0b', bg:'rgba(245,158,11,0.15)',  icon:'🥇' },
+  { nama:'Platinum',min:15000,max:Infinity,color:'#38bdf8',bg:'rgba(56,189,248,0.15)',icon:'💎' },
+];
+function getTier(poin) {
+  return TIERS.find(t => poin >= t.min && poin <= t.max) || TIERS[0];
+}
+
+/* ─────────────────────────────────────────────
+   FIREBASE – ambil data pelanggan
+───────────────────────────────────────────── */
+let pelangganList = [];
+let currentUser   = null; // staff yg login
+
+async function waitFirebase() {
+  return new Promise(res => {
+    const t = setInterval(() => {
+      if (window._db) { clearInterval(t); res(); }
+    }, 80);
+  });
+}
+
+async function loadPelanggan(storeId) {
+  if (!storeId) return;
+  const snap = await window._db.collection('stores').doc(storeId)
+    .collection('pelanggan').get().catch(() => null);
+  if (!snap) return;
+  pelangganList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+/* Cari storeId dari user yg login */
+async function getStoreId(uid) {
+  const snap = await window._db.collection('stores')
+    .where('ownerUid', '==', uid).limit(1).get().catch(() => null);
+  if (snap && !snap.empty) return snap.docs[0].id;
+  // Coba sebagai staff
+  const snap2 = await window._db.collection('stores')
+    .where('staffUids', 'array-contains', uid).limit(1).get().catch(() => null);
+  if (snap2 && !snap2.empty) return snap2.docs[0].id;
+  return null;
+}
+
+/* ─────────────────────────────────────────────
+   SEARCH
+───────────────────────────────────────────── */
+const searchInput   = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  if (q.length < 1) { searchResults.classList.remove('open'); return; }
+
+  const filtered = pelangganList.filter(c =>
+    (c.nama  || '').toLowerCase().includes(q) ||
+    (c.phone || '').replace(/\D/g,'').includes(q.replace(/\D/g,''))
+  ).slice(0, 8);
+
+  if (filtered.length === 0) {
+    searchResults.innerHTML = `<div class="search-item" style="cursor:default;opacity:.5;">
+      <span style="font-size:12px;font-weight:700;color:#64748b;">Pelanggan tidak ditemukan</span>
+    </div>`;
+    searchResults.classList.add('open');
+    return;
+  }
+
+  searchResults.innerHTML = filtered.map(c => {
+    const poin  = Number(c.poin || 0);
+    const tier  = getTier(poin);
+    const inisial = (c.nama||'?')[0].toUpperCase();
+    return `<div class="search-item" onclick="pilihPelanggan('${c.id}')">
+      <div class="si-avatar">${inisial}</div>
+      <div>
+        <div class="si-name">${c.nama || '-'}</div>
+        <div class="si-meta">${c.phone || 'No telepon'} · ${tier.icon} ${tier.nama}</div>
+      </div>
+      <div class="si-poin">${fmt(poin)} pts</div>
+    </div>`;
+  }).join('');
+  searchResults.classList.add('open');
+});
+
+document.addEventListener('click', e => {
+  if (!document.getElementById('search-wrap').contains(e.target)) {
+    searchResults.classList.remove('open');
+  }
+});
+
+/* ─────────────────────────────────────────────
+   PILIH PELANGGAN → render kartu
+───────────────────────────────────────────── */
+let selectedId = null;
+let storeId    = null;
+
+function pilihPelanggan(id) {
+  searchResults.classList.remove('open');
+  const c = pelangganList.find(x => x.id === id);
+  if (!c) return;
+  selectedId = id;
+  searchInput.value = c.nama || '';
+  renderKartu(c);
+}
+
+function renderKartu(c) {
+  const poin    = Number(c.poin || 0);
+  const tier    = getTier(poin);
+  const tierNext= TIERS[TIERS.indexOf(tier) + 1] || null;
+
+  // Progress ke tier berikutnya
+  let progressPct = 100;
+  let progressMsg = `🏆 Tier tertinggi!`;
+  let progressColor = tier.color;
+  if (tierNext) {
+    progressPct = Math.min(100, Math.round(((poin - tier.min) / (tierNext.min - tier.min)) * 100));
+    progressMsg = `${fmt(tierNext.min - poin)} poin lagi menuju ${tierNext.icon} ${tierNext.nama}`;
+  }
+
+  // Nilai konversi (default 100 poin = Rp 1.000)
+  const nilaiPer100  = 1000; // bisa dibaca dari Firestore config
+  const nilaiDiskon  = Math.floor(poin / 100) * nilaiPer100;
+  const poinTukar    = Math.floor(poin / 100) * 100;
+  const bisaTukar    = poin >= 100;
+
+  // Riwayat penukaran (dari array redeemHistory jika ada)
+  const riwayat = (c.redeemHistory || []).slice(-10).reverse();
+  const riwayatHtml = riwayat.length === 0
+    ? `<div class="empty-state"><div class="empty-icon">🎁</div><div class="empty-text">Belum ada riwayat penukaran</div></div>`
+    : riwayat.map(r => `
+        <div class="riwayat-item">
+          <div class="ri-icon minus"><i class="fas fa-gift"></i></div>
+          <div>
+            <div class="ri-desc">Tukar poin → Diskon Rp ${fmt(r.nilaiDiskon)}</div>
+            <div class="ri-date">${r.tgl ? new Date(r.tgl).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-'}</div>
+          </div>
+          <div class="ri-poin minus">−${fmt(r.poinDipakai)} pts</div>
+        </div>
+      `).join('');
+
+  const inisial = (c.nama||'?')[0].toUpperCase();
+
+  document.getElementById('card-wrap').innerHTML = `
+    <div class="cust-card">
+
+      <!-- Header -->
+      <div class="card-header">
+        <div class="cust-avatar">${inisial}</div>
+        <div>
+          <div class="cust-name">${c.nama || '-'}</div>
+          <div class="cust-phone">${c.phone || 'Tidak ada nomor'}</div>
+        </div>
+        <div class="tier-badge" style="background:${tier.bg};color:${tier.color};">
+          ${tier.icon} ${tier.nama}
+        </div>
+      </div>
+
+      <!-- Poin besar -->
+      <div class="poin-section">
+        <div class="poin-label">Total Poin</div>
+        <div class="poin-angka" id="poin-display">${fmt(poin)}</div>
+        <div class="poin-sub">poin reward aktif</div>
+      </div>
+
+      <!-- Progress tier -->
+      <div class="tier-progress-wrap">
+        <div class="tier-row">
+          <span class="tier-from" style="color:${tier.color};">${tier.icon} ${tier.nama}</span>
+          ${tierNext ? `<span class="tier-to" style="color:${tierNext.color};">${tierNext.icon} ${tierNext.nama}</span>` : ''}
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="prog-fill" style="width:0%;background:linear-gradient(90deg,${tier.color},${tierNext ? tierNext.color : tier.color});"></div>
+        </div>
+        <div class="tier-msg">${progressMsg}</div>
+      </div>
+
+      <!-- Info konversi -->
+      <div class="konversi-box">
+        <div class="konv-title"><i class="fas fa-exchange-alt" style="margin-right:6px;"></i>Nilai Penukaran Poin</div>
+        <div class="konv-row">
+          <span class="konv-lbl">Poin yang bisa ditukar</span>
+          <span class="konv-val">${fmt(poinTukar)} pts</span>
+        </div>
+        <div class="konv-row">
+          <span class="konv-lbl">Nilai diskon didapat</span>
+          <span class="konv-diskon">Rp ${fmt(nilaiDiskon)}</span>
+        </div>
+        ${poin % 100 > 0 ? `<div class="konv-row">
+          <span class="konv-lbl">Sisa poin (tidak ditukar)</span>
+          <span class="konv-val" style="color:#64748b;">${fmt(poin % 100)} pts</span>
+        </div>` : ''}
+        <div class="konv-note">100 poin = Rp ${fmt(nilaiPer100)} diskon</div>
+      </div>
+
+      <!-- Tombol tukar -->
+      <button class="btn-tukar" id="btn-tukar" onclick="tukarPoin()" ${bisaTukar ? '' : 'disabled'}>
+        ${bisaTukar
+          ? `<i class="fas fa-gift"></i> Tukar ${fmt(poinTukar)} Poin → Diskon Rp ${fmt(nilaiDiskon)}`
+          : `<i class="fas fa-lock"></i> Minimal 100 poin untuk ditukar`
+        }
+      </button>
+
+      <!-- Riwayat penukaran -->
+      <div class="riwayat-wrap">
+        <div class="riwayat-title"><i class="fas fa-history" style="margin-right:6px;"></i>Riwayat Penukaran</div>
+        ${riwayatHtml}
+      </div>
+
+    </div>
+  `;
+
+  // Animasi progress bar
+  setTimeout(() => {
+    const el = document.getElementById('prog-fill');
+    if (el) el.style.width = progressPct + '%';
+  }, 100);
+}
+
+/* ─────────────────────────────────────────────
+   TUKAR POIN
+───────────────────────────────────────────── */
+async function tukarPoin() {
+  const c = pelangganList.find(x => x.id === selectedId);
+  if (!c) return;
+  const poin       = Number(c.poin || 0);
+  const nilaiPer100 = 1000;
+  const nilaiDiskon = Math.floor(poin / 100) * nilaiPer100;
+  const poinDipakai = Math.floor(poin / 100) * 100;
+  const sisaPoin    = poin % 100;
+
+  const res = await Swal.fire({
+    title: 'Konfirmasi Penukaran',
+    html: `
+      <div style="text-align:center;padding:8px 0;">
+        <div style="font-size:36px;font-weight:900;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${fmt(poinDipakai)}</div>
+        <div style="font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:14px;">poin akan ditukar</div>
+        <div style="background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.2);border-radius:16px;padding:16px;">
+          <div style="font-size:13px;font-weight:900;color:#a78bfa;">Kamu mendapatkan diskon</div>
+          <div style="font-size:28px;font-weight:900;color:#fff;margin:6px 0;">Rp ${fmt(nilaiDiskon)}</div>
+          ${sisaPoin > 0 ? `<div style="font-size:10px;color:#64748b;font-weight:700;">Sisa ${fmt(sisaPoin)} poin tetap tersimpan</div>` : ''}
+        </div>
+        <div style="font-size:10px;color:#ef4444;margin-top:12px;font-weight:700;">
+          <i class="fas fa-info-circle" style="margin-right:4px;"></i>
+          ${poinDipakai} poin akan di-reset setelah ditukar
+        </div>
+      </div>`,
+    showCancelButton: true,
+    confirmButtonText: '✅ Tukar Sekarang',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#7c3aed',
+    customClass: { popup: 'swal2-ku' }
+  });
+
+  if (!res.isConfirmed) return;
+
+  // Update Firestore
+  try {
+    document.getElementById('btn-tukar').disabled = true;
+    document.getElementById('btn-tukar').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses…';
+
+    const newPoin = sisaPoin;
+    const redeemEntry = {
+      tgl: new Date().toISOString(),
+      poinDipakai,
+      nilaiDiskon,
+    };
+
+    const ref = window._db.collection('stores').doc(storeId)
+      .collection('pelanggan').doc(selectedId);
+
+    await ref.update({
+      poin: newPoin,
+      redeemHistory: firebase.firestore.FieldValue.arrayUnion(redeemEntry),
+      updatedAt: new Date().toISOString()
+    });
+
+    // Update local
+    const idx = pelangganList.findIndex(x => x.id === selectedId);
+    if (idx !== -1) {
+      pelangganList[idx].poin = newPoin;
+      pelangganList[idx].redeemHistory = [...(pelangganList[idx].redeemHistory || []), redeemEntry];
+    }
+
+    showToast(`Tukar berhasil! Diskon Rp ${fmt(nilaiDiskon)} siap dipakai`, '🎁');
+    renderKartu(pelangganList[idx !== -1 ? idx : 0]);
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire({ icon:'error', title:'Gagal', text:'Terjadi kesalahan: '+err.message, customClass:{popup:'swal2-ku'} });
+    document.getElementById('btn-tukar').disabled = false;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+(async () => {
+  await waitFirebase();
+
+  // Tunggu auth (coba pakai session yg sudah ada di index.html)
+  window._auth.onAuthStateChanged(async user => {
+    if (!user) {
+      // Belum login — tampilkan pesan
+      document.getElementById('card-wrap').innerHTML = `
+        <div class="empty-state" style="margin-top:40px;">
+          <div class="empty-icon">🔒</div>
+          <div class="empty-text">Silakan login terlebih dahulu<br>dari halaman utama KonterKU</div>
+        </div>`;
+      return;
+    }
+    storeId = await getStoreId(user.uid);
+    if (!storeId) {
+      document.getElementById('card-wrap').innerHTML = `
+        <div class="empty-state" style="margin-top:40px;">
+          <div class="empty-icon">⚠️</div>
+          <div class="empty-text">Toko tidak ditemukan untuk akun ini</div>
+        </div>`;
+      return;
+    }
+    await loadPelanggan(storeId);
+    // Cek apakah ada ?id= di URL (deep link dari halaman utama)
+    const urlParams = new URLSearchParams(window.location.search);
+    const preId = urlParams.get('id');
+    if (preId) {
+      const c = pelangganList.find(x => x.id === preId);
+      if (c) pilihPelanggan(preId);
+    }
+  });
+})();
+</script>
+</body>
+</html>
