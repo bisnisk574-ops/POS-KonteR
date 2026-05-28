@@ -4588,19 +4588,14 @@
               <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
 
                 <!-- Toggle Aktif/Nonaktif -->
-                <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;display:flex;align-items:center;gap:12px;">
+                <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid #ede9fe;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="togglePoinAktif()">
                   <div style="flex:1;">
                     <p style="font-size:11px;font-weight:900;color:#1e293b;margin:0 0 2px;">Aktifkan Sistem Poin</p>
                     <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">Section poin muncul di kasir saat diaktifkan</p>
                   </div>
-                  <label style="position:relative;width:44px;height:24px;flex-shrink:0;display:block;margin:0;">
-                    <input type="checkbox" id="poin-aktif-toggle" onchange="simpanSettingPoin()"
-                      style="opacity:0;width:0;height:0;position:absolute;">
-                    <span id="poin-toggle-track" onclick="document.getElementById('poin-aktif-toggle').click()"
-                      style="position:absolute;cursor:pointer;inset:0;border-radius:100px;background:#e2e8f0;transition:0.3s;">
-                      <span id="poin-toggle-thumb" style="position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></span>
-                    </span>
-                  </label>
+                  <div id="poin-toggle-track" style="position:relative;width:44px;height:24px;flex-shrink:0;border-radius:100px;background:#e2e8f0;transition:background 0.3s;cursor:pointer;">
+                    <div id="poin-toggle-thumb" style="position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform 0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>
+                  </div>
                 </div>
 
                 <!-- Konten yang muncul jika aktif -->
@@ -21191,13 +21186,23 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   /* ── Render form dari config ── */
   window.loadPoinSettingForm = function loadPoinSettingForm() {
     const cfg = getPoinCfg();
-    const toggle  = document.getElementById('poin-aktif-toggle');
     const nilaiTk = document.getElementById('poin-nilai-tukar');
-    if (toggle) toggle.checked = !!cfg.aktif;
-    updateToggleUI(!!cfg.aktif);
+    _poinAktifState = !!cfg.aktif;
+    updateToggleUI(_poinAktifState);
     if (nilaiTk) nilaiTk.value = cfg.nilaiTukar || 1000;
     renderBonusTrxList(cfg.bonusTrx || []);
     renderHadiahList(cfg.daftarHadiah || []);
+  };
+
+  // State poin aktif (in-memory, sinkron ke db)
+  let _poinAktifState = false;
+
+  window.togglePoinAktif = function() {
+    _poinAktifState = !_poinAktifState;
+    updateToggleUI(_poinAktifState);
+    const cfg = getPoinCfg();
+    cfg.aktif = _poinAktifState;
+    savePoinCfg(cfg);
   };
 
   function updateToggleUI(aktif) {
@@ -21206,9 +21211,12 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     const detail = document.getElementById('poin-config-detail');
     if (track)  track.style.background = aktif ? '#7c3aed' : '#e2e8f0';
     if (thumb)  thumb.style.transform  = aktif ? 'translateX(20px)' : 'translateX(0)';
-    if (detail) detail.style.display   = aktif ? 'flex' : 'none';
+    if (detail) {
+      detail.style.display = aktif ? 'flex' : 'none';
+      detail.style.flexDirection = 'column';
+    }
     // Update section poin di kasir
-    refreshKasirPoinSection();
+    if (window.refreshKasirPoinSection) refreshKasirPoinSection();
   }
 
   /* ── Ambil semua kategori unik dari db.inventory ── */
@@ -21340,10 +21348,9 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 
   /* ── Simpan setting dari form ── */
   window.simpanSettingPoin = function(showToast) {
-    const toggle  = document.getElementById('poin-aktif-toggle');
     const nilaiTk = document.getElementById('poin-nilai-tukar');
     const cfg = getPoinCfg();
-    cfg.aktif      = toggle  ? toggle.checked                  : cfg.aktif;
+    cfg.aktif      = _poinAktifState;
     cfg.nilaiTukar = nilaiTk ? parseInt(nilaiTk.value) || 1000 : cfg.nilaiTukar;
     updateToggleUI(cfg.aktif);
     savePoinCfg(cfg);
