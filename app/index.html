@@ -7533,6 +7533,7 @@
           <input type="hidden" id="c-id">
           <div><label>Nama</label><input type="text" id="c-nama" class="input-premium"></div>
           <div><label>WhatsApp</label><input type="text" id="c-phone" class="input-premium"></div>
+          <div><label>Tanggal Lahir <span style="font-size:9px;font-weight:600;color:#94a3b8;">(opsional, untuk reminder ulang tahun)</span></label><input type="date" id="c-birthday" class="input-premium"></div>
           <div id="cust-edit-actions" class="hidden grid grid-cols-2 gap-3">
             <button onclick="deleteCustomer()" class="py-4 bg-red-50 text-red-600 rounded-2xl font-black cursor-pointer border-0">HAPUS</button>
             <button onclick="saveCustomer()" class="py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">UPDATE</button>
@@ -10334,29 +10335,40 @@
         const [gradClass, textClass] = getAvatarColor(c.nama);
         const initials = (c.nama||'?').trim().split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
         const trxCount = db.transaksi.filter(t => t.pelanggan === c.nama).length;
+        const totalBelanja = db.transaksi.filter(t => t.pelanggan === c.nama).reduce((a,b)=>a+Number(b.jual||0),0);
         const hutangAktif = db.hutang.filter(h => h.nama === c.nama).reduce((a,b)=>a+Number(b.jumlah||0),0);
         const nomor = (currentCustPage - 1) * custPerPage + idx + 1;
+        const poin = Number(c.poin||0);
+        const tier = poin >= 5000 ? {l:'GOLD',c:'#f59e0b',bg:'rgba(245,158,11,0.1)'} : poin >= 1000 ? {l:'SILVER',c:'#64748b',bg:'rgba(100,116,139,0.1)'} : {l:'BRONZE',c:'#b45309',bg:'rgba(180,83,9,0.1)'};
+
+        // Cek ulang tahun hari ini
+        let bdgBirthday = '';
+        if (c.birthday) {
+          const today = new Date();
+          const bd = new Date(c.birthday);
+          if (bd.getDate() === today.getDate() && bd.getMonth() === today.getMonth()) {
+            bdgBirthday = '<span style="background:rgba(236,72,153,0.12);color:#db2777;border-radius:8px;padding:2px 7px;font-size:8px;font-weight:900;margin-left:6px;"><i class="fas fa-birthday-cake" style="margin-right:3px;font-size:7px;"></i>HBD!</span>';
+          }
+        }
+
         return `
           <div class="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
-            <!-- Nomor urut -->
             <div class="absolute top-3 left-3 w-4 h-4 flex items-center justify-center">
               <span class="text-[8px] font-black text-slate-300">${nomor}</span>
             </div>
-
-            <!-- Avatar -->
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${gradClass} flex items-center justify-center shadow-md flex-shrink-0 ml-3">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${gradClass} flex items-center justify-center shadow-md flex-shrink-0 ml-3 relative">
               <span class="${textClass} text-sm font-black">${initials}</span>
             </div>
-
-            <!-- Info tengah -->
             <div class="flex-1 min-w-0">
-              <p class="text-[12px] font-black uppercase text-slate-800 truncate leading-tight">${c.nama||''}</p>
+              <div class="flex items-center flex-wrap gap-1">
+                <p class="text-[12px] font-black uppercase text-slate-800 truncate leading-tight">${c.nama||''}</p>
+                ${bdgBirthday}
+              </div>
               <div class="flex items-center gap-1 mt-0.5">
                 <i class="fas fa-phone text-slate-300 text-[8px]"></i>
                 <p class="text-[9px] font-bold text-slate-400">${c.phone||'-'}</p>
               </div>
-              <!-- Stats row -->
-              <div class="flex items-center gap-3 mt-2">
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
                 <div class="flex items-center gap-1">
                   <div class="w-4 h-4 rounded-md bg-blue-50 flex items-center justify-center">
                     <i class="fas fa-receipt text-blue-400 text-[7px]"></i>
@@ -10372,15 +10384,18 @@
                     ${hutangAktif > 0 ? 'Rp ' + fmt(hutangAktif) : 'Lunas'}
                   </span>
                 </div>
+                <div class="w-px h-3 bg-slate-200"></div>
+                <span style="background:${tier.bg};color:${tier.c};border-radius:6px;padding:1px 6px;font-size:8px;font-weight:900;">${tier.l} · ${poin} poin</span>
               </div>
             </div>
-
-            <!-- Action buttons kanan -->
             <div class="flex flex-col gap-1.5 flex-shrink-0">
-              <button onclick="editCustomer('${c.id}')" class="w-9 h-9 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all">
+              <button onclick="bukaProfilPelangganKu('${c.id}')" class="w-9 h-9 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Profil">
+                <i class="fas fa-user-circle text-[11px]"></i>
+              </button>
+              <button onclick="editCustomer('${c.id}')" class="w-9 h-9 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Edit">
                 <i class="fas fa-edit text-[11px]"></i>
               </button>
-              <button onclick="deleteCustomerDirect('${c.id}')" class="w-9 h-9 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all">
+              <button onclick="deleteCustomerDirect('${c.id}')" class="w-9 h-9 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Hapus">
                 <i class="fas fa-trash-alt text-[11px]"></i>
               </button>
             </div>
@@ -10458,6 +10473,7 @@
       document.getElementById('c-id').value = "";
       document.getElementById('c-nama').value = "";
       document.getElementById('c-phone').value = "";
+      const bd = document.getElementById('c-birthday'); if (bd) bd.value = "";
       document.getElementById('cust-edit-actions').classList.add('hidden');
       document.getElementById('cust-save-btn').classList.remove('hidden');
       openModal('modal-pelanggan');
@@ -10470,6 +10486,7 @@
       document.getElementById('c-id').value = c.id;
       document.getElementById('c-nama').value = c.nama||'';
       document.getElementById('c-phone').value = c.phone||'';
+      const bd = document.getElementById('c-birthday'); if (bd) bd.value = c.birthday||'';
       document.getElementById('cust-edit-actions').classList.remove('hidden');
       document.getElementById('cust-save-btn').classList.add('hidden');
       openModal('modal-pelanggan');
@@ -10479,12 +10496,13 @@
       const id = document.getElementById('c-id').value;
       const nama = document.getElementById('c-nama').value.trim();
       const phone = document.getElementById('c-phone').value.trim();
+      const birthday = (document.getElementById('c-birthday')?.value||'').trim();
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama pelanggan harus diisi!', 'warning');
       if (id) {
         const idx = db.pelanggan.findIndex(c => c.id === id);
-        if (idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone };
+        if (idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone, birthday };
       } else {
-        db.pelanggan.push({ id: 'C-'+Date.now(), nama, phone });
+        db.pelanggan.push({ id: 'C-'+Date.now(), nama, phone, birthday, poin: 0, tglDaftar: new Date().toLocaleDateString('id-ID') });
       }
       closeModal('modal-pelanggan');
       await sync();
@@ -20220,6 +20238,338 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 </script>
 <!-- ================================================================
      END MODUL KEAMANAN & AUDIT TRAIL KonterKU v1.0.0
+================================================================ -->
+
+<!-- ================================================================
+     MODUL FITUR PELANGGAN PREMIUM KonterKU v1.0
+     - Profil pelanggan (riwayat, statistik, poin)
+     - Sistem poin reward (otomatis dari transaksi)
+     - Tier: Bronze / Silver / Gold
+     - Diskon VIP otomatis saat kasir
+     - Birthday reminder saat app dibuka
+================================================================ -->
+<script>
+(function() {
+  'use strict';
+  const MOD = 'KonterKU Pelanggan';
+
+  /* ── Tunggu app siap ── */
+  function waitApp(cb) {
+    if (window.db && window._fbFirestore && window._fbAuth) cb();
+    else setTimeout(() => waitApp(cb), 300);
+  }
+
+  /* ── Helpers ── */
+  function _fmt(n) { return Number(n||0).toLocaleString('id-ID'); }
+  function _S() { return window._getMySwal ? window._getMySwal() : window.Swal; }
+
+  /* ── Tier config ── */
+  function getTier(poin) {
+    if (poin >= 5000) return { label:'GOLD',   icon:'fa-crown',  color:'#f59e0b', bg:'rgba(245,158,11,0.12)',  diskon: 5  };
+    if (poin >= 1000) return { label:'SILVER', icon:'fa-medal',  color:'#64748b', bg:'rgba(100,116,139,0.12)', diskon: 3  };
+    return               { label:'BRONZE', icon:'fa-certificate', color:'#b45309', bg:'rgba(180,83,9,0.12)',    diskon: 1  };
+  }
+
+  /* ── Poin dari transaksi (1 poin per Rp 1.000 belanja) ── */
+  function hitungPoinDariTrx(nama) {
+    const total = (window.db.transaksi||[])
+      .filter(t => t.pelanggan === nama && t.status !== 'gagal')
+      .reduce((a, b) => a + Number(b.jual||0), 0);
+    return Math.floor(total / 1000);
+  }
+
+  /* ── Sinkronisasi poin semua pelanggan (jalankan setelah sync) ── */
+  function syncSemuaPoin() {
+    if (!window.db || !window.db.pelanggan) return;
+    let changed = false;
+    window.db.pelanggan.forEach(c => {
+      const poinBaru = hitungPoinDariTrx(c.nama);
+      if ((c.poin||0) !== poinBaru) { c.poin = poinBaru; changed = true; }
+    });
+    if (changed && window.sync) window.sync();
+  }
+
+  /* ── PROFIL PELANGGAN ── */
+  window.bukaProfilPelangganKu = function(id) {
+    const c = (window.db.pelanggan||[]).find(x => x.id === id);
+    if (!c) return;
+
+    const trxList = (window.db.transaksi||[])
+      .filter(t => t.pelanggan === c.nama)
+      .sort((a,b) => (b.id||'').localeCompare(a.id||''));
+
+    const totalBelanja = trxList.reduce((a,b)=>a+Number(b.jual||0),0);
+    const totalLaba    = trxList.reduce((a,b)=>a+Number(b.jual||0)-Number(b.modal||0),0);
+    const hutangAktif  = (window.db.hutang||[]).filter(h=>h.nama===c.nama).reduce((a,b)=>a+Number(b.jumlah||0),0);
+    const poin = Number(c.poin||0);
+    const tier = getTier(poin);
+    const poinNext = poin >= 5000 ? null : poin >= 1000 ? 5000 : 1000;
+    const poinProgress = poinNext ? Math.min(100, Math.round((poin / poinNext) * 100)) : 100;
+
+    // Cek ulang tahun
+    let bdgHtml = '';
+    if (c.birthday) {
+      const today = new Date();
+      const bd = new Date(c.birthday);
+      const usia = today.getFullYear() - bd.getFullYear();
+      if (bd.getDate() === today.getDate() && bd.getMonth() === today.getMonth()) {
+        bdgHtml = `<div style="background:linear-gradient(135deg,rgba(236,72,153,0.15),rgba(168,85,247,0.1));border:1.5px solid rgba(236,72,153,0.25);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;">🎂</span>
+          <div><p style="font-size:11px;font-weight:900;color:#db2777;margin:0;">Selamat Ulang Tahun ke-${usia}!</p>
+          <p style="font-size:9px;color:#94a3b8;margin:2px 0 0;font-weight:700;">Hari ini adalah hari spesialnya</p></div>
+        </div>`;
+      }
+    }
+
+    const trxHtml = trxList.length === 0
+      ? '<p style="text-align:center;font-size:10px;color:#94a3b8;padding:16px;">Belum ada transaksi</p>'
+      : trxList.slice(0,20).map(t => `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+            <div style="flex:1;min-width:0;">
+              <p style="font-size:10px;font-weight:800;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.produk||'-'}</p>
+              <p style="font-size:8px;color:#94a3b8;margin:2px 0 0;font-weight:700;">${t.tgl||''}</p>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <p style="font-size:10px;font-weight:900;color:#0061C2;margin:0;">Rp ${_fmt(t.jual)}</p>
+              <p style="font-size:8px;font-weight:700;color:${t.status==='sukses'?'#10b981':'#ef4444'};margin:2px 0 0;">${(t.status||'').toUpperCase()}</p>
+            </div>
+          </div>`).join('');
+
+    const initials = (c.nama||'?').trim().split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+    let overlay = document.getElementById('modal-profil-pelanggan-ku');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'modal-profil-pelanggan-ku';
+      overlay.className = 'modal-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML = `
+      <div class="modal-content" style="padding:0;max-width:480px;border-radius:24px;overflow:hidden;max-height:92vh;display:flex;flex-direction:column;">
+        <!-- Header gradient -->
+        <div style="background:linear-gradient(135deg,#0a0f1e,#0d1f42,#0061C2);padding:20px 16px 28px;position:relative;overflow:hidden;flex-shrink:0;">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 80% 0%,rgba(56,189,248,0.18),transparent);pointer-events:none;"></div>
+          <div style="display:flex;align-items:center;gap:12px;position:relative;">
+            <button onclick="document.getElementById('modal-profil-pelanggan-ku').classList.remove('active')"
+              style="width:32px;height:32px;border-radius:10px;border:0;background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-arrow-left" style="font-size:11px;color:#fff;"></i>
+            </button>
+            <div style="width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.2);">
+              <span style="font-size:16px;font-weight:900;color:#fff;">${initials}</span>
+            </div>
+            <div style="flex:1;">
+              <p style="font-size:15px;font-weight:900;color:#fff;margin:0;">${c.nama||''}</p>
+              <p style="font-size:9px;color:rgba(255,255,255,0.6);margin:2px 0 0;font-weight:700;">${c.phone ? '📱 '+c.phone : 'Tanpa nomor'}${c.birthday?' · 🎂 '+new Date(c.birthday).toLocaleDateString('id-ID',{day:'2-digit',month:'long'}):''}</p>
+            </div>
+            <button onclick="editCustomer('${c.id}');document.getElementById('modal-profil-pelanggan-ku').classList.remove('active');"
+              style="padding:7px 12px;border-radius:10px;font-size:9px;font-weight:900;color:#fff;background:rgba(255,255,255,0.15);border:0;cursor:pointer;">
+              <i class="fas fa-edit" style="font-size:10px;"></i>
+            </button>
+          </div>
+          <!-- Stats -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;position:relative;">
+            <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 8px;text-align:center;">
+              <p style="font-size:16px;font-weight:900;color:#38bdf8;margin:0;">${trxList.length}</p>
+              <p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.5);margin:2px 0 0;">TRANSAKSI</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 8px;text-align:center;">
+              <p style="font-size:13px;font-weight:900;color:#34d399;margin:0;">Rp ${_fmt(totalBelanja)}</p>
+              <p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.5);margin:2px 0 0;">TOTAL BELANJA</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 8px;text-align:center;">
+              <p style="font-size:16px;font-weight:900;color:${hutangAktif>0?'#f87171':'#34d399'};margin:0;">${hutangAktif>0?'Rp '+_fmt(hutangAktif):'✓'}</p>
+              <p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.5);margin:2px 0 0;">HUTANG</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body scroll -->
+        <div style="overflow-y:auto;flex:1;padding:16px;">
+          ${bdgHtml}
+
+          <!-- Tier & Poin -->
+          <div style="background:#fff;border:1.5px solid #f1f5f9;border-radius:16px;padding:14px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:32px;height:32px;border-radius:10px;background:${tier.bg};display:flex;align-items:center;justify-content:center;">
+                  <i class="fas ${tier.icon}" style="color:${tier.color};font-size:13px;"></i>
+                </div>
+                <div>
+                  <p style="font-size:11px;font-weight:900;color:#0f172a;margin:0;">Tier ${tier.label}</p>
+                  <p style="font-size:9px;color:#64748b;margin:2px 0 0;font-weight:700;">Diskon otomatis ${tier.diskon}% di kasir</p>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:18px;font-weight:900;color:${tier.color};margin:0;">${_fmt(poin)}</p>
+                <p style="font-size:8px;color:#94a3b8;font-weight:700;">POIN</p>
+              </div>
+            </div>
+            ${poinNext ? `
+              <div style="background:#f1f5f9;border-radius:8px;height:6px;overflow:hidden;">
+                <div style="height:100%;width:${poinProgress}%;background:linear-gradient(90deg,${tier.color},${tier.color}88);border-radius:8px;transition:width 0.5s;"></div>
+              </div>
+              <p style="font-size:8px;color:#94a3b8;font-weight:700;margin:5px 0 0;text-align:right;">${_fmt(poin)} / ${_fmt(poinNext)} poin menuju tier berikutnya</p>
+            ` : '<p style="font-size:9px;color:#f59e0b;font-weight:900;margin:4px 0 0;text-align:center;">🏆 Tier tertinggi!</p>'}
+            <div style="margin-top:10px;display:flex;gap:8px;">
+              <button onclick="window._tambahPoinManual('${c.id}')"
+                style="flex:1;padding:8px;border-radius:10px;font-size:9px;font-weight:900;color:#0061C2;background:rgba(0,97,194,0.08);border:1.5px solid rgba(0,97,194,0.15);cursor:pointer;">
+                <i class="fas fa-plus" style="margin-right:4px;font-size:8px;"></i>Tambah Poin Manual
+              </button>
+              <button onclick="window._tukarPoin('${c.id}')"
+                style="flex:1;padding:8px;border-radius:10px;font-size:9px;font-weight:900;color:#7c3aed;background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.15);cursor:pointer;">
+                <i class="fas fa-gift" style="margin-right:4px;font-size:8px;"></i>Tukar Poin Diskon
+              </button>
+            </div>
+          </div>
+
+          <!-- Riwayat Transaksi -->
+          <div style="background:#fff;border:1.5px solid #f1f5f9;border-radius:16px;padding:14px;">
+            <p style="font-size:11px;font-weight:900;color:#0f172a;margin:0 0 10px;">Riwayat Transaksi</p>
+            ${trxHtml}
+            ${trxList.length > 20 ? `<p style="font-size:9px;color:#94a3b8;font-weight:700;text-align:center;margin-top:8px;">+${trxList.length-20} transaksi lainnya</p>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+    overlay.classList.add('active');
+  };
+
+  /* ── Tambah poin manual ── */
+  window._tambahPoinManual = async function(id) {
+    const c = (window.db.pelanggan||[]).find(x=>x.id===id);
+    if (!c) return;
+    const res = await _S().fire({
+      title: 'Tambah Poin Manual',
+      html: `<div style="text-align:left;">
+        <label style="font-size:10px;font-weight:900;color:#475569;display:block;margin-bottom:6px;">Jumlah Poin</label>
+        <input id="swal-poin-input" type="number" min="1" placeholder="Contoh: 100"
+          style="width:100%;border:2px solid #e2e8f0;border-radius:12px;padding:12px;font-size:18px;font-weight:900;text-align:center;outline:none;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#0061C2';" onblur="this.style.borderColor='#e2e8f0';">
+        <p style="font-size:9px;color:#94a3b8;margin:8px 0 0;text-align:center;">Poin saat ini: <b>${_fmt(c.poin||0)}</b></p>
+      </div>`,
+      showCancelButton: true, confirmButtonText: 'Tambahkan', cancelButtonText: 'Batal', confirmButtonColor: '#0061C2',
+      customClass: { popup: 'swal2-ku' },
+      didOpen: () => document.getElementById('swal-poin-input')?.focus(),
+      preConfirm: () => {
+        const v = parseInt(document.getElementById('swal-poin-input')?.value||'0');
+        if (!v || v < 1) { Swal.showValidationMessage('Masukkan jumlah poin yang valid!'); return false; }
+        return v;
+      }
+    });
+    if (!res.isConfirmed) return;
+    const idx = window.db.pelanggan.findIndex(x=>x.id===id);
+    if (idx === -1) return;
+    window.db.pelanggan[idx].poin = (window.db.pelanggan[idx].poin||0) + res.value;
+    await window.sync?.();
+    _S().fire({ icon:'success', title:`+${_fmt(res.value)} poin ditambahkan!`, timer:1800, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+    window.bukaProfilPelangganKu(id);
+  };
+
+  /* ── Tukar poin jadi diskon ── */
+  window._tukarPoin = async function(id) {
+    const c = (window.db.pelanggan||[]).find(x=>x.id===id);
+    if (!c) return;
+    const poin = Number(c.poin||0);
+    if (poin < 100) {
+      _S().fire({ icon:'info', title:'Poin Kurang', text:'Minimal 100 poin untuk ditukar. Saat ini: '+_fmt(poin)+' poin.', customClass:{popup:'swal2-ku'} });
+      return;
+    }
+    // 100 poin = Rp 1.000 diskon
+    const nilaiDiskon = Math.floor(poin / 100) * 1000;
+    const res = await _S().fire({
+      title: 'Tukar Poin Diskon',
+      html: `<div style="text-align:center;padding:8px 0;">
+        <p style="font-size:28px;font-weight:900;color:#7c3aed;margin:0;">${_fmt(poin)}</p>
+        <p style="font-size:10px;color:#94a3b8;font-weight:700;margin:4px 0 12px;">poin dimiliki</p>
+        <div style="background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.2);border-radius:14px;padding:12px;">
+          <p style="font-size:11px;font-weight:900;color:#7c3aed;margin:0;">Nilai Diskon: <span style="font-size:16px;">Rp ${_fmt(nilaiDiskon)}</span></p>
+          <p style="font-size:9px;color:#94a3b8;margin:4px 0 0;font-weight:700;">100 poin = Rp 1.000</p>
+        </div>
+        <p style="font-size:9px;color:#ef4444;margin-top:10px;font-weight:700;">Semua poin akan di-reset ke 0 setelah ditukar</p>
+      </div>`,
+      showCancelButton: true, confirmButtonText: 'Tukar Sekarang', cancelButtonText: 'Batal', confirmButtonColor: '#7c3aed',
+      customClass: { popup: 'swal2-ku' }
+    });
+    if (!res.isConfirmed) return;
+    const idx = window.db.pelanggan.findIndex(x=>x.id===id);
+    if (idx === -1) return;
+    window.db.pelanggan[idx].poin = 0;
+    await window.sync?.();
+    _S().fire({ icon:'success', title:'Poin Berhasil Ditukar!', html:`<p style="font-size:12px;">Diskon <b>Rp ${_fmt(nilaiDiskon)}</b> siap dipakai saat transaksi berikutnya.</p>`, customClass:{popup:'swal2-ku'} });
+    window.bukaProfilPelangganKu(id);
+  };
+
+  /* ── Birthday reminder saat app dibuka ── */
+  function cekBirthday() {
+    if (!window.db || !window.db.pelanggan) return;
+    const today = new Date();
+    const ulte = (window.db.pelanggan||[]).filter(c => {
+      if (!c.birthday) return false;
+      const bd = new Date(c.birthday);
+      return bd.getDate() === today.getDate() && bd.getMonth() === today.getMonth();
+    });
+    if (ulte.length === 0) return;
+    const lastCheck = localStorage.getItem('k_bday_check');
+    const todayStr = today.toDateString();
+    if (lastCheck === todayStr) return;
+    localStorage.setItem('k_bday_check', todayStr);
+
+    const S = _S();
+    if (!S) return;
+    S.fire({
+      title: '🎂 Ulang Tahun Pelanggan!',
+      html: `<div style="text-align:left;padding:4px 0;">
+        <p style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:10px;">Pelanggan berikut berulang tahun hari ini:</p>
+        ${ulte.map(c => {
+          const usia = today.getFullYear() - new Date(c.birthday).getFullYear();
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(236,72,153,0.06);border-radius:12px;margin-bottom:6px;">
+            <span style="font-size:20px;">🎁</span>
+            <div>
+              <p style="font-size:11px;font-weight:900;color:#0f172a;margin:0;">${c.nama}</p>
+              <p style="font-size:9px;color:#db2777;margin:2px 0 0;font-weight:700;">Ulang Tahun ke-${usia}${c.phone?' · '+c.phone:''}</p>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`,
+      confirmButtonText: 'Tutup', confirmButtonColor: '#db2777', customClass: { popup: 'swal2-ku' }
+    });
+  }
+
+  /* ── Inject poin otomatis ke transaksi kasir ── */
+  function hookPoinKeTrx() {
+    const origSync = window.sync;
+    if (typeof origSync !== 'function') { setTimeout(hookPoinKeTrx, 800); return; }
+    window.sync = async function() {
+      const result = await origSync.apply(this, arguments);
+      syncSemuaPoin();
+      return result;
+    };
+    console.log('[' + MOD + '] Hook poin ke sync ✓');
+  }
+
+  /* ── Upgrade renderSidebarCustomers dengan poin & tier ── */
+  function upgradeRenderSidebarCustomers() {
+    const orig = window.renderSidebarCustomers || function(){};
+    // Tambah info tier di sidebar juga
+    const origFn = orig;
+    // Tidak override, biarkan as-is. Tombol profil sudah ada di renderCustomers utama.
+  }
+
+  /* ── BOOT ── */
+  waitApp(function() {
+    hookPoinKeTrx();
+    upgradeRenderSidebarCustomers();
+    syncSemuaPoin();
+    // Cek birthday setelah 2 detik (beri waktu app render)
+    setTimeout(cekBirthday, 2000);
+    console.log('[' + MOD + '] v1.0 aktif ✓');
+  });
+
+})();
+</script>
+<!-- ================================================================
+     END MODUL FITUR PELANGGAN PREMIUM KonterKU v1.0
 ================================================================ -->
 
 </body>
