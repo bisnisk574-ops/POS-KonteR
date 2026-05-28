@@ -408,21 +408,60 @@ async function waitFirebase() {
 
 async function loadPelanggan(storeId) {
   if (!storeId) return;
+
+  // ── Cara 1: sub-koleksi pelanggan (pola lama) ──
   const snap = await window._db.collection('stores').doc(storeId)
     .collection('pelanggan').get().catch(() => null);
-  if (!snap) return;
-  pelangganList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  if (snap && !snap.empty) {
+    pelangganMode = 'subcol';
+    pelangganList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    return;
+  }
+
+  // ── Cara 2: pelanggan tersimpan sebagai array di dalam dokumen utama (pola index.html) ──
+  const doc = await window._db.collection('stores').doc(storeId)
+    .get().catch(() => null);
+  if (doc && doc.exists) {
+    const data = doc.data();
+    const arr = data.pelanggan || (data.db && data.db.pelanggan) || [];
+    pelangganMode = 'array';
+    pelangganList = arr.map((c, i) => ({ id: c.id || String(i), ...c }));
+    return;
+  }
+
+  // ── Cara 3: coba dari koleksi user_stores ──
+  const doc2 = await window._db.collection('user_stores').doc(storeId)
+    .get().catch(() => null);
+  if (doc2 && doc2.exists) {
+    const data2 = doc2.data();
+    const arr2 = data2.pelanggan || (data2.db && data2.db.pelanggan) || [];
+    pelangganMode = 'user_stores';
+    pelangganList = arr2.map((c, i) => ({ id: c.id || String(i), ...c }));
+  }
 }
 
-/* Cari storeId dari user yg login */
+/* Cari storeId dari user yg login — disesuaikan dengan struktur Firestore index.html */
 async function getStoreId(uid) {
-  const snap = await window._db.collection('stores')
-    .where('ownerUid', '==', uid).limit(1).get().catch(() => null);
+  // ── Cara 1: stores/{uid} langsung (pola utama index.html) ──
+  const direct = await window._db.collection('stores').doc(uid)
+    .get().catch(() => null);
+  if (direct && direct.exists) return uid;
+
+  // ── Cara 2: user_stores dengan field owner_uid (pola multi-toko index.html) ──
+  const snap = await window._db.collection('user_stores')
+    .where('owner_uid', '==', uid).limit(1).get().catch(() => null);
   if (snap && !snap.empty) return snap.docs[0].id;
-  // Coba sebagai staff
+
+  // ── Cara 3: stores dengan field ownerUid (pola lama, fallback) ──
   const snap2 = await window._db.collection('stores')
-    .where('staffUids', 'array-contains', uid).limit(1).get().catch(() => null);
+    .where('ownerUid', '==', uid).limit(1).get().catch(() => null);
   if (snap2 && !snap2.empty) return snap2.docs[0].id;
+
+  // ── Cara 4: cek sebagai staff ──
+  const snap3 = await window._db.collection('stores')
+    .where('staffUids', 'array-contains', uid).limit(1).get().catch(() => null);
+  if (snap3 && !snap3.empty) return snap3.docs[0].id;
+
   return null;
 }
 
@@ -474,7 +513,8 @@ document.addEventListener('click', e => {
 /* ─────────────────────────────────────────────
    PILIH PELANGGAN → render kartu
 ───────────────────────────────────────────── */
-let selectedId = null;
+let selectedId    = null;
+let pelangganMode = 'subcol'; // 'subcol' | 'array' | 'user_stores'
 let storeId    = null;
 
 function pilihPelanggan(id) {
@@ -648,20 +688,69 @@ async function tukarPoin() {
       nilaiDiskon,
     };
 
-    const ref = window._db.collection('stores').doc(storeId)
-      .collection('pelanggan').doc(selectedId);
-
-    await ref.update({
-      poin: newPoin,
-      redeemHistory: firebase.firestore.FieldValue.arrayUnion(redeemEntry),
-      updatedAt: new Date().toISOString()
-    });
-
-    // Update local
+    // Update local list dulu
     const idx = pelangganList.findIndex(x => x.id === selectedId);
     if (idx !== -1) {
       pelangganList[idx].poin = newPoin;
       pelangganList[idx].redeemHistory = [...(pelangganList[idx].redeemHistory || []), redeemEntry];
+    }
+
+    if (pelangganMode === 'subcol') {
+      // ── Pola lama: sub-koleksi ──
+      const ref = window._db.collection('stores').doc(storeId)
+        .collection('pelanggan').doc(selectedId);
+      await ref.update({
+        poin: newPoin,
+        redeemHistory: firebase.firestore.FieldValue.arrayUnion(redeemEntry),
+        updatedAt: new Date().toISOString()
+      });
+
+    } else if (pelangganMode === 'array') {
+      // ── Pola index.html: pelanggan = array di dokumen stores/{storeId} ──
+      const docRef = window._db.collection('stores').doc(storeId);
+      const docSnap = await docRef.get();
+      const docData = docSnap.data();
+      // Cari di root atau dalam field db
+      const inDb = docData.db && Array.isArray(docData.db.pelanggan);
+      const arrKey = inDb ? 'db.pelanggan' : 'pelanggan';
+      const arr = inDb ? (docData.db.pelanggan || []) : (docData.pelanggan || []);
+      const updatedArr = arr.map(p => {
+        const pid = p.id || '';
+        if (pid !== selectedId) return p;
+        return {
+          ...p,
+          poin: newPoin,
+          redeemHistory: [...(p.redeemHistory || []), redeemEntry],
+          updatedAt: new Date().toISOString()
+        };
+      });
+      if (inDb) {
+        await docRef.update({ 'db.pelanggan': updatedArr });
+      } else {
+        await docRef.update({ pelanggan: updatedArr });
+      }
+
+    } else if (pelangganMode === 'user_stores') {
+      // ── Pola multi-toko: user_stores/{storeId} ──
+      const docRef = window._db.collection('user_stores').doc(storeId);
+      const docSnap = await docRef.get();
+      const docData = docSnap.data();
+      const inDb = docData.db && Array.isArray(docData.db.pelanggan);
+      const arr = inDb ? (docData.db.pelanggan || []) : (docData.pelanggan || []);
+      const updatedArr = arr.map(p => {
+        if ((p.id || '') !== selectedId) return p;
+        return {
+          ...p,
+          poin: newPoin,
+          redeemHistory: [...(p.redeemHistory || []), redeemEntry],
+          updatedAt: new Date().toISOString()
+        };
+      });
+      if (inDb) {
+        await docRef.update({ 'db.pelanggan': updatedArr });
+      } else {
+        await docRef.update({ pelanggan: updatedArr });
+      }
     }
 
     showToast(`Tukar berhasil! Diskon Rp ${fmt(nilaiDiskon)} siap dipakai`, '🎁');
