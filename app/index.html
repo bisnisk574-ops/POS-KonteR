@@ -4564,11 +4564,17 @@
               <h3 class="font-black text-white" style="font-size:20px;letter-spacing:-0.5px;line-height:1.2;">Monitor Cabang</h3>
               <p class="font-bold" style="font-size:9px;color:rgba(255,255,255,0.45);margin-top:2px;" id="cabang-monitor-subtitle">Semua data toko Anda</p>
             </div>
-            <button onclick="loadMonitorCabang()"
-              class="ml-auto px-3 py-2 rounded-xl text-[9px] font-black text-white border-0 cursor-pointer flex items-center gap-1.5 flex-shrink-0"
-              style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);">
-              <i class="fas fa-rotate-right text-[9px]"></i> Muat
-            </button>
+            <div class="ml-auto flex flex-col items-end gap-1.5 flex-shrink-0">
+              <button onclick="loadMonitorCabang()"
+                class="px-3 py-2 rounded-xl text-[9px] font-black text-white border-0 cursor-pointer flex items-center gap-1.5"
+                style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);">
+                <i class="fas fa-rotate-right text-[9px]" id="monitor-muat-icon"></i> Muat
+              </button>
+              <div class="flex items-center gap-1">
+                <span class="inline-block w-1.5 h-1.5 rounded-full" style="background:#22c55e;" id="monitor-live-dot"></span>
+                <span class="text-[8px] font-bold" style="color:rgba(255,255,255,0.45);">LIVE &bull; <span id="monitor-countdown">5</span>d</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -14663,6 +14669,7 @@ ${t.tipe === 'ewallet' ? `
           closeSidebar && closeSidebar();
           openModal('modal-sidebar-monitor-cabang');
           setTimeout(loadMonitorCabang, 300);
+          setTimeout(_startMonitorAutoRefresh, 800);
           return;
         }
         _orig(menu);
@@ -16908,6 +16915,95 @@ ${t.tipe === 'ewallet' ? `
   });
 
   console.log('[MonitorCabang] Modul monitor cabang v1 dimuat.');
+
+  // ─── AUTO-REFRESH MONITOR CABANG (5 detik) ───────────────────────
+  let _monitorRefreshTimer  = null;
+  let _monitorCountdownTimer = null;
+  let _monitorCountdown     = 5;
+
+  function _startMonitorAutoRefresh() {
+    _stopMonitorAutoRefresh();
+    _monitorCountdown = 5;
+    _updateMonitorCountdown();
+
+    // Countdown setiap 1 detik
+    _monitorCountdownTimer = setInterval(function() {
+      _monitorCountdown--;
+      _updateMonitorCountdown();
+      if (_monitorCountdown <= 0) {
+        _monitorCountdown = 5;
+      }
+    }, 1000);
+
+    // Refresh data setiap 5 detik
+    _monitorRefreshTimer = setInterval(async function() {
+      const modal = document.getElementById('modal-sidebar-monitor-cabang');
+      if (!modal || modal.style.display === 'none' || !modal.classList.contains('active')) {
+        _stopMonitorAutoRefresh();
+        return;
+      }
+      // Animasi ikon
+      const icon = document.getElementById('monitor-muat-icon');
+      if (icon) { icon.style.animation = 'spin360 0.6s linear'; setTimeout(()=>{ if(icon) icon.style.animation=''; }, 650); }
+      // Refresh data tanpa reset panel
+      await _refreshMonitorData();
+      _monitorCountdown = 5;
+    }, 5000);
+  }
+
+  function _stopMonitorAutoRefresh() {
+    if (_monitorRefreshTimer)   { clearInterval(_monitorRefreshTimer);   _monitorRefreshTimer   = null; }
+    if (_monitorCountdownTimer) { clearInterval(_monitorCountdownTimer); _monitorCountdownTimer = null; }
+  }
+
+  function _updateMonitorCountdown() {
+    const el = document.getElementById('monitor-countdown');
+    if (el) el.textContent = _monitorCountdown;
+    // Kedipkan dot saat countdown = 1 (hampir refresh)
+    const dot = document.getElementById('monitor-live-dot');
+    if (dot) dot.style.opacity = _monitorCountdown <= 1 ? '0.4' : '1';
+  }
+
+  // Refresh data saja tanpa rebuild tab & panel dari awal
+  async function _refreshMonitorData() {
+    const uid = localStorage.getItem('k_sid');
+    if (!uid || uid === 'DEMO') return;
+    try {
+      await waitMTFirebase(3000);
+      const stores = await getUserStores(uid);
+      _cabangStores = stores;
+      // Update subtitle
+      const subEl = document.getElementById('cabang-monitor-subtitle');
+      if (subEl) subEl.textContent = stores.length + ' toko terdaftar';
+      // Re-render panel yang sedang aktif saja
+      if (typeof _activeCabangIdx !== 'undefined') renderCabangPanel(_activeCabangIdx);
+      // Update sync label
+      const now = new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      const syncEl = document.querySelector('#modal-sidebar-monitor-cabang .cabang-sync-label');
+      if (syncEl) syncEl.textContent = 'Sync: ' + now;
+    } catch(e) {
+      console.warn('[MonitorAutoRefresh] Gagal:', e.message);
+    }
+  }
+
+  // Pantau buka/tutup modal monitor untuk start/stop timer
+  const _origOpenModal  = window.openModal;
+  const _origCloseModal = window.closeModal;
+
+  window.openModal = function(id) {
+    if (typeof _origOpenModal === 'function') _origOpenModal(id);
+    if (id === 'modal-sidebar-monitor-cabang') {
+      setTimeout(_startMonitorAutoRefresh, 500);
+    }
+  };
+
+  window.closeModal = function(id) {
+    if (typeof _origCloseModal === 'function') _origCloseModal(id);
+    if (id === 'modal-sidebar-monitor-cabang') {
+      _stopMonitorAutoRefresh();
+    }
+  };
+  // ─────────────────────────────────────────────────────────────────
   </script>
 
   <!-- ==================== MODAL PANDUAN PENGGUNAAN ==================== -->
