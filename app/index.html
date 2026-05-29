@@ -23747,10 +23747,10 @@ function renderSupplierList() {
     return (s.nama||'').toLowerCase().includes(search) || (s.hp||'').includes(search);
   });
 
-  // Update summary
-  const totalHutang = db.riwayat_restok
-    ? db.riwayat_restok.filter(r => r.status_bayar === 'hutang' && r.sisa_hutang > 0).reduce((a,r) => a + (r.sisa_hutang||0), 0)
-    : 0;
+  // Update summary (hutang restok + hutang manual dari menu Hutang Toko)
+  const _supNames = new Set((db.supplier||[]).map(s => (s.nama||'').toLowerCase().trim()));
+  const totalHutang = (db.riwayat_restok ? db.riwayat_restok.filter(r => r.status_bayar === 'hutang' && r.sisa_hutang > 0).reduce((a,r) => a + (r.sisa_hutang||0), 0) : 0)
+    + (db.hutang||[]).filter(h => h.tipe === 'toko' && _supNames.has((h.nama||'').toLowerCase().trim())).reduce((a,h) => a + (Number(h.jumlah)||0), 0);
   const el = document.getElementById('sup-total-count');
   const el2 = document.getElementById('sup-total-hutang');
   if (el) el.textContent = db.supplier.length;
@@ -23851,50 +23851,76 @@ function renderHutangSupplier() {
   const totalEl = document.getElementById('hutang-sup-total');
   if (!list) return;
 
-  const hutangData = (db.riwayat_restok||[]).filter(r => r.status_bayar === 'hutang' && (r.sisa_hutang||0) > 0);
-  const totalHutang = hutangData.reduce((a,r) => a + (r.sisa_hutang||0), 0);
+  // Hutang dari riwayat restok (dicatat hutang saat belanja stok)
+  const restokHutang = (db.riwayat_restok||[]).filter(r => r.status_bayar === 'hutang' && (r.sisa_hutang||0) > 0);
+
+  // Hutang dari modul Hutang Toko manual (tipe === 'toko') yang namanya cocok dengan supplier
+  const supplierNames = new Set((db.supplier||[]).map(s => (s.nama||'').toLowerCase().trim()));
+  const manualHutangToko = (db.hutang||[]).filter(h => {
+    if (h.tipe !== 'toko') return false;
+    const namaLower = (h.nama||'').toLowerCase().trim();
+    return supplierNames.has(namaLower);
+  });
+
+  const totalRestok = restokHutang.reduce((a,r) => a + (r.sisa_hutang||0), 0);
+  const totalManual = manualHutangToko.reduce((a,h) => a + (Number(h.jumlah)||0), 0);
+  const totalHutang = totalRestok + totalManual;
   if (totalEl) totalEl.textContent = fmtRp(totalHutang);
 
-  if (!hutangData.length) {
-    list.innerHTML = `<div style="text-align:center;padding:24px 16px;">
-      <i class="fas fa-check-circle" style="font-size:28px;color:#34d399;opacity:0.7;margin-bottom:8px;display:block;"></i>
-      <p style="font-size:12px;font-weight:700;color:#94a3b8;margin:0;">Tidak ada hutang ke supplier 🎉</p>
-    </div>`;
+  if (!restokHutang.length && !manualHutangToko.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px 16px;"><i class="fas fa-check-circle" style="font-size:28px;color:#34d399;opacity:0.7;margin-bottom:8px;display:block;"></i><p style="font-size:12px;font-weight:700;color:#94a3b8;margin:0;">Tidak ada hutang ke supplier 🎉</p></div>';
     return;
   }
 
-  hutangData.sort((a,b) => new Date(a.tgl||0) - new Date(b.tgl||0));
-  list.innerHTML = hutangData.map(r => {
+  let html = '';
+
+  restokHutang.sort((a,b) => new Date(a.tgl||0) - new Date(b.tgl||0));
+  html += restokHutang.map(r => {
     const sup = (db.supplier||[]).find(s => s.id === r.supplier_id);
     const paidAmt = (r.total_beli||0) - (r.sisa_hutang||0);
     const progress = r.total_beli > 0 ? Math.min(100, Math.round(paidAmt / r.total_beli * 100)) : 0;
-    return `<div style="background:white;border-radius:16px;padding:14px;border:1.5px solid #fecaca;box-shadow:0 2px 8px rgba(239,68,68,0.07);">
-      <div style="display:flex;align-items:flex-start;gap:12px;">
-        <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#dc2626,#ef4444);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(220,38,38,0.3);">
-          <i class="fas fa-file-invoice-dollar" style="color:white;font-size:13px;"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <p style="font-size:12px;font-weight:900;color:#1e293b;margin:0;">${r.produk_nama||'—'}</p>
-          <p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">${sup ? sup.nama : '—'} · ${r.tgl||'—'}</p>
-          <div style="display:flex;justify-content:space-between;margin-top:8px;">
-            <span style="font-size:10px;font-weight:700;color:#94a3b8;">Total: ${fmtRp(r.total_beli||0)}</span>
-            <span style="font-size:11px;font-weight:900;color:#dc2626;">Sisa: ${fmtRp(r.sisa_hutang||0)}</span>
-          </div>
-          <!-- Progress bar -->
-          <div style="height:5px;background:#fee2e2;border-radius:100px;margin-top:6px;overflow:hidden;">
-            <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:100px;transition:width 0.4s;"></div>
-          </div>
-          <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:3px 0 0;">Sudah dibayar ${progress}%</p>
-        </div>
-      </div>
-      <button onclick="openBayarHutangSupplier('${r.id}')"
-        style="margin-top:10px;width:100%;padding:9px;border-radius:10px;background:linear-gradient(135deg,#059669,#34d399);border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:900;color:white;display:flex;align-items:center;justify-content:center;gap:6px;">
-        <i class="fas fa-money-bill-wave"></i> Bayar Hutang Ini
-      </button>
-    </div>`;
+    return '<div style="background:white;border-radius:16px;padding:14px;border:1.5px solid #fecaca;box-shadow:0 2px 8px rgba(239,68,68,0.07);margin-bottom:10px;">'
+      + '<div style="display:flex;align-items:flex-start;gap:12px;">'
+      + '<div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#dc2626,#ef4444);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(220,38,38,0.3);">'
+      + '<i class="fas fa-file-invoice-dollar" style="color:white;font-size:13px;"></i></div>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<p style="font-size:12px;font-weight:900;color:#1e293b;margin:0;">' + (r.produk_nama||'—') + '</p>'
+      + '<p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">' + (sup ? sup.nama : '—') + ' · ' + (r.tgl||'—') + '</p>'
+      + '<div style="display:flex;justify-content:space-between;margin-top:8px;">'
+      + '<span style="font-size:10px;font-weight:700;color:#94a3b8;">Total: ' + fmtRp(r.total_beli||0) + '</span>'
+      + '<span style="font-size:11px;font-weight:900;color:#dc2626;">Sisa: ' + fmtRp(r.sisa_hutang||0) + '</span>'
+      + '</div>'
+      + '<div style="height:5px;background:#fee2e2;border-radius:100px;margin-top:6px;overflow:hidden;">'
+      + '<div style="height:100%;width:' + progress + '%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:100px;transition:width 0.4s;"></div></div>'
+      + '<p style="font-size:8px;font-weight:700;color:#94a3b8;margin:3px 0 0;">Sudah dibayar ' + progress + '%</p>'
+      + '</div></div>'
+      + '<button onclick="openBayarHutangSupplier('' + r.id + '')" style="margin-top:10px;width:100%;padding:9px;border-radius:10px;background:linear-gradient(135deg,#059669,#34d399);border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:900;color:white;display:flex;align-items:center;justify-content:center;gap:6px;">'
+      + '<i class="fas fa-money-bill-wave"></i> Bayar Hutang Ini</button></div>';
   }).join('');
-}
 
+  if (manualHutangToko.length > 0) {
+    if (restokHutang.length > 0) {
+      html += '<div style="margin:12px 0 8px;padding:6px 10px;background:rgba(239,68,68,0.07);border-radius:10px;border-left:3px solid #ef4444;"><p style="font-size:9px;font-weight:900;color:#dc2626;margin:0;text-transform:uppercase;letter-spacing:0.06em;">📋 Hutang Manual (dari Menu Hutang Toko)</p></div>';
+    }
+    html += manualHutangToko.map(h => {
+      const jatuhTempoHtml = h.tgl_jatuh_tempo ? '<p style="font-size:8px;font-weight:800;color:#f59e0b;margin:3px 0 0;">⏰ Jatuh tempo: ' + h.tgl_jatuh_tempo + '</p>' : '';
+      return '<div style="background:white;border-radius:16px;padding:14px;border:1.5px solid #fecaca;box-shadow:0 2px 8px rgba(239,68,68,0.07);margin-bottom:10px;">'
+        + '<div style="display:flex;align-items:flex-start;gap:12px;">'
+        + '<div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(124,58,237,0.3);">'
+        + '<i class="fas fa-hand-holding-usd" style="color:white;font-size:13px;"></i></div>'
+        + '<div style="flex:1;min-width:0;">'
+        + '<p style="font-size:12px;font-weight:900;color:#1e293b;margin:0;">' + (h.ket||'Hutang Manual') + '</p>'
+        + '<p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">' + h.nama + ' · ' + (h.tgl||'—') + '</p>'
+        + jatuhTempoHtml
+        + '<div style="display:flex;justify-content:space-between;margin-top:8px;">'
+        + '<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:6px;background:rgba(124,58,237,0.1);color:#7c3aed;">Hutang Manual</span>'
+        + '<span style="font-size:11px;font-weight:900;color:#dc2626;">' + fmtRp(h.jumlah||0) + '</span>'
+        + '</div></div></div></div>';
+    }).join('');
+  }
+
+  list.innerHTML = html;
+}
 // ─── TAMBAH / EDIT SUPPLIER ───
 function openTambahSupplierForm() {
   document.getElementById('form-sup-id').value = '';
@@ -23921,32 +23947,58 @@ function editSupplier(id) {
 }
 
 function simpanSupplier() {
-  const nama = (document.getElementById('form-sup-nama').value||'').trim();
-  if (!nama) { Swal.fire({icon:'warning',title:'Nama supplier wajib diisi',customClass:{popup:'swal2-ku'}}); return; }
+  const namaEl = document.getElementById('form-sup-nama');
+  const nama = (namaEl ? namaEl.value : '').trim();
+
+  if (!nama) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Nama Wajib Diisi!',
+      text: 'Masukkan nama supplier terlebih dahulu.',
+      confirmButtonColor: '#ea580c',
+      customClass: { popup: 'swal2-ku swal2-icon-warning' }
+    });
+    if (namaEl) namaEl.focus();
+    return;
+  }
+
   if (!db.supplier) db.supplier = [];
 
-  const id = document.getElementById('form-sup-id').value;
+  const id = (document.getElementById('form-sup-id')?.value || '').trim();
   const data = {
     nama,
-    hp:       (document.getElementById('form-sup-hp').value||'').trim(),
-    kategori: (document.getElementById('form-sup-kategori').value||'').trim(),
-    catatan:  (document.getElementById('form-sup-catatan').value||'').trim(),
+    hp:       (document.getElementById('form-sup-hp')?.value || '').trim(),
+    kategori: (document.getElementById('form-sup-kategori')?.value || '').trim(),
+    catatan:  (document.getElementById('form-sup-catatan')?.value || '').trim(),
   };
 
-  if (id) {
+  const isEdit = !!id;
+  if (isEdit) {
     const idx = db.supplier.findIndex(s => s.id === id);
     if (idx >= 0) db.supplier[idx] = { ...db.supplier[idx], ...data };
+    else {
+      Swal.fire({ icon:'error', title:'Supplier tidak ditemukan', customClass:{popup:'swal2-ku'} });
+      return;
+    }
   } else {
     db.supplier.push({ id: 'sup_' + Date.now(), ...data, created: new Date().toISOString() });
   }
 
-  saveData();
+  try { saveData(); } catch(e) { console.error('[simpanSupplier] saveData error:', e); }
+
   closeModal('modal-form-supplier');
   renderSupplierList();
   populateSupplierDropdowns();
   updateSupplierCountLabel();
 
-  Swal.fire({ icon:'success', title: id ? 'Supplier diperbarui' : 'Supplier ditambahkan', timer:1500, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+  Swal.fire({
+    icon: 'success',
+    title: isEdit ? '\u2705 Supplier Diperbarui!' : '\u2705 Supplier Ditambahkan!',
+    html: '<b>' + nama + '</b> berhasil ' + (isEdit ? 'diperbarui' : 'disimpan') + '.',
+    timer: 2000,
+    showConfirmButton: false,
+    customClass: { popup: 'swal2-ku swal2-icon-success' }
+  });
 }
 
 function hapusSupplier() {
@@ -24269,11 +24321,12 @@ window.addEventListener('load', function() {
       return _orig(menu);
     };
   }
-  // Hook openModal
+  // Hook openModal — hanya intercept modal-catat-restok, BUKAN modal-form-supplier
   if (typeof window.openModal === 'function') {
     const _origOM = window.openModal;
     window.openModal = function(id) {
       if (id === 'modal-catat-restok') openRestokModal();
+      // Perbaikan: jangan intercept modal-form-supplier agar tombol Simpan berfungsi normal
       return _origOM(id);
     };
   }
