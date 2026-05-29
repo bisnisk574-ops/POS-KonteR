@@ -263,8 +263,8 @@
       background: linear-gradient(160deg, #061540 0%, #0a1f50 45%, #0d2d6b 100%);
       position: relative;
       overflow: hidden;
-      padding-bottom: 52px;
-      border-radius: 0 0 56px 56px;
+      padding-bottom: 64px;
+      border-radius: 0 0 48px 48px;
       box-shadow: 0 14px 40px rgba(6,21,64,0.65), 0 4px 16px rgba(0,0,0,0.40);
     }
     .header-gradient::before {
@@ -815,6 +815,190 @@
     /* ── Header time greeting ── */
     #header-time-greeting {
       transition: opacity 0.4s;
+    }
+
+    /* ================================================================
+       DARK MODE FIX — Teks & Background semua menu/section
+    ================================================================ */
+
+    /* Heading utama setiap halaman (Stok Produk, Dompet, Hutang, dll) */
+    [data-theme="dark"] .view-section h3,
+    [data-theme="dark"] .view-section h2,
+    [data-theme="dark"] .view-section h1 {
+      color: #f1f5f9 !important;
+    }
+
+    /* Teks label dalam stok-kat-trigger-btn */
+    [data-theme="dark"] .stok-kat-trigger-btn p,
+    [data-theme="dark"] .stok-kat-trigger-btn span:not([style*="background"]) {
+      color: #e2e8f0 !important;
+    }
+    [data-theme="dark"] .stok-kat-trigger-btn [style*="color:#94a3b8"],
+    [data-theme="dark"] .stok-kat-trigger-btn [style*="color: #94a3b8"] {
+      color: #64748b !important;
+    }
+
+    /* card-premium: pastikan teks kelihatan */
+    [data-theme="dark"] .card-premium p,
+    [data-theme="dark"] .card-premium label,
+    [data-theme="dark"] .card-premium span:not([class*="text-"]):not([style*="color"]) {
+      color: #e2e8f0 !important;
+    }
+    [data-theme="dark"] .card-premium [style*="color:#0f172a"],
+    [data-theme="dark"] .card-premium [style*="color: #0f172a"],
+    [data-theme="dark"] .card-premium [style*="color:#1e293b"],
+    [data-theme="dark"] .card-premium [style*="color: #1e293b"] {
+      color: #f1f5f9 !important;
+    }
+
+    /* Elemen dengan background #f8fafc / #fff / white di view-section */
+    [data-theme="dark"] .view-section [style*="background:#f8fafc"],
+    [data-theme="dark"] .view-section [style*="background: #f8fafc"],
+    [data-theme="dark"] .view-section [style*="background:#f1f5f9"],
+    [data-theme="dark"] .view-section [style*="background: #f1f5f9"] {
+      background: rgba(255,255,255,0.06) !important;
+    }
+    [data-theme="dark"] .view-section [style*="background:white"],
+    [data-theme="dark"] .view-section [style*="background: white"],
+    [data-theme="dark"] .view-section [style*="background:#fff"],
+    [data-theme="dark"] .view-section [style*="background: #fff"] {
+      background: #1e293b !important;
+    }
+
+    /* Teks gelap di dalam view-section */
+    [data-theme="dark"] .view-section [style*="color:#0f172a"],
+    [data-theme="dark"] .view-section [style*="color: #0f172a"] {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .view-section [style*="color:#1e293b"],
+    [data-theme="dark"] .view-section [style*="color: #1e293b"] {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .view-section [style*="color:#334155"],
+    [data-theme="dark"] .view-section [style*="color: #334155"] {
+      color: #cbd5e1 !important;
+    }
+    [data-theme="dark"] .view-section [style*="color:#475569"],
+    [data-theme="dark"] .view-section [style*="color: #475569"] {
+      color: #94a3b8 !important;
+    }
+
+    /* Border gelap di view-section */
+    [data-theme="dark"] .view-section [style*="border:1.5px solid #e2e8f0"],
+    [data-theme="dark"] .view-section [style*="border: 1.5px solid #e2e8f0"],
+    [data-theme="dark"] .view-section [style*="border:1px solid #e2e8f0"],
+    [data-theme="dark"] .view-section [style*="border: 1px solid #e2e8f0"],
+    [data-theme="dark"] .view-section [style*="border:1px solid #f1f5f9"],
+    [data-theme="dark"] .view-section [style*="border: 1px solid #f1f5f9"],
+    [data-theme="dark"] .view-section [style*="border:1.5px solid #f1f5f9"] {
+      border-color: rgba(255,255,255,0.10) !important;
+    }
+
+    /* renderStok() — kartu produk di list */
+    [data-theme="dark"] #stok-list [style*="background:white"],
+    [data-theme="dark"] #stok-list [style*="background: white"],
+    [data-theme="dark"] #stok-list [style*="background:#fff"],
+    [data-theme="dark"] #stok-list [style*="background: #fff"],
+    [data-theme="dark"] #stok-list [style*="background:#f8fafc"],
+    [data-theme="dark"] #stok-list [style*="background:#f1f5f9"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #stok-list [style*="color:#0f172a"],
+    [data-theme="dark"] #stok-list [style*="color: #0f172a"],
+    [data-theme="dark"] #stok-list [style*="color:#1e293b"],
+    [data-theme="dark"] #stok-list [style*="color: #1e293b"] {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] #stok-list [style*="color:#475569"],
+    [data-theme="dark"] #stok-list [style*="color: #475569"],
+    [data-theme="dark"] #stok-list [style*="color:#334155"],
+    [data-theme="dark"] #stok-list [style*="color: #334155"] {
+      color: #94a3b8 !important;
+    }
+    [data-theme="dark"] #stok-list [style*="color:#64748b"],
+    [data-theme="dark"] #stok-list [style*="color: #64748b"] {
+      color: #64748b !important;
+    }
+
+    /* Dompet & Hutang list */
+    [data-theme="dark"] #wallets-list [style*="background:white"],
+    [data-theme="dark"] #wallets-list [style*="background:#fff"],
+    [data-theme="dark"] #wallets-list [style*="background:#f8fafc"],
+    [data-theme="dark"] #hutang-list [style*="background:white"],
+    [data-theme="dark"] #hutang-list [style*="background:#fff"],
+    [data-theme="dark"] #hutang-list [style*="background:#f8fafc"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #wallets-list [style*="color:#0f172a"],
+    [data-theme="dark"] #wallets-list [style*="color:#1e293b"],
+    [data-theme="dark"] #hutang-list [style*="color:#0f172a"],
+    [data-theme="dark"] #hutang-list [style*="color:#1e293b"] {
+      color: #f1f5f9 !important;
+    }
+
+    /* Kasir — kartu produk dan item */
+    [data-theme="dark"] #kasir-produk-list [style*="background:#f8fafc"],
+    [data-theme="dark"] #kasir-produk-list [style*="background:white"],
+    [data-theme="dark"] #kasir-produk-list [style*="background:#fff"] {
+      background: #1e293b !important;
+    }
+    [data-theme="dark"] #kasir-produk-list [style*="color:#0f172a"],
+    [data-theme="dark"] #kasir-produk-list [style*="color:#1e293b"] {
+      color: #f1f5f9 !important;
+    }
+
+    /* Riwayat transaksi list */
+    [data-theme="dark"] #trx-list [style*="background:white"],
+    [data-theme="dark"] #trx-list [style*="background:#fff"],
+    [data-theme="dark"] #trx-list [style*="background:#f8fafc"],
+    [data-theme="dark"] #hist-list [style*="background:white"],
+    [data-theme="dark"] #hist-list [style*="background:#fff"],
+    [data-theme="dark"] #hist-list [style*="background:#f8fafc"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #trx-list [style*="color:#0f172a"],
+    [data-theme="dark"] #trx-list [style*="color:#1e293b"],
+    [data-theme="dark"] #hist-list [style*="color:#0f172a"],
+    [data-theme="dark"] #hist-list [style*="color:#1e293b"] {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] #trx-list [style*="color:#475569"],
+    [data-theme="dark"] #trx-list [style*="color:#64748b"],
+    [data-theme="dark"] #hist-list [style*="color:#475569"],
+    [data-theme="dark"] #hist-list [style*="color:#64748b"] {
+      color: #94a3b8 !important;
+    }
+
+    /* Dasbor cards */
+    [data-theme="dark"] #view-dasbor [style*="background:white"],
+    [data-theme="dark"] #view-dasbor [style*="background:#fff"],
+    [data-theme="dark"] #view-dasbor [style*="background:#f8fafc"],
+    [data-theme="dark"] #view-dasbor [style*="background:#f1f5f9"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #view-dasbor [style*="color:#0f172a"],
+    [data-theme="dark"] #view-dasbor [style*="color:#1e293b"] {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] #view-dasbor [style*="color:#475569"],
+    [data-theme="dark"] #view-dasbor [style*="color:#334155"] {
+      color: #94a3b8 !important;
+    }
+
+    /* Pelanggan list */
+    [data-theme="dark"] #pelanggan-list [style*="background:white"],
+    [data-theme="dark"] #pelanggan-list [style*="background:#fff"],
+    [data-theme="dark"] #pelanggan-list [style*="background:#f8fafc"] {
+      background: #1e293b !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+    [data-theme="dark"] #pelanggan-list [style*="color:#0f172a"],
+    [data-theme="dark"] #pelanggan-list [style*="color:#1e293b"] {
+      color: #f1f5f9 !important;
     }
   </style>
   <script>
@@ -6665,68 +6849,68 @@
         </div>
       </div>
 
-      <!-- CARD SALDO — PREMIUM PROPER -->
-      <div id="header-card-saldo" class="relative z-10 mx-4 mb-0">
-        <div class="relative overflow-hidden" style="border-radius:22px;background:linear-gradient(135deg,#0d2d6b 0%,#0a1f50 50%,#061540 100%);border:1px solid rgba(255,255,255,0.12);">
+      <!-- CARD SALDO — PREMIUM BUKU LINK STYLE -->
+      <div id="header-card-saldo" class="relative z-10 mx-4" style="margin-bottom:-28px;">
+        <div class="relative overflow-hidden" style="border-radius:24px;background:linear-gradient(145deg,#0d2a60 0%,#0a1f4e 60%,#071440 100%);border:1px solid rgba(255,255,255,0.13);box-shadow:0 16px 48px rgba(6,21,64,0.55),0 4px 16px rgba(0,0,0,0.35);">
 
-          <!-- Lingkaran dekorasi kanan atas -->
-          <div class="absolute pointer-events-none" style="right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:1px solid rgba(56,189,248,0.10);"></div>
-          <div class="absolute pointer-events-none" style="right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:rgba(56,189,248,0.05);"></div>
+          <!-- Dekorasi lingkaran -->
+          <div class="absolute pointer-events-none" style="right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;border:1px solid rgba(56,189,248,0.08);"></div>
+          <div class="absolute pointer-events-none" style="right:-10px;top:-10px;width:80px;height:80px;border-radius:50%;background:rgba(56,189,248,0.06);"></div>
 
-          <!-- Konten atas -->
-          <div style="padding:20px 20px 0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-              <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.40);letter-spacing:0.04em;">Saldo Kas</span>
+          <!-- Konten utama -->
+          <div style="padding:20px 20px 16px;">
+
+            <!-- Label + ikon kartu -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:0.03em;">Total Aset Saya</span>
+              <div onclick="showView('wallets')" style="width:38px;height:28px;border-radius:7px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(245,158,11,0.4);cursor:pointer;">
+                <i class="fas fa-credit-card" style="font-size:13px;color:white;"></i>
+              </div>
+            </div>
+
+            <!-- Nominal besar -->
+            <p id="header-saldo" style="font-size:34px;font-weight:900;color:#ffffff;letter-spacing:-1.5px;line-height:1.05;margin:0 0 16px;">Rp 0</p>
+
+            <!-- Baris bawah: badge Trx + tombol Kelola Saldo -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:100px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+                <i class="fas fa-arrow-trend-up" style="font-size:10px;color:#34d399;"></i>
+                <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);">+<span id="header-trx-count">0</span> Trx</span>
+              </div>
               <button onclick="openSidebarMenu('laporan')"
-                style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.10);cursor:pointer;">
-                <i class="fas fa-chart-line" style="font-size:10px;color:rgba(255,255,255,0.45);"></i>
-                <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.45);">Laporan</span>
+                style="display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:100px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(245,158,11,0.40);">
+                <span style="font-size:12px;font-weight:800;color:white;letter-spacing:0.01em;">Laporan</span>
               </button>
             </div>
-            <p id="header-saldo" style="font-size:40px;font-weight:800;color:#ffffff;letter-spacing:-1.5px;line-height:1.1;margin:0 0 18px;">Rp 0</p>
           </div>
 
-          <!-- Divider -->
-          <div style="height:1px;background:rgba(255,255,255,0.08);"></div>
+          <!-- Divider tipis -->
+          <div style="height:1px;background:rgba(255,255,255,0.07);"></div>
 
-          <!-- Baris bawah: 3 stat tanpa card nested -->
-          <div style="display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;">
-
-            <div style="padding:13px 16px;display:flex;flex-direction:column;gap:4px;">
-              <div style="display:flex;align-items:center;gap:5px;">
-                <i class="fas fa-receipt" style="font-size:10px;color:rgba(255,255,255,0.30);"></i>
-                <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.30);">Trx Hari Ini</span>
-              </div>
-              <p style="font-size:18px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1;margin:0;">+<span id="header-trx-count">0</span></p>
-            </div>
-
-            <div style="background:rgba(255,255,255,0.07);"></div>
-
-            <div style="padding:13px 16px;display:flex;flex-direction:column;gap:4px;">
+          <!-- Baris stat: Piutang & Hutang -->
+          <div style="display:grid;grid-template-columns:1fr 1px 1fr;">
+            <div style="padding:12px 18px;display:flex;flex-direction:column;gap:3px;">
               <div style="display:flex;align-items:center;gap:5px;">
                 <i class="fas fa-arrow-up" style="font-size:9px;color:#34d399;"></i>
-                <span style="font-size:10px;font-weight:600;color:rgba(52,211,153,0.55);">Piutang</span>
+                <span style="font-size:9px;font-weight:700;color:rgba(52,211,153,0.60);text-transform:uppercase;letter-spacing:0.06em;">Piutang</span>
               </div>
-              <p id="stat-piutang" style="font-size:15px;font-weight:800;color:#6ee7b7;letter-spacing:-0.3px;line-height:1;margin:0;">Rp 0</p>
+              <p id="stat-piutang" style="font-size:14px;font-weight:800;color:#6ee7b7;letter-spacing:-0.3px;line-height:1;margin:0;">Rp 0</p>
             </div>
-
             <div style="background:rgba(255,255,255,0.07);"></div>
-
-            <div style="padding:13px 16px;display:flex;flex-direction:column;gap:4px;">
+            <div style="padding:12px 18px;display:flex;flex-direction:column;gap:3px;">
               <div style="display:flex;align-items:center;gap:5px;">
                 <i class="fas fa-arrow-down" style="font-size:9px;color:#fb923c;"></i>
-                <span style="font-size:10px;font-weight:600;color:rgba(251,146,60,0.55);">Hutang</span>
+                <span style="font-size:9px;font-weight:700;color:rgba(251,146,60,0.60);text-transform:uppercase;letter-spacing:0.06em;">Hutang</span>
               </div>
-              <p id="stat-hutang" style="font-size:15px;font-weight:800;color:#fdba74;letter-spacing:-0.3px;line-height:1;margin:0;">Rp 0</p>
+              <p id="stat-hutang" style="font-size:14px;font-weight:800;color:#fdba74;letter-spacing:-0.3px;line-height:1;margin:0;">Rp 0</p>
             </div>
-
           </div>
         </div>
       </div>
 
     </header>
 
-    <main class="px-6 pt-6">
+    <main class="px-6" style="padding-top:42px;">
 
       <!-- ===== VIEW: DASHBOARD ===== -->
       <section id="view-dashboard" class="view-section active space-y-6">
@@ -6885,54 +7069,51 @@
                 </div>
               </div>
 
-              <!-- Filter Kategori Layanan: icon pill buttons -->
-              <p style="font-size:7.5px;font-weight:900;color:rgba(255,255,255,0.35);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">JENIS LAYANAN</p>
-              <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-                <button onclick="setTrFilter('all')" id="fltr-all"
-                  class="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-0 cursor-pointer transition-all whitespace-nowrap"
-                  style="background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;font-size:9px;font-weight:900;letter-spacing:0.06em;box-shadow:0 4px 14px rgba(0,97,194,0.5);">
-                  <i class="fas fa-layer-group" style="font-size:9px;"></i> SEMUA
-                </button>
-                <button onclick="setTrFilter('DIG')" id="fltr-DIG"
-                  class="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-0 cursor-pointer transition-all whitespace-nowrap"
-                  style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:9px;font-weight:900;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.1);">
-                  <i class="fas fa-bolt" style="font-size:9px;"></i> DIGITAL
-                </button>
-                <button onclick="setTrFilter('FIS')" id="fltr-FIS"
-                  class="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-0 cursor-pointer transition-all whitespace-nowrap"
-                  style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:9px;font-weight:900;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.1);">
-                  <i class="fas fa-box" style="font-size:9px;"></i> FISIK
-                </button>
-                <button onclick="setTrFilter('EWL')" id="fltr-EWL"
-                  class="flex items-center gap-1.5 px-3 py-2 rounded-2xl border-0 cursor-pointer transition-all whitespace-nowrap"
-                  style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:9px;font-weight:900;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.1);">
-                  <i class="fas fa-mobile-screen-button" style="font-size:9px;"></i> E-WALLET
-                </button>
+              <!-- ── SEARCH BAR ── -->
+              <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);margin-bottom:10px;">
+                <i class="fas fa-search" style="font-size:11px;color:rgba(56,189,248,0.7);flex-shrink:0;"></i>
+                <input id="trx-search-input" type="text" placeholder="Cari produk, nominal, pelanggan..."
+                  oninput="onTrxSearchInput(this.value)"
+                  style="flex:1;background:transparent;border:none;outline:none;color:white;font-size:11px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;"
+                  autocomplete="off" spellcheck="false">
+                <span id="trx-search-clear" onclick="clearTrxSearch()"
+                  style="display:none;width:18px;height:18px;border-radius:6px;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);font-size:8px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-times"></i>
+                </span>
               </div>
 
-              <!-- Filter Waktu: segmented control premium -->
-              <p style="font-size:7.5px;font-weight:900;color:rgba(255,255,255,0.35);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">PERIODE WAKTU</p>
-              <div class="flex p-1 rounded-2xl gap-1" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);">
-                <button onclick="setTimeFilter('all')" id="time-fltr-all"
-                  class="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl border-0 cursor-pointer transition-all"
-                  style="background:transparent;color:rgba(255,255,255,0.4);font-size:8px;font-weight:900;letter-spacing:0.04em;">
-                  <i class="fas fa-infinity" style="font-size:8px;"></i> SEMUA
-                </button>
-                <button onclick="setTimeFilter('today')" id="time-fltr-today"
-                  class="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl border-0 cursor-pointer transition-all"
-                  style="background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:white;font-size:8px;font-weight:900;letter-spacing:0.04em;box-shadow:0 3px 10px rgba(14,165,233,0.45);">
-                  <i class="fas fa-sun" style="font-size:8px;"></i> HARI INI
-                </button>
-                <button onclick="setTimeFilter('yesterday')" id="time-fltr-yesterday"
-                  class="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl border-0 cursor-pointer transition-all"
-                  style="background:transparent;color:rgba(255,255,255,0.4);font-size:8px;font-weight:900;letter-spacing:0.04em;">
-                  <i class="fas fa-moon" style="font-size:8px;"></i> KEMARIN
-                </button>
-                <button onclick="setTimeFilter('week')" id="time-fltr-week"
-                  class="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl border-0 cursor-pointer transition-all"
-                  style="background:transparent;color:rgba(255,255,255,0.4);font-size:8px;font-weight:900;letter-spacing:0.04em;">
-                  <i class="fas fa-calendar-week" style="font-size:8px;"></i> MINGGU
-                </button>
+              <!-- ── FILTER ROW: Jenis + Periode (2 kolom) ── -->
+              <div style="display:flex;gap:8px;margin-bottom:10px;">
+
+                <!-- Dropdown Jenis Layanan -->
+                <div style="flex:1;position:relative;">
+                  <div id="dd-jenis-trigger" onclick="toggleRwDd('jenis')"
+                    style="display:flex;align-items:center;gap:6px;padding:9px 11px;border-radius:13px;background:linear-gradient(135deg,rgba(0,97,194,0.5),rgba(56,189,248,0.3));border:1px solid rgba(56,189,248,0.4);cursor:pointer;">
+                    <i id="dd-jenis-icon" class="fas fa-layer-group" style="font-size:10px;color:#38BDF8;flex-shrink:0;"></i>
+                    <span id="dd-jenis-label" style="flex:1;font-size:9px;font-weight:900;color:white;letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">SEMUA</span>
+                    <i id="dd-jenis-chevron" class="fas fa-chevron-down" style="font-size:7px;color:rgba(255,255,255,0.5);transition:transform 0.2s;flex-shrink:0;"></i>
+                  </div>
+                </div>
+
+                <!-- Dropdown Periode Waktu -->
+                <div style="flex:1;position:relative;">
+                  <div id="dd-periode-trigger" onclick="toggleRwDd('periode')"
+                    style="display:flex;align-items:center;gap:6px;padding:9px 11px;border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,0.3),rgba(56,189,248,0.18));border:1px solid rgba(56,189,248,0.3);cursor:pointer;">
+                    <i id="dd-periode-icon" class="fas fa-sun" style="font-size:10px;color:#38BDF8;flex-shrink:0;"></i>
+                    <span id="dd-periode-label" style="flex:1;font-size:9px;font-weight:900;color:#38BDF8;letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">HARI INI</span>
+                    <i id="dd-periode-chevron" class="fas fa-chevron-down" style="font-size:7px;color:rgba(56,189,248,0.5);transition:transform 0.2s;flex-shrink:0;"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── DROPDOWN DOMPET MODAL ── -->
+              <div style="position:relative;">
+                <div id="dd-dompet-trigger" onclick="toggleRwDd('dompet')"
+                  style="display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:13px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);cursor:pointer;">
+                  <i class="fas fa-wallet" style="font-size:10px;color:rgba(255,255,255,0.45);flex-shrink:0;"></i>
+                  <span id="dd-dompet-label" style="flex:1;font-size:9px;font-weight:900;color:rgba(255,255,255,0.55);letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">SEMUA DOMPET</span>
+                  <i id="dd-dompet-chevron" class="fas fa-chevron-down" style="font-size:7px;color:rgba(255,255,255,0.3);transition:transform 0.2s;flex-shrink:0;"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -8738,22 +8919,147 @@
     }
 
     // ---- FILTER TRANSAKSI ----
-    function setTrFilter(f) {
-      currentTrFilter = f;
-      currentTrPage = 1;
-      const trAct = 'background:linear-gradient(135deg,#0061C2,#38BDF8);color:white;font-size:9px;font-weight:900;letter-spacing:0.06em;box-shadow:0 4px 14px rgba(0,97,194,0.5);';
-      const trInact = 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:9px;font-weight:900;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.1);box-shadow:none;';
-      document.querySelectorAll('[id^="fltr-"]').forEach(c => { c.style.cssText = (c.id === 'fltr-' + f) ? trAct : trInact; });
+    // ══════════════════════════════════════════════════════════════════
+    //  RIWAYAT FILTER v2 — Dropdown Jenis + Periode + Dompet + Search
+    // ══════════════════════════════════════════════════════════════════
+
+    let currentTrSearch   = '';
+    let currentTrDompet   = 'all'; // 'all' | wallet.id
+
+    // ── Legacy compat ──
+    function setTrFilter(f)   { selectRwJenis(f, '', ''); }
+    function setTimeFilter(f) { selectRwPeriode(f, '', '', '', ''); }
+
+    // ── Dropdown controller ──
+    // _rwDdOpen dan toggleRwDd didefinisikan di bawah (fixed-position version)
+
+    // ── Pilih Jenis ──
+    function selectRwJenis(val, icon, label) {
+      currentTrFilter = val;
+      currentTrPage   = 1;
+      const iconMap = { all:'fa-layer-group', DIG:'fa-bolt', FIS:'fa-box', EWL:'fa-mobile-screen-button' };
+      const labelMap = { all:'SEMUA', DIG:'DIGITAL', FIS:'FISIK', EWL:'E-WALLET' };
+      const ic = iconMap[val] || icon;
+      const lb = labelMap[val] || label;
+      const iEl = document.getElementById('dd-jenis-icon');
+      const lEl = document.getElementById('dd-jenis-label');
+      const tr  = document.getElementById('dd-jenis-trigger');
+      if (iEl) { iEl.className = 'fas ' + ic; iEl.style.color = '#38BDF8'; }
+      if (lEl) lEl.textContent = lb;
+      if (tr) {
+        tr.style.background = val !== 'all'
+          ? 'linear-gradient(135deg,rgba(0,97,194,0.55),rgba(56,189,248,0.35))'
+          : 'linear-gradient(135deg,rgba(0,97,194,0.5),rgba(56,189,248,0.3))';
+        tr.style.border = val !== 'all' ? '1px solid rgba(56,189,248,0.6)' : '1px solid rgba(56,189,248,0.4)';
+      }
+      ['all','DIG','FIS','EWL'].forEach(k => {
+        const el = document.getElementById('rw-jcheck-'+k);
+        if (el) el.style.display = k === val ? 'inline' : 'none';
+      });
+      if (icon) toggleRwDd('_close');
       renderDashboard();
     }
 
-    function setTimeFilter(f) {
-      currentTimeFilter = f;
-      currentTrPage = 1;
-      const tmAct = 'background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:white;font-size:8px;font-weight:900;letter-spacing:0.04em;box-shadow:0 3px 10px rgba(14,165,233,0.45);';
-      const tmInact = 'background:transparent;color:rgba(255,255,255,0.4);font-size:8px;font-weight:900;letter-spacing:0.04em;box-shadow:none;';
-      document.querySelectorAll('[id^="time-fltr-"]').forEach(c => { c.style.cssText = (c.id === 'time-fltr-' + f) ? tmAct : tmInact; });
+    // ── Pilih Periode ──
+    function selectRwPeriode(val, icon, label, bgHint, colorHint) {
+      currentTimeFilter = val;
+      currentTrPage     = 1;
+      const iconMap  = { all:'fa-infinity', today:'fa-sun', yesterday:'fa-moon', week:'fa-calendar-week' };
+      const labelMap = { all:'SEMUA', today:'HARI INI', yesterday:'KEMARIN', week:'MINGGU INI' };
+      const colorM   = { all:'rgba(255,255,255,0.55)', today:'#38BDF8', yesterday:'rgba(255,255,255,0.8)', week:'rgba(255,255,255,0.8)' };
+      const bgM      = { all:'rgba(255,255,255,0.07)', today:'rgba(14,165,233,0.3)', yesterday:'rgba(99,102,241,0.2)', week:'rgba(16,185,129,0.2)' };
+      const borderM  = { all:'rgba(255,255,255,0.12)', today:'rgba(56,189,248,0.3)', yesterday:'rgba(99,102,241,0.3)', week:'rgba(16,185,129,0.3)' };
+      const ic = iconMap[val] || icon;
+      const lb = labelMap[val] || label;
+      const col = colorM[val] || colorHint;
+      const iEl = document.getElementById('dd-periode-icon');
+      const lEl = document.getElementById('dd-periode-label');
+      const tr  = document.getElementById('dd-periode-trigger');
+      if (iEl) { iEl.className = 'fas ' + ic; iEl.style.color = col; }
+      if (lEl) { lEl.textContent = lb; lEl.style.color = col; }
+      if (tr)  { tr.style.background = 'linear-gradient(135deg,'+bgM[val]+','+bgM[val]+')'; tr.style.border = '1px solid '+borderM[val]; }
+      ['all','today','yesterday','week'].forEach(k => {
+        const el = document.getElementById('rw-pcheck-'+k);
+        if (el) el.style.display = k === val ? 'inline' : 'none';
+      });
+      if (icon) toggleRwDd('_close');
       renderDashboard();
+    }
+
+    // ── Render isi Dropdown Dompet (dinamis dari db.dompet) ──
+    function renderDompetDropdown() {
+      const panel = document.getElementById('dd-dompet-panel');
+      if (!panel) return;
+      const wallets = db.dompet || [];
+      const rowStyle = 'display:flex;align-items:center;gap:9px;padding:10px 13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);';
+      let html = `<div onclick="selectRwDompet('all')" style="${rowStyle}" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+        <div style="width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-wallet" style="font-size:10px;color:rgba(255,255,255,0.5);"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:9.5px;font-weight:900;color:white;margin:0;letter-spacing:0.04em;">SEMUA DOMPET</p>
+          <p style="font-size:8px;color:rgba(255,255,255,0.35);margin:1px 0 0;font-weight:600;">Tampilkan semua transaksi</p>
+        </div>
+        <i id="rw-dcheck-all" class="fas fa-check" style="font-size:9px;color:#38BDF8;${currentTrDompet==='all'?'':'display:none;'}"></i>
+      </div>`;
+      wallets.forEach(w => {
+        const isKas = w.tipe === 'kas';
+        const color = isKas ? '#10b981' : '#38BDF8';
+        const bg    = isKas ? 'rgba(16,185,129,0.15)' : 'rgba(56,189,248,0.15)';
+        const icon  = isKas ? 'fa-coins' : 'fa-university';
+        const isActive = currentTrDompet === w.id;
+        // Hitung jumlah trx pakai dompet ini
+        const trxCount = (db.transaksi||[]).filter(t => t.walletModal === w.id || t.walletJual === w.id).length;
+        html += `<div onclick="selectRwDompet('${w.id}')" style="${rowStyle}" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+          <div style="width:26px;height:26px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas ${icon}" style="font-size:10px;color:${color};"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <p style="font-size:9.5px;font-weight:900;color:white;margin:0;letter-spacing:0.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.nama}</p>
+            <p style="font-size:8px;color:rgba(255,255,255,0.35);margin:1px 0 0;font-weight:600;">${trxCount} transaksi · Rp ${fmt(w.saldo||0)}</p>
+          </div>
+          <i class="fas fa-check" style="font-size:9px;color:#38BDF8;${isActive?'':'display:none;'}" data-dcheck="${w.id}"></i>
+        </div>`;
+      });
+      if (wallets.length === 0) {
+        html += `<div style="padding:16px;text-align:center;color:rgba(255,255,255,0.3);font-size:9px;font-weight:700;">Belum ada dompet tersimpan</div>`;
+      }
+      panel.innerHTML = html;
+    }
+
+    // ── Pilih Dompet ──
+    function selectRwDompet(id) {
+      currentTrDompet = id;
+      currentTrPage   = 1;
+      const lEl = document.getElementById('dd-dompet-label');
+      const iEl = document.querySelector('#dd-dompet-trigger .fa-wallet') || document.querySelector('#dd-dompet-trigger i');
+      const tr  = document.getElementById('dd-dompet-trigger');
+      if (id === 'all') {
+        if (lEl) { lEl.textContent = 'SEMUA DOMPET'; lEl.style.color = 'rgba(255,255,255,0.55)'; }
+        if (iEl) iEl.style.color = 'rgba(255,255,255,0.45)';
+        if (tr)  { tr.style.background = 'rgba(255,255,255,0.07)'; tr.style.border = '1px solid rgba(255,255,255,0.12)'; }
+      } else {
+        const w = (db.dompet||[]).find(x => x.id === id);
+        if (w && lEl) { lEl.textContent = w.nama.toUpperCase(); lEl.style.color = '#38BDF8'; }
+        if (iEl) iEl.style.color = '#38BDF8';
+        if (tr)  { tr.style.background = 'rgba(56,189,248,0.15)'; tr.style.border = '1px solid rgba(56,189,248,0.35)'; }
+      }
+      toggleRwDd('_close');
+      renderDashboard();
+    }
+
+    // ── Search ──
+    function onTrxSearchInput(val) {
+      currentTrSearch = val.trim().toLowerCase();
+      currentTrPage   = 1;
+      const cl = document.getElementById('trx-search-clear');
+      if (cl) cl.style.display = currentTrSearch ? 'flex' : 'none';
+      renderDashboard();
+    }
+    function clearTrxSearch() {
+      const inp = document.getElementById('trx-search-input');
+      if (inp) inp.value = '';
+      onTrxSearchInput('');
     }
 
     function prevTrPage() {
@@ -8768,7 +9074,11 @@
 
     function getFilteredTransaksi() {
       let filtered = [...db.transaksi].reverse();
+
+      // Filter Jenis Layanan
       if (currentTrFilter !== 'all') filtered = filtered.filter(t => t.produk && t.produk.includes(currentTrFilter));
+
+      // Filter Periode Waktu
       const todayWIB = getWIBDate();
       const yObj = new Date(); yObj.setDate(yObj.getDate() - 1);
       const yestWIB = getWIBDate(yObj);
@@ -8780,6 +9090,22 @@
         const diff = (todayDate - tDate) / 86400000;
         return diff >= 0 && diff < 7;
       });
+
+      // Filter Dompet Modal
+      const wFilter = (typeof currentTrDompet !== 'undefined') ? currentTrDompet : 'all';
+      if (wFilter !== 'all') {
+        filtered = filtered.filter(t => t.walletModal === wFilter || t.walletJual === wFilter);
+      }
+
+      // Filter Pencarian
+      const sq = (typeof currentTrSearch !== 'undefined' ? currentTrSearch : '').trim().toLowerCase();
+      if (sq) {
+        filtered = filtered.filter(t => {
+          const haystack = [t.produk, t.pelanggan, t.catatan, String(t.jual||''), String(t.modal||''), String(t.nominal||'')].join(' ').toLowerCase();
+          return haystack.includes(sq);
+        });
+      }
+
       return filtered;
     }
 
@@ -22213,6 +22539,126 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 <!-- ================================================================
      END MODUL FITUR PELANGGAN PREMIUM KonterKU v1.0
 ================================================================ -->
+
+<!-- ── RIWAYAT DROPDOWN PANELS (fixed, di luar overflow-hidden) ── -->
+<div id="dd-jenis-panel" style="display:none;position:fixed;z-index:99990;border-radius:15px;overflow:hidden;background:linear-gradient(160deg,#0d1f3c,#091422);border:1px solid rgba(255,255,255,0.14);box-shadow:0 24px 60px rgba(0,0,0,0.7);">
+  <div onclick="selectRwJenis('all','fa-layer-group','SEMUA')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(56,189,248,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-layer-group" style="font-size:11px;color:#38BDF8;"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">SEMUA</span>
+    <i id="rw-jcheck-all" class="fas fa-check" style="font-size:9px;color:#38BDF8;"></i>
+  </div>
+  <div onclick="selectRwJenis('DIG','fa-bolt','DIGITAL')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(14,165,233,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-bolt" style="font-size:11px;color:#0ea5e9;"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">DIGITAL</span>
+    <i id="rw-jcheck-DIG" class="fas fa-check" style="font-size:9px;color:#38BDF8;display:none;"></i>
+  </div>
+  <div onclick="selectRwJenis('FIS','fa-box','FISIK')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-box" style="font-size:11px;color:#a855f7;"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">FISIK</span>
+    <i id="rw-jcheck-FIS" class="fas fa-check" style="font-size:9px;color:#38BDF8;display:none;"></i>
+  </div>
+  <div onclick="selectRwJenis('EWL','fa-mobile-screen-button','E-WALLET')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(192,132,252,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-mobile-screen-button" style="font-size:11px;color:#c084fc;"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">E-WALLET</span>
+    <i id="rw-jcheck-EWL" class="fas fa-check" style="font-size:9px;color:#38BDF8;display:none;"></i>
+  </div>
+</div>
+
+<div id="dd-periode-panel" style="display:none;position:fixed;z-index:99990;border-radius:15px;overflow:hidden;background:linear-gradient(160deg,#0d1f3c,#091422);border:1px solid rgba(255,255,255,0.14);box-shadow:0 24px 60px rgba(0,0,0,0.7);">
+  <div onclick="selectRwPeriode('all','fa-infinity','SEMUA','rgba(255,255,255,0.08)','rgba(255,255,255,0.5)')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-infinity" style="font-size:11px;color:rgba(255,255,255,0.5);"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">SEMUA</span>
+    <i id="rw-pcheck-all" class="fas fa-check" style="font-size:9px;color:#38BDF8;display:none;"></i>
+  </div>
+  <div onclick="selectRwPeriode('today','fa-sun','HARI INI','rgba(14,165,233,0.25)','#38BDF8')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(14,165,233,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-sun" style="font-size:11px;color:#0ea5e9;"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">HARI INI</span>
+    <i id="rw-pcheck-today" class="fas fa-check" style="font-size:9px;color:#38BDF8;"></i>
+  </div>
+  <div onclick="selectRwPeriode('yesterday','fa-moon','KEMARIN','rgba(99,102,241,0.2)','rgba(255,255,255,0.7)')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(99,102,241,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-moon" style="font-size:11px;color:#818cf8;"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">KEMARIN</span>
+    <i id="rw-pcheck-yesterday" class="fas fa-check" style="font-size:9px;color:#38BDF8;display:none;"></i>
+  </div>
+  <div onclick="selectRwPeriode('week','fa-calendar-week','MINGGU INI','rgba(16,185,129,0.2)','rgba(255,255,255,0.7)')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;" onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background=''">
+    <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-calendar-week" style="font-size:11px;color:#10b981;"></i></div>
+    <span style="flex:1;font-size:10px;font-weight:900;color:white;letter-spacing:0.04em;">MINGGU INI</span>
+    <i id="rw-pcheck-week" class="fas fa-check" style="font-size:9px;color:#38BDF8;display:none;"></i>
+  </div>
+</div>
+
+<div id="dd-dompet-panel" style="display:none;position:fixed;z-index:99990;border-radius:15px;overflow:hidden;background:linear-gradient(160deg,#0d1f3c,#091422);border:1px solid rgba(255,255,255,0.14);box-shadow:0 24px 60px rgba(0,0,0,0.7);max-height:240px;overflow-y:auto;">
+  <!-- Diisi dinamis oleh renderDompetDropdown() -->
+</div>
+
+<script>
+// ── Posisikan panel fixed tepat di bawah trigger ──
+function _positionRwPanel(triggerId, panelId, alignRight) {
+  const trigger = document.getElementById(triggerId);
+  const panel   = document.getElementById(panelId);
+  if (!trigger || !panel) return;
+  const rect = trigger.getBoundingClientRect();
+  const panelW = Math.max(rect.width, 200);
+  panel.style.width = panelW + 'px';
+  panel.style.top   = (rect.bottom + 6) + 'px';
+  if (alignRight) {
+    panel.style.left  = 'auto';
+    panel.style.right = (window.innerWidth - rect.right) + 'px';
+  } else {
+    panel.style.right = 'auto';
+    panel.style.left  = rect.left + 'px';
+  }
+}
+
+// Override toggleRwDd untuk pakai fixed positioning
+const _rwDdOpen = { jenis: false, periode: false, dompet: false };
+function toggleRwDd(key) {
+  const wasOpen = _rwDdOpen[key];
+  // Tutup semua
+  ['jenis','periode','dompet'].forEach(k => {
+    _rwDdOpen[k] = false;
+    const p = document.getElementById('dd-'+k+'-panel');
+    const c = document.getElementById('dd-'+k+'-chevron');
+    if (p) p.style.display = 'none';
+    if (c) c.style.transform = 'rotate(0deg)';
+  });
+  if (!wasOpen && key !== '_close') {
+    _rwDdOpen[key] = true;
+    const p = document.getElementById('dd-'+key+'-panel');
+    const c = document.getElementById('dd-'+key+'-chevron');
+    if (key === 'dompet') renderDompetDropdown();
+    // Posisikan sebelum tampil
+    const alignRight = key === 'periode';
+    _positionRwPanel('dd-'+key+'-trigger', 'dd-'+key+'-panel', alignRight);
+    if (p) p.style.display = 'block';
+    if (c) c.style.transform = 'rotate(180deg)';
+  }
+}
+
+document.addEventListener('click', function(e) {
+  ['jenis','periode','dompet'].forEach(k => {
+    if (!e.target.closest('#dd-'+k+'-trigger') && !e.target.closest('#dd-'+k+'-panel')) {
+      _rwDdOpen[k] = false;
+      const p = document.getElementById('dd-'+k+'-panel');
+      const c = document.getElementById('dd-'+k+'-chevron');
+      if (p) p.style.display = 'none';
+      if (c) c.style.transform = 'rotate(0deg)';
+    }
+  });
+}, true);
+
+// Reposisi saat scroll/resize
+window.addEventListener('scroll', function() {
+  ['jenis','periode','dompet'].forEach(k => {
+    if (_rwDdOpen[k]) _positionRwPanel('dd-'+k+'-trigger','dd-'+k+'-panel', k==='periode');
+  });
+}, true);
+window.addEventListener('resize', function() {
+  ['jenis','periode','dompet'].forEach(k => {
+    if (_rwDdOpen[k]) _positionRwPanel('dd-'+k+'-trigger','dd-'+k+'-panel', k==='periode');
+  });
+});
+</script>
 
 </body>
 </html>
