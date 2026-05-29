@@ -12900,7 +12900,7 @@
             const _dtObj = new Date(parseInt(_tsMatch[1], 10));
             jamDisplay = String(_dtObj.getHours()).padStart(2,'0') + ':' + String(_dtObj.getMinutes()).padStart(2,'0');
           }
-        } catch(_) {}
+        } catch(_e) {}
         const waktu = tglDisplay;
 
         // Metode bayar = nama dompet penerima
@@ -13287,7 +13287,7 @@ ${t.bayar ? `
 <!-- FOOTER -->
 <div class="footer">
   ${noteText ? `<div style="text-align:left;margin-bottom:5px;padding:5px 6px;border:1px dashed #d0d0d0;border-radius:4px;"><span style="font-size:7pt;font-weight:700;color:var(--ink-mid);">Ket: </span><span style="font-size:7pt;color:var(--ink);font-weight:500;word-break:break-all;">${noteText}</span></div>` : ''}
-  <p class="footer-tagline" style="word-break:break-word;white-space:normal;">${tagline}</p>
+  <p class="footer-tagline">${tagline}</p>
   <p class="footer-note">Barang yang dibeli tidak dapat dikembalikan</p>
   ${opts.isPro ? '' : '<p class="footer-brand">powered by KonterPro</p>'}
 </div>
