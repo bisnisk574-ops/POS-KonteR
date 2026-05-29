@@ -18931,6 +18931,7 @@ ${t.bayar ? `
           <button class="panduan-tab-btn" onclick="showPanduanTab('absensi')" id="ptab-absensi">🕐 Absensi</button>
           <button class="panduan-tab-btn" onclick="showPanduanTab('backup')" id="ptab-backup">☁️ Backup</button>
           <button class="panduan-tab-btn" onclick="showPanduanTab('struk')" id="ptab-struk">🖨️ Struk Thermal</button>
+          <button class="panduan-tab-btn" onclick="showPanduanTab('supplier')" id="ptab-supplier">🏭 Supplier & Restok</button>
         </div>
       </div>
 
@@ -19806,6 +19807,213 @@ ${t.bayar ? `
 
       </div>
       <!-- end panduan-body -->
+
+        <!-- ===== TAB: SUPPLIER & RESTOK ===== -->
+        <div id="panduan-supplier" class="panduan-tab-content hidden" style="padding:0 20px 20px;">
+          <div class="panduan-section-title">🏭 Panduan Supplier &amp; Restok</div>
+
+          <!-- Intro banner -->
+          <div class="panduan-card" style="border-left:4px solid #f97316;background:linear-gradient(135deg,#fff7ed,#ffedd5);">
+            <div class="panduan-step-body" style="padding-top:4px;">
+              <p class="panduan-text">Fitur Supplier &amp; Restok menghubungkan pembelian stok dari supplier langsung ke inventory. Stok otomatis bertambah, HPP (harga pokok penjualan) otomatis terhitung, dan hutang ke supplier tercatat rapi — semua dari satu transaksi restok.</p>
+              <div class="panduan-info" style="background:#fff7ed;border-color:#fed7aa;color:#c2410c;">💡 Berbeda dari Hutang Toko (input manual), hutang di fitur ini lahir otomatis dari transaksi beli stok.</div>
+            </div>
+          </div>
+
+          <!-- Step 1 -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#ea580c,#f97316);">1</div>
+              <p class="panduan-step-title">Tambah Data Supplier</p>
+            </div>
+            <div class="panduan-step-body">
+              <p class="panduan-text">Sebelum catat restok, daftarkan supplier Anda terlebih dahulu:</p>
+              <ul class="panduan-list">
+                <li>Buka <strong>Dashboard</strong> → tap shortcut <strong>🏭 Supplier</strong>, atau buka dari <strong>Sidebar → Supplier</strong></li>
+                <li>Pastikan Anda berada di tab <strong>Daftar</strong></li>
+                <li>Tap tombol <strong>+ Tambah Supplier</strong> (tombol hijau di bawah)</li>
+                <li>Isi <strong>Nama Supplier</strong> — wajib diisi</li>
+                <li>Isi <strong>No. HP / WA</strong> — opsional, untuk kontak supplier</li>
+                <li>Isi <strong>Alamat</strong> — opsional</li>
+                <li>Tap <strong>💾 Simpan</strong></li>
+              </ul>
+              <div class="panduan-info">💡 Satu toko bisa punya banyak supplier. Ulangi langkah ini untuk setiap supplier yang berbeda.</div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#ea580c,#f97316);">2</div>
+              <p class="panduan-step-title">Catat Restok (Beli Stok dari Supplier)</p>
+            </div>
+            <div class="panduan-step-body">
+              <p class="panduan-text">Setiap kali beli stok dari supplier, catat di sini agar stok &amp; HPP otomatis terupdate:</p>
+              <ul class="panduan-list">
+                <li>Di menu Supplier, tap tombol <strong>📦 Catat Restok</strong></li>
+                <li>Pilih <strong>Supplier</strong> dari dropdown — jika ada hutang ke supplier ini, jumlahnya akan muncul sebagai peringatan</li>
+                <li>Pilih <strong>Produk</strong> yang dibeli dari daftar inventory</li>
+                <li>Isi <strong>Jumlah</strong> (berapa pcs/unit yang dibeli)</li>
+                <li>Isi <strong>Harga Beli per Pcs</strong> — dipakai untuk hitung HPP baru</li>
+                <li>Kolom <strong>Total Beli</strong> otomatis terhitung</li>
+                <li>Pilih <strong>Status Pembayaran</strong>:
+                  <ul style="margin-top:6px;padding-left:16px;">
+                    <li><strong>✅ Lunas</strong> — pilih dompet, saldo langsung berkurang</li>
+                    <li><strong>📋 Hutang</strong> — hutang tercatat, saldo tidak berkurang dulu</li>
+                  </ul>
+                </li>
+                <li>Isi <strong>Catatan</strong> (opsional) — misal: "promo supplier", "diskon bulk"</li>
+                <li>Tap <strong>💾 Simpan Restok</strong></li>
+              </ul>
+              <div class="panduan-info">💡 Setelah simpan: stok produk otomatis bertambah dan HPP dihitung ulang menggunakan metode rata-rata tertimbang (weighted average).</div>
+              <div class="panduan-warning">⚠️ Pastikan produk sudah ada di menu <strong>Stok/Inventory</strong> sebelum catat restok. Kalau produk belum ada, tambahkan dulu di menu Stok.</div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#ea580c,#f97316);">3</div>
+              <p class="panduan-step-title">Lihat &amp; Kelola Hutang ke Supplier</p>
+            </div>
+            <div class="panduan-step-body">
+              <p class="panduan-text">Semua restok yang dibayar hutang akan tercatat otomatis di tab Hutang:</p>
+              <ul class="panduan-list">
+                <li>Buka menu Supplier → tap tab <strong>Hutang</strong></li>
+                <li>Muncul daftar semua hutang aktif, lengkap dengan:
+                  <ul style="margin-top:6px;padding-left:16px;">
+                    <li>Nama produk &amp; nama supplier</li>
+                    <li>Total beli &amp; sisa hutang</li>
+                    <li>Progress bar persentase yang sudah dibayar</li>
+                  </ul>
+                </li>
+                <li>Hutang yang sudah <strong>Lunas</strong> tidak muncul di daftar ini</li>
+              </ul>
+              <div class="panduan-info">💡 Di bagian bawah juga muncul hutang manual dari menu Hutang Toko yang bertipe "toko/supplier", sehingga semua hutang ke supplier terkumpul di satu tempat.</div>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#ea580c,#f97316);">4</div>
+              <p class="panduan-step-title">Bayar Hutang ke Supplier</p>
+            </div>
+            <div class="panduan-step-body">
+              <p class="panduan-text">Saat ingin melunasi atau mencicil hutang ke supplier:</p>
+              <ul class="panduan-list">
+                <li>Buka tab <strong>Hutang</strong> di menu Supplier</li>
+                <li>Temukan hutang yang ingin dibayar</li>
+                <li>Tap tombol <strong>💵 Bayar Hutang Ini</strong></li>
+                <li>Isi <strong>Jumlah Bayar</strong> — bisa bayar sebagian (cicil) atau penuh</li>
+                <li>Pilih <strong>Dompet</strong> yang dipakai untuk bayar</li>
+                <li>Isi <strong>Tanggal</strong> pembayaran</li>
+                <li>Tap <strong>Proses Pembayaran</strong></li>
+              </ul>
+              <div class="panduan-info">💡 Jika bayar penuh, status otomatis berubah jadi <strong>Lunas 🎉</strong> dan hutang hilang dari daftar. Saldo dompet otomatis berkurang sesuai jumlah bayar.</div>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#ea580c,#f97316);">5</div>
+              <p class="panduan-step-title">Lihat Riwayat Pembelian (Riwayat Beli)</p>
+            </div>
+            <div class="panduan-step-body">
+              <p class="panduan-text">Semua history restok tersimpan dan bisa dilihat kapan saja:</p>
+              <ul class="panduan-list">
+                <li>Buka menu Supplier → tap tab <strong>Riwayat Beli</strong></li>
+                <li>Muncul semua riwayat restok dari semua supplier, diurutkan dari terbaru</li>
+                <li>Gunakan <strong>filter dropdown</strong> di atas untuk menyaring per supplier tertentu</li>
+                <li>Setiap kartu riwayat menampilkan: produk, supplier, tanggal, jumlah, harga beli, total, dan status bayar</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Step 6 -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#ea580c,#f97316);">6</div>
+              <p class="panduan-step-title">Edit &amp; Hapus Supplier</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li>Buka tab <strong>Daftar</strong> — semua supplier terdaftar muncul di sini</li>
+                <li>Tap ikon <strong>✏️ (pensil)</strong> di kartu supplier untuk edit nama, HP, atau alamat</li>
+                <li>Tap ikon <strong>🗑️ (tempat sampah)</strong> untuk hapus supplier</li>
+              </ul>
+              <div class="panduan-warning">⚠️ Menghapus supplier tidak menghapus riwayat restok &amp; hutang yang sudah tercatat. Data historis tetap aman.</div>
+            </div>
+          </div>
+
+          <!-- Tips -->
+          <div class="panduan-card" style="border-left:4px solid #f97316;">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#d97706,#fbbf24);">💡</div>
+              <p class="panduan-step-title">Tips Penggunaan</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li>Catat restok <strong>setiap kali beli stok</strong> agar HPP selalu akurat dan laporan laba bersih lebih tepat</li>
+                <li>Gunakan status <strong>Hutang</strong> saat beli tempo — jangan langsung pilih Lunas kalau belum bayar</li>
+                <li>Cek tab Hutang secara rutin agar tidak ada hutang jatuh tempo yang terlewat</li>
+                <li>Fitur ini <strong>berbeda</strong> dari menu Hutang Toko: restok otomatis terhubung ke stok, sedangkan Hutang Toko hanya pencatatan manual bebas</li>
+                <li>HPP dihitung ulang tiap restok menggunakan <strong>rata-rata tertimbang</strong> — semakin sering restok dicatat, semakin akurat HPP-nya</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Perbedaan -->
+          <div class="panduan-card" style="border-left:4px solid #6366f1;">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#4f46e5,#818cf8);">📌</div>
+              <p class="panduan-step-title">Supplier &amp; Restok vs Hutang Toko — Apa Bedanya?</p>
+            </div>
+            <div class="panduan-step-body">
+              <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:11px;font-weight:600;">
+                  <thead>
+                    <tr style="background:#eff6ff;">
+                      <th style="padding:8px 10px;text-align:left;border-bottom:2px solid #bfdbfe;color:#1d4ed8;">Fitur</th>
+                      <th style="padding:8px 10px;text-align:center;border-bottom:2px solid #bfdbfe;color:#1d4ed8;">Supplier &amp; Restok</th>
+                      <th style="padding:8px 10px;text-align:center;border-bottom:2px solid #bfdbfe;color:#1d4ed8;">Hutang Toko</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                      <td style="padding:7px 10px;color:#475569;">Input</td>
+                      <td style="padding:7px 10px;text-align:center;color:#059669;">Otomatis dari restok</td>
+                      <td style="padding:7px 10px;text-align:center;color:#d97706;">Manual</td>
+                    </tr>
+                    <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+                      <td style="padding:7px 10px;color:#475569;">Stok bertambah</td>
+                      <td style="padding:7px 10px;text-align:center;color:#059669;">✅ Otomatis</td>
+                      <td style="padding:7px 10px;text-align:center;color:#94a3b8;">❌ Tidak</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                      <td style="padding:7px 10px;color:#475569;">HPP terupdate</td>
+                      <td style="padding:7px 10px;text-align:center;color:#059669;">✅ Otomatis</td>
+                      <td style="padding:7px 10px;text-align:center;color:#94a3b8;">❌ Tidak</td>
+                    </tr>
+                    <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+                      <td style="padding:7px 10px;color:#475569;">Fleksibel</td>
+                      <td style="padding:7px 10px;text-align:center;color:#d97706;">Khusus beli stok</td>
+                      <td style="padding:7px 10px;text-align:center;color:#059669;">✅ Bebas</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:7px 10px;color:#475569;">Cocok untuk</td>
+                      <td style="padding:7px 10px;text-align:center;color:#475569;">Beli stok produk</td>
+                      <td style="padding:7px 10px;text-align:center;color:#475569;">Hutang bebas / non-stok</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- end panduan-supplier -->
 
     </div>
   </div>
@@ -23996,7 +24204,7 @@ function simpanSupplier() {
     db.supplier.push({ id: 'sup_' + Date.now(), ...data, created: new Date().toISOString() });
   }
 
-  try { saveData(); } catch(e) { console.error('[simpanSupplier] saveData error:', e); }
+  if (typeof window.sync === 'function') window.sync(); else if (typeof sync === 'function') sync();
 
   closeModal('modal-form-supplier');
   renderSupplierList();
@@ -24024,7 +24232,7 @@ function hapusSupplier() {
   }).then(r => {
     if (!r.isConfirmed) return;
     db.supplier = (db.supplier||[]).filter(s => s.id !== id);
-    saveData();
+  if (typeof window.sync === 'function') window.sync(); else if (typeof sync === 'function') sync();
     closeModal('modal-form-supplier');
     renderSupplierList();
     populateSupplierDropdowns();
@@ -24237,7 +24445,7 @@ function simpanCatatanRestok() {
     created: new Date().toISOString()
   });
 
-  saveData();
+  if (typeof window.sync === 'function') window.sync(); else if (typeof sync === 'function') sync();
   renderStok();
   closeModal('modal-catat-restok');
 
@@ -24310,7 +24518,7 @@ function prosesBayarHutangSupplier() {
     });
   }
 
-  saveData();
+  if (typeof window.sync === 'function') window.sync(); else if (typeof sync === 'function') sync();
   closeModal('modal-bayar-hutang-supplier');
   renderHutangSupplier();
   renderSupplierList();
