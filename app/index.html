@@ -12445,25 +12445,29 @@
         $(enc(divider('=')), NL);
 
         // ── Footer ───────────────────────────────────────
-        // Keterangan (nomor HP / SN) sebelum tagline
+        // Keterangan (nomor HP / SN) — tengah, besar, tebal
         if (noteText) {
-          $(...CMD.ALIGN_LEFT);
-          $(enc(divider()), NL);
-          const _nWords = noteText.split(' ');
-          let _nLine = '';
-          _nWords.forEach(w => {
-            const _t = _nLine ? _nLine + ' ' + w : w;
-            if (_t.length > COLS - 4) {
-              $(enc(padLine('Ket', _nLine)), NL);
-              _nLine = w;
-            } else {
-              _nLine = _t;
-            }
-          });
-          if (_nLine) $(enc(padLine('Ket', _nLine)), NL);
           $(...CMD.ALIGN_CENTER);
+          $(enc(divider()), NL);
+          // Label "Ket" kecil dulu
+          $(...CMD.BOLD_ON);
+          $(enc(center('-- Keterangan --')), NL);
+          $(...CMD.BOLD_OFF);
+          // Teks keterangan: DOUBLE (besar) + BOLD
+          $(...CMD.DOUBLE_ON, ...CMD.BOLD_ON);
+          // Word-wrap dengan lebar COLS/2 karena DOUBLE_ON membuat 1 char = 2 char lebar
+          const _halfCols = Math.floor(COLS / 2);
+          const _nChars = noteText.split('');
+          let _nLine2 = '';
+          // Potong per karakter sesuai lebar setengah (karena double-width)
+          for (let i = 0; i < noteText.length; i += _halfCols) {
+            $(enc(center(noteText.substring(i, i + _halfCols))), NL);
+          }
+          $(...CMD.DOUBLE_OFF, ...CMD.BOLD_OFF);
         }
-        // Word-wrap tagline agar tidak terpotong
+        // Word-wrap tagline — selalu tengah
+        $(...CMD.ALIGN_CENTER);
+        $(enc(divider('=')), NL);
         const _tagWords = tagline.split(' ');
         let _tagLine = '';
         _tagWords.forEach(w => {
