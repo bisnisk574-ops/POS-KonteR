@@ -7636,7 +7636,7 @@
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] font-black text-slate-400">Rp</span>
                   <input type="number" id="ke-nominal" class="kasir-field-input" placeholder="0"
-                    oninput="updateEwalletCalc();if(typeof renderQuickBayarBtns==='function')renderQuickBayarBtns('ke')">
+                    oninput="updateEwalletCalc();if(typeof renderQuickBayarBtns==='function')renderQuickBayarBtns('ke');if(typeof hitungKembalian==='function')hitungKembalian('ke')">
                 </div>
               </div>
             </div>
@@ -7660,7 +7660,7 @@
                     <div class="flex items-center gap-0.5">
                       <span style="font-size:9px;font-weight:900;color:#ea580c;">Rp</span>
                       <input type="number" id="ke-admin-bank" class="kasir-field-input" style="background:transparent;color:#c2410c;"
-                        placeholder="0" value="0" oninput="updateEwalletCalc()">
+                        placeholder="0" value="0" oninput="updateEwalletCalc();if(typeof renderQuickBayarBtns==='function')renderQuickBayarBtns('ke');if(typeof hitungKembalian==='function')hitungKembalian('ke')">
                     </div>
                   </div>
                 </div>
@@ -7676,7 +7676,7 @@
                     <div class="flex items-center gap-0.5">
                       <span style="font-size:9px;font-weight:900;color:#16a34a;">Rp</span>
                       <input type="number" id="ke-admin-agen" class="kasir-field-input" style="background:transparent;color:#166534;"
-                        placeholder="0" oninput="updateEwalletCalc()">
+                        placeholder="0" oninput="updateEwalletCalc();if(typeof renderQuickBayarBtns==='function')renderQuickBayarBtns('ke');if(typeof hitungKembalian==='function')hitungKembalian('ke')">
                     </div>
                   </div>
                 </div>
@@ -9147,6 +9147,9 @@
 
       return filtered;
     }
+
+    // ── Helper format angka (lokal di scope kasir) ──────────────────────────
+    function _fmt(n) { return Number(n || 0).toLocaleString('id-ID'); }
 
     // ---- TAB SWITCHES ----
     function setKasirTab(tab) {
@@ -11990,6 +11993,9 @@
         if (calcRow) calcRow.classList.add('hidden');
         if (liveEl) liveEl.classList.add('hidden');
       }
+      // Selalu update quick buttons dan kembalian ewallet
+      if (typeof renderQuickBayarBtns === 'function') renderQuickBayarBtns('ke');
+      if (typeof hitungKembalian === 'function') hitungKembalian('ke');
     }
 
     async function prosesKasir(tipe) {
