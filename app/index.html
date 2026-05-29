@@ -24303,5 +24303,84 @@ window.addEventListener('load', function() {
 
 </script>
 
+<!-- ================================================================
+     PATCH: Hubungkan Supplier ke Form Input Hutang Toko
+================================================================ -->
+<script>
+window.addEventListener('load', function() {
+  // ─── Tunggu semua fungsi utama siap ───
+  setTimeout(function() {
+
+    // ── 1. Patch setManualHutangType ──
+    // Saat tipe = 'toko', isi dropdown dengan data supplier
+    if (typeof window.setManualHutangType === 'function') {
+      const _origSetType = window.setManualHutangType;
+      window.setManualHutangType = function(type) {
+        _origSetType(type);
+        _refreshHutangCustomerSelect(type);
+      };
+    }
+
+    // ── 2. Patch openModalManualHutang ──
+    // Pastikan dropdown sudah ter-refresh saat modal dibuka
+    if (typeof window.openModalManualHutang === 'function') {
+      const _origOpen = window.openModalManualHutang;
+      window.openModalManualHutang = function() {
+        _origOpen();
+        // Refresh setelah fungsi asli selesai (karena ia juga memanggil setManualHutangType)
+        setTimeout(() => {
+          const type = typeof currentManualHutangType !== 'undefined' ? currentManualHutangType : 'pelanggan';
+          _refreshHutangCustomerSelect(type);
+        }, 50);
+      };
+    }
+
+  }, 800);
+});
+
+// ─── Helper: isi dropdown sesuai tipe ───
+function _refreshHutangCustomerSelect(type) {
+  const sel = document.getElementById('m-h-customer-select');
+  if (!sel) return;
+
+  if (type === 'toko') {
+    // Isi dari db.supplier
+    const suppliers = db.supplier || [];
+    if (suppliers.length === 0) {
+      sel.innerHTML = `<option value="">-- Belum ada supplier --</option>
+        <option value="manual">✏️ Tulis Manual...</option>`;
+    } else {
+      const opts = suppliers.map(s => {
+        // Tampilkan hutang aktif kalau ada
+        const hutangAktif = (db.riwayat_restok || [])
+          .filter(r => r.supplier_id === s.id && r.status_bayar === 'hutang' && r.sisa_hutang > 0)
+          .reduce((a, r) => a + (r.sisa_hutang || 0), 0);
+        const label = s.nama + (hutangAktif > 0 ? ' ⚠️ hutang Rp ' + (hutangAktif).toLocaleString('id-ID') : '');
+        return `<option value="${s.nama}" data-sup-id="${s.id}">${label}</option>`;
+      }).join('');
+      sel.innerHTML = `<option value="">-- Pilih Supplier --</option>${opts}<option value="manual">✏️ Tulis Manual...</option>`;
+    }
+
+    // Update placeholder label
+    const lbl = document.getElementById('m-h-customer-select')?.previousElementSibling;
+    const labelEl = sel.closest('.space-y-4')?.querySelector('label');
+    if (labelEl && labelEl.textContent.includes('Nama')) {
+      labelEl.textContent = 'Nama Supplier';
+    }
+
+  } else {
+    // Tipe pelanggan — kembalikan ke daftar pelanggan
+    const pelanggan = db.pelanggan || [];
+    const cOpts = pelanggan.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('');
+    sel.innerHTML = `<option value="">-- Pilih Pelanggan --</option>${cOpts}<option value="manual">✏️ Tulis Manual...</option>`;
+
+    const labelEl = sel.closest('.space-y-4')?.querySelector('label');
+    if (labelEl && labelEl.textContent.includes('Nama')) {
+      labelEl.textContent = 'Nama (Pelanggan/Supplier)';
+    }
+  }
+}
+</script>
+
 </body>
 </html>
