@@ -11993,7 +11993,6 @@
         if (calcRow) calcRow.classList.add('hidden');
         if (liveEl) liveEl.classList.add('hidden');
       }
-      // Selalu update quick buttons dan kembalian ewallet
       if (typeof renderQuickBayarBtns === 'function') renderQuickBayarBtns('ke');
       if (typeof hitungKembalian === 'function') hitungKembalian('ke');
     }
@@ -12323,6 +12322,15 @@
           const [y, mo, d] = tglRaw.split('-');
           waktu = `${d} ${bulan[parseInt(mo,10)-1]} ${y}`;
         }
+        // Ambil jam dari timestamp ID transaksi (TR-1234567890123)
+        let jamTrx = '';
+        try {
+          const _tsM = (t.id || '').match(/TR-(\d{13,})/);
+          if (_tsM) {
+            const _dt = new Date(parseInt(_tsM[1], 10));
+            jamTrx = String(_dt.getHours()).padStart(2,'0') + ':' + String(_dt.getMinutes()).padStart(2,'0');
+          }
+        } catch(_e) {}
 
         // Metode bayar = nama dompet penerima
         const metodeBayar = (() => {
@@ -12365,7 +12373,11 @@
             $(enc(l.trim().substring(0, COLS)), NL);
           });
         }
-        $(enc(waktu), NL);
+        if (jamTrx) {
+          $(enc(padLine(waktu, jamTrx)), NL);
+        } else {
+          $(enc(waktu), NL);
+        }
         $(...CMD.ALIGN_LEFT);
         $(enc(divider('=')), NL);
 
@@ -12378,7 +12390,7 @@
         // ── Info transaksi & produk ──────────────────────
         if (kasirName) $(enc(padLine('Kasir', kasirName)), NL);
         $(enc(padLine('Pelanggan', t.pelanggan || 'Umum')), NL);
-        $(enc(padLine('Tanggal',   waktu || t.tgl || '-')), NL);
+        $(enc(padLine('Tanggal',   (waktu || t.tgl || '-') + (jamTrx ? '  ' + jamTrx : ''))), NL);
         $(enc(divider()), NL);
         $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON);
         $(enc(namaProduk.substring(0, COLS)), NL);
@@ -12386,18 +12398,7 @@
         $(enc(center(`Qty: ${t.qty||1} pcs`)), NL);
         $(...CMD.ALIGN_LEFT);
 
-        // ── Keterangan (nomor HP / SN) — langsung setelah produk ───
-        if (noteText) {
-          // Word wrap
-          const nWords = noteText.split(' ');
-          let nLine = '';
-          nWords.forEach(w => {
-            const test = nLine ? nLine + ' ' + w : w;
-            if (test.length > COLS) { $(enc(padLine('Ket', nLine.substring(0, COLS-4))), NL); nLine = w; }
-            else nLine = test;
-          });
-          if (nLine) $(enc(padLine('Ket', nLine.substring(0, COLS-4))), NL);
-        }
+        // (Keterangan dipindah ke footer)
 
         // ── Rincian harga ────────────────────────────────
         $(enc(divider()), NL);
@@ -12444,8 +12445,37 @@
         $(enc(divider('=')), NL);
 
         // ── Footer ───────────────────────────────────────
-        $(...CMD.ALIGN_CENTER);
-        $(enc(center(tagline.substring(0, COLS))), NL);
+        // Keterangan (nomor HP / SN) sebelum tagline
+        if (noteText) {
+          $(...CMD.ALIGN_LEFT);
+          $(enc(divider()), NL);
+          const _nWords = noteText.split(' ');
+          let _nLine = '';
+          _nWords.forEach(w => {
+            const _t = _nLine ? _nLine + ' ' + w : w;
+            if (_t.length > COLS - 4) {
+              $(enc(padLine('Ket', _nLine)), NL);
+              _nLine = w;
+            } else {
+              _nLine = _t;
+            }
+          });
+          if (_nLine) $(enc(padLine('Ket', _nLine)), NL);
+          $(...CMD.ALIGN_CENTER);
+        }
+        // Word-wrap tagline agar tidak terpotong
+        const _tagWords = tagline.split(' ');
+        let _tagLine = '';
+        _tagWords.forEach(w => {
+          const _test = _tagLine ? _tagLine + ' ' + w : w;
+          if (_test.length > COLS) {
+            $(enc(center(_tagLine)), NL);
+            _tagLine = w;
+          } else {
+            _tagLine = _test;
+          }
+        });
+        if (_tagLine) $(enc(center(_tagLine)), NL);
         if (!opts.isPro) {
           $(enc(center('- powered by KonterPro -')), NL);
         }
@@ -12889,18 +12919,17 @@
         let tglDisplay = tglRaw;
         if (tglRaw && tglRaw.match(/^\d{4}-\d{2}-\d{2}$/)) {
           const [y, mo, d] = tglRaw.split('-');
-          const _bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-          tglDisplay = d + ' ' + _bln[parseInt(mo,10)-1] + ' ' + y;
+          const _bln2 = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+          tglDisplay = d + ' ' + _bln2[parseInt(mo,10)-1] + ' ' + y;
         }
-        // Ambil jam dari timestamp ID transaksi (TR-1234567890123)
         let jamDisplay = '';
         try {
-          const _tsMatch = (t.id || '').match(/TR-(\d{13,})/);
-          if (_tsMatch) {
-            const _dtObj = new Date(parseInt(_tsMatch[1], 10));
-            jamDisplay = String(_dtObj.getHours()).padStart(2,'0') + ':' + String(_dtObj.getMinutes()).padStart(2,'0');
+          const _tsM2 = (t.id || '').match(/TR-(\d{13,})/);
+          if (_tsM2) {
+            const _dt2 = new Date(parseInt(_tsM2[1], 10));
+            jamDisplay = String(_dt2.getHours()).padStart(2,'0') + ':' + String(_dt2.getMinutes()).padStart(2,'0');
           }
-        } catch(_e) {}
+        } catch(_e2) {}
         const waktu = tglDisplay;
 
         // Metode bayar = nama dompet penerima
