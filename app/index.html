@@ -12886,11 +12886,22 @@
 
         // Waktu dari tanggal transaksi asli (bukan waktu cetak ulang)
         const tglRaw = t.tgl || '';
-        let waktu = tglRaw;
+        let tglDisplay = tglRaw;
         if (tglRaw && tglRaw.match(/^\d{4}-\d{2}-\d{2}$/)) {
           const [y, mo, d] = tglRaw.split('-');
-          waktu = `${d}/${mo}/${y}`;
+          const _bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+          tglDisplay = d + ' ' + _bln[parseInt(mo,10)-1] + ' ' + y;
         }
+        // Ambil jam dari timestamp ID transaksi (TR-1234567890123)
+        let jamDisplay = '';
+        try {
+          const _tsMatch = (t.id || '').match(/TR-(\d{13,})/);
+          if (_tsMatch) {
+            const _dtObj = new Date(parseInt(_tsMatch[1], 10));
+            jamDisplay = String(_dtObj.getHours()).padStart(2,'0') + ':' + String(_dtObj.getMinutes()).padStart(2,'0');
+          }
+        } catch(_) {}
+        const waktu = tglDisplay;
 
         // Metode bayar = nama dompet penerima
         const metodeBayar = (() => {
@@ -13106,6 +13117,9 @@
     color: var(--ink-mid);
     font-weight: 500;
     font-style: italic;
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
   }
   .footer-note {
     font-size: 7pt;
@@ -13161,7 +13175,10 @@
   <div class="store-name">${storeName}</div>
   ${alamatLines}
   ${kasirName ? `<p class="meta-row">Kasir: ${kasirName}</p>` : ''}
-  <p class="meta-row">${waktu}</p>
+  <div style="display:flex;justify-content:space-between;align-items:center;font-size:7.5pt;color:var(--ink-mid);font-weight:500;margin:1px 0;">
+    <span>${waktu}</span>
+    ${jamDisplay ? `<span style="font-weight:700;color:var(--ink);">${jamDisplay}</span>` : ''}
+  </div>
   <p class="tx-id">No: ${t.id}</p>
 </div>
 
@@ -13187,7 +13204,7 @@
 <div class="info-row">
   <span class="info-lbl">Tanggal</span>
   <span class="info-dots"></span>
-  <span class="info-val">${waktu||t.tgl||'-'}</span>
+  <span class="info-val">${waktu||t.tgl||'-'}${jamDisplay ? ' · '+jamDisplay : ''}</span>
 </div>
 
 <hr class="rule-dash">
@@ -13198,12 +13215,6 @@
   <div style="font-size:7.5pt;color:var(--ink-soft);font-weight:500;margin-top:2px;">Qty: ${t.qty||1} pcs</div>
 </div>
 
-${noteText ? `
-<div class="info-row" style="margin-top:3px;">
-  <span class="info-lbl">Ket</span>
-  <span class="info-dots"></span>
-  <span class="info-val" style="white-space:normal;text-align:right;max-width:65%;">${noteText}</span>
-</div>` : ''}
 
 <hr class="rule-dash">
 
@@ -13275,7 +13286,8 @@ ${t.bayar ? `
 
 <!-- FOOTER -->
 <div class="footer">
-  <p class="footer-tagline">${tagline}</p>
+  ${noteText ? `<div style="text-align:left;margin-bottom:5px;padding:5px 6px;border:1px dashed #d0d0d0;border-radius:4px;"><span style="font-size:7pt;font-weight:700;color:var(--ink-mid);">Ket: </span><span style="font-size:7pt;color:var(--ink);font-weight:500;word-break:break-all;">${noteText}</span></div>` : ''}
+  <p class="footer-tagline" style="word-break:break-word;white-space:normal;">${tagline}</p>
   <p class="footer-note">Barang yang dibeli tidak dapat dikembalikan</p>
   ${opts.isPro ? '' : '<p class="footer-brand">powered by KonterPro</p>'}
 </div>
