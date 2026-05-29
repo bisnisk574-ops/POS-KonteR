@@ -10625,7 +10625,7 @@
       if (!res.isConfirmed) return;
       const t = db.transaksi.find(x => x.id === id);
       if (!t) return;
-      if (t.tipe === 'digital' && t.walletModal) {
+      if ((t.tipe === 'digital' || t.tipe === 'ewallet') && t.walletModal) {
         const wmIdx = db.dompet.findIndex(w => w.id === t.walletModal);
         if (wmIdx !== -1) { db.dompet[wmIdx].saldo += Number(t.modal||0); addMutasi(t.walletModal, t.modal, 'in', 'REFUND MODAL: '+t.produk); }
       }
