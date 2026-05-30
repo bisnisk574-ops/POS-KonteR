@@ -7425,7 +7425,7 @@
             <div class="shortcut-arrow"><i class="fas fa-arrow-right" style="font-size:9px;"></i></div>
             <span id="catatan-pro-badge" class="shortcut-pro-badge" style="display:none;">PRO ⭐</span>
           </button>
-          <!-- Cabang -->
+          <!-- Cabang (owner) / Absensi (kasir) — adaptif berdasarkan role -->
           <button id="shortcut-cabang" onclick="openMonitorCabang()"
             class="shortcut-card shortcut-blue active:scale-95 transition-all cursor-pointer text-left w-full border-0">
             <div class="shortcut-icon-wrap" style="background:rgba(0,97,194,0.18);border:1.5px solid rgba(0,97,194,0.25);">
@@ -7436,6 +7436,19 @@
               <p class="shortcut-sub" id="cabang-count-label">Monitor toko</p>
             </div>
             <div class="shortcut-arrow" style="color:#60a5fa;"><i class="fas fa-arrow-right" style="font-size:9px;"></i></div>
+          </button>
+          <!-- Card Absensi — hanya tampil untuk kasir (card Cabang akan di-hide oleh JS) -->
+          <button id="shortcut-absensi-kasir" onclick="openSidebarMenu('absensi-kasir')"
+            class="shortcut-card active:scale-95 transition-all cursor-pointer text-left w-full border-0"
+            style="display:none;">
+            <div class="shortcut-icon-wrap" style="background:rgba(16,185,129,0.18);border:1.5px solid rgba(16,185,129,0.25);">
+              <i class="fas fa-user-clock" style="color:#34d399;font-size:15px;"></i>
+            </div>
+            <div class="shortcut-label">
+              <p class="shortcut-title" style="color:#34d399;">Absensi</p>
+              <p class="shortcut-sub" id="absensi-status-label-dash">Catatan shift</p>
+            </div>
+            <div class="shortcut-arrow" style="color:#34d399;"><i class="fas fa-arrow-right" style="font-size:9px;"></i></div>
           </button>
           <!-- Supplier -->
           <button onclick="openSidebarMenu('supplier')"
@@ -19400,6 +19413,9 @@ ${t.bayar ? `
         // Kasir tidak perlu lihat cabang — sembunyikan tombol
         const cabangBtn = document.getElementById('shortcut-cabang');
         if (cabangBtn) cabangBtn.style.display = 'none';
+        // Tampilkan card Absensi sebagai pengganti card Cabang untuk kasir
+        const absensiBtn = document.getElementById('shortcut-absensi-kasir');
+        if (absensiBtn) absensiBtn.style.display = '';
       }
     }
   }
@@ -25261,77 +25277,6 @@ function _refreshHutangCustomerSelect(type) {
   }
 }
 </script>
-
-<!-- ================================================================
-     PATCH: kirimNotif via Service Worker
-     Agar notifikasi muncul di status bar Android (bukan hanya SweetAlert)
-================================================================ -->
-<script>
-(function () {
-  'use strict';
-
-  // ── 1. Daftarkan Service Worker notifikasi ──────────────────────
-  async function registerSW() {
-    if (!('serviceWorker' in navigator)) return null;
-    try {
-      const swPath = '/sw-notif.js';
-      const reg = await navigator.serviceWorker.register(swPath, { scope: '/' });
-      await navigator.serviceWorker.ready;
-      console.log('[KonterKU SW] Service Worker notifikasi terdaftar ✓', reg.scope);
-      return reg;
-    } catch (err) {
-      console.warn('[KonterKU SW] Gagal daftar SW:', err.message);
-      return null;
-    }
-  }
-
-  // ── 2. Kirim notifikasi lewat SW (muncul di status bar Android) ─
-  async function kirimNotifViaSW(title, body, icon) {
-    if (Notification?.permission !== 'granted') return;
-
-    const reg = await navigator.serviceWorker.ready.catch(() => null);
-    if (reg && reg.active) {
-      reg.active.postMessage({
-        type  : 'SHOW_NOTIF',
-        title : title || 'KonterKU',
-        body  : body  || '',
-        icon  : icon  || localStorage.getItem('k_struk_logo') || '/icon-192.png',
-        badge : '/icon-96.png',
-        tag   : 'konterku-' + Date.now(),
-      });
-    } else {
-      // Fallback untuk browser desktop
-      try {
-        new Notification(title, {
-          body,
-          icon: icon || localStorage.getItem('k_struk_logo') || '/icon-192.png',
-          badge: '/icon-96.png',
-          tag: 'konterku-' + Date.now(),
-          vibrate: [200, 100, 200],
-        });
-      } catch (e) {
-        console.warn('[KonterKU Notif Fallback]', e.message);
-      }
-    }
-  }
-
-  // ── 3. Override window.kirimNotif yang lama ─────────────────────
-  window.kirimNotif = kirimNotifViaSW;
-  if (window.KonterKUBisnis) window.KonterKUBisnis.kirimNotif = kirimNotifViaSW;
-
-  // ── 4. Daftar SW saat halaman siap ─────────────────────────────
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', registerSW);
-  } else {
-    registerSW();
-  }
-
-  console.log('[KonterKU SW Patch] kirimNotif → Service Worker aktif ✓');
-})();
-</script>
-<!-- ================================================================
-     END PATCH SW NOTIFIKASI
-================================================================ -->
 
 </body>
 </html>
