@@ -25262,5 +25262,76 @@ function _refreshHutangCustomerSelect(type) {
 }
 </script>
 
+<!-- ================================================================
+     PATCH: kirimNotif via Service Worker
+     Agar notifikasi muncul di status bar Android (bukan hanya SweetAlert)
+================================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  // ── 1. Daftarkan Service Worker notifikasi ──────────────────────
+  async function registerSW() {
+    if (!('serviceWorker' in navigator)) return null;
+    try {
+      const swPath = '/sw-notif.js';
+      const reg = await navigator.serviceWorker.register(swPath, { scope: '/' });
+      await navigator.serviceWorker.ready;
+      console.log('[KonterKU SW] Service Worker notifikasi terdaftar ✓', reg.scope);
+      return reg;
+    } catch (err) {
+      console.warn('[KonterKU SW] Gagal daftar SW:', err.message);
+      return null;
+    }
+  }
+
+  // ── 2. Kirim notifikasi lewat SW (muncul di status bar Android) ─
+  async function kirimNotifViaSW(title, body, icon) {
+    if (Notification?.permission !== 'granted') return;
+
+    const reg = await navigator.serviceWorker.ready.catch(() => null);
+    if (reg && reg.active) {
+      reg.active.postMessage({
+        type  : 'SHOW_NOTIF',
+        title : title || 'KonterKU',
+        body  : body  || '',
+        icon  : icon  || localStorage.getItem('k_struk_logo') || '/icon-192.png',
+        badge : '/icon-96.png',
+        tag   : 'konterku-' + Date.now(),
+      });
+    } else {
+      // Fallback untuk browser desktop
+      try {
+        new Notification(title, {
+          body,
+          icon: icon || localStorage.getItem('k_struk_logo') || '/icon-192.png',
+          badge: '/icon-96.png',
+          tag: 'konterku-' + Date.now(),
+          vibrate: [200, 100, 200],
+        });
+      } catch (e) {
+        console.warn('[KonterKU Notif Fallback]', e.message);
+      }
+    }
+  }
+
+  // ── 3. Override window.kirimNotif yang lama ─────────────────────
+  window.kirimNotif = kirimNotifViaSW;
+  if (window.KonterKUBisnis) window.KonterKUBisnis.kirimNotif = kirimNotifViaSW;
+
+  // ── 4. Daftar SW saat halaman siap ─────────────────────────────
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', registerSW);
+  } else {
+    registerSW();
+  }
+
+  console.log('[KonterKU SW Patch] kirimNotif → Service Worker aktif ✓');
+})();
+</script>
+<!-- ================================================================
+     END PATCH SW NOTIFIKASI
+================================================================ -->
+
 </body>
 </html>
