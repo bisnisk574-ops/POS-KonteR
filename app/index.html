@@ -3220,7 +3220,6 @@
       if (typeof Swal === 'undefined') return;
       window.MySwal = Swal.mixin({
         customClass: { popup: 'swal2-ku' },
-        zIndex: 99999,
         buttonsStyling: true,
         confirmButtonColor: '#0061C2',
         scrollbarPadding: false,
@@ -3251,7 +3250,6 @@
         timer: 3000,
         timerProgressBar: true,
         customClass: { popup: 'swal2-ku-toast', container: 'swal2-toast-column' },
-        zIndex: 99999,
         didOpen: (toast) => {
           toast.addEventListener('mouseenter', Swal.stopTimer);
           toast.addEventListener('mouseleave', Swal.resumeTimer);
@@ -3262,7 +3260,7 @@
     function _getMySwal() {
       if (window.MySwal) return window.MySwal;
       if (typeof Swal !== 'undefined') {
-        return Swal.mixin({ customClass: { popup: 'swal2-ku' }, zIndex: 99999, confirmButtonColor: '#0061C2', scrollbarPadding: false });
+        return Swal.mixin({ customClass: { popup: 'swal2-ku' }, confirmButtonColor: '#0061C2', scrollbarPadding: false });
       }
       return null;
     }
@@ -16157,7 +16155,6 @@ ${t.bayar ? `
           toast: true, position: 'top', showConfirmButton: false, timer: 4000,
           timerProgressBar: true,
           customClass: { popup: 'swal2-ku-toast' },
-          zIndex: 99999,
           didOpen: (toast) => {
             toast.addEventListener('mouseenter', Swal.stopTimer);
             toast.addEventListener('mouseleave', Swal.resumeTimer);
@@ -25504,16 +25501,16 @@ window.addEventListener("load", function() {
       var banner = document.createElement("div");
       banner.id = "banner-peringatan-saldo";
       banner.innerHTML =
-        "<div style="display:flex;align-items:flex-start;gap:12px;">" +
-          "<div class="bps-icon"><i class="fas fa-triangle-exclamation" style="color:#fff;font-size:16px;"></i></div>" +
-          "<div style="flex:1;min-width:0;">" +
-            "<p class="bps-title">PERINGATAN SALDO</p>" +
-            "<p class="bps-body">Total saldo saat ini <b>lebih kecil</b> dari saldo awal shift!" +
-              "<span class="bps-selisih" id="bps-selisih-val">Rp 0</span>" +
-            "</p>" +
-            "<span class="bps-note">*Ini hanya peringatan. Abaikan jika saldo memang sudah diambil.</span>" +
-          "</div>" +
-        "</div>";
+        '<div style="display:flex;align-items:flex-start;gap:12px;">' +
+          '<div class="bps-icon"><i class="fas fa-triangle-exclamation" style="color:#fff;font-size:16px;"></i></div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<p class="bps-title">PERINGATAN SALDO</p>' +
+            '<p class="bps-body">Total saldo saat ini <b>lebih kecil</b> dari saldo awal shift!' +
+              '<span class="bps-selisih" id="bps-selisih-val">Rp 0</span>' +
+            '</p>' +
+            '<span class="bps-note">*Ini hanya peringatan. Abaikan jika saldo memang sudah diambil.</span>' +
+          '</div>' +
+        '</div>';
       var header = viewKasir.querySelector(".kasir-header");
       if (header && header.nextSibling) {
         viewKasir.insertBefore(banner, header.nextSibling);
