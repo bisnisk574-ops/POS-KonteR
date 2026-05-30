@@ -354,25 +354,7 @@
     .swal2-popup.swal2-ku .swal2-close { font-size: 1.4rem !important; color: #94a3b8 !important; top: 14px !important; right: 16px !important; }
     .swal2-popup.swal2-ku .swal2-close:hover { color: #ef4444 !important; transform: scale(1.2); }
 
-    /* Toast premium — bersih, tanpa backdrop, mirip notif OS */
-    .swal2-container.swal2-toast-column {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      pointer-events: none !important;
-      inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100vw !important;
-      padding: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
-    }
-    .swal2-container.swal2-toast-column > .swal2-popup {
-      pointer-events: auto !important;
-    }
+    /* Toast — style popup saja, posisi dihandle JS custom toast */
     .swal2-popup.swal2-toast.swal2-ku-toast {
       font-family: 'Plus Jakarta Sans', sans-serif !important;
       border-radius: 16px !important;
@@ -21866,21 +21848,107 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     const isOwner     = () => !isKasirMode();
     const getSwal     = () => window.MySwal || window.Swal;
 
+    // ── Custom Toast — posisi dikendalikan sendiri, bebas dari SweetAlert2 ──
     function getToast() {
-      const S = getSwal();
-      if (!S) return null;
-      return S.mixin({
-        toast: true,
-        position: 'top',
-        showConfirmButton: false,
-        timer: 5000,
-        timerProgressBar: true,
-        customClass: { popup: 'swal2-ku-toast', container: 'swal2-toast-column' },
-        didOpen: (t) => {
-          t.addEventListener('mouseenter', S.stopTimer);
-          t.addEventListener('mouseleave', S.resumeTimer);
+      return {
+        fire: function(opts) {
+          _showKuToast(opts);
         }
+      };
+    }
+
+    function _showKuToast({ icon, title, html, timer } = {}) {
+      // Buat/ambil container toast
+      let wrap = document.getElementById('ku-toast-wrap');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'ku-toast-wrap';
+        wrap.style.cssText = [
+          'position:fixed',
+          'top:10px',
+          'left:12px',
+          'right:12px',
+          'z-index:999999',
+          'display:flex',
+          'flex-direction:column',
+          'align-items:stretch',
+          'gap:8px',
+          'pointer-events:none',
+          'max-width:480px',
+          'margin:0 auto',
+          'width:calc(100% - 24px)',
+          'left:50%',
+          'transform:translateX(-50%)',
+        ].join(';');
+        document.body.appendChild(wrap);
+      }
+
+      const iconMap = {
+        success: { emoji: '✅', color: '#059669' },
+        error:   { emoji: '❌', color: '#ef4444' },
+        warning: { emoji: '⚠️', color: '#f59e0b' },
+        info:    { emoji: 'ℹ️', color: '#0061C2' },
+      };
+      const ic = iconMap[icon] || iconMap.info;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+      const toast = document.createElement('div');
+      toast.style.cssText = [
+        'background:' + (isDark ? '#1e293b' : '#ffffff'),
+        'border-radius:16px',
+        'padding:12px 14px',
+        'box-shadow:0 4px 20px rgba(0,0,0,' + (isDark?'0.4':'0.13') + ')',
+        'display:flex',
+        'align-items:flex-start',
+        'gap:10px',
+        'pointer-events:auto',
+        'opacity:0',
+        'transform:translateY(-10px)',
+        'transition:opacity 0.25s ease,transform 0.25s ease',
+        'overflow:hidden',
+        'position:relative',
+      ].join(';');
+
+      const titleColor = isDark ? '#f1f5f9' : '#0f172a';
+      const bodyColor  = isDark ? '#94a3b8' : '#475569';
+
+      toast.innerHTML =
+        '<span style="font-size:20px;line-height:1;flex-shrink:0;margin-top:1px">' + ic.emoji + '</span>' +
+        '<div style="flex:1;min-width:0">' +
+          '<p style="margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:800;color:' + titleColor + '">' + (title||'') + '</p>' +
+          (html ? '<div style="margin:3px 0 0;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;color:' + bodyColor + ';line-height:1.4">' + html + '</div>' : '') +
+        '</div>';
+
+      // Progress bar
+      const dur = timer || 5000;
+      const bar = document.createElement('div');
+      bar.style.cssText = 'position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 16px 16px;width:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);transition:width ' + dur + 'ms linear';
+      toast.appendChild(bar);
+
+      wrap.prepend(toast);
+
+      // Animate in
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          toast.style.opacity = '1';
+          toast.style.transform = 'translateY(0)';
+          bar.style.width = '0%';
+        });
       });
+
+      // Auto dismiss
+      let removing = false;
+      function dismiss() {
+        if (removing) return;
+        removing = true;
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px)';
+        setTimeout(() => toast.remove(), 280);
+      }
+
+      const t = setTimeout(dismiss, dur);
+      toast.addEventListener('mouseenter', () => clearTimeout(t));
+      toast.addEventListener('click', dismiss);
     }
 
     // ─── Cooldown — hindari spam notifikasi ─────────────────
