@@ -26172,5 +26172,457 @@ window.addEventListener('load', function() {
 });
 </script>
 
+<!-- ================================================================
+     KuDropdown — Sistem Dropdown Premium Reusable
+     Mengganti semua <select> dompet dengan dropdown kustom bergaya
+     riwayat transaksi (dark panel, avatar, saldo info, checkmark)
+================================================================ -->
+<div id="ku-dd-panel" style="
+  display:none;position:fixed;z-index:99995;
+  border-radius:16px;overflow:hidden;
+  background:linear-gradient(160deg,#0d1f3c,#091422);
+  border:1px solid rgba(255,255,255,0.14);
+  box-shadow:0 24px 60px rgba(0,0,0,0.75),0 4px 16px rgba(0,0,0,0.5);
+  max-height:260px;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+">
+  <div id="ku-dd-items"></div>
+</div>
+<div id="ku-dd-backdrop" onclick="_kuDdClose()" style="display:none;position:fixed;inset:0;z-index:99994;background:transparent;"></div>
+
+<style>
+/* ── KuDropdown Trigger ── */
+.ku-dd-trigger {
+  display:flex;align-items:center;gap:8px;
+  padding:11px 13px;border-radius:13px;cursor:pointer;
+  background:rgba(255,255,255,0.05);
+  border:1.5px solid rgba(255,255,255,0.12);
+  transition:all 0.18s;user-select:none;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  position:relative;
+}
+.ku-dd-trigger:active { transform:scale(0.985); }
+.ku-dd-trigger .ku-dd-icon {
+  width:22px;height:22px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;background:rgba(255,255,255,0.08);
+}
+.ku-dd-trigger .ku-dd-label {
+  flex:1;min-width:0;
+  font-size:11px;font-weight:900;
+  color:rgba(255,255,255,0.55);
+  letter-spacing:0.04em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ku-dd-trigger .ku-dd-label.selected { color:#38BDF8; }
+.ku-dd-trigger .ku-dd-chevron {
+  font-size:7px;color:rgba(255,255,255,0.35);
+  transition:transform 0.2s;flex-shrink:0;
+}
+/* State terisi */
+.ku-dd-trigger.has-value {
+  background:rgba(56,189,248,0.12);
+  border-color:rgba(56,189,248,0.32);
+}
+/* Light mode override */
+[data-theme="light"] .ku-dd-trigger {
+  background:#f1f5f9;border-color:#e2e8f0;
+}
+[data-theme="light"] .ku-dd-trigger .ku-dd-label { color:#94a3b8; }
+[data-theme="light"] .ku-dd-trigger .ku-dd-label.selected { color:#0061C2; }
+[data-theme="light"] .ku-dd-trigger.has-value { background:#eff6ff;border-color:#bfdbfe; }
+[data-theme="light"] .ku-dd-trigger .ku-dd-chevron { color:#94a3b8; }
+/* KuDD item rows */
+.ku-dd-item {
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,0.055);
+  transition:background 0.12s;
+}
+.ku-dd-item:last-child { border-bottom:none; }
+.ku-dd-item:active,.ku-dd-item:hover { background:rgba(56,189,248,0.1) !important; }
+</style>
+
+<script>
+(function() {
+'use strict';
+
+/* ── State ── */
+let _activeTriggerId  = null;
+let _activeCb         = null;
+let _activeItems      = [];
+let _activeValue      = null;
+
+/* ── Buka/Tutup ── */
+window._kuDdClose = function() {
+  const panel   = document.getElementById('ku-dd-panel');
+  const backdrop= document.getElementById('ku-dd-backdrop');
+  if (panel)    panel.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+  // Kembalikan chevron trigger yang aktif
+  if (_activeTriggerId) {
+    const ch = document.querySelector('#' + _activeTriggerId + ' .ku-dd-chevron');
+    if (ch) ch.style.transform = 'rotate(0deg)';
+  }
+  _activeTriggerId = null;
+  _activeCb        = null;
+};
+
+/* ── Posisikan panel ── */
+function _position(triggerId) {
+  const trigger = document.getElementById(triggerId);
+  const panel   = document.getElementById('ku-dd-panel');
+  if (!trigger || !panel) return;
+  const rect = trigger.getBoundingClientRect();
+  const vw   = window.innerWidth;
+  const vh   = window.innerHeight;
+  const minW = Math.max(rect.width, 220);
+
+  panel.style.width = minW + 'px';
+
+  // Horizontal: jangan melewati kanan layar
+  let left = rect.left;
+  if (left + minW > vw - 8) left = vw - minW - 8;
+  if (left < 8) left = 8;
+  panel.style.left  = left + 'px';
+  panel.style.right = 'auto';
+
+  // Vertikal: buka ke bawah atau ke atas tergantung ruang
+  const spaceBelow = vh - rect.bottom - 8;
+  const spaceAbove = rect.top - 8;
+  const panelH     = Math.min(260, _activeItems.length * 46 + 4);
+
+  if (spaceBelow >= panelH || spaceBelow >= spaceAbove) {
+    panel.style.top    = (rect.bottom + 5) + 'px';
+    panel.style.bottom = 'auto';
+  } else {
+    panel.style.bottom = (vh - rect.top + 5) + 'px';
+    panel.style.top    = 'auto';
+  }
+}
+
+/* ── Render items ke panel ── */
+function _renderItems(items, currentVal, cb, triggerId) {
+  const container = document.getElementById('ku-dd-items');
+  if (!container) return;
+
+  container.innerHTML = items.map((item, i) => {
+    const isActive = item.value === currentVal;
+    // Warna avatar berdasarkan tipe
+    const avatarBg = item.color ? item.color + '22' : 'rgba(255,255,255,0.08)';
+    const iconColor= item.color || 'rgba(255,255,255,0.4)';
+    const icon     = item.icon || 'fa-circle';
+    const isLast   = i === items.length - 1;
+
+    return `<div class="ku-dd-item" onclick="_kuDdSelect('${triggerId}','${item.value.toString().replace(/'/g,"\\'")}',${i})"
+      style="${isLast ? 'border-bottom:none;' : ''}${isActive ? 'background:rgba(56,189,248,0.08);' : ''}">
+      <div style="width:28px;height:28px;border-radius:9px;background:${avatarBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas ${icon}" style="font-size:11px;color:${iconColor};"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <p style="font-size:10px;font-weight:900;color:${isActive?'#38BDF8':'white'};margin:0;letter-spacing:0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.label}</p>
+        ${item.sub ? `<p style="font-size:8px;color:rgba(255,255,255,0.35);margin:1px 0 0;font-weight:600;">${item.sub}</p>` : ''}
+      </div>
+      <i class="fas fa-check" style="font-size:9px;color:#38BDF8;flex-shrink:0;${isActive?'':'visibility:hidden;'}"></i>
+    </div>`;
+  }).join('');
+}
+
+/* ── Ketika item dipilih ── */
+window._kuDdSelect = function(triggerId, value, idx) {
+  const item = _activeItems[idx];
+  if (!item) return;
+
+  // Update trigger visual
+  const trigger = document.getElementById(triggerId);
+  if (trigger) {
+    const labelEl = trigger.querySelector('.ku-dd-label');
+    const iconEl  = trigger.querySelector('.ku-dd-icon i');
+    if (labelEl) { labelEl.textContent = item.label; labelEl.classList.add('selected'); }
+    if (iconEl && item.icon)  iconEl.className = 'fas ' + item.icon;
+    if (iconEl && item.color) iconEl.style.color = item.color;
+    trigger.classList.add('has-value');
+    // Update hidden select
+    const selId = trigger.dataset.selectId;
+    if (selId) {
+      const sel = document.getElementById(selId);
+      if (sel) { sel.value = value; sel.dispatchEvent(new Event('change')); }
+    }
+  }
+
+  _activeValue = value;
+  if (_activeCb) _activeCb(value, item);
+  _kuDdClose();
+};
+
+/* ── Fungsi publik: toggle dropdown ── */
+window.kuDdToggle = function(triggerId) {
+  const panel = document.getElementById('ku-dd-panel');
+  if (!panel) return;
+
+  // Kalau sudah terbuka untuk trigger yang sama → tutup
+  if (_activeTriggerId === triggerId) { _kuDdClose(); return; }
+
+  // Tutup yang lain dulu
+  _kuDdClose();
+
+  const trigger = document.getElementById(triggerId);
+  if (!trigger) return;
+
+  // Ambil config dari data attribute trigger
+  const configFn = trigger.dataset.configFn;
+  if (!configFn || !window[configFn]) return;
+  const config = window[configFn](triggerId);
+  if (!config) return;
+
+  _activeTriggerId = triggerId;
+  _activeCb        = config.onSelect || null;
+  _activeItems     = config.items    || [];
+  _activeValue     = config.value    || null;
+
+  _renderItems(_activeItems, _activeValue, _activeCb, triggerId);
+  _position(triggerId);
+
+  panel.style.display   = 'block';
+  const backdrop = document.getElementById('ku-dd-backdrop');
+  if (backdrop) backdrop.style.display = 'block';
+
+  // Putar chevron
+  const ch = trigger.querySelector('.ku-dd-chevron');
+  if (ch) ch.style.transform = 'rotate(180deg)';
+};
+
+/* ── Reposisi saat scroll/resize ── */
+window.addEventListener('scroll', function() {
+  if (_activeTriggerId) _position(_activeTriggerId);
+}, true);
+window.addEventListener('resize', function() {
+  if (_activeTriggerId) _position(_activeTriggerId);
+});
+
+/* ── Helper: build items dari dompet ── */
+window._kuDdWalletItems = function(opts) {
+  opts = opts || {};
+  const wallets = (window.db && window.db.dompet) ? window.db.dompet : [];
+  const items   = [];
+  if (opts.allowEmpty !== false) {
+    items.push({ value: '', label: '— Pilih Dompet —', icon: 'fa-wallet', color: 'rgba(255,255,255,0.3)', sub: null });
+  }
+  wallets.forEach(function(w) {
+    const isKas = w.tipe === 'kas';
+    items.push({
+      value : w.id,
+      label : w.nama,
+      icon  : isKas ? 'fa-coins' : 'fa-university',
+      color : isKas ? '#10b981' : '#38BDF8',
+      sub   : 'Saldo: Rp ' + (w.saldo||0).toLocaleString('id-ID')
+    });
+  });
+  return items;
+};
+
+/* ══ CONFIG FUNCTIONS per dropdown ID ══
+   Setiap trigger punya data-config-fn="nama_fungsi"
+   Fungsi itu return { items, value, onSelect }
+*/
+
+// ── Dompet Modal Keluar (kasir digital) ──
+window._kuCfg_kd_w_modal = function() {
+  const sel = document.getElementById('kd-w-modal');
+  return {
+    items: _kuDdWalletItems(),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('kd-w-modal');
+      if (sel) { sel.value = val; }
+    }
+  };
+};
+// ── Dana Masuk Ke (kasir digital) ──
+window._kuCfg_kd_w_penerima = function() {
+  const sel = document.getElementById('kd-w-penerima');
+  return {
+    items: _kuDdWalletItems(),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('kd-w-penerima');
+      if (sel) sel.value = val;
+    }
+  };
+};
+// ── Dana Masuk Ke (kasir fisik) ──
+window._kuCfg_kf_w_penerima = function() {
+  const sel = document.getElementById('kf-w-penerima');
+  return {
+    items: _kuDdWalletItems(),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('kf-w-penerima');
+      if (sel) sel.value = val;
+    }
+  };
+};
+// ── Dompet Hutang Pelanggan/Toko ──
+window._kuCfg_m_h_wallet = function() {
+  const sel = document.getElementById('m-h-wallet');
+  return {
+    items: _kuDdWalletItems(),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('m-h-wallet');
+      if (sel) sel.value = val;
+    }
+  };
+};
+// ── Sumber Dana Bayar Hutang ──
+window._kuCfg_pay_h_wallet = function() {
+  const sel = document.getElementById('pay-h-wallet');
+  return {
+    items: _kuDdWalletItems({ allowEmpty: false }),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('pay-h-wallet');
+      if (sel) sel.value = val;
+    }
+  };
+};
+// ── Transfer: Dari Dompet ──
+window._kuCfg_tr_from = function() {
+  const sel = document.getElementById('tr-from');
+  return {
+    items: _kuDdWalletItems({ allowEmpty: false }),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('tr-from');
+      if (sel) sel.value = val;
+    }
+  };
+};
+// ── Transfer: Ke Dompet ──
+window._kuCfg_tr_to = function() {
+  const sel = document.getElementById('tr-to');
+  return {
+    items: _kuDdWalletItems({ allowEmpty: false }),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('tr-to');
+      if (sel) sel.value = val;
+    }
+  };
+};
+// ── Adj: Pilih Dompet ──
+window._kuCfg_adj_wallet = function() {
+  const sel = document.getElementById('adj-wallet');
+  return {
+    items: _kuDdWalletItems({ allowEmpty: false }),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('adj-wallet');
+      if (sel) sel.value = val;
+    }
+  };
+};
+// ── Bayar Hutang Supplier ──
+window._kuCfg_bhs_dompet = function() {
+  const sel = document.getElementById('bhs-dompet');
+  return {
+    items: _kuDdWalletItems({ allowEmpty: false }),
+    value: sel ? sel.value : '',
+    onSelect: function(val) {
+      const sel = document.getElementById('bhs-dompet');
+      if (sel) sel.value = val;
+    }
+  };
+};
+
+/* ── Sinkronisasi: saat updateSelects() jalan, refresh label trigger yg terbuka ── */
+function _refreshKuTriggers() {
+  [
+    ['ku-tr-kd-w-modal','kd-w-modal'],
+    ['ku-tr-kd-w-penerima','kd-w-penerima'],
+    ['ku-tr-kf-w-penerima','kf-w-penerima'],
+    ['ku-tr-m-h-wallet','m-h-wallet'],
+    ['ku-tr-pay-h-wallet','pay-h-wallet'],
+    ['ku-tr-tr-from','tr-from'],
+    ['ku-tr-tr-to','tr-to'],
+    ['ku-tr-adj-wallet','adj-wallet'],
+    ['ku-tr-bhs-dompet','bhs-dompet'],
+  ].forEach(function(pair) {
+    const trigger = document.getElementById(pair[0]);
+    const sel     = document.getElementById(pair[1]);
+    if (!trigger || !sel) return;
+    const labelEl = trigger.querySelector('.ku-dd-label');
+    const val = sel.value;
+    if (!val) {
+      if (labelEl) { labelEl.textContent = '— Pilih Dompet —'; labelEl.classList.remove('selected'); }
+      trigger.classList.remove('has-value');
+    } else {
+      const w = window.db && window.db.dompet ? window.db.dompet.find(function(x){ return x.id === val; }) : null;
+      if (w && labelEl) { labelEl.textContent = w.nama; labelEl.classList.add('selected'); }
+      trigger.classList.add('has-value');
+    }
+  });
+}
+
+/* ── Hook ke updateSelects ── */
+window.addEventListener('load', function() {
+  var _tryHook = 0;
+  var _hookIv  = setInterval(function() {
+    _tryHook++;
+    if (_tryHook > 40) { clearInterval(_hookIv); return; }
+    if (typeof window.updateSelects !== 'function') return;
+    clearInterval(_hookIv);
+    var _origUS = window.updateSelects;
+    window.updateSelects = function() {
+      var r = _origUS.apply(this, arguments);
+      setTimeout(_refreshKuTriggers, 80);
+      return r;
+    };
+  }, 300);
+});
+
+})();
+</script>
+
+<!-- ── Inject KuDropdown trigger HTML ── (setelah DOM siap) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  /* Template trigger */
+  function makeTrigger(id, cfgFn, placeholder, icon) {
+    icon = icon || 'fa-wallet';
+    return '<div id="' + id + '" class="ku-dd-trigger" onclick="kuDdToggle(\'' + id + '\')" data-config-fn="' + cfgFn + '">'
+      + '<div class="ku-dd-icon"><i class="fas ' + icon + '" style="font-size:10px;color:rgba(255,255,255,0.4);"></i></div>'
+      + '<span class="ku-dd-label">' + placeholder + '</span>'
+      + '<i class="fas fa-chevron-down ku-dd-chevron"></i>'
+      + '</div>';
+  }
+
+  /* Daftar select yang diganti: [selectId, triggerId, cfgFn, placeholder, icon] */
+  var replaceList = [
+    ['kd-w-modal',    'ku-tr-kd-w-modal',    '_kuCfg_kd_w_modal',    '— Pilih Dompet —', 'fa-wallet'],
+    ['kd-w-penerima', 'ku-tr-kd-w-penerima', '_kuCfg_kd_w_penerima', '— Dana Masuk ke —','fa-money-bill-wave'],
+    ['kf-w-penerima', 'ku-tr-kf-w-penerima', '_kuCfg_kf_w_penerima', '— Dana Masuk ke —','fa-money-bill-wave'],
+    ['m-h-wallet',    'ku-tr-m-h-wallet',    '_kuCfg_m_h_wallet',    '— Pilih Dompet —', 'fa-wallet'],
+    ['pay-h-wallet',  'ku-tr-pay-h-wallet',  '_kuCfg_pay_h_wallet',  '— Sumber Dana —',  'fa-coins'],
+    ['tr-from',       'ku-tr-tr-from',       '_kuCfg_tr_from',       '— Dari Dompet —',  'fa-arrow-right-from-bracket'],
+    ['tr-to',         'ku-tr-tr-to',         '_kuCfg_tr_to',         '— Ke Dompet —',    'fa-arrow-right-to-bracket'],
+    ['adj-wallet',    'ku-tr-adj-wallet',     '_kuCfg_adj_wallet',    '— Pilih Dompet —', 'fa-wallet'],
+    ['bhs-dompet',    'ku-tr-bhs-dompet',    '_kuCfg_bhs_dompet',    '— Pilih Dompet —', 'fa-coins'],
+  ];
+
+  replaceList.forEach(function(item) {
+    var selId = item[0], triggerId = item[1], cfgFn = item[2], ph = item[3], icon = item[4];
+    var sel = document.getElementById(selId);
+    if (!sel) return;
+    /* Sembunyikan select asli, sisipkan trigger setelahnya */
+    sel.style.display = 'none';
+    var triggerEl = document.createElement('div');
+    triggerEl.innerHTML = makeTrigger(triggerId, cfgFn, ph, icon);
+    sel.parentNode.insertBefore(triggerEl.firstChild, sel.nextSibling);
+  });
+});
+</script>
+
 </body>
 </html>
