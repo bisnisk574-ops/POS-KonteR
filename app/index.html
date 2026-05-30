@@ -25559,9 +25559,7 @@ window.addEventListener("load", function() {
           var fmtRp = window.fmtRp || function(n){ return n.toLocaleString("id-ID"); };
           window.kirimNotifOS({
             title: "⚠️ Peringatan Saldo!",
-            body : "Saldo lebih kecil dari awal shift " + (shift.nama||"Aktif") + "
-Selisih: Rp " + fmtRp(selisih) + "
-*Abaikan jika saldo memang sudah diambil",
+            body : "Saldo lebih kecil dari awal shift " + (shift.nama||"Aktif") + "\nSelisih: Rp " + fmtRp(selisih) + "\n*Abaikan jika saldo memang sudah diambil",
             tag  : "konterku-saldo-warning",
             data : { type: "saldo_warning", selisih: selisih }
           });
