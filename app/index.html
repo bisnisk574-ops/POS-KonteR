@@ -21858,94 +21858,53 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     }
 
     function _showKuToast({ icon, title, html, timer } = {}) {
-      // Buat/ambil container toast
       let wrap = document.getElementById('ku-toast-wrap');
       if (!wrap) {
         wrap = document.createElement('div');
         wrap.id = 'ku-toast-wrap';
-        wrap.style.cssText = [
-          'position:fixed',
-          'top:10px',
-          'left:12px',
-          'right:12px',
-          'z-index:999999',
-          'display:flex',
-          'flex-direction:column',
-          'align-items:stretch',
-          'gap:8px',
-          'pointer-events:none',
-          'max-width:480px',
-          'margin:0 auto',
-          'width:calc(100% - 24px)',
-          'left:50%',
-          'transform:translateX(-50%)',
-        ].join(';');
+        wrap.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);width:calc(100vw - 24px);max-width:480px;z-index:999999;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
         document.body.appendChild(wrap);
       }
 
       const iconMap = {
-        success: { emoji: '✅', color: '#059669' },
-        error:   { emoji: '❌', color: '#ef4444' },
-        warning: { emoji: '⚠️', color: '#f59e0b' },
-        info:    { emoji: 'ℹ️', color: '#0061C2' },
+        success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️'
       };
-      const ic = iconMap[icon] || iconMap.info;
+      const emoji = iconMap[icon] || iconMap.info;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
-      const toast = document.createElement('div');
-      toast.style.cssText = [
-        'background:' + (isDark ? '#1e293b' : '#ffffff'),
-        'border-radius:16px',
-        'padding:12px 14px',
-        'box-shadow:0 4px 20px rgba(0,0,0,' + (isDark?'0.4':'0.13') + ')',
-        'display:flex',
-        'align-items:flex-start',
-        'gap:10px',
-        'pointer-events:auto',
-        'opacity:0',
-        'transform:translateY(-10px)',
-        'transition:opacity 0.25s ease,transform 0.25s ease',
-        'overflow:hidden',
-        'position:relative',
-      ].join(';');
-
+      const bg    = isDark ? '#1e293b' : '#ffffff';
       const titleColor = isDark ? '#f1f5f9' : '#0f172a';
       const bodyColor  = isDark ? '#94a3b8' : '#475569';
+      const shadow = isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.13)';
+
+      const toast = document.createElement('div');
+      toast.style.cssText = 'background:' + bg + ';border-radius:16px;padding:12px 14px;box-shadow:' + shadow + ';display:flex;align-items:flex-start;gap:10px;pointer-events:auto;opacity:0;transform:translateY(-10px);transition:opacity 0.25s,transform 0.25s;overflow:hidden;position:relative;width:100%;box-sizing:border-box;';
 
       toast.innerHTML =
-        '<span style="font-size:20px;line-height:1;flex-shrink:0;margin-top:1px">' + ic.emoji + '</span>' +
-        '<div style="flex:1;min-width:0">' +
-          '<p style="margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:800;color:' + titleColor + '">' + (title||'') + '</p>' +
-          (html ? '<div style="margin:3px 0 0;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;color:' + bodyColor + ';line-height:1.4">' + html + '</div>' : '') +
+        '<span style="font-size:20px;line-height:1;flex-shrink:0;margin-top:1px">' + emoji + '</span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<p style="margin:0;font-family:Plus Jakarta Sans,sans-serif;font-size:13px;font-weight:800;color:' + titleColor + '">' + (title||'') + '</p>' +
+          (html ? '<div style="margin:3px 0 0;font-family:Plus Jakarta Sans,sans-serif;font-size:11px;color:' + bodyColor + ';line-height:1.4">' + html + '</div>' : '') +
         '</div>';
 
-      // Progress bar
       const dur = timer || 5000;
       const bar = document.createElement('div');
-      bar.style.cssText = 'position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 16px 16px;width:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);transition:width ' + dur + 'ms linear';
+      bar.style.cssText = 'position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 16px 16px;width:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);transition:width ' + dur + 'ms linear;';
       toast.appendChild(bar);
-
       wrap.prepend(toast);
 
-      // Animate in
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          toast.style.opacity = '1';
-          toast.style.transform = 'translateY(0)';
-          bar.style.width = '0%';
-        });
-      });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+        bar.style.width = '0';
+      }));
 
-      // Auto dismiss
-      let removing = false;
+      let gone = false;
       function dismiss() {
-        if (removing) return;
-        removing = true;
+        if (gone) return; gone = true;
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-8px)';
         setTimeout(() => toast.remove(), 280);
       }
-
       const t = setTimeout(dismiss, dur);
       toast.addEventListener('mouseenter', () => clearTimeout(t));
       toast.addEventListener('click', dismiss);
@@ -25453,61 +25412,46 @@ function _refreshHutangCustomerSelect(type) {
      PATCH: Registrasi sw-notif.js + Helper kirimNotifOS
 ================================================================ -->
 <script>
-(function() {
-  'use strict';
-  let _swReg = null;
-
-  async function _registerSW() {
-    if (!('serviceWorker' in navigator)) return null;
-    try {
-      const reg = await navigator.serviceWorker.register('../sw-notif.js', { scope: '../' });
-      _swReg = reg;
-      return reg;
-    } catch (err) {
-      try {
-        const reg2 = await navigator.serviceWorker.register('/sw-notif.js', { scope: '/' });
-        _swReg = reg2;
-        return reg2;
-      } catch (err2) {
-        console.warn('[KonterKU] SW gagal registrasi:', err2.message);
-        return null;
-      }
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _registerSW);
-  } else {
-    _registerSW();
-  }
-
-  window.kirimNotifOS = async function({ title, body, icon, badge, tag, data } = {}) {
-    if (!('Notification' in window)) return false;
-    if (Notification.permission === 'denied') return false;
-    if (Notification.permission === 'default') {
-      const result = await Notification.requestPermission();
-      if (result !== 'granted') return false;
-    }
-    let reg = _swReg;
-    if (!reg && 'serviceWorker' in navigator) {
-      reg = await navigator.serviceWorker.ready.catch(() => null);
-    }
-    if (!reg || !reg.active) {
-      try { new Notification(title || 'KonterKU', { body, icon: icon || '../icon-192.png', tag }); return true; }
-      catch(e) { return false; }
-    }
-    reg.active.postMessage({
-      type  : 'SHOW_NOTIF',
-      title : title  || 'KonterKU',
-      body  : body   || '',
-      icon  : icon   || '../icon-192.png',
-      badge : badge  || '../icon-96.png',
-      tag   : tag    || ('konterku-' + Date.now()),
-      data  : data   || {}
+// Registrasi SW notif
+window._kuSWReg = null;
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('../sw-notif.js')
+    .then(r => { window._kuSWReg = r; console.log('[KonterKU] SW OK'); })
+    .catch(() => {
+      navigator.serviceWorker.register('/sw-notif.js')
+        .then(r => { window._kuSWReg = r; console.log('[KonterKU] SW fallback OK'); })
+        .catch(e => console.warn('[KonterKU] SW gagal:', e.message));
     });
-    return true;
-  };
-})();
+}
+
+window.kirimNotifOS = async function({ title, body, tag, data } = {}) {
+  if (!('Notification' in window)) return;
+  // Minta izin kalau belum
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+  if (Notification.permission !== 'granted') return;
+
+  // Coba via SW dulu
+  try {
+    const reg = window._kuSWReg || await navigator.serviceWorker.ready;
+    if (reg && reg.active) {
+      reg.active.postMessage({
+        type : 'SHOW_NOTIF',
+        title: title || 'KonterKU',
+        body : body  || '',
+        icon : '../icon-192.png',
+        badge: '../icon-96.png',
+        tag  : tag   || ('ku-' + Date.now()),
+        data : data  || {}
+      });
+      return;
+    }
+  } catch(e) {}
+
+  // Fallback langsung
+  try { new Notification(title || 'KonterKU', { body, tag }); } catch(e) {}
+};
 </script>
 
 <!-- ================================================================
