@@ -360,6 +360,12 @@
       background: transparent !important;
       backdrop-filter: none !important;
       pointer-events: none !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      overflow: visible !important;
+      display: flex !important;
+      justify-content: center !important;
     }
     .swal2-container.swal2-top > .swal2-popup {
       pointer-events: auto !important;
@@ -372,10 +378,15 @@
       border: none !important;
       background: #ffffff !important;
       font-weight: 700 !important;
-      margin: 10px 12px 0 !important;
-      width: calc(100vw - 24px) !important;
-      max-width: 420px !important;
+      margin: 10px auto 0 !important;
+      left: 12px !important;
+      right: 12px !important;
+      width: auto !important;
+      max-width: calc(100vw - 24px) !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
       align-items: flex-start !important;
+      position: relative !important;
     }
     .swal2-popup.swal2-toast.swal2-ku-toast .swal2-title {
       font-size: 0.84rem !important;
@@ -396,6 +407,7 @@
       height: 28px !important;
       min-width: 28px !important;
       font-size: 0.7rem !important;
+      flex-shrink: 0 !important;
     }
     .swal2-popup.swal2-toast.swal2-ku-toast .swal2-timer-progress-bar {
       background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
@@ -25429,6 +25441,139 @@ function _refreshHutangCustomerSelect(type) {
   };
 })();
 </script>
+
+<!-- ================================================================
+     PATCH: PERINGATAN SALDO KASIR — Banner merah + Notif OS
+================================================================ -->
+<style>
+  #banner-peringatan-saldo {
+    display: none;
+    margin: 0 0 14px 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    padding: 16px 18px;
+    box-shadow: 0 4px 20px rgba(239,68,68,0.35);
+    animation: fadeInDown 0.4s ease;
+  }
+  @keyframes fadeInDown {
+    from { opacity:0; transform:translateY(-12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  #banner-peringatan-saldo .bps-title {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px; font-weight: 900; color: #fff;
+    margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;
+  }
+  #banner-peringatan-saldo .bps-body {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 12px; color: rgba(255,255,255,0.88); line-height: 1.5; margin: 0;
+  }
+  #banner-peringatan-saldo .bps-selisih {
+    font-size: 18px; font-weight: 900; color: #fff;
+    margin: 6px 0 4px 0; display: block;
+  }
+  #banner-peringatan-saldo .bps-note {
+    font-size: 10px; color: rgba(255,255,255,0.65);
+    font-style: italic; margin-top: 6px; display: block;
+  }
+  #banner-peringatan-saldo .bps-icon {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.15); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+</style>
+<script>
+window.addEventListener("load", function() {
+  setTimeout(function() {
+
+    // Sisipkan banner ke dalam view-kasir setelah kasir-header
+    var viewKasir = document.getElementById("view-kasir");
+    if (viewKasir && !document.getElementById("banner-peringatan-saldo")) {
+      var banner = document.createElement("div");
+      banner.id = "banner-peringatan-saldo";
+      banner.innerHTML =
+        "<div style="display:flex;align-items:flex-start;gap:12px;">" +
+          "<div class="bps-icon"><i class="fas fa-triangle-exclamation" style="color:#fff;font-size:16px;"></i></div>" +
+          "<div style="flex:1;min-width:0;">" +
+            "<p class="bps-title">PERINGATAN SALDO</p>" +
+            "<p class="bps-body">Total saldo saat ini <b>lebih kecil</b> dari saldo awal shift!" +
+              "<span class="bps-selisih" id="bps-selisih-val">Rp 0</span>" +
+            "</p>" +
+            "<span class="bps-note">*Ini hanya peringatan. Abaikan jika saldo memang sudah diambil.</span>" +
+          "</div>" +
+        "</div>";
+      var header = viewKasir.querySelector(".kasir-header");
+      if (header && header.nextSibling) {
+        viewKasir.insertBefore(banner, header.nextSibling);
+      } else {
+        viewKasir.prepend(banner);
+      }
+    }
+
+    function _updateBannerSaldo() {
+      var banner = document.getElementById("banner-peringatan-saldo");
+      if (!banner) return;
+      var activeShifts = window._absensiActiveShifts || [];
+      if (!activeShifts.length) { banner.style.display = "none"; return; }
+      var db = window.db;
+      if (!db || !db.dompet) { banner.style.display = "none"; return; }
+      var totalSaldoNow = db.dompet.reduce(function(s,w){ return s+(Number(w.saldo)||0); }, 0);
+      var shift = activeShifts[0];
+      var saldoAwal = (shift.saldo_awal_kas || shift.saldo_awal || 0) + (shift.saldo_awal_bank || 0);
+      if (totalSaldoNow < saldoAwal) {
+        var selisih = saldoAwal - totalSaldoNow;
+        var fmtRp = window.fmtRp || function(n){ return n.toLocaleString("id-ID"); };
+        var el = document.getElementById("bps-selisih-val");
+        if (el) el.textContent = "Selisih: Rp " + fmtRp(selisih);
+        banner.style.display = "block";
+      } else {
+        banner.style.display = "none";
+      }
+    }
+
+    // Patch checkSaldoWarning — tambah notif OS + update banner
+    if (typeof window.checkSaldoWarning === "function") {
+      var _origSaldo = window.checkSaldoWarning;
+      window.checkSaldoWarning = function(skipCooldown) {
+        _origSaldo(skipCooldown);
+        _updateBannerSaldo();
+        if (typeof window.kirimNotifOS !== "function") return;
+        var activeShifts = window._absensiActiveShifts || [];
+        if (!activeShifts.length) return;
+        var db = window.db;
+        if (!db || !db.dompet) return;
+        var totalSaldoNow = db.dompet.reduce(function(s,w){ return s+(Number(w.saldo)||0); }, 0);
+        var shift = activeShifts[0];
+        var saldoAwal = (shift.saldo_awal_kas || shift.saldo_awal || 0) + (shift.saldo_awal_bank || 0);
+        if (totalSaldoNow < saldoAwal) {
+          var selisih = saldoAwal - totalSaldoNow;
+          var fmtRp = window.fmtRp || function(n){ return n.toLocaleString("id-ID"); };
+          window.kirimNotifOS({
+            title: "⚠️ Peringatan Saldo!",
+            body : "Saldo lebih kecil dari awal shift " + (shift.nama||"Aktif") + "
+Selisih: Rp " + fmtRp(selisih) + "
+*Abaikan jika saldo memang sudah diambil",
+            tag  : "konterku-saldo-warning",
+            data : { type: "saldo_warning", selisih: selisih }
+          });
+        }
+      };
+    }
+
+    // Hook renderAll agar banner update ikut
+    if (typeof window.renderAll === "function") {
+      var _origRA2 = window.renderAll;
+      window.renderAll = function() {
+        var r = _origRA2.apply(this, arguments);
+        setTimeout(_updateBannerSaldo, 900);
+        return r;
+      };
+    }
+
+    setTimeout(_updateBannerSaldo, 2000);
+  }, 1500);
+});
+<\/script>
 
 <!-- ================================================================
      PATCH: checkHutangJatuhTempo → juga kirim Notifikasi OS
