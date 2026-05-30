@@ -25621,5 +25621,148 @@ window.addEventListener('load', function() {
 });
 </script>
 
+<!-- ================================================================
+     PATCH: Auto-load shift aktif kasir + alert selisih saldo kasir
+================================================================ -->
+<script>
+window.addEventListener('load', function() {
+  setTimeout(function() {
+
+    var isKasir = localStorage.getItem('k_kasir_mode') === 'true';
+    if (!isKasir) return; // Hanya jalankan untuk akun kasir
+
+    var COOLDOWN_KEY = 'kku_saldo_alert_kasir_ts';
+    var COOLDOWN_MS  = 5 * 60 * 1000; // 5 menit
+
+    function _shouldShowAlert() {
+      var last = Number(localStorage.getItem(COOLDOWN_KEY) || 0);
+      return (Date.now() - last) > COOLDOWN_MS;
+    }
+    function _markAlertShown() {
+      localStorage.setItem(COOLDOWN_KEY, String(Date.now()));
+    }
+
+    // Load shift aktif kasir dari Firestore
+    async function _loadShiftKasirBackground() {
+      try {
+        var uid = localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid');
+        var kasirNama = localStorage.getItem('k_kasir_nama') || '';
+        if (!uid || !kasirNama || !window._fbFirestore) return;
+
+        var query = window._fbFirestore
+          .collection('absensi_kasir')
+          .where('owner_uid', '==', uid)
+          .where('status', '==', 'aktif')
+          .where('nama', '==', kasirNama);
+
+        var snap = await query.limit(5).get();
+        var shifts = [];
+        snap.forEach(function(d) { shifts.push({ id: d.id, ...d.data() }); });
+
+        if (!shifts.length) return;
+
+        // Merge ke _absensiActiveShifts agar fungsi lain bisa pakai
+        window._absensiActiveShifts = window._absensiActiveShifts || [];
+        shifts.forEach(function(s) {
+          if (!window._absensiActiveShifts.find(function(x) { return x.id === s.id; })) {
+            window._absensiActiveShifts.push(s);
+          }
+        });
+
+        // Cek selisih saldo
+        _cekSelisihSaldoKasir(shifts[0]);
+
+      } catch(e) {
+        console.warn('[SaldoKasir] Gagal load shift:', e);
+      }
+    }
+
+    function _cekSelisihSaldoKasir(shift) {
+      if (!shift) return;
+      var db = window.db;
+      if (!db || !db.dompet) return;
+      if (!_shouldShowAlert()) return;
+
+      var totalSaldoNow  = db.dompet.reduce(function(s, w) { return s + (Number(w.saldo) || 0); }, 0);
+      var saldoAwalKas   = shift.saldo_awal_kas  !== undefined ? (shift.saldo_awal_kas  || 0) : (shift.saldo_awal || 0);
+      var saldoAwalBank  = shift.saldo_awal_bank || 0;
+      var totalSaldoAwal = saldoAwalKas + saldoAwalBank;
+
+      if (totalSaldoNow >= totalSaldoAwal) return; // Aman, tidak perlu alert
+
+      var selisih = totalSaldoAwal - totalSaldoNow;
+      var fmtRp   = window.fmtRp || function(n) { return n.toLocaleString('id-ID'); };
+
+      _markAlertShown();
+
+      // Tampilkan SweetAlert2 peringatan
+      var Swal2 = window.MySwal || (typeof Swal !== 'undefined' ? Swal : null);
+      if (!Swal2) return;
+
+      Swal2.fire({
+        icon : 'warning',
+        title: '⚠️ Peringatan Saldo!',
+        html :
+          '<div style="text-align:left;font-size:13px;line-height:1.7;">' +
+            'Saldo saat ini <b>lebih kecil</b> dari saldo awal shift kamu.<br>' +
+            '<div style="margin:12px 0;padding:10px 14px;background:#fef2f2;border-radius:10px;border:1.5px solid #fca5a5;">' +
+              '<span style="color:#94a3b8;font-size:11px;">Saldo Awal Shift</span><br>' +
+              '<b style="color:#1e293b;font-size:15px;">Rp ' + fmtRp(totalSaldoAwal) + '</b><br><br>' +
+              '<span style="color:#94a3b8;font-size:11px;">Saldo Sekarang</span><br>' +
+              '<b style="color:#1e293b;font-size:15px;">Rp ' + fmtRp(totalSaldoNow) + '</b><br><br>' +
+              '<span style="color:#94a3b8;font-size:11px;">Selisih Kurang</span><br>' +
+              '<b style="color:#ef4444;font-size:17px;">- Rp ' + fmtRp(selisih) + '</b>' +
+            '</div>' +
+            '<span style="font-size:11px;color:#94a3b8;font-style:italic;">*Abaikan jika saldo memang sudah diambil oleh pemilik.</span>' +
+          '</div>',
+        confirmButtonText : 'Mengerti',
+        confirmButtonColor: '#ef4444',
+        customClass        : { popup: 'swal2-ku' },
+        scrollbarPadding   : false,
+      });
+
+      // Juga kirim notif OS jika tersedia
+      if (typeof window.kirimNotifOS === 'function') {
+        window.kirimNotifOS({
+          title: '⚠️ Peringatan Saldo Kasir!',
+          body : 'Saldo kurang dari awal shift ' + (shift.nama || '') + '\nSelisih: Rp ' + fmtRp(selisih),
+          tag  : 'konterku-saldo-kasir',
+          data : { type: 'saldo_warning_kasir', selisih: selisih }
+        });
+      }
+    }
+
+    // Tunggu db dan firebase siap lalu jalankan
+    var _tryCount = 0;
+    var _interval = setInterval(function() {
+      _tryCount++;
+      if (_tryCount > 20) { clearInterval(_interval); return; } // timeout 10 detik
+      if (!window.db || !window._fbFirestore) return;
+      clearInterval(_interval);
+      _loadShiftKasirBackground();
+    }, 500);
+
+    // Hook renderAll agar re-check tiap data refresh
+    var _hookTry = 0;
+    var _hookInterval = setInterval(function() {
+      _hookTry++;
+      if (_hookTry > 40) { clearInterval(_hookInterval); return; }
+      if (typeof window.renderAll !== 'function') return;
+      clearInterval(_hookInterval);
+      var _origRA = window.renderAll;
+      window.renderAll = function() {
+        var r = _origRA.apply(this, arguments);
+        setTimeout(function() {
+          var shifts = window._absensiActiveShifts || [];
+          if (shifts.length) _cekSelisihSaldoKasir(shifts[0]);
+        }, 1200);
+        return r;
+      };
+    }, 500);
+
+  }, 3000); // Delay 3 detik setelah load agar semua sudah siap
+});
+</script>
+
 </body>
 </html>
