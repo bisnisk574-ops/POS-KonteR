@@ -354,17 +354,54 @@
     .swal2-popup.swal2-ku .swal2-close { font-size: 1.4rem !important; color: #94a3b8 !important; top: 14px !important; right: 16px !important; }
     .swal2-popup.swal2-ku .swal2-close:hover { color: #ef4444 !important; transform: scale(1.2); }
 
-    /* Toast premium */
+    /* Toast premium — bersih, tanpa backdrop, mirip notif OS */
+    .swal2-container.swal2-top {
+      padding: 0 !important;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      pointer-events: none !important;
+    }
+    .swal2-container.swal2-top > .swal2-popup {
+      pointer-events: auto !important;
+    }
     .swal2-popup.swal2-toast.swal2-ku-toast {
       font-family: 'Plus Jakarta Sans', sans-serif !important;
-      border-radius: 18px !important;
-      padding: 14px 20px !important;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,97,194,0.12) !important;
-      border: 1px solid rgba(255,255,255,0.85) !important;
+      border-radius: 16px !important;
+      padding: 12px 16px !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.13) !important;
+      border: none !important;
+      background: #ffffff !important;
       font-weight: 700 !important;
+      margin: 10px 12px 0 !important;
+      width: calc(100vw - 24px) !important;
+      max-width: 420px !important;
+      align-items: flex-start !important;
     }
-    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-title { font-size: 0.82rem !important; font-weight: 800 !important; color: #0f172a !important; }
-    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-timer-progress-bar { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
+    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-title {
+      font-size: 0.84rem !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+      margin: 0 !important;
+      text-align: left !important;
+    }
+    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-html-container {
+      margin: 2px 0 0 0 !important;
+      text-align: left !important;
+      font-size: 0.76rem !important;
+      color: #475569 !important;
+    }
+    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-icon {
+      margin: 0 10px 0 0 !important;
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      font-size: 0.7rem !important;
+    }
+    .swal2-popup.swal2-toast.swal2-ku-toast .swal2-timer-progress-bar {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
+      border-radius: 0 0 16px 16px !important;
+      height: 3px !important;
+    }
     /* ===== DARK MODE: SWEETALERT2 ===== */
     [data-theme="dark"] .swal2-popup.swal2-ku {
       background: #1e293b !important;
@@ -401,9 +438,13 @@
       color: #e2e8f0 !important;
     }
     /* Toast dark mode */
+    [data-theme="dark"] .swal2-container.swal2-top {
+      background: transparent !important;
+    }
     [data-theme="dark"] .swal2-popup.swal2-toast.swal2-ku-toast {
       background: #1e293b !important;
-      border-color: rgba(255,255,255,0.08) !important;
+      border: none !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.40) !important;
     }
     [data-theme="dark"] .swal2-popup.swal2-toast.swal2-ku-toast .swal2-title {
       color: #f1f5f9 !important;
@@ -25326,6 +25367,106 @@ function _refreshHutangCustomerSelect(type) {
     if (labelEl) labelEl.textContent = 'Nama (Pelanggan/Kreditur)';
   }
 }
+</script>
+
+<!-- ================================================================
+     PATCH: Registrasi sw-notif.js + Helper kirimNotifOS
+================================================================ -->
+<script>
+(function() {
+  'use strict';
+  let _swReg = null;
+
+  async function _registerSW() {
+    if (!('serviceWorker' in navigator)) return null;
+    try {
+      const reg = await navigator.serviceWorker.register('../sw-notif.js', { scope: '../' });
+      _swReg = reg;
+      return reg;
+    } catch (err) {
+      try {
+        const reg2 = await navigator.serviceWorker.register('/sw-notif.js', { scope: '/' });
+        _swReg = reg2;
+        return reg2;
+      } catch (err2) {
+        console.warn('[KonterKU] SW gagal registrasi:', err2.message);
+        return null;
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _registerSW);
+  } else {
+    _registerSW();
+  }
+
+  window.kirimNotifOS = async function({ title, body, icon, badge, tag, data } = {}) {
+    if (!('Notification' in window)) return false;
+    if (Notification.permission === 'denied') return false;
+    if (Notification.permission === 'default') {
+      const result = await Notification.requestPermission();
+      if (result !== 'granted') return false;
+    }
+    let reg = _swReg;
+    if (!reg && 'serviceWorker' in navigator) {
+      reg = await navigator.serviceWorker.ready.catch(() => null);
+    }
+    if (!reg || !reg.active) {
+      try { new Notification(title || 'KonterKU', { body, icon: icon || '../icon-192.png', tag }); return true; }
+      catch(e) { return false; }
+    }
+    reg.active.postMessage({
+      type  : 'SHOW_NOTIF',
+      title : title  || 'KonterKU',
+      body  : body   || '',
+      icon  : icon   || '../icon-192.png',
+      badge : badge  || '../icon-96.png',
+      tag   : tag    || ('konterku-' + Date.now()),
+      data  : data   || {}
+    });
+    return true;
+  };
+})();
+</script>
+
+<!-- ================================================================
+     PATCH: checkHutangJatuhTempo → juga kirim Notifikasi OS
+================================================================ -->
+<script>
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    if (typeof window.checkHutangJatuhTempo !== 'function') return;
+    const _orig = window.checkHutangJatuhTempo;
+    window.checkHutangJatuhTempo = function() {
+      _orig();
+      if (typeof window.kirimNotifOS !== 'function') return;
+      const db = window.db;
+      if (!db || !db.hutang) return;
+      const today   = new Date(); today.setHours(0,0,0,0);
+      const in3days = new Date(today); in3days.setDate(in3days.getDate() + 3);
+      const mendekati = (db.hutang || []).filter(h => {
+        if (h.status === 'lunas' || !h.tgl_jatuh_tempo) return false;
+        return new Date(h.tgl_jatuh_tempo + 'T23:59:59') <= in3days;
+      });
+      if (!mendekati.length) return;
+      const sudahLewat   = mendekati.filter(h => new Date(h.tgl_jatuh_tempo+'T23:59:59') < today);
+      const mauJatuh     = mendekati.filter(h => new Date(h.tgl_jatuh_tempo+'T23:59:59') >= today);
+      const totalTagihan = mendekati.reduce((s, h) => s + (Number(h.jumlah) || 0), 0);
+      const fmtRp        = window.fmtRp || (n => n.toLocaleString('id-ID'));
+      let bodyParts = [];
+      if (sudahLewat.length) bodyParts.push(sudahLewat.length + ' hutang jatuh tempo TERLEWAT');
+      if (mauJatuh.length)   bodyParts.push(mauJatuh.length + ' jatuh tempo dalam 3 hari');
+      bodyParts.push('Total: Rp ' + fmtRp(totalTagihan));
+      window.kirimNotifOS({
+        title : '💸 Hutang Jatuh Tempo!',
+        body  : bodyParts.join('\n'),
+        tag   : 'konterku-hutang-jatuh',
+        data  : { type: 'hutang_jatuh', total: totalTagihan }
+      });
+    };
+  }, 1200);
+});
 </script>
 
 </body>
