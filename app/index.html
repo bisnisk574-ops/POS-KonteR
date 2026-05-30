@@ -7315,6 +7315,75 @@
           </div>
         </div>
 
+        <!-- ===== TARGET PENJUALAN HARIAN (Owner Only) ===== -->
+        <div id="card-target-omset" style="display:none;">
+          <div class="relative overflow-hidden rounded-3xl p-5" style="background:linear-gradient(135deg,#1a0533 0%,#3b0764 55%,#7c3aed 100%);box-shadow:0 10px 32px rgba(124,58,237,0.45);">
+            <!-- Texture -->
+            <div class="absolute inset-0 pointer-events-none" style="background-image:radial-gradient(circle,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:18px 18px;"></div>
+            <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(196,132,252,0.22) 0%,transparent 70%);"></div>
+            <div class="relative">
+              <!-- Header row -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                  <div style="width:32px;height:32px;border-radius:11px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-bullseye text-white" style="font-size:12px;"></i>
+                  </div>
+                  <div>
+                    <p style="font-size:9px;font-weight:900;color:rgba(216,180,254,0.8);letter-spacing:0.14em;text-transform:uppercase;">Target Omzet Harian</p>
+                  </div>
+                </div>
+                <button id="btn-set-target" onclick="openSetTarget()" style="padding:5px 12px;border-radius:20px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.75);font-size:8px;font-weight:900;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:0.06em;">
+                  <i class="fas fa-pen mr-1"></i>SET TARGET
+                </button>
+              </div>
+              <!-- Progress -->
+              <div class="flex items-end justify-between mb-2">
+                <div>
+                  <p id="target-omset-pct" style="font-size:26px;font-weight:900;color:white;line-height:1;letter-spacing:-0.5px;">0%</p>
+                  <p id="target-omset-detail" style="font-size:9px;font-weight:700;color:rgba(216,180,254,0.6);margin-top:2px;">Rp 0 / Rp 0</p>
+                </div>
+                <div id="target-omset-status" style="padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);">
+                  <p style="font-size:8px;font-weight:900;color:rgba(255,255,255,0.7);">—</p>
+                </div>
+              </div>
+              <!-- Progress bar -->
+              <div style="height:8px;border-radius:100px;background:rgba(255,255,255,0.12);overflow:hidden;">
+                <div id="target-omset-bar" style="height:100%;border-radius:100px;background:linear-gradient(90deg,#a78bfa,#c084fc,#e879f9);transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1);width:0%;"></div>
+              </div>
+              <!-- Sisa / lebih -->
+              <p id="target-omset-sisa" style="font-size:8px;font-weight:700;color:rgba(216,180,254,0.55);margin-top:6px;text-align:right;">Set target terlebih dahulu</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== REKAP PER KASIR (Owner Only) ===== -->
+        <div id="card-rekap-kasir" style="display:none;">
+          <div class="rounded-3xl overflow-hidden" style="background:var(--sb-bg);border:1.5px solid var(--sb-border);box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+            <!-- Header -->
+            <div style="padding:14px 18px;background:linear-gradient(135deg,#0a1628,#0d2550);display:flex;align-items:center;justify-content:space-between;">
+              <div class="flex items-center gap-2.5">
+                <div style="width:30px;height:30px;border-radius:10px;background:rgba(56,189,248,0.18);border:1px solid rgba(56,189,248,0.25);display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-users-gear" style="color:#38BDF8;font-size:12px;"></i>
+                </div>
+                <div>
+                  <p style="font-size:10px;font-weight:900;color:white;letter-spacing:0.06em;">Rekap per Kasir</p>
+                  <p id="rekap-kasir-periode" style="font-size:7px;font-weight:700;color:rgba(56,189,248,0.6);letter-spacing:0.06em;text-transform:uppercase;">Hari ini</p>
+                </div>
+              </div>
+              <!-- Filter periode -->
+              <select id="rekap-kasir-filter" onchange="renderRekapKasir()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:5px 10px;font-size:9px;font-weight:900;color:rgba(255,255,255,0.75);font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;">
+                <option value="hari">Hari Ini</option>
+                <option value="minggu">7 Hari</option>
+                <option value="bulan">Bulan Ini</option>
+              </select>
+            </div>
+            <!-- List -->
+            <div id="rekap-kasir-list" style="padding:12px 14px;min-height:60px;">
+              <p style="font-size:10px;color:#94a3b8;text-align:center;padding:16px 0;font-weight:600;">Memuat data...</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Shortcut Menu — redesigned premium cards -->
         <div class="grid grid-cols-2 gap-3">
           <!-- Laporan -->
@@ -10494,7 +10563,7 @@
           } else {
             db.hutang.push({ id:'H-'+Date.now()+'-'+berhasil, tipe:'pelanggan', nama:cust, jumlah:it.jual, tgl, ket:'DIG: '+it.produkNama });
           }
-          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'DIG: '+it.produkNama, modal:it.modal, jual:it.jual, pelanggan:cust, status, walletModal:it.wModalId, walletJual:wPenerimaId, pRef:it.produkId, tipe:'digital' });
+          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'DIG: '+it.produkNama, modal:it.modal, jual:it.jual, pelanggan:cust, status, walletModal:it.wModalId, walletJual:wPenerimaId, pRef:it.produkId, tipe:'digital', kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
 
         } else if (it.tipe === 'fisik') {
           const pIdx = db.inventory.findIndex(p => p.id === it.produkId);
@@ -10505,7 +10574,7 @@
           } else {
             db.hutang.push({ id:'H-'+Date.now()+'-'+berhasil, tipe:'pelanggan', nama:cust, jumlah:it.jual, tgl, ket:'FIS: '+it.produkNama });
           }
-          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'FIS: '+it.produkNama, modal:it.modal, jual:it.jual, pelanggan:cust, status, walletModal:null, walletJual:wPenerimaId, pRef:it.produkId, tipe:'fisik' });
+          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'FIS: '+it.produkNama, modal:it.modal, jual:it.jual, pelanggan:cust, status, walletModal:null, walletJual:wPenerimaId, pRef:it.produkId, tipe:'fisik', kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
 
         } else if (it.tipe === 'ewallet') {
           const { jenis, nominal, adminBank, adminAgen, totalBayar: tb, wModalId, note } = it.ewlData;
@@ -10518,7 +10587,7 @@
           } else {
             db.hutang.push({ id:'H-'+Date.now()+'-'+berhasil, tipe:'pelanggan', nama:cust, jumlah:tb, tgl, ket:'EWL: '+pName });
           }
-          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'EWL: '+pName, modal:nominal+adminBank, jual:tb, pelanggan:cust, status, walletModal:wModalId, walletJual:wPenerimaId, tipe:'ewallet', adminBank, adminAgen, nominal });
+          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'EWL: '+pName, modal:nominal+adminBank, jual:tb, pelanggan:cust, status, walletModal:wModalId, walletJual:wPenerimaId, tipe:'ewallet', adminBank, adminAgen, nominal, kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
         }
 
         berhasil++;
@@ -11014,11 +11083,186 @@
       renderNotes();
       updateSelects();
       renderProfitChart();
+      // ── TARGET PENJUALAN HARIAN & REKAP KASIR (Owner Only) ──
+      const _isOwner = !localStorage.getItem('k_kasir_mode');
+      const _cardTarget = document.getElementById('card-target-omset');
+      const _cardRekap  = document.getElementById('card-rekap-kasir');
+      if (_cardTarget) _cardTarget.style.display = _isOwner ? '' : 'none';
+      if (_cardRekap)  _cardRekap.style.display  = _isOwner ? '' : 'none';
+      if (_isOwner) { renderTargetOmset(); renderRekapKasir(); }
       // Check low stock after data loaded
       setTimeout(checkLowStockNotif, 1000);
       // Apply plan-based UI locks
       setTimeout(applyPlanUI, 200);
     }
+
+    // ──────────────────────────────────────────────
+    //  TARGET OMZET HARIAN
+    // ──────────────────────────────────────────────
+    function renderTargetOmset() {
+      const target = parseFloat(localStorage.getItem('k_target_omset_harian') || '0');
+      const today  = getWIBDate();
+      const omset  = db.transaksi
+        .filter(t => t.tgl === today)
+        .reduce((a, t) => a + Number(t.jual || 0), 0);
+
+      const pct    = target > 0 ? Math.min(100, Math.round(omset / target * 100)) : 0;
+      const bar    = document.getElementById('target-omset-bar');
+      const pctEl  = document.getElementById('target-omset-pct');
+      const detEl  = document.getElementById('target-omset-detail');
+      const sisaEl = document.getElementById('target-omset-sisa');
+      const statEl = document.getElementById('target-omset-status');
+
+      if (!pctEl) return;
+
+      if (target <= 0) {
+        pctEl.textContent   = '—';
+        detEl.textContent   = 'Belum ada target';
+        sisaEl.textContent  = 'Tap SET TARGET untuk menentukan target harian';
+        if (bar) bar.style.width = '0%';
+        if (statEl) statEl.innerHTML = '<p style="font-size:8px;font-weight:900;color:rgba(255,255,255,0.5);">BELUM SET</p>';
+        return;
+      }
+
+      const sisa = target - omset;
+      const fmtRp = v => 'Rp ' + Math.round(Math.abs(v)).toLocaleString('id-ID');
+
+      pctEl.textContent  = pct + '%';
+      detEl.textContent  = fmtRp(omset) + ' / ' + fmtRp(target);
+
+      // Progress bar color
+      const barColor = pct >= 100 ? 'linear-gradient(90deg,#10b981,#34d399)'
+                     : pct >= 70  ? 'linear-gradient(90deg,#f59e0b,#fbbf24)'
+                     : 'linear-gradient(90deg,#a78bfa,#c084fc,#e879f9)';
+      if (bar) { bar.style.width = pct + '%'; bar.style.background = barColor; }
+
+      if (pct >= 100) {
+        sisaEl.textContent = '🎉 TARGET TERCAPAI! Kelebihan ' + fmtRp(Math.abs(sisa));
+        sisaEl.style.color = 'rgba(52,211,153,0.85)';
+        if (statEl) statEl.innerHTML = '<p style="font-size:8px;font-weight:900;color:#34d399;">TERCAPAI ✓</p>';
+      } else {
+        sisaEl.textContent = 'Sisa yang diperlukan: ' + fmtRp(sisa);
+        sisaEl.style.color = 'rgba(216,180,254,0.55)';
+        const statusLabel = pct >= 70 ? 'HAMPIR TERCAPAI' : pct >= 40 ? 'DALAM PROSES' : 'PERLU USAHA';
+        const statusColor = pct >= 70 ? '#fbbf24' : pct >= 40 ? '#38BDF8' : 'rgba(255,255,255,0.5)';
+        if (statEl) statEl.innerHTML = `<p style="font-size:8px;font-weight:900;color:${statusColor};">${statusLabel}</p>`;
+      }
+    }
+
+    function openSetTarget() {
+      const current = parseFloat(localStorage.getItem('k_target_omset_harian') || '0');
+      const S = _getMySwal() || Swal;
+      S.fire({
+        title: '🎯 Set Target Omzet Harian',
+        html: `
+          <p style="font-size:12px;color:#475569;margin-bottom:12px;">Masukkan target omzet harian toko Anda</p>
+          <input id="swal-target-input" type="number" min="0" step="1000"
+            value="${current > 0 ? current : ''}"
+            placeholder="Contoh: 500000"
+            class="swal2-input" style="font-size:16px;font-weight:900;text-align:center;">
+          <p style="font-size:9px;color:#94a3b8;margin-top:8px;">Isi 0 untuk menonaktifkan target</p>`,
+        confirmButtonText: '<i class="fas fa-save mr-1"></i> SIMPAN TARGET',
+        confirmButtonColor: '#7c3aed',
+        showCancelButton: true,
+        cancelButtonText: 'Batal',
+        customClass: { popup: 'swal2-ku' },
+        preConfirm: () => {
+          const v = parseFloat(document.getElementById('swal-target-input')?.value) || 0;
+          return v;
+        }
+      }).then(r => {
+        if (r.isConfirmed) {
+          localStorage.setItem('k_target_omset_harian', String(r.value));
+          renderTargetOmset();
+          if (r.value > 0) {
+            S.fire({ icon:'success', title:'Target disimpan!', html:'Target omzet <b>Rp ' + r.value.toLocaleString('id-ID') + '</b>/hari sudah aktif.', timer:2000, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
+          }
+        }
+      });
+    }
+    window.openSetTarget = openSetTarget;
+
+    // ──────────────────────────────────────────────
+    //  REKAP PER KASIR
+    // ──────────────────────────────────────────────
+    function renderRekapKasir() {
+      const list    = document.getElementById('rekap-kasir-list');
+      const periodeEl = document.getElementById('rekap-kasir-periode');
+      const filterEl = document.getElementById('rekap-kasir-filter');
+      if (!list) return;
+
+      const filter  = filterEl ? filterEl.value : 'hari';
+      const today   = getWIBDate();
+      const now     = new Date();
+
+      // Hitung tanggal batas bawah
+      let tglMin = today;
+      if (filter === 'minggu') {
+        const d = new Date(now); d.setDate(d.getDate() - 6);
+        const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+        tglMin = `${y}-${m}-${dd}`;
+        if (periodeEl) periodeEl.textContent = '7 Hari Terakhir';
+      } else if (filter === 'bulan') {
+        const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
+        tglMin = `${y}-${m}-01`;
+        if (periodeEl) periodeEl.textContent = 'Bulan Ini';
+      } else {
+        if (periodeEl) periodeEl.textContent = 'Hari Ini';
+      }
+
+      // Kelompokkan transaksi per kasir
+      const trx = db.transaksi.filter(t => t.tgl >= tglMin && t.tgl <= today);
+      const kasirMap = {};
+      trx.forEach(t => {
+        const nama = t.kasir_nama || 'Owner';
+        if (!kasirMap[nama]) kasirMap[nama] = { nama, trx: 0, omset: 0, laba: 0 };
+        kasirMap[nama].trx++;
+        kasirMap[nama].omset += Number(t.jual || 0);
+        kasirMap[nama].laba  += Number(t.jual || 0) - Number(t.modal || 0);
+      });
+
+      const entries = Object.values(kasirMap).sort((a,b) => b.omset - a.omset);
+
+      if (entries.length === 0) {
+        list.innerHTML = '<p style="font-size:10px;color:#94a3b8;text-align:center;padding:16px 0;font-weight:600;">Belum ada transaksi pada periode ini</p>';
+        return;
+      }
+
+      const fmtRp = v => 'Rp ' + Math.round(v).toLocaleString('id-ID');
+      const colors = ['#0061C2','#10b981','#7c3aed','#f59e0b','#ef4444','#06b6d4'];
+      const maxOmset = Math.max(...entries.map(e => e.omset));
+
+      list.innerHTML = entries.map((e, i) => {
+        const pct = maxOmset > 0 ? Math.round(e.omset / maxOmset * 100) : 0;
+        const color = colors[i % colors.length];
+        const initials = e.nama.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        return `
+          <div style="margin-bottom:${i < entries.length-1 ? '10px' : '0'};padding-bottom:${i < entries.length-1 ? '10px' : '0'};border-bottom:${i < entries.length-1 ? '1px solid var(--sb-border)' : 'none'};">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+              <!-- Avatar -->
+              <div style="width:34px;height:34px;border-radius:11px;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span style="font-size:11px;font-weight:900;color:white;">${initials}</span>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <p style="font-size:11px;font-weight:900;color:var(--sb-text-title);truncate;">${e.nama}</p>
+                  <p style="font-size:11px;font-weight:900;color:${color};">${fmtRp(e.omset)}</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:1px;">
+                  <p style="font-size:8px;font-weight:700;color:var(--sb-text-sub);">${e.trx} transaksi</p>
+                  <span style="width:3px;height:3px;border-radius:50%;background:var(--sb-divider);display:inline-block;"></span>
+                  <p style="font-size:8px;font-weight:700;color:#10b981;">Laba: ${fmtRp(e.laba)}</p>
+                </div>
+              </div>
+            </div>
+            <!-- Mini bar -->
+            <div style="height:4px;border-radius:100px;background:var(--sb-divider);overflow:hidden;margin-left:44px;">
+              <div style="height:100%;border-radius:100px;background:${color};width:${pct}%;transition:width 0.5s ease;"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+    window.renderRekapKasir = renderRekapKasir;
 
     // ---- DASHBOARD ----
     function renderDashboard() {
@@ -12515,7 +12759,8 @@
           walletModal: wModalId, walletJual: wBayarId,
           tipe: 'ewallet',
           adminBank, adminAgen, nominal,
-          bayar: _keBayar || undefined, kembalian: _keBayar > 0 ? _keBayar - totalBayar : undefined
+          bayar: _keBayar || undefined, kembalian: _keBayar > 0 ? _keBayar - totalBayar : undefined,
+          kasir_nama: localStorage.getItem('k_kasir_nama') || undefined
         });
 
         resetKasirForms();
@@ -12560,7 +12805,8 @@
         }
         const _kdBayar = Number(document.getElementById('kd-bayar')?.value) || 0;
         db.transaksi.push({ id: 'TR-'+Date.now(), tgl, produk: 'DIG: '+productName, modal, jual, pelanggan: cust, status, walletModal: wmId, walletJual: wpId, pRef: isManual ? null : selVal, tipe: 'digital', note,
-          bayar: _kdBayar || undefined, kembalian: _kdBayar > 0 ? _kdBayar - jual : undefined });
+          bayar: _kdBayar || undefined, kembalian: _kdBayar > 0 ? _kdBayar - jual : undefined,
+          kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
       } else {
         const pid = document.getElementById('kf-produk').value;
         const pIdx = db.inventory.findIndex(p => p.id === pid);
@@ -12592,7 +12838,8 @@
           id: 'TR-'+Date.now(), tgl, produk: 'FIS: '+productName, modal, jual,
           pelanggan: cust, status, walletModal: null, walletJual: wpId, pRef: pid, tipe: 'fisik', note,
           diskon: diskonNominal, biayaTambahan,
-          bayar: _kfBayarVal || undefined, kembalian: _kfBayarVal > 0 ? _kfKembalianVal : undefined
+          bayar: _kfBayarVal || undefined, kembalian: _kfBayarVal > 0 ? _kfKembalianVal : undefined,
+          kasir_nama: localStorage.getItem('k_kasir_nama') || undefined
         });
       }
 
