@@ -5048,8 +5048,8 @@
             <p style="font-size:8px;font-weight:900;color:#38BDF8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">📲 QR Code Portal Pelanggan</p>
             <p style="font-size:10px;font-weight:600;color:#64748b;margin-bottom:12px;line-height:1.5;">Bagikan QR ini ke pelanggan agar mereka langsung masuk ke portal <b style="color:#1e293b;">Cek Poin</b> tanpa perlu ketik kode toko.</p>
             <div style="display:flex;justify-content:center;margin-bottom:12px;">
-              <div id="akun-qr-canvas-wrap" style="background:#fff;border-radius:14px;padding:10px;display:inline-block;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
-                <canvas id="akun-qr-canvas" width="150" height="150"></canvas>
+              <div id="akun-qr-canvas-wrap" style="background:#fff;border-radius:14px;padding:10px;display:inline-block;box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:150px;min-height:150px;">
+                <img id="akun-qr-img" width="150" height="150" style="display:block;border-radius:4px;" src="" alt="QR Code" />
               </div>
             </div>
             <div style="display:flex;gap:8px;">
@@ -14889,6 +14889,8 @@ ${t.bayar ? `
         // Render multi-toko section setelah modal terbuka
         setTimeout(function() {
           if (typeof renderMultiTokoSection === 'function') renderMultiTokoSection();
+          // Re-render QR code setiap kali modal dibuka (canvas baru = visible)
+          if (typeof _akunRenderQR === 'function') _akunRenderQR();
         }, 150);
 
         // Tampilkan tombol Hapus Semua Data — SUDAH dipindah ke modal Setting
@@ -26698,42 +26700,128 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- ===== QR CODE LIBRARY ===== -->
+<!-- ===== QR CODE ===== -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
-/* QR Code – Portal Pelanggan */
+/* ================================================================
+   QR Code Portal Pelanggan
+   - Render pakai qrcode.js ke <canvas> (untuk download)
+   - Juga tampilkan <img> fallback via Google Charts (instant, no-lib)
+   - Render dipanggil ulang saat modal dibuka (bukan hanya saat data di-set)
+================================================================ */
 let _akunQrStoreId = null;
-function _akunGenerateQR(sid) {
-  const sec = document.getElementById('akun-qr-section');
-  if (!sid || sid === '—' || sid === 'DEMO') { if (sec) sec.style.display='none'; return; }
-  _akunQrStoreId = sid;
-  if (sec) sec.style.display = '';
-  const canvas = document.getElementById('akun-qr-canvas');
-  if (!canvas || typeof QRCode === 'undefined') { setTimeout(()=>_akunGenerateQR(sid), 300); return; }
+
+function _akunGetLink(sid) {
+  const s = sid || _akunQrStoreId;
+  if (!s) return '';
   const origin = window.location.origin;
   const base   = window.location.pathname.replace(/\/[^\/]*$/, '');
-  const link   = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(sid);
-  QRCode.toCanvas(canvas, link, { width:150, margin:1, color:{dark:'#0f172a',light:'#ffffff'} },
-    function(err){ if(err) console.error('[QR]', err); });
+  return origin + base + '/cek-poin.html?toko=' + encodeURIComponent(s);
 }
-function _akunSalinLink() {
+
+function _akunGenerateQR(sid) {
+  if (!sid || sid === '—' || sid === 'DEMO') {
+    const sec = document.getElementById('akun-qr-section');
+    if (sec) sec.style.display = 'none';
+    return;
+  }
+  _akunQrStoreId = sid;
+  const sec = document.getElementById('akun-qr-section');
+  if (sec) sec.style.display = '';
+
+  // Selalu render ulang saat dipanggil (termasuk saat modal buka)
+  _akunRenderQR();
+}
+
+function _akunRenderQR() {
   if (!_akunQrStoreId) return;
-  const origin = window.location.origin;
-  const base   = window.location.pathname.replace(/\/[^\/]*$/, '');
-  const link   = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(_akunQrStoreId);
+  const link = _akunGetLink(_akunQrStoreId);
+
+  // 1) Tampilkan img fallback dulu (instant, tidak butuh library)
+  let img = document.getElementById('akun-qr-img');
+  if (!img) {
+    const wrap = document.getElementById('akun-qr-canvas-wrap');
+    if (wrap) {
+      img = document.createElement('img');
+      img.id = 'akun-qr-img';
+      img.width = 150; img.height = 150;
+      img.style.cssText = 'display:block;border-radius:4px;';
+      wrap.innerHTML = '';
+      wrap.appendChild(img);
+    }
+  }
+  if (img) {
+    // Google Charts QR API — no CORS issue, works offline-first via cache
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=4&data=' + encodeURIComponent(link);
+    img.onerror = function() {
+      // Fallback 2: Google Charts
+      img.src = 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=' + encodeURIComponent(link);
+    };
+  }
+
+  // 2) Juga render ke canvas (untuk Unduh QR) saat library tersedia
+  function tryCanvas() {
+    const wrap = document.getElementById('akun-qr-canvas-wrap');
+    if (!wrap) return;
+    if (typeof QRCode === 'undefined') { setTimeout(tryCanvas, 400); return; }
+    // Buat canvas baru di belakang layar untuk keperluan download
+    if (!window._akunQrCanvas) {
+      window._akunQrCanvas = document.createElement('canvas');
+      window._akunQrCanvas.width = 300;
+      window._akunQrCanvas.height = 300;
+    }
+    QRCode.toCanvas(window._akunQrCanvas, link, {
+      width: 300, margin: 2,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    }, function(err) {
+      if (err) console.warn('[QR canvas]', err);
+    });
+  }
+  tryCanvas();
+}
+
+function _akunSalinLink() {
+  const link = _akunGetLink();
+  if (!link) return;
   navigator.clipboard.writeText(link).then(() => {
     Swal.fire({ icon:'success', title:'Link Disalin! 📋',
       html:'<p style="font-size:11px;word-break:break-all;color:#64748b;">'+link+'</p>',
       timer:3000, showConfirmButton:false });
   }).catch(() => { prompt('Salin link berikut:', link); });
 }
+
 function _akunUnduhQR() {
-  const canvas = document.getElementById('akun-qr-canvas');
-  if (!canvas || !_akunQrStoreId) return;
-  const a = document.createElement('a');
-  a.download = 'qr-cekpoin-' + _akunQrStoreId.slice(0,8) + '.png';
-  a.href = canvas.toDataURL('image/png');
-  a.click();
+  const link = _akunGetLink();
+  if (!link) return;
+  // Pakai canvas hi-res kalau tersedia
+  const canvas = window._akunQrCanvas;
+  if (canvas && canvas.width > 0) {
+    const a = document.createElement('a');
+    a.download = 'qr-cekpoin-' + _akunQrStoreId.slice(0,8) + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    return;
+  }
+  // Fallback: unduh dari img src
+  const img = document.getElementById('akun-qr-img');
+  if (img && img.src) {
+    const a = document.createElement('a');
+    a.download = 'qr-cekpoin-' + _akunQrStoreId.slice(0,8) + '.png';
+    a.href = img.src;
+    a.target = '_blank';
+    a.click();
+  }
 }
+
+// ── Re-render saat modal Akun Toko dibuka ──
+document.addEventListener('DOMContentLoaded', function() {
+  // Cari tombol/trigger yang membuka modal akun
+  document.addEventListener('click', function(e) {
+    const trigger = e.target.closest('[onclick*="modal-akun"], [data-modal="akun"], #btn-akun, #sidebar-akun-btn, [onclick*="openAkunModal"], [onclick*="akun-modal"]');
+    if (trigger && _akunQrStoreId) {
+      setTimeout(_akunRenderQR, 150); // tunggu modal animate-in
+    }
+  });
+});
 </script>
 </body>
