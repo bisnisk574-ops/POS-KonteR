@@ -8903,6 +8903,13 @@
           <div><label>Nama</label><input type="text" id="c-nama" class="input-premium"></div>
           <div><label>WhatsApp</label><input type="text" id="c-phone" class="input-premium"></div>
           <div><label>Tanggal Lahir <span style="font-size:9px;font-weight:600;color:#94a3b8;">(opsional, untuk reminder ulang tahun)</span></label><input type="date" id="c-birthday" class="input-premium"></div>
+          <div>
+            <label>PIN Portal Pelanggan <span style="font-size:9px;font-weight:600;color:#94a3b8;">(4 digit, wajib untuk keamanan)</span></label>
+            <input type="number" id="c-pin" class="input-premium" placeholder="Contoh: 1234" maxlength="4" min="1000" max="9999"
+              oninput="this.value=this.value.slice(0,4)"
+              style="letter-spacing:0.3em;font-size:18px;font-weight:900;">
+            <p style="font-size:9px;color:#94a3b8;margin-top:4px;font-weight:600;">⚠️ PIN ini dipakai pelanggan untuk login di portal Cek Poin. Beritahu ke pelanggan.</p>
+          </div>
           <div id="cust-edit-actions" class="hidden grid grid-cols-2 gap-3">
             <button onclick="deleteCustomer()" class="py-4 bg-red-50 text-red-600 rounded-2xl font-black cursor-pointer border-0">HAPUS</button>
             <button onclick="saveCustomer()" class="py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">UPDATE</button>
@@ -12486,6 +12493,7 @@
       document.getElementById('c-nama').value = "";
       document.getElementById('c-phone').value = "";
       const bd = document.getElementById('c-birthday'); if (bd) bd.value = "";
+      const cp = document.getElementById('c-pin'); if (cp) cp.value = "";
       document.getElementById('cust-edit-actions').classList.add('hidden');
       document.getElementById('cust-save-btn').classList.remove('hidden');
       openModal('modal-pelanggan');
@@ -12499,6 +12507,7 @@
       document.getElementById('c-nama').value = c.nama||'';
       document.getElementById('c-phone').value = c.phone||'';
       const bd = document.getElementById('c-birthday'); if (bd) bd.value = c.birthday||'';
+      const cp = document.getElementById('c-pin'); if (cp) cp.value = c.pin||'';
       document.getElementById('cust-edit-actions').classList.remove('hidden');
       document.getElementById('cust-save-btn').classList.add('hidden');
       openModal('modal-pelanggan');
@@ -12509,12 +12518,15 @@
       const nama = document.getElementById('c-nama').value.trim();
       const phone = document.getElementById('c-phone').value.trim();
       const birthday = (document.getElementById('c-birthday')?.value||'').trim();
+      const pinRaw = (document.getElementById('c-pin')?.value||'').trim();
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama pelanggan harus diisi!', 'warning');
+      if (!pinRaw || pinRaw.length < 4) return (_getMySwal()||Swal).fire('Error', 'PIN harus 4 digit!', 'warning');
+      const pin = pinRaw.slice(0,4);
       if (id) {
         const idx = db.pelanggan.findIndex(c => c.id === id);
-        if (idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone, birthday };
+        if (idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone, birthday, pin };
       } else {
-        db.pelanggan.push({ id: 'C-'+Date.now(), nama, phone, birthday, poin: 0, tglDaftar: new Date().toLocaleDateString('id-ID') });
+        db.pelanggan.push({ id: 'C-'+Date.now(), nama, phone, birthday, pin, poin: 0, tglDaftar: new Date().toLocaleDateString('id-ID') });
       }
       closeModal('modal-pelanggan');
       await sync();
@@ -14770,7 +14782,8 @@ ${t.bayar ? `
         document.getElementById('akun-store-id').innerText = sid;
 
         // ── Generate QR Code untuk portal pelanggan ──
-        _akunGenerateQR(sid);
+        // Pakai UID penuh agar cek-poin.html bisa cari lewat doc(uid) langsung
+        if (sid && sid !== '—' && sid !== 'DEMO') _akunGenerateQR(sid);
 
         // ── BACA SUBSCRIPTION DARI FIRESTORE (real-time, fallback ke localStorage) ──
         (async () => {

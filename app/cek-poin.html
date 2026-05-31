@@ -133,8 +133,15 @@
       <div class="field-wrap">
         <div class="field-label">Nama Lengkap</div>
         <input id="inp-nama" class="field-input" type="text"
-          placeholder="Nama sesuai data toko" autocomplete="off"
-          onkeydown="if(event.key==='Enter')loginPelanggan()">
+          placeholder="Nama sesuai data toko" autocomplete="off">
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">PIN <span style="font-size:9px;color:#64748b;font-weight:600;">(4 digit, dari kasir)</span></div>
+        <input id="inp-pin" class="field-input" type="password" inputmode="numeric"
+          placeholder="••••" maxlength="4" autocomplete="off"
+          style="letter-spacing:0.4em;font-size:20px;font-weight:900;text-align:center;"
+          onkeydown="if(event.key==='Enter')loginPelanggan()"
+          oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)">
       </div>
       <button class="btn-primary" onclick="loginPelanggan()">
         <i class="fas fa-sign-in-alt" style="margin-right:6px;"></i>Cek Poin Saya
@@ -271,8 +278,10 @@ async function cariToko() {
 async function loginPelanggan() {
   const hp   = (document.getElementById('inp-hp').value||'').trim().replace(/\D/g,'');
   const nama = (document.getElementById('inp-nama').value||'').trim().toLowerCase();
+  const pin  = (document.getElementById('inp-pin')?.value||'').trim();
   if (!hp)   { swalErr('Nomor HP tidak boleh kosong'); return; }
   if (!nama) { swalErr('Nama tidak boleh kosong'); return; }
+  if (!pin || pin.length < 4) { swalErr('PIN harus 4 digit'); return; }
 
   const btn = document.querySelector('#page-login .btn-primary');
   setBtnLoading(btn,'Mencari data...');
@@ -283,7 +292,7 @@ async function loginPelanggan() {
   if (!list||!list.length) { swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.'); return; }
 
   const found = list.find(p => {
-    const hpP   = (p.hp||p.noHp||p.telepon||'').replace(/\D/g,'');
+    const hpP   = (p.hp||p.noHp||p.telepon||p.phone||'').replace(/\D/g,'');
     const namaP = (p.nama||p.name||'').trim().toLowerCase();
     const hpOk  = hpP===hp || hpP==='0'+hp || '0'+hpP===hp;
     const nmOk  = namaP===nama || namaP.includes(nama) || nama.includes(namaP);
@@ -298,6 +307,28 @@ async function loginPelanggan() {
     });
     return;
   }
+
+  // ── Verifikasi PIN ──
+  if (found.pin) {
+    if (String(pin) !== String(found.pin)) {
+      Swal.fire({
+        icon:'error', title:'PIN Salah',
+        html:'PIN yang kamu masukkan tidak benar.<br><span style="font-size:12px;color:#94a3b8;">Hubungi kasir jika lupa PIN.</span>',
+        customClass:{popup:'swal2-ku'}
+      });
+      document.getElementById('inp-pin').value = '';
+      return;
+    }
+  } else {
+    // Pelanggan lama belum punya PIN — kasir perlu set PIN dulu
+    Swal.fire({
+      icon:'info', title:'PIN Belum Di-set',
+      html:'Akun kamu belum memiliki PIN.<br><span style="font-size:12px;color:#94a3b8;">Minta kasir untuk mengatur PIN di data pelanggan kamu.</span>',
+      customClass:{popup:'swal2-ku'}
+    });
+    return;
+  }
+
   pelanggan = found;
   await loadPoinCfg();
   showDashboard();
@@ -475,6 +506,7 @@ function logout() {
   pelanggan=null;
   document.getElementById('inp-hp').value='';
   document.getElementById('inp-nama').value='';
+  const pp = document.getElementById('inp-pin'); if(pp) pp.value='';
   if(reqListener){reqListener();reqListener=null;}
   showPage('login');
 }
@@ -503,17 +535,77 @@ async function init() {
   const candidateId = paramToko || sessionStorage.getItem('ku_store_id');
 
   if (candidateId) {
-    storeId = candidateId;
-    let doc = await _db.collection('user_stores').doc(storeId).get().catch(()=>null);
-    if (doc&&doc.exists) tokoData=doc.data();
-    else { doc = await _db.collection('stores').doc(storeId).get().catch(()=>null); if(doc&&doc.exists) tokoData=doc.data(); }
-    if (tokoData) {
+    // Cari toko dengan logika lengkap (sama seperti cariToko manual)
+    // supaya bisa handle UID panjang maupun kode pendek
+    let data = null, id = null;
+
+    const kode = candidateId.toUpperCase();
+
+    // 1. Doc langsung pakai candidateId (UID panjang sebagai doc id)
+    let doc = await _db.collection('user_stores').doc(candidateId).get().catch(()=>null);
+    if (doc&&doc.exists){data=doc.data();id=candidateId;}
+
+    // 2. Doc langsung di collection stores
+    if (!data){
+      doc = await _db.collection('stores').doc(candidateId).get().catch(()=>null);
+      if(doc&&doc.exists){data=doc.data();id=candidateId;}
+    }
+
+    // 3. Query by field uid / authUid (UID Firebase sebagai field)
+    if (!data){
+      let s = await _db.collection('user_stores').where('uid','==',candidateId).limit(1).get().catch(()=>null);
+      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
+    }
+    if (!data){
+      let s = await _db.collection('stores').where('uid','==',candidateId).limit(1).get().catch(()=>null);
+      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
+    }
+
+    // 4. Query by field kode_toko (kode pendek)
+    if (!data){
+      let s = await _db.collection('user_stores').where('kode_toko','==',kode).limit(1).get().catch(()=>null);
+      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
+    }
+    if (!data){
+      let s = await _db.collection('stores').where('kode_toko','==',kode).limit(1).get().catch(()=>null);
+      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
+    }
+
+    // 5. Coba kode_toko = 6 karakter pertama dari candidateId (format getKodeToko)
+    if (!data && candidateId.length > 6){
+      const kode6 = candidateId.substring(0,6).toUpperCase();
+      let s = await _db.collection('user_stores').where('kode_toko','==',kode6).limit(1).get().catch(()=>null);
+      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
+      if (!data){
+        s = await _db.collection('stores').where('kode_toko','==',kode6).limit(1).get().catch(()=>null);
+        if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
+      }
+    }
+
+    // 6. Doc dengan kode pendek (8 char prefix dari UID)
+    if (!data && candidateId.length > 8){
+      const shortCode = candidateId.substring(0,8).toUpperCase();
+      doc = await _db.collection('stores').doc(shortCode).get().catch(()=>null);
+      if(doc&&doc.exists){data=doc.data();id=shortCode;}
+      if (!data){
+        doc = await _db.collection('user_stores').doc(shortCode).get().catch(()=>null);
+        if(doc&&doc.exists){data=doc.data();id=shortCode;}
+      }
+    }
+
+    if (data && id) {
+      storeId = id;
+      tokoData = data;
       sessionStorage.setItem('ku_store_id', storeId);
       showLoginPage();
       return;
     }
-    // Kalau dari URL tapi toko tidak ditemukan, tetap tampilkan halaman input
+    // Toko tidak ditemukan — tampilkan input dengan kode ter-isi agar user bisa koreksi
     storeId = null;
+    setTimeout(function(){
+      const inp = document.getElementById('inp-kode-toko');
+      if (inp) inp.value = candidateId.length <= 12 ? candidateId : '';
+    }, 100);
   }
   showPage('toko');
 }
