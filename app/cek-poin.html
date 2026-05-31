@@ -537,81 +537,85 @@ async function init() {
   const candidateId = paramToko || sessionStorage.getItem('ku_store_id');
 
   if (candidateId) {
-    // Cari toko dengan logika lengkap (sama seperti cariToko manual)
-    // supaya bisa handle UID panjang maupun kode pendek
+    console.log('[CekPoin] candidateId dari URL/session:', candidateId);
+
+    // Jalankan cariToko otomatis dengan candidateId
+    // Isi input dan panggil fungsi cariToko yang sudah terbukti bekerja
+    const inp = document.getElementById('inp-kode-toko');
+    if (inp) {
+      // Coba kode pendek dulu (6 char prefix = format getKodeToko di index.html)
+      // Ini yang tampil di "Kelola Kasir" dan terbukti bisa dicari manual
+      const kode6 = candidateId.length >= 6 ? candidateId.substring(0,6).toUpperCase() : candidateId.toUpperCase();
+      inp.value = kode6;
+    }
+
+    // Tampilkan page toko dulu sementara mencari
+    showPage('toko');
+    const btn = document.querySelector('#page-toko .btn-primary');
+    if (btn) setBtnLoading(btn, 'Memuat toko...');
+
+    // Jalankan pencarian lengkap
     let data = null, id = null;
+    const tries = [
+      // Kode pendek 6 char (format Kode Toko di Kelola Kasir)
+      candidateId.length >= 6 ? candidateId.substring(0,6).toUpperCase() : null,
+      // UID penuh
+      candidateId,
+      // UPPERCASE penuh
+      candidateId.toUpperCase(),
+    ].filter(Boolean);
 
-    const kode = candidateId.toUpperCase();
+    for (const kode of tries) {
+      if (data) break;
+      console.log('[CekPoin] Mencoba kode:', kode);
 
-    // 1. Doc langsung pakai candidateId (UID panjang sebagai doc id)
-    let doc = await _db.collection('user_stores').doc(candidateId).get().catch(()=>null);
-    if (doc&&doc.exists){data=doc.data();id=candidateId;}
+      // a. where kode_toko == kode (user_stores)
+      let s = await _db.collection('user_stores').where('kode_toko','==',kode).limit(1).get()
+        .catch(e=>{console.warn('[CekPoin] user_stores where err:', e.message); return null;});
+      if (s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;console.log('[CekPoin] Found via user_stores.kode_toko:', kode);break;}
 
-    // 2. Doc langsung di collection stores
-    if (!data){
-      doc = await _db.collection('stores').doc(candidateId).get().catch(()=>null);
-      if(doc&&doc.exists){data=doc.data();id=candidateId;}
+      // b. where kode_toko == kode (stores)
+      s = await _db.collection('stores').where('kode_toko','==',kode).limit(1).get()
+        .catch(e=>{console.warn('[CekPoin] stores where err:', e.message); return null;});
+      if (s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;console.log('[CekPoin] Found via stores.kode_toko:', kode);break;}
+
+      // c. doc(kode) langsung
+      let doc = await _db.collection('user_stores').doc(kode).get()
+        .catch(e=>{console.warn('[CekPoin] user_stores.doc err:', e.message); return null;});
+      if (doc&&doc.exists){data=doc.data();id=kode;console.log('[CekPoin] Found via user_stores.doc:', kode);break;}
+
+      doc = await _db.collection('stores').doc(kode).get()
+        .catch(e=>{console.warn('[CekPoin] stores.doc err:', e.message); return null;});
+      if (doc&&doc.exists){data=doc.data();id=kode;console.log('[CekPoin] Found via stores.doc:', kode);break;}
+
+      // d. where uid == kode
+      s = await _db.collection('user_stores').where('uid','==',kode).limit(1).get()
+        .catch(()=>null);
+      if (s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;break;}
+      s = await _db.collection('stores').where('uid','==',kode).limit(1).get()
+        .catch(()=>null);
+      if (s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;break;}
     }
 
-    // 3. Query by field uid / authUid (UID Firebase sebagai field)
-    if (!data){
-      let s = await _db.collection('user_stores').where('uid','==',candidateId).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
-    }
-    if (!data){
-      let s = await _db.collection('stores').where('uid','==',candidateId).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
-    }
-
-    // 4. Query by field kode_toko (kode pendek)
-    if (!data){
-      let s = await _db.collection('user_stores').where('kode_toko','==',kode).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
-    }
-    if (!data){
-      let s = await _db.collection('stores').where('kode_toko','==',kode).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
-    }
-
-    // 5. Coba kode_toko = 6 karakter pertama dari candidateId (format getKodeToko)
-    if (!data && candidateId.length > 6){
-      const kode6 = candidateId.substring(0,6).toUpperCase();
-      let s = await _db.collection('user_stores').where('kode_toko','==',kode6).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
-      if (!data){
-        s = await _db.collection('stores').where('kode_toko','==',kode6).limit(1).get().catch(()=>null);
-        if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
-      }
-    }
-
-    // 6. Doc dengan kode pendek (8 char prefix dari UID)
-    if (!data && candidateId.length > 8){
-      const shortCode = candidateId.substring(0,8).toUpperCase();
-      doc = await _db.collection('stores').doc(shortCode).get().catch(()=>null);
-      if(doc&&doc.exists){data=doc.data();id=shortCode;}
-      if (!data){
-        doc = await _db.collection('user_stores').doc(shortCode).get().catch(()=>null);
-        if(doc&&doc.exists){data=doc.data();id=shortCode;}
-      }
-    }
+    if (btn) setBtnNormal(btn, '<i class="fas fa-search" style="margin-right:6px;"></i>Cari Toko');
 
     if (data && id) {
       storeId = id;
       tokoData = data;
       sessionStorage.setItem('ku_store_id', storeId);
+      console.log('[CekPoin] Toko ditemukan, storeId:', storeId);
       showLoginPage();
       return;
     }
-    // Toko tidak ditemukan — tampilkan input dengan kode ter-isi agar user bisa koreksi
-    storeId = null;
-    setTimeout(function(){
-      const inp = document.getElementById('inp-kode-toko');
-      if (inp) inp.value = candidateId.length <= 12 ? candidateId : '';
-    }, 100);
+
+    console.warn('[CekPoin] Semua pencarian gagal untuk:', candidateId);
+    // Biarkan user lihat input dengan kode sudah terisi — bisa klik Cari manual
   }
   showPage('toko');
 }
 init();
+
+
 </script>
 </body>
 </html>
