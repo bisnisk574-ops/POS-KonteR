@@ -5034,6 +5034,25 @@
             <p class="text-[10px] font-black text-slate-600 break-all leading-relaxed" id="akun-store-id">—</p>
           </div>
 
+          <!-- QR Code Pelanggan -->
+          <div id="akun-qr-section" style="border-radius:20px;border:1.5px solid rgba(56,189,248,0.25);background:linear-gradient(135deg,rgba(0,97,194,0.06),rgba(56,189,248,0.04));padding:16px;">
+            <p style="font-size:8px;font-weight:900;color:#38BDF8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">📲 QR Code Portal Pelanggan</p>
+            <p style="font-size:10px;font-weight:600;color:#64748b;margin-bottom:12px;line-height:1.5;">Bagikan QR ini ke pelanggan agar mereka langsung masuk ke portal <b style="color:#1e293b;">Cek Poin</b> tanpa perlu ketik kode toko.</p>
+            <div style="display:flex;justify-content:center;margin-bottom:12px;">
+              <div id="akun-qr-canvas-wrap" style="background:#fff;border-radius:14px;padding:10px;display:inline-block;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+                <canvas id="akun-qr-canvas" width="150" height="150"></canvas>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="_akunSalinLink()" style="flex:1;padding:10px;background:linear-gradient(135deg,#0061C2,#38BDF8);border:none;border-radius:12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <i class="fas fa-copy"></i> Salin Link
+              </button>
+              <button onclick="_akunUnduhQR()" style="flex:1;padding:10px;background:rgba(56,189,248,0.08);border:1.5px solid rgba(56,189,248,0.3);border-radius:12px;font-size:11px;font-weight:800;color:#0061C2;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <i class="fas fa-download"></i> Unduh QR
+              </button>
+            </div>
+          </div>
+
           <!-- Expired Akun -->
           <div id="akun-expired-wrap" class="rounded-2xl p-3 border" style="background:rgba(245,158,11,0.06);border-color:rgba(245,158,11,0.2);">
             <div class="flex items-center justify-between">
@@ -14717,7 +14736,8 @@ ${t.bayar ? `
         // UID
         document.getElementById('akun-store-id').innerText = sid;
 
-        // ── BACA SUBSCRIPTION DARI FIRESTORE (real-time, fallback ke localStorage) ──
+        // ── Generate QR Code untuk portal pelanggan ──
+        _akunGenerateQR(sid); (real-time, fallback ke localStorage) ──
         (async () => {
           let expiredDate = localStorage.getItem('k_expired_date');
           let planLabel   = localStorage.getItem('k_plan') || 'trial';
@@ -26624,5 +26644,56 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- ===== QR CODE LIBRARY ===== -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+/* ================================================================
+   QR CODE – PORTAL PELANGGAN (Cek Poin)
+================================================================ */
+let _akunQrStoreId = null;
+
+function _akunGenerateQR(sid) {
+  if (!sid || sid === '—' || sid === 'DEMO') {
+    const sec = document.getElementById('akun-qr-section');
+    if (sec) sec.style.display = 'none';
+    return;
+  }
+  _akunQrStoreId = sid;
+  const sec = document.getElementById('akun-qr-section');
+  if (sec) sec.style.display = '';
+  const canvas = document.getElementById('akun-qr-canvas');
+  if (!canvas) return;
+  const origin = window.location.origin;
+  const base   = window.location.pathname.replace(/\/[^\/]*$/, '');
+  const link   = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(sid);
+  QRCode.toCanvas(canvas, link, {
+    width: 150, margin: 1,
+    color: { dark: '#0f172a', light: '#ffffff' }
+  }, function(err) { if (err) console.error('[QR]', err); });
+}
+
+function _akunSalinLink() {
+  if (!_akunQrStoreId) return;
+  const origin = window.location.origin;
+  const base   = window.location.pathname.replace(/\/[^\/]*$/, '');
+  const link   = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(_akunQrStoreId);
+  navigator.clipboard.writeText(link).then(() => {
+    Swal.fire({
+      icon: 'success', title: 'Link Disalin! 📋',
+      html: '<p style="font-size:11px;word-break:break-all;color:#64748b;">' + link + '</p>',
+      timer: 3000, showConfirmButton: false,
+      customClass: { popup: 'rounded-3xl' }
+    });
+  }).catch(() => { prompt('Salin link berikut:', link); });
+}
+
+function _akunUnduhQR() {
+  const canvas = document.getElementById('akun-qr-canvas');
+  if (!canvas || !_akunQrStoreId) return;
+  const a = document.createElement('a');
+  a.download = 'qr-cekpoin-' + _akunQrStoreId.slice(0,8) + '.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+</script>
 </body>
-</html>
