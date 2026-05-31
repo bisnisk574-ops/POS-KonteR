@@ -3307,6 +3307,15 @@
       return null;
     }
   </script>
+<script>
+  /* ── Global db shim ──────────────────────────────────────────────────────
+     TIDAK deklarasi var/let db di sini agar tidak konflik dengan let db di
+     script utama. Cukup pastikan window.db awal tidak undefined.
+     Script utama akan overwrite window.db via Object.defineProperty.
+  ──────────────────────────────────────────────────────────────────────── */
+  window._shimDb = { dompet:[], transaksi:[], inventory:[], hutang:[], hutang_lunas:[], pelanggan:[], mutasi:[], notes:[], riwayat_hutang:[] };
+  window.db = window._shimDb;
+</script>
 </head>
 <body class="pb-32">
 
@@ -9181,14 +9190,38 @@
     // Wait for Firebase to be ready
     function waitFirebase() {
       return new Promise(resolve => {
-        if (window._fbReady) { resolve(); return; }
-        window.addEventListener('firebaseReady', resolve, { once: true });
+        // Sudah siap → langsung resolve
+        if (window._fbReady && window._fbFirestore) { resolve(); return; }
+        // Polling setiap 100ms, max 15 detik — tidak bergantung pada event yang mungkin sudah lewat
+        let waited = 0;
+        const iv = setInterval(function() {
+          waited += 100;
+          if (window._fbReady && window._fbFirestore) {
+            clearInterval(iv);
+            resolve();
+          } else if (waited >= 15000) {
+            // Timeout — resolve saja agar app tidak hang selamanya
+            clearInterval(iv);
+            console.warn('[waitFirebase] Timeout 15s — melanjutkan tanpa Firebase');
+            resolve();
+          }
+        }, 100);
+        // Juga dengerin event sebagai shortcut kalau belum lewat
+        window.addEventListener('firebaseReady', function() {
+          clearInterval(iv);
+          resolve();
+        }, { once: true });
       });
     }
 
     let db = { dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
-    // Expose db ke window agar script block lain bisa membacanya
-    Object.defineProperty(window, 'db', { get: () => db, set: v => { db = v; }, configurable: true });
+    // Sync ke window.db — simple, tidak ada loop, tidak ada Proxy
+    window.db = db;
+    // Helper: gunakan ini ganti `db = {...}` agar window.db selalu sync
+    function setDb(newData) {
+      Object.assign(db, newData);
+      window.db = db;
+    }
 
     let activeHutangTab = 'pelanggan';
     let currentTrFilter = 'all';
@@ -9267,13 +9300,13 @@
         if (saved) {
           try {
             const p = JSON.parse(saved);
-            db = {
+            setDb({
               dompet: p.dompet || [], transaksi: p.transaksi || [],
               inventory: p.inventory || [], hutang: p.hutang || [],
               hutang_lunas: p.hutang_lunas || [], pelanggan: p.pelanggan || [],
               mutasi: p.mutasi || [], notes: p.notes || [],
               riwayat_hutang: p.riwayat_hutang || []
-            };
+            });
           } catch(e) { console.error("Gagal baca storage", e); }
         }
       }
@@ -10070,7 +10103,7 @@
           localStorage.setItem('k_sid', sid);
           localStorage.setItem('k_pending_sync', '');
           const data = response.data;
-          db = { dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] };
+          setDb({ dompet: data.dompet||[], transaksi: data.transaksi||[], inventory: data.inventory||[], hutang: data.hutang||[], hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[], mutasi: data.mutasi||[], notes: data.notes||[], riwayat_hutang: data.riwayat_hutang||[] });
           saveLocalData();
           _syncedVersion = _syncVersion;
           showSyncToast('ok', 'LOGIN BERHASIL ✓');
@@ -10081,7 +10114,7 @@
           localStorage.setItem('k_logged', 'true');
           localStorage.setItem('k_sid', sid);
           localStorage.setItem('k_pending_sync', '');
-          db = { dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
+          setDb({ dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] });
           await saveFirebaseData(sid, db);
           saveLocalData();
           showSyncToast('ok', 'AKUN TOKO DIBUAT ✓');
@@ -10297,7 +10330,7 @@
               // Muat data db dari toko aktif
               if (storeDoc.data) {
                 const d = storeDoc.data;
-                db = {
+                setDb({
                   dompet        : d.dompet         || [],
                   transaksi     : d.transaksi       || [],
                   inventory     : d.inventory       || [],
@@ -10307,7 +10340,7 @@
                   mutasi        : d.mutasi          || [],
                   notes         : d.notes           || [],
                   riwayat_hutang: d.riwayat_hutang  || []
-                };
+                });
                 saveLocalData();
                 renderAll();
                 showSyncToast('ok', 'TOKO AKTIF DIMUAT ✓');
@@ -10337,7 +10370,7 @@
                   if (el) el.innerText = sName;
                 });
               }
-              db = {
+              setDb({
                 dompet        : d.dompet         || [],
                 transaksi     : d.transaksi       || [],
                 inventory     : d.inventory       || [],
@@ -10347,7 +10380,7 @@
                 mutasi        : d.mutasi          || [],
                 notes         : d.notes           || [],
                 riwayat_hutang: d.riwayat_hutang  || []
-              };
+              });
               saveLocalData();
               renderAll();
               showSyncToast('ok', 'DATA TOKO DIMUAT ✓');
@@ -11100,13 +11133,13 @@
 
         if (response && response.status === 'success' && response.data && !_syncRunning && !_syncQueued) {
           const data = response.data;
-          db = {
+          setDb({
             dompet: data.dompet||[], transaksi: data.transaksi||[],
             inventory: data.inventory||[], hutang: data.hutang||[],
             hutang_lunas: data.hutang_lunas||[], pelanggan: data.pelanggan||[],
             mutasi: data.mutasi||[], notes: data.notes||[],
             riwayat_hutang: data.riwayat_hutang||[]
-          };
+          });
           _syncVersion   = parseInt(localStorage.getItem('k_sync_version') || '0');
           _syncedVersion = _syncVersion;
           saveLocalData();
@@ -14538,11 +14571,11 @@ ${t.bayar ? `
         });
 
         // Reset db in-memory — FIXED: assign ulang seluruh objek agar referensi sinkron
-        db = {
+        setDb({
           dompet: [], transaksi: [], inventory: [], hutang: [],
           hutang_lunas: [], pelanggan: [], mutasi: [], notes: [],
           riwayat_hutang: []
-        };
+        });
         window.db = db;
         saveLocalData(); // simpan state kosong ke localStorage sebelum reload
 
@@ -14737,7 +14770,9 @@ ${t.bayar ? `
         document.getElementById('akun-store-id').innerText = sid;
 
         // ── Generate QR Code untuk portal pelanggan ──
-        _akunGenerateQR(sid); (real-time, fallback ke localStorage) ──
+        _akunGenerateQR(sid);
+
+        // ── BACA SUBSCRIPTION DARI FIRESTORE (real-time, fallback ke localStorage) ──
         (async () => {
           let expiredDate = localStorage.getItem('k_expired_date');
           let planLabel   = localStorage.getItem('k_plan') || 'trial';
@@ -15537,7 +15572,7 @@ ${t.bayar ? `
         const response = await fetchFirebaseData(sid);
         if (response.status === 'success' && response.data) {
           const d = response.data;
-          db = { dompet: d.dompet||[], transaksi: d.transaksi||[], inventory: d.inventory||[], hutang: d.hutang||[], hutang_lunas: d.hutang_lunas||[], pelanggan: d.pelanggan||[], mutasi: d.mutasi||[], notes: d.notes||[], riwayat_hutang: d.riwayat_hutang||[] };
+          setDb({ dompet: d.dompet||[], transaksi: d.transaksi||[], inventory: d.inventory||[], hutang: d.hutang||[], hutang_lunas: d.hutang_lunas||[], pelanggan: d.pelanggan||[], mutasi: d.mutasi||[], notes: d.notes||[], riwayat_hutang: d.riwayat_hutang||[] });
           saveLocalData();
           _syncedVersion = _syncVersion;
           localStorage.setItem('k_pending_sync', '');
@@ -15580,13 +15615,13 @@ ${t.bayar ? `
       reader.onload = async (e) => {
         try {
           const parsed = JSON.parse(e.target.result);
-          db = {
+          setDb({
             dompet: parsed.dompet||[], transaksi: parsed.transaksi||[],
             inventory: parsed.inventory||[], hutang: parsed.hutang||[],
             hutang_lunas: parsed.hutang_lunas||[], pelanggan: parsed.pelanggan||[],
             mutasi: parsed.mutasi||[], notes: parsed.notes||[],
             riwayat_hutang: parsed.riwayat_hutang||[]
-          };
+          });
           saveLocalData();
           renderAll();
           (_getMySwal()||Swal).fire({ title: 'Import Berhasil!', text: 'Data berhasil dipulihkan dari file JSON.', icon: 'success', timer: 2500, showConfirmButton: false });
@@ -15813,6 +15848,16 @@ ${t.bayar ? `
 
     // ---- AUTO LOGIN ----
     document.addEventListener('DOMContentLoaded', function() {
+      // ── Safety net: splash PASTI hilang max 6 detik ──
+      setTimeout(function() {
+        var s = document.getElementById('refresh-splash');
+        if (s && s.style.display !== 'none') {
+          s.style.transition = 'opacity 0.4s';
+          s.style.opacity = '0';
+          setTimeout(function() { s.style.display = 'none'; }, 400);
+        }
+      }, 6000);
+
       if (localStorage.getItem('k_logged') === 'true') {
         // Cek expired sebelum auto-login
         const _autoExpStr = localStorage.getItem('k_expired_date');
@@ -15830,6 +15875,15 @@ ${t.bayar ? `
           }
         }
         initApp(false, true); // skipCloudFetch=false, isRefresh=true → tidak tampil animasi login
+      }
+    });
+
+    // ── Fallback: kalau initApp gagal, paksa sembunyikan splash dan tampilkan app ──
+    window.addEventListener('error', function(e) {
+      console.error('[KonterKU] JS Error:', e.message, e.filename, e.lineno);
+      var s = document.getElementById('refresh-splash');
+      if (s && s.style.display !== 'none') {
+        setTimeout(function() { s.style.display = 'none'; }, 500);
       }
     });
 
@@ -16807,7 +16861,7 @@ ${t.bayar ? `
 
       const d = doc.data || {};
       if (typeof window.db !== 'undefined') {
-        window.db = {
+        setDb({
           dompet        : d.dompet         || [],
           transaksi     : d.transaksi       || [],
           inventory     : d.inventory       || [],
@@ -16817,7 +16871,7 @@ ${t.bayar ? `
           mutasi        : d.mutasi          || [],
           notes         : d.notes          || [],
           riwayat_hutang: d.riwayat_hutang  || []
-        };
+        });
         if (typeof saveLocalData === 'function') saveLocalData();
         if (typeof renderAll    === 'function') renderAll();
       }
@@ -26647,46 +26701,32 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ===== QR CODE LIBRARY ===== -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
-/* ================================================================
-   QR CODE – PORTAL PELANGGAN (Cek Poin)
-================================================================ */
+/* QR Code – Portal Pelanggan */
 let _akunQrStoreId = null;
-
 function _akunGenerateQR(sid) {
-  if (!sid || sid === '—' || sid === 'DEMO') {
-    const sec = document.getElementById('akun-qr-section');
-    if (sec) sec.style.display = 'none';
-    return;
-  }
-  _akunQrStoreId = sid;
   const sec = document.getElementById('akun-qr-section');
+  if (!sid || sid === '—' || sid === 'DEMO') { if (sec) sec.style.display='none'; return; }
+  _akunQrStoreId = sid;
   if (sec) sec.style.display = '';
   const canvas = document.getElementById('akun-qr-canvas');
-  if (!canvas) return;
+  if (!canvas || typeof QRCode === 'undefined') { setTimeout(()=>_akunGenerateQR(sid), 300); return; }
   const origin = window.location.origin;
   const base   = window.location.pathname.replace(/\/[^\/]*$/, '');
   const link   = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(sid);
-  QRCode.toCanvas(canvas, link, {
-    width: 150, margin: 1,
-    color: { dark: '#0f172a', light: '#ffffff' }
-  }, function(err) { if (err) console.error('[QR]', err); });
+  QRCode.toCanvas(canvas, link, { width:150, margin:1, color:{dark:'#0f172a',light:'#ffffff'} },
+    function(err){ if(err) console.error('[QR]', err); });
 }
-
 function _akunSalinLink() {
   if (!_akunQrStoreId) return;
   const origin = window.location.origin;
   const base   = window.location.pathname.replace(/\/[^\/]*$/, '');
   const link   = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(_akunQrStoreId);
   navigator.clipboard.writeText(link).then(() => {
-    Swal.fire({
-      icon: 'success', title: 'Link Disalin! 📋',
-      html: '<p style="font-size:11px;word-break:break-all;color:#64748b;">' + link + '</p>',
-      timer: 3000, showConfirmButton: false,
-      customClass: { popup: 'rounded-3xl' }
-    });
+    Swal.fire({ icon:'success', title:'Link Disalin! 📋',
+      html:'<p style="font-size:11px;word-break:break-all;color:#64748b;">'+link+'</p>',
+      timer:3000, showConfirmButton:false });
   }).catch(() => { prompt('Salin link berikut:', link); });
 }
-
 function _akunUnduhQR() {
   const canvas = document.getElementById('akun-qr-canvas');
   if (!canvas || !_akunQrStoreId) return;
