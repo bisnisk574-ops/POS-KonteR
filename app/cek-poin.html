@@ -494,13 +494,26 @@ function swalErr(msg) { Swal.fire({icon:'error',title:'Oops',text:msg,customClas
 /* ============================================================ INIT ============================================================ */
 async function init() {
   await new Promise(r=>{const t=setInterval(()=>{if(window._db){clearInterval(t);r();}},50);});
-  const savedId = sessionStorage.getItem('ku_store_id');
-  if (savedId) {
-    storeId = savedId;
+
+  // ── Baca ?toko= dari URL (QR code / link langsung) ──
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramToko = (urlParams.get('toko')||'').trim();
+
+  // Prioritas: param URL > sessionStorage
+  const candidateId = paramToko || sessionStorage.getItem('ku_store_id');
+
+  if (candidateId) {
+    storeId = candidateId;
     let doc = await _db.collection('user_stores').doc(storeId).get().catch(()=>null);
     if (doc&&doc.exists) tokoData=doc.data();
     else { doc = await _db.collection('stores').doc(storeId).get().catch(()=>null); if(doc&&doc.exists) tokoData=doc.data(); }
-    if (tokoData) { showLoginPage(); return; }
+    if (tokoData) {
+      sessionStorage.setItem('ku_store_id', storeId);
+      showLoginPage();
+      return;
+    }
+    // Kalau dari URL tapi toko tidak ditemukan, tetap tampilkan halaman input
+    storeId = null;
   }
   showPage('toko');
 }
