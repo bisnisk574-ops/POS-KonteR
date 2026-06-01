@@ -648,12 +648,18 @@ async function waitDB(){return new Promise(r=>{const t=setInterval(()=>{if(windo
 
 async function getTokoDoc(kode){
   const db=window._db;
-  const tries=[kode,kode.toUpperCase()];
-  for(const k of tries){
+  // Coba semua kemungkinan: huruf besar, huruf kecil, asli
+  const tries=[kode, kode.toUpperCase(), kode.toLowerCase()];
+  // Kalau formatnya STORE_XXX_timestamp (dari QR index.html), coba juga versi lowercase
+  // index.html menyimpan storeId sebagai 'store_xxxxxxxx_timestamp' (lowercase)
+  const unique=[...new Set(tries)];
+  for(const k of unique){
+    // Cari berdasarkan field kode_toko
     let s=await db.collection('user_stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
     if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
     s=await db.collection('stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
     if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    // Cari langsung sebagai doc ID
     let d=await db.collection('user_stores').doc(k).get().catch(()=>null);
     if(d&&d.exists)return{data:d.data(),id:k};
     d=await db.collection('stores').doc(k).get().catch(()=>null);
@@ -716,7 +722,7 @@ async function loadPoinCfg(){
 
 /* ═══════════════════ FLOW: PELANGGAN ═══════════════════ */
 async function cariToko(){
-  const kode=(document.getElementById('inp-kode-toko').value||'').trim().toUpperCase();
+  const kode=(document.getElementById('inp-kode-toko').value||'').trim(); // jangan toUpperCase, storeId mungkin lowercase
   if(!kode){swalErr('Kode toko tidak boleh kosong');return;}
   const btn=document.getElementById('btn-cari-toko');
   setBtnLoad(btn,'Mencari...');
@@ -1388,7 +1394,11 @@ async function daftarMember(){
 
 function kirimWAMember(nama,hp,memberId){
   const tokoNm=tokoData?.namaToko||tokoData?.nama||'Toko Kami';
-  const pesan=`🎉 Halo, ${nama}!\n\nSelamat datang! Kamu telah berhasil terdaftar sebagai *Member* kami. 🏪✨\n\n━━━━━━━━━━━━━━\n🪪 *Member ID Kamu:*\n${memberId}\n━━━━━━━━━━━━━━\n\n📱 *Cara cek poin & kartu member:*\n1. Buka link yang diberikan kasir\n2. Pilih *Cek Poin Pelanggan*\n3. Masukkan kode toko\n4. Login dengan HP & nama kamu\n\n⭐ *Cara kumpulkan poin:*\nTunjukkan Member ID kamu setiap transaksi di *${tokoNm}*, poin otomatis masuk!\n\n🎁 Kumpulkan poin → Tukar hadiah menarik!\n\n📌 Simpan Member ID ini baik-baik ya!\n😊`;
+  // Buat link langsung ke portal dengan storeId
+  const origin=window.location.origin;
+  const base=window.location.pathname.replace(/\/[^\/]*$/,'');
+  const linkPortal=origin+base+'/cek-poin.html?toko='+encodeURIComponent(storeId);
+  const pesan=`🎉 Halo, ${nama}!\n\nSelamat datang! Kamu telah berhasil terdaftar sebagai *Member* kami. 🏪✨\n\n━━━━━━━━━━━━━━\n🪴 *Member ID Kamu:*\n${memberId}\n━━━━━━━━━━━━━━\n\n📱 *Cara cek poin & kartu member:*\n1. Buka link: ${linkPortal}\n2. Pilih tab *Pelanggan*\n3. Masukkan Member ID: ${memberId}\n4. Klik *Lihat Kartu Saya* 🔍\n\n⭐ *Cara kumpulkan poin:*\nTunjukkan QR Code kamu setiap kali transaksi di toko kami, poin otomatis masuk!\n\n🎁 Kumpulkan poin → Tukar hadiah menarik!\n\n📌 Simpan Member ID ini baik-baik ya!\nDibutuhkan untuk cek poin & lihat kartu. 😊`;
   const hpBersih=hp.replace(/\D/g,'').replace(/^0/,'62');
   window.open(`https://wa.me/${hpBersih}?text=${encodeURIComponent(pesan)}`,'_blank');
 }
@@ -1465,7 +1475,7 @@ async function init(){
   const urlParams=new URLSearchParams(window.location.search);
   const paramToko=(urlParams.get('toko')||'').trim();
   if(paramToko){
-    document.getElementById('inp-kode-toko').value=paramToko.toUpperCase();
+    document.getElementById('inp-kode-toko').value=paramToko; // Jangan toUpperCase, storeId dari index.html adalah lowercase
     showPage('toko-pelanggan');
     cariToko();
     return;
