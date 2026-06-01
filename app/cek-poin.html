@@ -567,10 +567,40 @@ async function getTokoDoc(kode){
 
 async function getPelangganList(){
   const db=window._db;
+  // 1. Coba ambil dari field array 'pelanggan' di dalam dokumen toko (user_stores)
   let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){const d=doc.data();const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];if(a.length)return a.map((c,i)=>({id:c.id||String(i),...c}));}
+  if(doc&&doc.exists){
+    const d=doc.data();
+    const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];
+    if(a.length)return a.map((c,i)=>({id:c.id||String(i),...c}));
+  }
+  // 2. Coba ambil dari field array 'pelanggan' di dalam dokumen toko (stores)
   doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){const d=doc.data();const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];return a.map((c,i)=>({id:c.id||String(i),...c}));}
+  if(doc&&doc.exists){
+    const d=doc.data();
+    const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];
+    if(a.length)return a.map((c,i)=>({id:c.id||String(i),...c}));
+  }
+  // 3. Coba sub-collection 'pelanggan' di user_stores
+  let snap=await db.collection('user_stores').doc(storeId).collection('pelanggan').get().catch(()=>null);
+  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
+  // 4. Coba sub-collection 'members' di user_stores
+  snap=await db.collection('user_stores').doc(storeId).collection('members').get().catch(()=>null);
+  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
+  // 5. Coba sub-collection 'pelanggan' di stores
+  snap=await db.collection('stores').doc(storeId).collection('pelanggan').get().catch(()=>null);
+  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
+  // 6. Coba sub-collection 'members' di stores
+  snap=await db.collection('stores').doc(storeId).collection('members').get().catch(()=>null);
+  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
+  // 7. Coba collection 'pelanggan' flat dengan filter storeId
+  snap=await db.collection('pelanggan').where('storeId','==',storeId).get().catch(()=>null);
+  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
+  snap=await db.collection('pelanggan').where('toko_id','==',storeId).get().catch(()=>null);
+  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
+  // 8. Coba collection 'members' flat dengan filter storeId
+  snap=await db.collection('members').where('storeId','==',storeId).get().catch(()=>null);
+  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
   return[];
 }
 
@@ -845,16 +875,18 @@ async function loginKasir(){
 
 /* ─── MASUK DASHBOARD ADMIN (shared) ─── */
 async function _masukDashboardAdmin(){
+  // Tampilkan halaman & loading dulu
   document.getElementById('top-admin-badge').style.display='';
   document.getElementById('adm-toko-name').textContent=tokoData?.namaToko||tokoData?.nama||'KonterKU';
+  showPage('dashboard-admin');
+  admSwitchTab('list');
+  document.getElementById('adm-member-list').innerHTML=`<div class="empty-state"><div class="ico"><i class="fas fa-spinner spin" style="font-size:28px;color:var(--sky)"></i></div><p>Memuat data pelanggan...</p></div>`;
   allMembers=await getPelangganList();
   const totalPoin=allMembers.reduce((s,p)=>s+Number(p.poin||p.point||0),0);
   document.getElementById('adm-stat-member').textContent=allMembers.length;
   document.getElementById('adm-stat-poin').textContent=fmt(totalPoin);
-  admSwitchTab('list');
   renderMemberList();
   listenAdmRequests();
-  showPage('dashboard-admin');
 }
 
 function renderMemberList(){
