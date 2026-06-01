@@ -1,963 +1,990 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cek Poin – KonterKU</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey:            "AIzaSyBgVPVwYJudzAMNmR011PlWZC0_P0SnK8w",
-      authDomain:        "konterkupro.firebaseapp.com",
-      projectId:         "konterkupro",
-      storageBucket:     "konterkupro.firebasestorage.app",
-      messagingSenderId: "819746888017",
-      appId:             "1:819746888017:web:437b6e5b4cbaf1aa821b70"
-    };
-    function _initFB() {
-      if (typeof firebase === 'undefined') { setTimeout(_initFB, 50); return; }
-      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      window._db = firebase.firestore();
-    }
-    _initFB();
-  </script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KonterKU – Portal Member</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBgVPVwYJudzAMNmR011PlWZC0_P0SnK8w",
+    authDomain:        "konterkupro.firebaseapp.com",
+    projectId:         "konterkupro",
+    storageBucket:     "konterkupro.firebasestorage.app",
+    messagingSenderId: "819746888017",
+    appId:             "1:819746888017:web:437b6e5b4cbaf1aa821b70"
+  };
+  function _initFB() {
+    if (typeof firebase === 'undefined') { setTimeout(_initFB, 50); return; }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    window._db = firebase.firestore();
+  }
+  _initFB();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-    :root {
-      --blue:   #1B4FD8;
-      --blue2:  #2563EB;
-      --sky:    #38BDF8;
-      --gold:   #F59E0B;
-      --green:  #10B981;
-      --red:    #EF4444;
-      --bg:     #0B1120;
-      --card:   rgba(255,255,255,0.04);
-      --border: rgba(255,255,255,0.09);
-      --text:   #E2E8F0;
-      --muted:  #64748B;
-      --radius: 20px;
-    }
+:root {
+  --blue:#1B4FD8; --blue2:#2563EB; --sky:#38BDF8;
+  --gold:#F59E0B; --green:#10B981; --red:#EF4444; --purple:#8B5CF6;
+  --bg:#0B1120; --card:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.09);
+  --text:#E2E8F0; --muted:#64748B; --radius:20px;
+}
 
-    body {
-      font-family: 'Sora', sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
-      color: var(--text);
-      overflow-x: hidden;
-    }
+body{font-family:'Sora',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden}
 
-    /* Atmospheric BG */
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse 70% 50% at 15% 5%,  rgba(37,99,235,0.22) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 40% at 85% 90%, rgba(56,189,248,0.12) 0%, transparent 55%),
-        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(245,158,11,0.04) 0%, transparent 60%);
-      pointer-events: none;
-    }
+body::before{content:'';position:fixed;inset:0;z-index:0;background:
+  radial-gradient(ellipse 70% 50% at 15% 5%,rgba(37,99,235,0.22) 0%,transparent 55%),
+  radial-gradient(ellipse 50% 40% at 85% 90%,rgba(56,189,248,0.12) 0%,transparent 55%),
+  radial-gradient(ellipse 40% 30% at 50% 50%,rgba(245,158,11,0.04) 0%,transparent 60%);
+  pointer-events:none}
 
-    .wrap {
-      position: relative; z-index: 1;
-      max-width: 440px;
-      margin: 0 auto;
-      padding: 28px 16px 100px;
-    }
+.wrap{position:relative;z-index:1;max-width:440px;margin:0 auto;padding:24px 16px 100px}
 
-    /* ── Top bar ── */
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 28px;
-    }
-    .brand {
-      display: flex; align-items: center; gap: 10px;
-    }
-    .brand-icon {
-      width: 42px; height: 42px;
-      border-radius: 13px;
-      background: linear-gradient(135deg, var(--blue), var(--sky));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; flex-shrink: 0;
-      box-shadow: 0 4px 14px rgba(37,99,235,0.4);
-    }
-    .brand-name { font-size: 18px; font-weight: 900; letter-spacing: -.02em; color: #fff; }
-    .brand-sub  { font-size: 10px; font-weight: 600; color: var(--muted); }
+/* Top bar */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--blue),var(--sky));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,0.4)}
+.brand-name{font-size:18px;font-weight:900;letter-spacing:-.02em;color:#fff}
+.brand-sub{font-size:10px;font-weight:600;color:var(--muted)}
 
-    /* ── Glass card ── */
-    .glass {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-      margin-bottom: 14px;
-    }
+/* Glass */
+.glass{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px}
 
-    /* ── Inputs ── */
-    .field { margin-bottom: 14px; }
-    .label {
-      font-size: 10px; font-weight: 800; color: var(--muted);
-      letter-spacing: .07em; text-transform: uppercase;
-      margin-bottom: 7px; display: block;
-    }
-    input {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1.5px solid rgba(255,255,255,0.10);
-      border-radius: 13px;
-      padding: 13px 15px;
-      font-size: 14px; font-weight: 600;
-      color: var(--text);
-      font-family: 'Sora', sans-serif;
-      outline: none;
-      transition: border .2s;
-    }
-    input:focus { border-color: var(--blue2); }
-    input::placeholder { color: #3B4F6A; font-weight: 500; }
-    input[type="password"] { letter-spacing: .5em; font-size: 20px; font-weight: 900; text-align: center; }
+/* Tabs mode switch */
+.mode-tabs{display:flex;gap:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;padding:5px;margin-bottom:20px}
+.mode-btn{flex:1;padding:10px 6px;border:none;border-radius:12px;font-size:12px;font-weight:800;font-family:'Sora',sans-serif;cursor:pointer;color:var(--muted);background:transparent;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.mode-btn.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 3px 12px rgba(37,99,235,0.35)}
 
-    /* ── Buttons ── */
-    .btn {
-      width: 100%; padding: 14px;
-      border: none; border-radius: 14px;
-      font-size: 14px; font-weight: 800;
-      font-family: 'Sora', sans-serif;
-      cursor: pointer;
-      transition: opacity .2s, transform .1s;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn:active { transform: scale(.97); opacity: .88; }
-    .btn:disabled { opacity: .4; cursor: not-allowed; }
-    .btn-blue { background: linear-gradient(135deg, var(--blue), var(--sky)); color: #fff; box-shadow: 0 4px 18px rgba(37,99,235,0.35); }
-    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--muted); }
-    .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--red); }
-    .btn-sm {
-      padding: 8px 14px; font-size: 11px;
-      border-radius: 10px; width: auto;
-      font-weight: 800; font-family: 'Sora', sans-serif;
-      cursor: pointer; border: none;
-      transition: all .2s;
-    }
-    .btn-sm.on  { background: linear-gradient(135deg, var(--blue), var(--sky)); color: #fff; }
-    .btn-sm.off { background: rgba(255,255,255,0.05); color: #3B4F6A; cursor: not-allowed; }
+/* Inputs */
+.field{margin-bottom:14px}
+.label{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px;display:block}
+input,select{width:100%;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.10);border-radius:13px;padding:13px 15px;font-size:14px;font-weight:600;color:var(--text);font-family:'Sora',sans-serif;outline:none;transition:border .2s;appearance:none}
+input:focus,select:focus{border-color:var(--blue2)}
+input::placeholder{color:#3B4F6A;font-weight:500}
+select option{background:#1e2d45;color:var(--text)}
 
-    /* ── Section title ── */
-    .sec-title {
-      font-size: 11px; font-weight: 800; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .07em;
-      margin-bottom: 12px;
-    }
+/* Buttons */
+.btn{width:100%;padding:14px;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Sora',sans-serif;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(.97);opacity:.88}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--sky));color:#fff;box-shadow:0 4px 18px rgba(37,99,235,0.35)}
+.btn-green{background:linear-gradient(135deg,#059669,var(--green));color:#fff;box-shadow:0 4px 18px rgba(16,185,129,0.35)}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted)}
+.btn-danger{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
+.btn-gold{background:linear-gradient(135deg,#D97706,var(--gold));color:#fff;box-shadow:0 4px 18px rgba(245,158,11,0.35)}
+.btn-sm{padding:8px 14px;font-size:11px;border-radius:10px;width:auto;font-weight:800;font-family:'Sora',sans-serif;cursor:pointer;border:none;transition:all .2s}
+.btn-sm.on{background:linear-gradient(135deg,var(--blue),var(--sky));color:#fff}
+.btn-sm.off{background:rgba(255,255,255,0.05);color:#3B4F6A;cursor:not-allowed}
 
-    /* ── Member Card ── */
-    .member-card {
-      border-radius: 22px;
-      background: linear-gradient(135deg, #1541C4 0%, #2563EB 45%, #1B9EE3 100%);
-      padding: 24px 22px 22px;
-      position: relative; overflow: hidden;
-      margin-bottom: 14px;
-      box-shadow: 0 12px 40px rgba(21,65,196,0.45);
-    }
-    .member-card::before {
-      content: '';
-      position: absolute;
-      width: 260px; height: 260px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      top: -90px; right: -60px;
-      pointer-events: none;
-    }
-    .member-card::after {
-      content: '';
-      position: absolute;
-      width: 180px; height: 180px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.04);
-      bottom: -60px; left: -40px;
-      pointer-events: none;
-    }
-    .card-top {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 18px; position: relative; z-index: 1;
-    }
-    .card-store { font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.6); letter-spacing: .08em; text-transform: uppercase; }
-    .card-name  { font-size: 22px; font-weight: 900; color: #fff; margin-top: 4px; letter-spacing: -.02em; }
-    .card-id    { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.5); margin-top: 2px; }
-    .card-status-badge {
-      background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.5);
-      border-radius: 8px; padding: 4px 10px;
-      font-size: 11px; font-weight: 800; color: #6EE7B7;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .card-status-badge.nonaktif { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); color: #FCA5A5; }
-    .card-stats {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 10px; margin-bottom: 16px;
-      position: relative; z-index: 1;
-    }
-    .stat-box {
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 14px; padding: 12px 14px;
-    }
-    .stat-label { font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: .07em; }
-    .stat-val   { font-size: 20px; font-weight: 900; color: #fff; margin-top: 3px; line-height: 1; }
-    .stat-val.gold { color: var(--gold); }
-    .stat-icon  { font-size: 11px; margin-right: 4px; }
-    .card-qr-wrap {
-      background: #fff;
-      border-radius: 14px;
-      padding: 12px;
-      display: flex; flex-direction: column; align-items: center;
-      position: relative; z-index: 1;
-    }
-    .card-qr-wrap canvas, .card-qr-wrap img { border-radius: 6px; }
-    .card-qr-label { font-size: 9px; font-weight: 800; color: #94A3B8; margin-top: 6px; text-transform: uppercase; letter-spacing: .07em; }
+/* Sec title */
+.sec-title{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
 
-    /* ── Info block ── */
-    .info-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 11px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .info-row:last-child { border-bottom: none; }
-    .info-key   { font-size: 12px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-    .info-key i { font-size: 12px; }
-    .info-val   { font-size: 13px; font-weight: 800; color: var(--text); }
-    .info-val.green { color: var(--green); }
+/* Member card visual */
+.member-card{border-radius:22px;background:linear-gradient(135deg,#1541C4 0%,#2563EB 45%,#1B9EE3 100%);padding:24px 22px 22px;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 12px 40px rgba(21,65,196,0.45)}
+.member-card::before{content:'';position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,0.06);top:-90px;right:-60px;pointer-events:none}
+.member-card::after{content:'';position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.04);bottom:-60px;left:-40px;pointer-events:none}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;position:relative;z-index:1}
+.card-store{font-size:11px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:.08em;text-transform:uppercase}
+.card-name{font-size:22px;font-weight:900;color:#fff;margin-top:4px;letter-spacing:-.02em}
+.card-id{font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);margin-top:2px;word-break:break-all}
+.card-status-badge{background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.5);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;color:#6EE7B7;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.card-status-badge.nonaktif{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5);color:#FCA5A5}
+.card-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;position:relative;z-index:1}
+.stat-box{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:12px 14px}
+.stat-label{font-size:9px;font-weight:800;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.07em}
+.stat-val{font-size:20px;font-weight:900;color:#fff;margin-top:3px;line-height:1}
+.stat-val.gold{color:var(--gold)}
+.card-qr-wrap{background:#fff;border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
+.card-qr-wrap canvas,.card-qr-wrap img{border-radius:6px}
+.card-qr-label{font-size:9px;font-weight:800;color:#94A3B8;margin-top:6px;text-transform:uppercase;letter-spacing:.07em}
 
-    /* ── Riwayat poin ── */
-    .rw-header {
-      display: grid; grid-template-columns: 1fr 1.5fr 80px 70px;
-      padding: 0 0 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    .rw-header span { font-size: 9px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-    .rw-row {
-      display: grid; grid-template-columns: 1fr 1.5fr 80px 70px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      align-items: center;
-    }
-    .rw-row:last-child { border-bottom: none; }
-    .rw-date  { font-size: 11px; font-weight: 600; color: var(--muted); }
-    .rw-act   { font-size: 12px; font-weight: 700; color: var(--text); }
-    .rw-poin  { font-size: 12px; font-weight: 800; }
-    .rw-poin.masuk  { color: #34D399; }
-    .rw-poin.keluar { color: #F87171; }
-    .rw-type  { font-size: 10px; font-weight: 800; border-radius: 6px; padding: 3px 8px; text-align: center; width: fit-content; }
-    .rw-type.masuk  { background: rgba(52,211,153,0.15); color: #34D399; }
-    .rw-type.keluar { background: rgba(248,113,113,0.12); color: #F87171; }
+/* Info rows */
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.info-row:last-child{border-bottom:none}
+.info-key{font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px}
+.info-val{font-size:13px;font-weight:800;color:var(--text)}
+.info-val.green{color:var(--green)}
 
-    /* ── Hadiah ── */
-    .hadiah-card {
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 14px; padding: 13px 14px;
-      margin-bottom: 10px;
-    }
-    .hadiah-card.bisa { border-color: rgba(56,189,248,0.25); }
-    .hadiah-ico {
-      width: 40px; height: 40px; border-radius: 12px;
-      background: rgba(56,189,248,0.1);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-    }
-    .hadiah-nm  { font-size: 13px; font-weight: 800; color: var(--text); }
-    .hadiah-pt  { font-size: 11px; font-weight: 700; color: var(--sky); margin-top: 2px; }
-    .hadiah-less{ font-size: 10px; font-weight: 600; color: var(--red); }
+/* Pelanggan list */
+.member-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.member-item:hover{border-color:rgba(56,189,248,0.3);background:rgba(56,189,248,0.05)}
+.member-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--sky));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0}
+.member-nm{font-size:13px;font-weight:800;color:var(--text)}
+.member-hp{font-size:11px;font-weight:600;color:var(--muted)}
+.member-poin{font-size:12px;font-weight:800;color:var(--gold)}
+.member-status{font-size:9px;font-weight:800;padding:3px 8px;border-radius:6px}
+.member-status.aktif{background:rgba(16,185,129,0.15);color:#34D399}
+.member-status.nonaktif{background:rgba(239,68,68,0.12);color:#F87171}
 
-    /* ── Pending badge ── */
-    .pending-badge {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      background: rgba(245,158,11,0.12);
-      border: 1px solid rgba(245,158,11,0.3);
-      border-radius: 12px; padding: 10px;
-      font-size: 11px; font-weight: 800; color: var(--gold);
-      margin-bottom: 14px;
-    }
+/* Search */
+.search-box{position:relative;margin-bottom:14px}
+.search-box input{padding-left:40px}
+.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
 
-    /* ── Diskon card ── */
-    .diskon-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(56,189,248,0.2);
-      border-radius: 14px; padding: 14px;
-      margin-bottom: 10px;
-    }
-    .diskon-top { display: flex; align-items: center; gap: 12px; }
-    .diskon-sub { font-size: 10px; font-weight: 600; color: var(--muted); margin-top: 8px; padding-left: 52px; }
+/* Riwayat */
+.rw-header{display:grid;grid-template-columns:1fr 1.5fr 80px 70px;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.rw-header span{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.rw-row{display:grid;grid-template-columns:1fr 1.5fr 80px 70px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center}
+.rw-row:last-child{border-bottom:none}
+.rw-date{font-size:11px;font-weight:600;color:var(--muted)}
+.rw-act{font-size:12px;font-weight:700;color:var(--text)}
+.rw-poin{font-size:12px;font-weight:800}
+.rw-poin.masuk{color:#34D399}
+.rw-poin.keluar{color:#F87171}
+.rw-type{font-size:10px;font-weight:800;border-radius:6px;padding:3px 8px;text-align:center;width:fit-content}
+.rw-type.masuk{background:rgba(52,211,153,0.15);color:#34D399}
+.rw-type.keluar{background:rgba(248,113,113,0.12);color:#F87171}
 
-    /* ── Spinner ── */
-    .spin { animation: spin 1s linear infinite; display: inline-block; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* Hadiah */
+.hadiah-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:13px 14px;margin-bottom:10px}
+.hadiah-card.bisa{border-color:rgba(56,189,248,0.25)}
+.hadiah-ico{width:40px;height:40px;border-radius:12px;background:rgba(56,189,248,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hadiah-nm{font-size:13px;font-weight:800;color:var(--text)}
+.hadiah-pt{font-size:11px;font-weight:700;color:var(--sky);margin-top:2px}
+.hadiah-less{font-size:10px;font-weight:600;color:var(--red)}
 
-    /* ── Fade page transition ── */
-    .page { animation: fadeUp .32s ease; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+/* Pending badge */
+.pending-badge{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:10px;font-size:11px;font-weight:800;color:var(--gold);margin-bottom:14px}
 
-    /* ── Toko badge ── */
-    .toko-badge {
-      display: flex; align-items: center; gap: 10px;
-      background: rgba(37,99,235,0.08);
-      border: 1px solid rgba(37,99,235,0.2);
-      border-radius: 13px; padding: 11px 14px;
-      margin-bottom: 14px;
-    }
-    .toko-ico {
-      width: 34px; height: 34px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--blue), var(--sky));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; flex-shrink: 0;
-    }
-    .toko-nm  { font-size: 13px; font-weight: 800; color: var(--text); }
-    .toko-sub { font-size: 10px; font-weight: 600; color: var(--muted); }
+/* Diskon */
+.diskon-card{background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:14px;margin-bottom:10px}
+.diskon-top{display:flex;align-items:center;gap:12px}
+.diskon-sub{font-size:10px;font-weight:600;color:var(--muted);margin-top:8px;padding-left:52px}
 
-    /* ── Tabs ── */
-    .tab-bar {
-      display: flex; gap: 8px; margin-bottom: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 14px; padding: 5px;
-    }
-    .tab-btn {
-      flex: 1; padding: 9px 6px;
-      border: none; border-radius: 10px;
-      font-size: 11px; font-weight: 800;
-      font-family: 'Sora', sans-serif;
-      cursor: pointer; color: var(--muted);
-      background: transparent;
-      transition: all .2s;
-    }
-    .tab-btn.active {
-      background: linear-gradient(135deg, var(--blue), var(--blue2));
-      color: #fff;
-      box-shadow: 0 3px 10px rgba(37,99,235,0.3);
-    }
+/* Tabs dalam dashboard */
+.tab-bar{display:flex;gap:8px;margin-bottom:16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:5px}
+.tab-btn{flex:1;padding:9px 6px;border:none;border-radius:10px;font-size:11px;font-weight:800;font-family:'Sora',sans-serif;cursor:pointer;color:var(--muted);background:transparent;transition:all .2s}
+.tab-btn.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 3px 10px rgba(37,99,235,0.3)}
 
-    /* Swal custom */
-    .swal2-ku { border-radius: 22px !important; font-family: 'Sora', sans-serif !important; }
-  </style>
+/* Toko badge */
+.toko-badge{display:flex;align-items:center;gap:10px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:13px;padding:11px 14px;margin-bottom:14px}
+.toko-ico{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--sky));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.toko-nm{font-size:13px;font-weight:800;color:var(--text)}
+.toko-sub{font-size:10px;font-weight:600;color:var(--muted)}
+
+/* Admin add poin controls */
+.poin-ctrl{display:flex;gap:8px;align-items:center;margin-top:10px}
+.poin-ctrl input{flex:1}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px}
+.stat-card-val{font-size:24px;font-weight:900;color:#fff;margin-top:4px}
+.stat-card-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat-card-ico{font-size:20px;margin-bottom:6px}
+
+/* Spinner */
+.spin{animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Fade page */
+.page{animation:fadeUp .32s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* Swal custom */
+.swal2-ku{border-radius:22px !important;font-family:'Sora',sans-serif !important}
+
+/* Badge notif */
+.badge-dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;margin-left:4px}
+
+/* empty state */
+.empty-state{text-align:center;padding:30px 20px;color:var(--muted)}
+.empty-state .ico{font-size:36px;margin-bottom:10px}
+.empty-state p{font-size:12px;font-weight:600}
+
+/* Admin badge */
+.admin-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:3px 10px;font-size:10px;font-weight:800;color:#C4B5FD}
+
+/* Highlight search */
+mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding:0 2px}
+</style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    <div class="brand">
-      <div class="brand-icon">📱</div>
-      <div>
-        <div class="brand-name">KonterKU</div>
-        <div class="brand-sub">Portal Pelanggan</div>
-      </div>
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="brand">
+    <div class="brand-icon">📱</div>
+    <div>
+      <div class="brand-name">KonterKU</div>
+      <div class="brand-sub">Portal Member</div>
     </div>
   </div>
+  <div id="top-admin-badge" style="display:none"><span class="admin-badge"><i class="fas fa-shield-alt"></i> Admin</span></div>
+</div>
 
-  <!-- ======================= PAGE: CARI TOKO ======================= -->
-  <div id="page-toko" class="page">
-    <div class="glass" style="text-align:center;margin-bottom:14px;">
-      <div style="font-size:40px;margin-bottom:10px;">🏪</div>
-      <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:4px;">Masukkan Kode Toko</div>
-      <div style="font-size:11px;font-weight:600;color:var(--muted);">Minta kode toko ke kasir atau pemilik toko</div>
-    </div>
-    <div class="glass">
-      <div class="field">
-        <label class="label">Kode / ID Toko</label>
-        <input id="inp-kode-toko" type="text" placeholder="Masukkan kode toko" autocomplete="off"
-          onkeydown="if(event.key==='Enter')cariToko()">
-      </div>
-      <button id="btn-cari-toko" class="btn btn-blue" onclick="cariToko()">
-        <i class="fas fa-search"></i> Cari Toko
-      </button>
-    </div>
+<!-- ======== PAGE: PILIH MODE ======== -->
+<div id="page-home" class="page">
+  <div class="glass" style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:42px;margin-bottom:10px;">🏪</div>
+    <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:4px;">Selamat Datang!</div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);">Portal member &amp; manajemen poin toko</div>
   </div>
-
-  <!-- ======================= PAGE: LOGIN ======================= -->
-  <div id="page-login" class="page" style="display:none;">
-    <div id="toko-badge-login"></div>
-    <div class="glass">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div style="font-size:34px;margin-bottom:8px;">👤</div>
-        <div style="font-size:16px;font-weight:900;color:#fff;">Login Pelanggan</div>
-        <div style="font-size:11px;font-weight:600;color:var(--muted);margin-top:4px;">Masukkan data sesuai yang didaftarkan ke toko</div>
-      </div>
-      <div class="field">
-        <label class="label">Nomor HP</label>
-        <input id="inp-hp" type="tel" placeholder="08xxxxxxxxxx" inputmode="numeric" autocomplete="off">
-      </div>
-      <div class="field">
-        <label class="label">Nama Lengkap</label>
-        <input id="inp-nama" type="text" placeholder="Nama sesuai data toko" autocomplete="off">
-      </div>
-      <div class="field">
-        <label class="label">PIN <span style="font-size:9px;font-weight:600;color:var(--muted);">(4 digit, jika ada)</span></label>
-        <input id="inp-pin" type="password" inputmode="numeric" placeholder="••••" maxlength="4" autocomplete="off"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"
-          onkeydown="if(event.key==='Enter')loginPelanggan()">
-      </div>
-      <button id="btn-login" class="btn btn-blue" onclick="loginPelanggan()">
-        <i class="fas fa-star"></i> Cek Poin Saya
-      </button>
-      <button class="btn btn-ghost" onclick="gantiToko()" style="margin-top:8px;">
-        <i class="fas fa-arrow-left"></i> Ganti Toko
-      </button>
-      <p style="text-align:center;font-size:10px;color:#3B4F6A;margin-top:12px;font-weight:600;">
-        Belum terdaftar? Minta kasir mendaftarkan kamu dulu.
-      </p>
-    </div>
-  </div>
-
-  <!-- ======================= PAGE: DASHBOARD ======================= -->
-  <div id="page-dashboard" class="page" style="display:none;">
-
-    <!-- ← BACK + TOKO -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <button onclick="logout()" style="background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Sora',sans-serif;">
-        <i class="fas fa-arrow-left"></i> Kembali
-      </button>
-      <div style="font-size:11px;font-weight:800;color:var(--muted);" id="d-toko-name-top">KonterKU</div>
-    </div>
-
-    <!-- MEMBER CARD -->
-    <div class="member-card">
-      <div class="card-top">
-        <div>
-          <div class="card-store" id="d-card-toko">KonterKU</div>
-          <div class="card-name" id="d-nama">—</div>
-          <div class="card-id" id="d-id">ID: —</div>
-        </div>
-        <div class="card-status-badge" id="d-status-badge">
-          <i class="fas fa-check-circle" style="font-size:10px;"></i> AKTIF
-        </div>
-      </div>
-      <div class="card-stats">
-        <div class="stat-box">
-          <div class="stat-label">Total Transaksi</div>
-          <div class="stat-val" id="d-trx">0 transaksi</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label"><span class="stat-icon">⭐</span>Poin</div>
-          <div class="stat-val gold" id="d-poin">0</div>
-        </div>
-      </div>
-      <!-- QR CODE -->
-      <div class="card-qr-wrap">
-        <canvas id="qr-canvas" width="160" height="160"></canvas>
-        <div class="card-qr-label">QR Code Kartu Member Anda</div>
-      </div>
-    </div>
-
-    <!-- Pending badge -->
-    <div id="d-badge-req" class="pending-badge" style="display:none;">
-      <i class="fas fa-clock"></i>
-      <span>Request penukaran menunggu konfirmasi kasir…</span>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('info')" id="tab-info">👤 Informasi</button>
-      <button class="tab-btn" onclick="switchTab('riwayat')" id="tab-riwayat">⭐ Riwayat Poin</button>
-      <button class="tab-btn" onclick="switchTab('hadiah')" id="tab-hadiah">🎁 Hadiah</button>
-    </div>
-
-    <!-- TAB: INFO -->
-    <div id="panel-info">
-      <div class="glass">
-        <div class="sec-title">🧑 Informasi Member</div>
-        <div class="info-row">
-          <div class="info-key"><i class="fas fa-phone"></i> No. HP</div>
-          <div class="info-val" id="d-hp">—</div>
-        </div>
-        <div class="info-row">
-          <div class="info-key"><i class="fas fa-envelope"></i> Email</div>
-          <div class="info-val" id="d-email">—</div>
-        </div>
-        <div class="info-row">
-          <div class="info-key"><i class="fas fa-chart-bar"></i> Status</div>
-          <div class="info-val green" id="d-status-text">AKTIF</div>
-        </div>
-      </div>
-      <!-- Nilai poin -->
-      <div class="glass" style="display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:13px;font-weight:700;color:var(--muted);">100 poin =</div>
-        <div style="font-size:18px;font-weight:900;color:#A78BFA;" id="d-nilai-100">Rp 1.000</div>
-      </div>
-    </div>
-
-    <!-- TAB: RIWAYAT -->
-    <div id="panel-riwayat" style="display:none;">
-      <div class="glass" style="padding:16px;">
-        <div class="sec-title">⭐ Riwayat Poin</div>
-        <div class="rw-header">
-          <span>Tanggal</span>
-          <span>Aktivitas</span>
-          <span>Poin</span>
-          <span>Tipe</span>
-        </div>
-        <div id="d-riwayat-list">
-          <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;font-weight:600;">Belum ada riwayat poin</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB: HADIAH -->
-    <div id="panel-hadiah" style="display:none;">
-      <!-- Tukar diskon -->
-      <div class="sec-title">💸 Tukar Poin – Diskon</div>
-      <div class="diskon-card" style="margin-bottom:14px;">
-        <div class="diskon-top">
-          <div class="hadiah-ico">💸</div>
-          <div style="flex:1;">
-            <div class="hadiah-nm">Tukar Jadi Diskon</div>
-            <div class="hadiah-pt" id="d-diskon-nilai">—</div>
-          </div>
-          <button id="btn-req-diskon" class="btn-sm on" onclick="requestTukar('diskon')">Request</button>
-        </div>
-        <div class="diskon-sub">Semua poin dikonversi jadi diskon belanja</div>
-      </div>
-
-      <!-- Hadiah list -->
-      <div id="d-hadiah-wrap" style="display:none;">
-        <div class="sec-title">🎁 Hadiah yang Bisa Ditukar</div>
-        <p style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:12px;">Kumpulkan poin, tukarkan hadiah ke kasir toko!</p>
-        <div id="d-hadiah-list"></div>
-      </div>
-    </div>
-
-    <!-- Logout -->
-    <button class="btn btn-danger" onclick="logout()" style="margin-top:20px;">
-      <i class="fas fa-sign-out-alt"></i> Ganti Akun
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+    <button class="btn btn-blue" onclick="showPage('toko-pelanggan')" style="flex-direction:column;gap:6px;padding:20px 10px;">
+      <span style="font-size:28px">📱</span>
+      <span>Cek Poin<br>Pelanggan</span>
+    </button>
+    <button class="btn" onclick="showPage('login-admin')" style="flex-direction:column;gap:6px;padding:20px 10px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#C4B5FD;">
+      <span style="font-size:28px">🔐</span>
+      <span>Login<br>Admin/Kasir</span>
     </button>
   </div>
+</div>
+
+<!-- ======== PAGE: CARI TOKO (PELANGGAN) ======== -->
+<div id="page-toko-pelanggan" class="page" style="display:none">
+  <button onclick="showPage('home')" style="background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;gap:6px;font-family:'Sora',sans-serif">
+    <i class="fas fa-arrow-left"></i> Kembali
+  </button>
+  <div class="glass" style="text-align:center;margin-bottom:14px;">
+    <div style="font-size:40px;margin-bottom:10px;">🏪</div>
+    <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:4px;">Masukkan Kode Toko</div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);">Minta kode toko ke kasir atau pemilik toko</div>
+  </div>
+  <div class="glass">
+    <div class="field">
+      <label class="label">Kode / ID Toko</label>
+      <input id="inp-kode-toko" type="text" placeholder="Contoh: ABC123" autocomplete="off" onkeydown="if(event.key==='Enter')cariToko()">
+    </div>
+    <button id="btn-cari-toko" class="btn btn-blue" onclick="cariToko()">
+      <i class="fas fa-search"></i> Cari Toko
+    </button>
+  </div>
+</div>
+
+<!-- ======== PAGE: LOGIN PELANGGAN ======== -->
+<div id="page-login-pelanggan" class="page" style="display:none">
+  <div id="toko-badge-login"></div>
+  <div class="glass">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:34px;margin-bottom:8px;">👤</div>
+      <div style="font-size:16px;font-weight:900;color:#fff;">Login Pelanggan</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-top:4px;">Masukkan data sesuai yang didaftarkan</div>
+    </div>
+    <div class="field">
+      <label class="label">Nomor HP</label>
+      <input id="inp-hp" type="tel" placeholder="08xxxxxxxxxx" inputmode="numeric" autocomplete="off">
+    </div>
+    <div class="field">
+      <label class="label">Nama Lengkap</label>
+      <input id="inp-nama" type="text" placeholder="Nama sesuai data toko" autocomplete="off">
+    </div>
+    <div class="field">
+      <label class="label">PIN <span style="font-size:9px;font-weight:600;color:var(--muted)">(4 digit, jika ada)</span></label>
+      <input id="inp-pin" type="password" inputmode="numeric" placeholder="••••" maxlength="4" autocomplete="off"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"
+        onkeydown="if(event.key==='Enter')loginPelanggan()">
+    </div>
+    <button id="btn-login-plg" class="btn btn-blue" onclick="loginPelanggan()">
+      <i class="fas fa-star"></i> Cek Poin Saya
+    </button>
+    <button class="btn btn-ghost" onclick="showPage('toko-pelanggan')" style="margin-top:8px;">
+      <i class="fas fa-arrow-left"></i> Ganti Toko
+    </button>
+    <p style="text-align:center;font-size:10px;color:#3B4F6A;margin-top:12px;font-weight:600;">
+      Belum terdaftar? Minta kasir mendaftarkan kamu dulu.
+    </p>
+  </div>
+</div>
+
+<!-- ======== PAGE: DASHBOARD PELANGGAN ======== -->
+<div id="page-dashboard-pelanggan" class="page" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <button onclick="logoutPelanggan()" style="background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Sora',sans-serif">
+      <i class="fas fa-arrow-left"></i> Kembali
+    </button>
+    <div style="font-size:11px;font-weight:800;color:var(--muted)" id="d-toko-name-top">KonterKU</div>
+  </div>
+
+  <div class="member-card">
+    <div class="card-top">
+      <div>
+        <div class="card-store" id="d-card-toko">KonterKU</div>
+        <div class="card-name" id="d-nama">—</div>
+        <div class="card-id" id="d-id">ID: —</div>
+      </div>
+      <div class="card-status-badge" id="d-status-badge"><i class="fas fa-check-circle" style="font-size:10px"></i> AKTIF</div>
+    </div>
+    <div class="card-stats">
+      <div class="stat-box"><div class="stat-label">Total Transaksi</div><div class="stat-val" id="d-trx">0 transaksi</div></div>
+      <div class="stat-box"><div class="stat-label"><span style="font-size:11px;margin-right:2px">⭐</span>Poin</div><div class="stat-val gold" id="d-poin">0</div></div>
+    </div>
+    <div class="card-qr-wrap">
+      <canvas id="qr-canvas" width="160" height="160"></canvas>
+      <div class="card-qr-label">QR Code Kartu Member Anda</div>
+    </div>
+  </div>
+
+  <div id="d-badge-req" class="pending-badge" style="display:none">
+    <i class="fas fa-clock"></i><span>Request penukaran menunggu konfirmasi kasir…</span>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('info')" id="tab-info">👤 Info</button>
+    <button class="tab-btn" onclick="switchTab('riwayat')" id="tab-riwayat">⭐ Riwayat</button>
+    <button class="tab-btn" onclick="switchTab('hadiah')" id="tab-hadiah">🎁 Hadiah</button>
+  </div>
+
+  <div id="panel-info">
+    <div class="glass">
+      <div class="sec-title">🧑 Informasi Member</div>
+      <div class="info-row"><div class="info-key"><i class="fas fa-phone"></i> No. HP</div><div class="info-val" id="d-hp">—</div></div>
+      <div class="info-row"><div class="info-key"><i class="fas fa-envelope"></i> Email</div><div class="info-val" id="d-email">—</div></div>
+      <div class="info-row"><div class="info-key"><i class="fas fa-chart-bar"></i> Status</div><div class="info-val green" id="d-status-text">AKTIF</div></div>
+    </div>
+    <div class="glass" style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:13px;font-weight:700;color:var(--muted)">100 poin =</div>
+      <div style="font-size:18px;font-weight:900;color:#A78BFA" id="d-nilai-100">Rp 1.000</div>
+    </div>
+  </div>
+
+  <div id="panel-riwayat" style="display:none">
+    <div class="glass" style="padding:16px">
+      <div class="sec-title">⭐ Riwayat Poin</div>
+      <div class="rw-header"><span>Tanggal</span><span>Aktivitas</span><span>Poin</span><span>Tipe</span></div>
+      <div id="d-riwayat-list"><div class="empty-state"><div class="ico">📋</div><p>Belum ada riwayat poin</p></div></div>
+    </div>
+  </div>
+
+  <div id="panel-hadiah" style="display:none">
+    <div class="sec-title">💸 Tukar Poin – Diskon</div>
+    <div class="diskon-card" style="margin-bottom:14px">
+      <div class="diskon-top">
+        <div class="hadiah-ico">💸</div>
+        <div style="flex:1"><div class="hadiah-nm">Tukar Jadi Diskon</div><div class="hadiah-pt" id="d-diskon-nilai">—</div></div>
+        <button id="btn-req-diskon" class="btn-sm on" onclick="requestTukar('diskon')">Request</button>
+      </div>
+      <div class="diskon-sub">Semua poin dikonversi jadi diskon belanja</div>
+    </div>
+    <div id="d-hadiah-wrap" style="display:none">
+      <div class="sec-title">🎁 Hadiah yang Bisa Ditukar</div>
+      <div id="d-hadiah-list"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-danger" onclick="logoutPelanggan()" style="margin-top:20px">
+    <i class="fas fa-sign-out-alt"></i> Ganti Akun
+  </button>
+</div>
+
+<!-- ======== PAGE: LOGIN ADMIN ======== -->
+<div id="page-login-admin" class="page" style="display:none">
+  <button onclick="showPage('home')" style="background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;gap:6px;font-family:'Sora',sans-serif">
+    <i class="fas fa-arrow-left"></i> Kembali
+  </button>
+  <div class="glass">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:34px;margin-bottom:8px">🔐</div>
+      <div style="font-size:16px;font-weight:900;color:#fff">Login Admin / Kasir</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-top:4px">Masukkan kode toko dan PIN admin</div>
+    </div>
+    <div class="field">
+      <label class="label">Kode Toko</label>
+      <input id="adm-kode" type="text" placeholder="Kode toko Anda" autocomplete="off">
+    </div>
+    <div class="field">
+      <label class="label">PIN Admin</label>
+      <input id="adm-pin" type="password" placeholder="PIN admin" autocomplete="off" onkeydown="if(event.key==='Enter')loginAdmin()">
+    </div>
+    <button id="btn-login-adm" class="btn btn-blue" onclick="loginAdmin()" style="background:linear-gradient(135deg,#6D28D9,var(--purple))">
+      <i class="fas fa-shield-alt"></i> Masuk sebagai Admin
+    </button>
+  </div>
+</div>
+
+<!-- ======== PAGE: DASHBOARD ADMIN ======== -->
+<div id="page-dashboard-admin" class="page" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <button onclick="logoutAdmin()" style="background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Sora',sans-serif">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+    <div id="adm-toko-name" style="font-size:11px;font-weight:800;color:var(--muted)">KonterKU</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-card-ico">👥</div><div class="stat-card-lbl">Total Member</div><div class="stat-card-val" id="adm-stat-member">0</div></div>
+    <div class="stat-card"><div class="stat-card-ico">⭐</div><div class="stat-card-lbl">Total Poin Beredar</div><div class="stat-card-val" id="adm-stat-poin">0</div></div>
+  </div>
+
+  <!-- Admin tab bar -->
+  <div class="tab-bar" style="margin-bottom:16px">
+    <button class="tab-btn active" onclick="admSwitchTab('list')" id="adm-tab-list">👥 Pelanggan</button>
+    <button class="tab-btn" onclick="admSwitchTab('daftar')" id="adm-tab-daftar">➕ Daftar Baru</button>
+    <button class="tab-btn" onclick="admSwitchTab('request')" id="adm-tab-request">🎁 Request<span id="adm-req-dot" class="badge-dot" style="display:none"></span></button>
+  </div>
+
+  <!-- TAB: Daftar Pelanggan -->
+  <div id="adm-panel-list">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input id="adm-search" type="text" placeholder="Cari nama atau HP..." oninput="renderMemberList()">
+    </div>
+    <div id="adm-member-list"><div class="empty-state"><div class="ico">👥</div><p>Memuat data...</p></div></div>
+  </div>
+
+  <!-- TAB: Daftar Baru -->
+  <div id="adm-panel-daftar" style="display:none">
+    <div class="glass">
+      <div class="sec-title">➕ Daftar Member Baru</div>
+      <div class="field"><label class="label">Nama Lengkap *</label><input id="reg-nama" type="text" placeholder="Nama lengkap pelanggan"></div>
+      <div class="field"><label class="label">Nomor HP *</label><input id="reg-hp" type="tel" inputmode="numeric" placeholder="08xxxxxxxxxx"></div>
+      <div class="field"><label class="label">Email (opsional)</label><input id="reg-email" type="email" placeholder="email@contoh.com"></div>
+      <div class="field"><label class="label">PIN (opsional, 4 digit)</label><input id="reg-pin" type="password" inputmode="numeric" placeholder="••••" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"></div>
+      <button id="btn-reg" class="btn btn-green" onclick="daftarMember()"><i class="fas fa-user-plus"></i> Daftarkan Member</button>
+    </div>
+    <div id="reg-result" style="display:none"></div>
+  </div>
+
+  <!-- TAB: Request Penukaran -->
+  <div id="adm-panel-request" style="display:none">
+    <div id="adm-req-list"><div class="empty-state"><div class="ico">🎁</div><p>Belum ada request penukaran</p></div></div>
+  </div>
+
+  <!-- Detail member modal area -->
+  <div id="adm-detail-area" style="display:none"></div>
+</div>
 
 </div><!-- /wrap -->
 
 <script>
-/* ═══════════════════ STATE ═══════════════════ */
-let storeId = null, tokoData = null, pelanggan = null;
-let poinCfg = { nilaiTukar: 1000, daftarHadiah: [] };
-let reqListener = null;
-const fmt = n => Number(n||0).toLocaleString('id-ID');
+/* ═══ STATE ═══ */
+let storeId=null, tokoData=null, pelanggan=null, adminData=null;
+let poinCfg={nilaiTukar:1000,daftarHadiah:[]};
+let reqListener=null, admReqListener=null;
+let allMembers=[];
+const fmt=n=>Number(n||0).toLocaleString('id-ID');
+const now=()=>new Date();
 
-/* ═══════════════════ HELPERS ═══════════════════ */
+/* ═══ HELPERS ═══ */
 function showPage(p) {
-  ['toko','login','dashboard'].forEach(x => {
-    const el = document.getElementById('page-'+x);
-    if (!el) return;
-    if (x === p) {
-      el.style.display = 'block';
-      // reset animasi
-      el.classList.remove('page');
-      void el.offsetWidth;
-      el.classList.add('page');
-    } else {
-      el.style.display = 'none';
-    }
+  const pages=['home','toko-pelanggan','login-pelanggan','dashboard-pelanggan','login-admin','dashboard-admin'];
+  pages.forEach(x=>{
+    const el=document.getElementById('page-'+x);
+    if(!el)return;
+    if(x===p){el.style.display='block';el.classList.remove('page');void el.offsetWidth;el.classList.add('page');}
+    else el.style.display='none';
   });
 }
-
-function switchTab(t) {
-  ['info','riwayat','hadiah'].forEach(x => {
-    document.getElementById('panel-'+x).style.display = (x===t)?'':'none';
-    const btn = document.getElementById('tab-'+x);
-    if (btn) btn.classList.toggle('active', x===t);
+function switchTab(t){
+  ['info','riwayat','hadiah'].forEach(x=>{
+    document.getElementById('panel-'+x).style.display=x===t?'block':'none';
+    const b=document.getElementById('tab-'+x);if(b)b.classList.toggle('active',x===t);
   });
 }
-
-function tokoBadge(nama, sub) {
-  return `<div class="toko-badge">
-    <div class="toko-ico"><i class="fas fa-store" style="color:#fff;font-size:13px;"></i></div>
-    <div><div class="toko-nm">${nama}</div><div class="toko-sub">${sub}</div></div>
-  </div>`;
+function admSwitchTab(t){
+  ['list','daftar','request'].forEach(x=>{
+    document.getElementById('adm-panel-'+x).style.display=x===t?'block':'none';
+    const b=document.getElementById('adm-tab-'+x);if(b)b.classList.toggle('active',x===t);
+  });
+  if(t==='request')renderAdmRequests();
 }
+function tokoBadge(nama,sub){
+  return`<div class="toko-badge"><div class="toko-ico"><i class="fas fa-store" style="color:#fff;font-size:13px"></i></div><div><div class="toko-nm">${nama}</div><div class="toko-sub">${sub}</div></div></div>`;
+}
+function setBtnLoad(btn,txt){btn.disabled=true;btn.innerHTML=`<i class="fas fa-spinner spin"></i> ${txt}`;}
+function setBtnBack(btn,html){btn.disabled=false;btn.innerHTML=html;}
+function swalErr(msg){Swal.fire({icon:'error',title:'Oops',text:msg,customClass:{popup:'swal2-ku'}});}
+function swalOk(title,html){Swal.fire({icon:'success',title,html,timer:3000,showConfirmButton:false,customClass:{popup:'swal2-ku'}});}
+function tglNow(){const d=new Date();return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
+function jamNow(){const d=new Date();return d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});}
 
-function setBtnLoad(btn, txt) { btn.disabled=true; btn.innerHTML=`<i class="fas fa-spinner spin"></i> ${txt}`; }
-function setBtnBack(btn, html) { btn.disabled=false; btn.innerHTML=html; }
-function swalErr(msg) { Swal.fire({icon:'error',title:'Oops',text:msg,customClass:{popup:'swal2-ku'}}); }
-
-/* ═══════════════════ QR ═══════════════════ */
-function renderQR(text) {
-  const canvas = document.getElementById('qr-canvas');
-  if (!canvas) return;
-  if (typeof QRCode !== 'undefined') {
-    QRCode.toCanvas(canvas, text, { width:160, margin:1, color:{dark:'#1e293b',light:'#ffffff'} }, err => {
-      if (err) console.warn('[QR]', err);
-    });
+/* ═══ QR ═══ */
+function renderQR(text,canvasId='qr-canvas'){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  if(typeof QRCode!=='undefined'){
+    QRCode.toCanvas(canvas,text,{width:160,margin:1,color:{dark:'#1e293b',light:'#ffffff'}},err=>{if(err)console.warn('[QR]',err);});
   } else {
-    // fallback img
-    const img = document.createElement('img');
-    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=2&data=' + encodeURIComponent(text);
-    img.width = 160; img.height = 160; img.style.borderRadius = '6px';
-    canvas.parentNode.replaceChild(img, canvas);
+    const img=document.createElement('img');
+    img.src='https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=2&data='+encodeURIComponent(text);
+    img.width=160;img.height=160;img.style.borderRadius='6px';
+    canvas.parentNode.replaceChild(img,canvas);
   }
 }
 
-/* ═══════════════════ CARI TOKO ═══════════════════ */
-async function cariToko() {
-  const kode = (document.getElementById('inp-kode-toko').value||'').trim().toUpperCase();
-  if (!kode) { swalErr('Kode toko tidak boleh kosong'); return; }
-  const btn = document.getElementById('btn-cari-toko');
+/* ═══ GENERATE MEMBER ID ═══ */
+function generateMemberId(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const tgl=`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  const rand=Math.random().toString(36).substring(2,8).toUpperCase();
+  return tgl+rand;
+}
+
+/* ═══════════════════ FIREBASE DB ═══════════════════ */
+async function waitDB(){return new Promise(r=>{const t=setInterval(()=>{if(window._db){clearInterval(t);r();}},50);});}
+
+async function getTokoDoc(kode){
+  const db=window._db;
+  const tries=[kode,kode.toUpperCase()];
+  for(const k of tries){
+    let s=await db.collection('user_stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    s=await db.collection('stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    let d=await db.collection('user_stores').doc(k).get().catch(()=>null);
+    if(d&&d.exists)return{data:d.data(),id:k};
+    d=await db.collection('stores').doc(k).get().catch(()=>null);
+    if(d&&d.exists)return{data:d.data(),id:k};
+  }
+  return null;
+}
+
+async function getPelangganList(){
+  const db=window._db;
+  let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){const d=doc.data();const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];if(a.length)return a.map((c,i)=>({id:c.id||String(i),...c}));}
+  doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){const d=doc.data();const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];return a.map((c,i)=>({id:c.id||String(i),...c}));}
+  return[];
+}
+
+async function savePelangganList(list){
+  const db=window._db;
+  // Coba simpan ke user_stores dulu, fallback ke stores
+  let saved=false;
+  try{
+    await db.collection('user_stores').doc(storeId).update({'pelanggan':list});
+    saved=true;
+  }catch(e){}
+  if(!saved){
+    try{
+      await db.collection('stores').doc(storeId).update({'pelanggan':list});
+      saved=true;
+    }catch(e){}
+  }
+  if(!saved){
+    // Kalau dokumen belum ada, set baru
+    try{
+      await db.collection('user_stores').doc(storeId).set({pelanggan:list,kode_toko:storeId,namaToko:tokoData?.namaToko||'Toko'},{merge:true});
+    }catch(e){console.error('Save gagal',e);}
+  }
+  // Refresh cache
+  allMembers=list;
+}
+
+async function loadPoinCfg(){
+  const db=window._db;
+  let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){const d=doc.data();const r=d.settingPoin||(d.db&&d.db.settingPoin)||{};if(r.nilaiTukar||r.daftarHadiah){poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);return;}}
+  doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){const d=doc.data();const r=d.settingPoin||(d.db&&d.db.settingPoin)||{};poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);}
+}
+
+/* ═══════════════════ FLOW: PELANGGAN ═══════════════════ */
+async function cariToko(){
+  const kode=(document.getElementById('inp-kode-toko').value||'').trim().toUpperCase();
+  if(!kode){swalErr('Kode toko tidak boleh kosong');return;}
+  const btn=document.getElementById('btn-cari-toko');
   setBtnLoad(btn,'Mencari...');
-
-  let data = null, id = null, lastErr = null;
-  const db = window._db;
-
-  try {
-    let s = await db.collection('user_stores').where('kode_toko','==',kode).limit(1).get().catch(e=>{lastErr=e;return null;});
-    if (s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}
-    if (!data){s=await db.collection('stores').where('kode_toko','==',kode).limit(1).get().catch(e=>{lastErr=e;return null;});if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}}
-    if (!data){s=await db.collection('user_stores').where('namaToko','>=',kode).where('namaToko','<=',kode+'\uf8ff').limit(3).get().catch(e=>{lastErr=e;return null;});if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;}}
-    if (!data){const d=await db.collection('stores').doc(kode).get().catch(e=>{lastErr=e;return null;});if(d&&d.exists){data=d.data();id=kode;}}
-    if (!data){const d=await db.collection('user_stores').doc(kode).get().catch(e=>{lastErr=e;return null;});if(d&&d.exists){data=d.data();id=kode;}}
-  } catch(e){ lastErr=e; }
-
+  const result=await getTokoDoc(kode).catch(()=>null);
   setBtnBack(btn,'<i class="fas fa-search"></i> Cari Toko');
-
-  if (!data) {
-    if (lastErr) {
-      const errMsg = String(lastErr.message||lastErr).substring(0,150);
-      const res = await Swal.fire({
-        icon:'warning', title:'Koneksi Database Bermasalah',
-        html:'<div style="font-size:12px;color:#94a3b8;margin-bottom:10px;word-break:break-all;">'+
-          'Error: <code style="background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px;">'+errMsg+'</code></div>'+
-          '<div style="font-size:12px;">File dibuka dari domain yang tidak diizinkan Firebase.<br><br>'+
-          '<b style="color:#38BDF8;">Solusi terbaik:</b> Download file → buka langsung di browser.<br><br>'+
-          'Atau lanjut tanpa verifikasi toko:</div>',
-        showCancelButton:true,
-        confirmButtonText:'Lanjut Tanpa Verifikasi',
-        cancelButtonText:'Batal',
-        customClass:{popup:'swal2-ku'}
-      });
-      if (res.isConfirmed) {
-        storeId = kode;
-        tokoData = { namaToko:'Toko '+kode, kode_toko:kode };
-        sessionStorage.setItem('ku_store_id', storeId);
-        showLoginPage();
-        return;
-      }
-      return;
-    }
-    Swal.fire({icon:'error',title:'Toko Tidak Ditemukan',
-      html:'Kode <b>'+kode+'</b> tidak ditemukan.<br><span style="font-size:11px;color:#94a3b8;">Pastikan kode benar atau minta kasir mengecek.</span>',
-      customClass:{popup:'swal2-ku'}});
+  if(!result){
+    Swal.fire({icon:'error',title:'Toko Tidak Ditemukan',html:'Kode <b>'+kode+'</b> tidak ditemukan.<br><span style="font-size:11px;color:#94a3b8">Pastikan kode benar atau minta kasir.</span>',customClass:{popup:'swal2-ku'}});
     return;
   }
-  storeId=id; tokoData=data;
-  sessionStorage.setItem('ku_store_id', storeId);
-  showLoginPage();
+  storeId=result.id;tokoData=result.data;
+  sessionStorage.setItem('ku_store_id',storeId);
+  const namaToko=tokoData?.namaToko||tokoData?.nama||'Toko';
+  document.getElementById('toko-badge-login').innerHTML=tokoBadge(namaToko,'ID: '+storeId);
+  showPage('login-pelanggan');
 }
 
-/* ═══════════════════ SHOW LOGIN ═══════════════════ */
-function showLoginPage() {
-  const namaToko = tokoData?.namaToko||tokoData?.nama||'Toko';
-  document.getElementById('toko-badge-login').innerHTML = tokoBadge(namaToko,'ID: '+storeId);
-  showPage('login');
-}
-
-/* ═══════════════════ LOGIN ═══════════════════ */
-async function loginPelanggan() {
-  const hp   = (document.getElementById('inp-hp').value||'').trim().replace(/\D/g,'');
-  const nama = (document.getElementById('inp-nama').value||'').trim().toLowerCase();
-  const pin  = (document.getElementById('inp-pin')?.value||'').trim();
-  if (!hp)   { swalErr('Nomor HP tidak boleh kosong'); return; }
-  if (!nama) { swalErr('Nama tidak boleh kosong'); return; }
-
-  const btn = document.getElementById('btn-login');
+async function loginPelanggan(){
+  const hp=(document.getElementById('inp-hp').value||'').trim().replace(/\D/g,'');
+  const nama=(document.getElementById('inp-nama').value||'').trim().toLowerCase();
+  const pin=(document.getElementById('inp-pin')?.value||'').trim();
+  if(!hp){swalErr('Nomor HP tidak boleh kosong');return;}
+  if(!nama){swalErr('Nama tidak boleh kosong');return;}
+  const btn=document.getElementById('btn-login-plg');
   setBtnLoad(btn,'Mencari data...');
-
-  const list = await getPelangganList();
+  const list=await getPelangganList();
   setBtnBack(btn,'<i class="fas fa-star"></i> Cek Poin Saya');
-
-  if (!list||!list.length) { swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.'); return; }
-
-  const found = list.find(p => {
-    const hpP  = (p.hp||p.noHp||p.telepon||p.phone||'').replace(/\D/g,'');
-    const nmP  = (p.nama||p.name||'').trim().toLowerCase();
-    const hpOk = hpP===hp||hpP==='0'+hp||'0'+hpP===hp;
-    const nmOk = nmP===nama||nmP.includes(nama)||nama.includes(nmP);
-    return hpOk && nmOk;
+  if(!list||!list.length){swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.');return;}
+  const found=list.find(p=>{
+    const hpP=(p.hp||p.noHp||p.telepon||'').replace(/\D/g,'');
+    const nmP=(p.nama||p.name||'').trim().toLowerCase();
+    const hpOk=hpP===hp||hpP==='0'+hp||'0'+hpP===hp;
+    const nmOk=nmP===nama||nmP.includes(nama)||nama.includes(nmP);
+    return hpOk&&nmOk;
   });
-
-  if (!found) {
-    Swal.fire({icon:'warning',title:'Data Tidak Ditemukan',
-      html:'Nomor HP atau nama tidak cocok.<br><span style="font-size:12px;color:#94a3b8;">Pastikan data sesuai yang didaftarkan ke kasir.</span>',
-      customClass:{popup:'swal2-ku'}});
+  if(!found){
+    Swal.fire({icon:'warning',title:'Data Tidak Ditemukan',html:'Nomor HP atau nama tidak cocok.<br><span style="font-size:12px;color:#94a3b8">Pastikan data sesuai yang didaftarkan.</span>',customClass:{popup:'swal2-ku'}});
     return;
   }
-
-  if (found.pin) {
-    if (!pin||pin.length<4) { swalErr('Akun ini dilindungi PIN. Masukkan PIN 4 digit kamu.'); document.getElementById('inp-pin')?.focus(); return; }
-    if (String(pin)!==String(found.pin)) {
-      Swal.fire({icon:'error',title:'PIN Salah',html:'PIN yang kamu masukkan tidak benar.<br><span style="font-size:12px;color:#94a3b8;">Hubungi kasir jika lupa PIN.</span>',customClass:{popup:'swal2-ku'}});
-      document.getElementById('inp-pin').value='';
-      document.getElementById('inp-pin')?.focus();
-      return;
+  if(found.pin){
+    if(!pin||pin.length<4){swalErr('Akun ini dilindungi PIN. Masukkan PIN 4 digit.');document.getElementById('inp-pin')?.focus();return;}
+    if(String(pin)!==String(found.pin)){
+      Swal.fire({icon:'error',title:'PIN Salah',html:'PIN salah.<br><span style="font-size:12px;color:#94a3b8">Hubungi kasir jika lupa PIN.</span>',customClass:{popup:'swal2-ku'}});
+      document.getElementById('inp-pin').value='';document.getElementById('inp-pin')?.focus();return;
     }
   }
-
-  pelanggan = found;
+  pelanggan=found;
   await loadPoinCfg();
-  showDashboard();
+  showDashboardPelanggan();
 }
 
-async function getPelangganList() {
-  const db = window._db;
-  let doc = await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if (doc&&doc.exists){const d=doc.data();const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];if(a.length)return a.map((c,i)=>({id:c.id||String(i),...c}));}
-  doc = await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if (doc&&doc.exists){const d=doc.data();const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];return a.map((c,i)=>({id:c.id||String(i),...c}));}
-  return [];
-}
-
-async function loadPoinCfg() {
-  const db = window._db;
-  let doc = await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if (doc&&doc.exists){const d=doc.data();const r=d.settingPoin||(d.db&&d.db.settingPoin)||{};if(r.nilaiTukar||r.daftarHadiah){poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);return;}}
-  doc = await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if (doc&&doc.exists){const d=doc.data();const r=d.settingPoin||(d.db&&d.db.settingPoin)||{};poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);}
-}
-
-/* ═══════════════════ DASHBOARD ═══════════════════ */
-function showDashboard() {
-  showPage('dashboard');
+function showDashboardPelanggan(){
+  showPage('dashboard-pelanggan');
   switchTab('info');
-
-  const namaToko = tokoData?.namaToko||tokoData?.nama||'KonterKU';
-  const poin     = Number(pelanggan.poin||pelanggan.point||0);
-  const nilaiTukar = poinCfg.nilaiTukar||1000;
-  const nilaiDiskon = Math.floor(poin/100)*nilaiTukar;
-  const trxCount = pelanggan.totalTransaksi||pelanggan.jumlahTransaksi||1;
-  const status   = (pelanggan.status||'aktif').toUpperCase();
-  const email    = pelanggan.email||'—';
-
-  // Header
-  document.getElementById('d-toko-name-top').textContent = namaToko;
-  // Member card
-  document.getElementById('d-card-toko').textContent = namaToko.toUpperCase();
-  document.getElementById('d-nama').textContent      = pelanggan.nama||pelanggan.name||'—';
-  document.getElementById('d-id').textContent        = 'ID: '+(pelanggan.id||pelanggan.hp||'—');
-  document.getElementById('d-trx').textContent       = trxCount+' transaksi';
-  document.getElementById('d-poin').textContent      = fmt(poin);
-
-  const badge = document.getElementById('d-status-badge');
-  if (status==='NONAKTIF'||status==='INACTIVE') {
-    badge.className='card-status-badge nonaktif';
-    badge.innerHTML='<i class="fas fa-times-circle" style="font-size:10px;"></i> NONAKTIF';
-  }
-
-  // QR
+  const namaToko=tokoData?.namaToko||tokoData?.nama||'KonterKU';
+  const poin=Number(pelanggan.poin||pelanggan.point||0);
+  const nilaiTukar=poinCfg.nilaiTukar||1000;
+  const nilaiDiskon=Math.floor(poin/100)*nilaiTukar;
+  const trxCount=pelanggan.totalTransaksi||pelanggan.jumlahTransaksi||1;
+  const status=(pelanggan.status||'aktif').toUpperCase();
+  document.getElementById('d-toko-name-top').textContent=namaToko;
+  document.getElementById('d-card-toko').textContent=namaToko.toUpperCase();
+  document.getElementById('d-nama').textContent=pelanggan.nama||pelanggan.name||'—';
+  document.getElementById('d-id').textContent='ID: '+(pelanggan.id||pelanggan.hp||'—');
+  document.getElementById('d-trx').textContent=trxCount+' transaksi';
+  document.getElementById('d-poin').textContent=fmt(poin);
+  const badge=document.getElementById('d-status-badge');
+  if(status==='NONAKTIF'||status==='INACTIVE'){badge.className='card-status-badge nonaktif';badge.innerHTML='<i class="fas fa-times-circle" style="font-size:10px"></i> NONAKTIF';}
   renderQR(pelanggan.id||pelanggan.hp||'NO-ID');
-
-  // Info tab
-  document.getElementById('d-hp').textContent    = pelanggan.hp||pelanggan.noHp||'—';
-  document.getElementById('d-email').textContent = email;
-  document.getElementById('d-status-text').textContent = status;
-  document.getElementById('d-nilai-100').textContent   = 'Rp '+fmt(nilaiTukar);
-
+  document.getElementById('d-hp').textContent=pelanggan.hp||pelanggan.noHp||'—';
+  document.getElementById('d-email').textContent=pelanggan.email||'—';
+  document.getElementById('d-status-text').textContent=status;
+  document.getElementById('d-nilai-100').textContent='Rp '+fmt(nilaiTukar);
   // Diskon
-  document.getElementById('d-diskon-nilai').textContent =
-    poin>=100 ? `Nilai diskon: Rp ${fmt(nilaiDiskon)}` : 'Poin belum cukup (min. 100)';
-  const btnDiskon = document.getElementById('btn-req-diskon');
-  if (poin<100) { btnDiskon.className='btn-sm off'; btnDiskon.onclick=null; }
-
+  document.getElementById('d-diskon-nilai').textContent=poin>=100?`Nilai diskon: Rp ${fmt(nilaiDiskon)}`:'Poin belum cukup (min. 100)';
+  const btnDiskon=document.getElementById('btn-req-diskon');
+  if(poin<100){btnDiskon.className='btn-sm off';btnDiskon.onclick=null;}
   // Hadiah
-  const hadiah = (poinCfg.daftarHadiah||[]).filter(h=>h.nama&&h.poin>0);
-  if (hadiah.length) {
+  const hadiah=(poinCfg.daftarHadiah||[]).filter(h=>h.nama&&h.poin>0);
+  if(hadiah.length){
     document.getElementById('d-hadiah-wrap').style.display='';
-    document.getElementById('d-hadiah-list').innerHTML = hadiah.map((h,i)=>{
-      const bisa = poin>=h.poin;
-      return `<div class="hadiah-card ${bisa?'bisa':''}">
+    document.getElementById('d-hadiah-list').innerHTML=hadiah.map((h,i)=>{
+      const bisa=poin>=h.poin;
+      return`<div class="hadiah-card ${bisa?'bisa':''}">
         <div class="hadiah-ico">🎁</div>
-        <div style="flex:1;">
-          <div class="hadiah-nm">${h.nama}</div>
-          <div class="hadiah-pt">${fmt(h.poin)} poin</div>
-          ${!bisa?`<div class="hadiah-less">Kurang ${fmt(h.poin-poin)} poin</div>`:''}
-        </div>
+        <div style="flex:1"><div class="hadiah-nm">${h.nama}</div><div class="hadiah-pt">${fmt(h.poin)} poin</div>${!bisa?`<div class="hadiah-less">Kurang ${fmt(h.poin-poin)} poin</div>`:''}</div>
         <button class="btn-sm ${bisa?'on':'off'}" ${bisa?`onclick="requestTukar('hadiah',${i})"`:' disabled'}>Request</button>
       </div>`;
     }).join('');
   }
-
-  // Riwayat poin (riwayatPoin array dari data pelanggan)
-  const rw = (pelanggan.riwayatPoin||pelanggan.poinHistory||[]).slice(-20).reverse();
-  if (rw.length) {
-    document.getElementById('d-riwayat-list').innerHTML = rw.map(r=>{
-      const tipe   = (r.tipe||r.type||'masuk').toLowerCase();
-      const isMasuk = tipe==='masuk'||tipe==='in'||r.poin>0;
-      const poinVal = Math.abs(r.poin||r.jumlah||0);
-      return `<div class="rw-row">
-        <div class="rw-date">${r.tanggal||r.tgl||r.date||'—'}</div>
-        <div class="rw-act">${r.aktivitas||r.keterangan||r.desc||'—'}</div>
-        <div class="rw-poin ${isMasuk?'masuk':'keluar'}">${isMasuk?'+':'−'}${fmt(poinVal)} ⭐</div>
-        <div><span class="rw-type ${isMasuk?'masuk':'keluar'}">${isMasuk?'MASUK':'KELUAR'}</span></div>
-      </div>`;
+  // Riwayat
+  const rw=(pelanggan.riwayatPoin||pelanggan.poinHistory||[]).slice(-20).reverse();
+  if(rw.length){
+    document.getElementById('d-riwayat-list').innerHTML=rw.map(r=>{
+      const tipe=(r.tipe||r.type||'masuk').toLowerCase();
+      const isMasuk=tipe==='masuk'||tipe==='in'||r.poin>0;
+      const poinVal=Math.abs(r.poin||r.jumlah||0);
+      return`<div class="rw-row"><div class="rw-date">${r.tanggal||r.tgl||r.date||'—'}</div><div class="rw-act">${r.aktivitas||r.keterangan||r.desc||'—'}</div><div class="rw-poin ${isMasuk?'masuk':'keluar'}">${isMasuk?'+':'−'}${fmt(poinVal)} ⭐</div><div><span class="rw-type ${isMasuk?'masuk':'keluar'}">${isMasuk?'MASUK':'KELUAR'}</span></div></div>`;
     }).join('');
-  } else {
-    // fallback: riwayat dari redeemHistory
-    const rdm = (pelanggan.redeemHistory||[]).slice(-8).reverse();
-    if (rdm.length) {
-      document.getElementById('d-riwayat-list').innerHTML = rdm.map(r=>`
-        <div class="rw-row">
-          <div class="rw-date">${r.tgl||r.tanggal||'—'}</div>
-          <div class="rw-act">${r.hadiah?'🎁 '+r.hadiah:'💸 Diskon Rp '+fmt(r.nilaiDiskon)}</div>
-          <div class="rw-poin keluar">−${fmt(r.poinDipakai)} ⭐</div>
-          <div><span class="rw-type keluar">KELUAR</span></div>
-        </div>`).join('');
-    }
   }
-
   listenRequest();
 }
 
-/* ═══════════════════ REQUEST TUKAR ═══════════════════ */
-async function requestTukar(tipe, hadiahIdx) {
-  const poin = Number(pelanggan.poin||pelanggan.point||0);
-  const db   = window._db;
-
-  const existing = await db.collection('poin_requests')
-    .where('storeId','==',storeId)
-    .where('pelangganId','==',pelanggan.id||pelanggan.hp)
-    .where('status','==','pending')
-    .limit(1).get().catch(()=>null);
-  if (existing&&!existing.empty) {
-    Swal.fire({icon:'info',title:'Ada Request Pending',text:'Masih ada request yang belum dikonfirmasi kasir. Tunggu sebentar ya.',customClass:{popup:'swal2-ku'}});
-    return;
-  }
-
-  let label, payload;
-  if (tipe==='diskon') {
-    const nd = Math.floor(poin/100)*(poinCfg.nilaiTukar||1000);
-    label='Diskon Rp '+fmt(nd);
-    payload={tipe:'diskon',nilaiDiskon:nd,poinDipakai:poin};
-  } else {
-    const h = (poinCfg.daftarHadiah||[])[hadiahIdx];
-    if (!h) return;
-    label=h.nama;
-    payload={tipe:'hadiah',hadiah:h.nama,poinDipakai:h.poin};
-  }
-
-  const ok = await Swal.fire({
-    icon:'question',title:'Konfirmasi Request',
-    html:`Kamu akan request tukar:<br><b style="color:#38BDF8;">${label}</b><br>
-      <span style="font-size:12px;color:#94a3b8;">Kasir akan mengkonfirmasi dan memproses penukaran.</span>`,
-    showCancelButton:true,confirmButtonText:'Ya, Request!',cancelButtonText:'Batal',
-    customClass:{popup:'swal2-ku'}
-  });
-  if (!ok.isConfirmed) return;
-
-  const now = new Date();
-  await db.collection('poin_requests').add({
-    storeId,
-    pelangganId  : pelanggan.id||pelanggan.hp,
-    pelangganNama: pelanggan.nama||pelanggan.name||'—',
-    pelangganHp  : pelanggan.hp||pelanggan.noHp||'—',
-    poinSaatIni  : poin,
-    tgl          : now.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}),
-    jam          : now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),
-    createdAt    : firebase.firestore.FieldValue.serverTimestamp(),
-    status       : 'pending',
-    ...payload
-  });
-
+async function requestTukar(tipe,hadiahIdx){
+  const poin=Number(pelanggan.poin||pelanggan.point||0);const db=window._db;
+  const existing=await db.collection('poin_requests').where('storeId','==',storeId).where('pelangganId','==',pelanggan.id||pelanggan.hp).where('status','==','pending').limit(1).get().catch(()=>null);
+  if(existing&&!existing.empty){Swal.fire({icon:'info',title:'Ada Request Pending',text:'Masih ada request yang belum dikonfirmasi kasir.',customClass:{popup:'swal2-ku'}});return;}
+  let label,payload;
+  if(tipe==='diskon'){const nd=Math.floor(poin/100)*(poinCfg.nilaiTukar||1000);label='Diskon Rp '+fmt(nd);payload={tipe:'diskon',nilaiDiskon:nd,poinDipakai:poin};}
+  else{const h=(poinCfg.daftarHadiah||[])[hadiahIdx];if(!h)return;label=h.nama;payload={tipe:'hadiah',hadiah:h.nama,poinDipakai:h.poin};}
+  const ok=await Swal.fire({icon:'question',title:'Konfirmasi Request',html:`Kamu akan request:<br><b style="color:#38BDF8">${label}</b><br><span style="font-size:12px;color:#94a3b8">Kasir akan mengkonfirmasi.</span>`,showCancelButton:true,confirmButtonText:'Ya, Request!',cancelButtonText:'Batal',customClass:{popup:'swal2-ku'}});
+  if(!ok.isConfirmed)return;
+  await db.collection('poin_requests').add({storeId,pelangganId:pelanggan.id||pelanggan.hp,pelangganNama:pelanggan.nama||'—',pelangganHp:pelanggan.hp||'—',poinSaatIni:poin,tgl:tglNow(),jam:jamNow(),createdAt:firebase.firestore.FieldValue.serverTimestamp(),status:'pending',...payload});
   document.getElementById('d-badge-req').style.display='';
-  Swal.fire({icon:'success',title:'Request Terkirim! ✅',
-    html:`Request <b>${label}</b> sudah dikirim ke kasir.<br>
-      <span style="font-size:12px;color:#94a3b8;">Tunjukkan layar ini ke kasir dan tunggu konfirmasi.</span>`,
-    customClass:{popup:'swal2-ku'}});
+  swalOk('Request Terkirim! ✅',`Request <b>${label}</b> dikirim ke kasir.`);
 }
 
-/* ═══════════════════ LISTEN REQUEST ═══════════════════ */
-function listenRequest() {
-  if (reqListener) reqListener();
-  reqListener = window._db.collection('poin_requests')
-    .where('storeId','==',storeId)
-    .where('pelangganId','==',pelanggan.id||pelanggan.hp)
-    .where('status','==','pending')
-    .onSnapshot(snap=>{
-      const badge = document.getElementById('d-badge-req');
-      if (snap&&!snap.empty) { badge.style.display=''; }
-      else { badge.style.display='none'; reloadPoin(); }
-    }, ()=>{});
+function listenRequest(){
+  if(reqListener)reqListener();
+  reqListener=window._db.collection('poin_requests').where('storeId','==',storeId).where('pelangganId','==',pelanggan.id||pelanggan.hp).where('status','==','pending').onSnapshot(snap=>{
+    const badge=document.getElementById('d-badge-req');
+    if(snap&&!snap.empty)badge.style.display='';
+    else{badge.style.display='none';reloadPoin();}
+  },()=>{});
 }
 
-async function reloadPoin() {
-  const list = await getPelangganList();
-  if (!list) return;
-  const pid   = pelanggan.id||pelanggan.hp;
-  const found = list.find(p=>p.id===pid||p.hp===pid);
-  if (!found) return;
-  pelanggan = found;
-  const poin = Number(found.poin||found.point||0);
-  document.getElementById('d-poin').textContent = fmt(poin);
-  Swal.fire({icon:'success',title:'Poin Diperbarui!',text:`Poin kamu sekarang: ${fmt(poin)} poin`,timer:3000,showConfirmButton:false,customClass:{popup:'swal2-ku'}});
+async function reloadPoin(){
+  const list=await getPelangganList();if(!list)return;
+  const pid=pelanggan.id||pelanggan.hp;
+  const found=list.find(p=>p.id===pid||p.hp===pid);
+  if(!found)return;
+  pelanggan=found;
+  const poin=Number(found.poin||found.point||0);
+  document.getElementById('d-poin').textContent=fmt(poin);
+  swalOk('Poin Diperbarui!',`Poin kamu: ${fmt(poin)} poin`);
 }
 
-/* ═══════════════════ NAVIGATE ═══════════════════ */
-function gantiToko() {
-  sessionStorage.removeItem('ku_store_id');
-  storeId=null; tokoData=null;
-  showPage('toko');
-}
-
-function logout() {
+function logoutPelanggan(){
   pelanggan=null;
   ['inp-hp','inp-nama','inp-pin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   if(reqListener){reqListener();reqListener=null;}
-  showPage('login');
+  showPage('login-pelanggan');
+}
+
+/* ═══════════════════ FLOW: ADMIN ═══════════════════ */
+async function loginAdmin(){
+  const kode=(document.getElementById('adm-kode').value||'').trim().toUpperCase();
+  const pin=(document.getElementById('adm-pin').value||'').trim();
+  if(!kode){swalErr('Kode toko tidak boleh kosong');return;}
+  if(!pin){swalErr('PIN admin tidak boleh kosong');return;}
+  const btn=document.getElementById('btn-login-adm');
+  setBtnLoad(btn,'Memverifikasi...');
+  const result=await getTokoDoc(kode).catch(()=>null);
+  setBtnBack(btn,'<i class="fas fa-shield-alt"></i> Masuk sebagai Admin');
+  if(!result){swalErr('Toko tidak ditemukan. Periksa kode toko.');return;}
+  const data=result.data;
+  // Cek PIN admin dari data toko
+  const adminPin=data.adminPin||data.pinAdmin||data.pin||data.password||'';
+  if(adminPin&&String(pin)!==String(adminPin)){
+    Swal.fire({icon:'error',title:'PIN Admin Salah',text:'PIN tidak sesuai. Hubungi pemilik toko.',customClass:{popup:'swal2-ku'}});return;
+  }
+  if(!adminPin){
+    // Kalau tidak ada PIN di data, tanya konfirmasi
+    const ok=await Swal.fire({icon:'warning',title:'PIN Admin Belum Diset',html:'Toko ini belum punya PIN admin di database.<br>Lanjut sebagai admin tanpa verifikasi?',showCancelButton:true,confirmButtonText:'Lanjut',cancelButtonText:'Batal',customClass:{popup:'swal2-ku'}});
+    if(!ok.isConfirmed)return;
+  }
+  storeId=result.id;tokoData=data;adminData=data;
+  await loadPoinCfg();
+  document.getElementById('top-admin-badge').style.display='';
+  document.getElementById('adm-toko-name').textContent=data.namaToko||data.nama||'KonterKU';
+  // Load semua member
+  allMembers=await getPelangganList();
+  // Stats
+  const totalPoin=allMembers.reduce((s,p)=>s+Number(p.poin||p.point||0),0);
+  document.getElementById('adm-stat-member').textContent=allMembers.length;
+  document.getElementById('adm-stat-poin').textContent=fmt(totalPoin);
+  admSwitchTab('list');
+  renderMemberList();
+  listenAdmRequests();
+  showPage('dashboard-admin');
+}
+
+function renderMemberList(){
+  const q=(document.getElementById('adm-search')?.value||'').toLowerCase();
+  const filtered=allMembers.filter(p=>{
+    const nm=(p.nama||p.name||'').toLowerCase();
+    const hp=(p.hp||p.noHp||'').replace(/\D/g,'');
+    return!q||nm.includes(q)||hp.includes(q);
+  });
+  if(!filtered.length){
+    document.getElementById('adm-member-list').innerHTML=`<div class="empty-state"><div class="ico">🔍</div><p>${q?'Tidak ditemukan':'Belum ada member terdaftar'}</p></div>`;
+    return;
+  }
+  document.getElementById('adm-member-list').innerHTML=filtered.map(p=>{
+    const nm=p.nama||p.name||'?';
+    const hp=p.hp||p.noHp||'—';
+    const poin=Number(p.poin||p.point||0);
+    const status=(p.status||'aktif').toLowerCase();
+    const inisial=nm.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    return`<div class="member-item" onclick="admDetailMember('${p.id||hp}')">
+      <div class="member-avatar">${inisial}</div>
+      <div style="flex:1">
+        <div class="member-nm">${nm}</div>
+        <div class="member-hp">${hp}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="member-poin">⭐ ${fmt(poin)}</div>
+        <span class="member-status ${status}">${status.toUpperCase()}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function admDetailMember(id){
+  const p=allMembers.find(m=>(m.id||m.hp||'')===(id));
+  if(!p)return;
+  const poin=Number(p.poin||p.point||0);
+  const nm=p.nama||p.name||'—';
+  const hp=p.hp||p.noHp||'—';
+  const rw=(p.riwayatPoin||[]).slice(-5).reverse();
+  Swal.fire({
+    title:'',
+    html:`<div style="font-family:'Sora',sans-serif;text-align:left">
+      <div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px">${nm}</div>
+      <div style="font-size:12px;color:#64748B;margin-bottom:12px">${hp} | ID: ${p.id||'—'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+        <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px">
+          <div style="font-size:9px;color:#64748B;font-weight:800;text-transform:uppercase">Poin</div>
+          <div style="font-size:22px;font-weight:900;color:#F59E0B">⭐ ${fmt(poin)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px">
+          <div style="font-size:9px;color:#64748B;font-weight:800;text-transform:uppercase">Transaksi</div>
+          <div style="font-size:22px;font-weight:900;color:#fff">${p.totalTransaksi||0}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;font-weight:800;color:#64748B;text-transform:uppercase;margin-bottom:8px">Tambah / Kurang Poin</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="swal-poin-input" type="number" placeholder="Jumlah poin" style="flex:1;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:700;color:#E2E8F0;font-family:'Sora',sans-serif;outline:none">
+          <input id="swal-poin-ket" type="text" placeholder="Keterangan" style="flex:1.5;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:700;color:#E2E8F0;font-family:'Sora',sans-serif;outline:none">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <button onclick="admTambahPoin('${p.id||hp}',true)" style="padding:10px;background:linear-gradient(135deg,#059669,#10B981);border:none;border-radius:10px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;font-family:'Sora',sans-serif">➕ Tambah Poin</button>
+          <button onclick="admTambahPoin('${p.id||hp}',false)" style="padding:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:10px;font-size:12px;font-weight:800;color:#EF4444;cursor:pointer;font-family:'Sora',sans-serif">➖ Kurang Poin</button>
+        </div>
+      </div>
+      ${rw.length?`<div style="font-size:10px;font-weight:800;color:#64748B;text-transform:uppercase;margin-bottom:8px">Riwayat Terakhir</div>`+rw.map(r=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px"><span style="color:#94a3b8">${r.tanggal||'—'} • ${r.aktivitas||'—'}</span><span style="color:${Number(r.poin||0)>0?'#34D399':'#F87171'};font-weight:800">${Number(r.poin||0)>0?'+':''}${fmt(r.poin||0)}</span></div>`).join(''):''}
+    </div>`,
+    showConfirmButton:false,
+    showCloseButton:true,
+    background:'#141e33',
+    color:'#E2E8F0',
+    customClass:{popup:'swal2-ku',closeButton:'swal2-close-ku'},
+    width:'90%'
+  });
+}
+
+async function admTambahPoin(memberId,tambah){
+  const inputEl=document.getElementById('swal-poin-input');
+  const ketEl=document.getElementById('swal-poin-ket');
+  const jumlah=Number(inputEl?.value||0);
+  const ket=(ketEl?.value||'').trim()||( tambah?'Tambah poin':'Kurang poin');
+  if(!jumlah||jumlah<=0){Swal.showValidationMessage('Jumlah poin harus > 0');return;}
+  const idx=allMembers.findIndex(m=>(m.id||m.hp||'')===(memberId));
+  if(idx<0)return;
+  const p=allMembers[idx];
+  const poinLama=Number(p.poin||p.point||0);
+  const poinBaru=tambah?poinLama+jumlah:Math.max(0,poinLama-jumlah);
+  const entri={tanggal:tglNow(),jam:jamNow(),aktivitas:ket,poin:tambah?jumlah:-jumlah,tipe:tambah?'masuk':'keluar'};
+  allMembers[idx]={...p,poin:poinBaru,point:poinBaru,totalTransaksi:(p.totalTransaksi||0)+(tambah?1:0),riwayatPoin:[...(p.riwayatPoin||[]),entri]};
+  await savePelangganList(allMembers);
+  // Update stats
+  const totalPoin=allMembers.reduce((s,m)=>s+Number(m.poin||m.point||0),0);
+  document.getElementById('adm-stat-poin').textContent=fmt(totalPoin);
+  Swal.close();
+  renderMemberList();
+  swalOk('Poin Diperbarui!',`${allMembers[idx].nama||'Member'}: ${fmt(poinBaru)} poin`);
+}
+
+async function daftarMember(){
+  const nama=(document.getElementById('reg-nama').value||'').trim();
+  const hp=(document.getElementById('reg-hp').value||'').trim().replace(/\D/g,'');
+  const email=(document.getElementById('reg-email').value||'').trim();
+  const pin=(document.getElementById('reg-pin').value||'').trim();
+  if(!nama){swalErr('Nama tidak boleh kosong');return;}
+  if(!hp||hp.length<10){swalErr('Nomor HP tidak valid');return;}
+  // Cek duplikasi
+  const dup=allMembers.find(p=>(p.hp||p.noHp||'').replace(/\D/g,'')===(hp)||('0'+hp)===(p.hp||'').replace(/\D/g,''));
+  if(dup){swalErr('Nomor HP sudah terdaftar: '+dup.nama);return;}
+  const btn=document.getElementById('btn-reg');
+  setBtnLoad(btn,'Mendaftarkan...');
+  const memberId=generateMemberId();
+  const newMember={id:memberId,nama,hp:'0'+hp.replace(/^0/,''),email,pin:pin||'',poin:0,point:0,totalTransaksi:0,status:'aktif',tglDaftar:tglNow(),riwayatPoin:[]};
+  allMembers.push(newMember);
+  await savePelangganList(allMembers);
+  setBtnBack(btn,'<i class="fas fa-user-plus"></i> Daftarkan Member');
+  // Update stats
+  document.getElementById('adm-stat-member').textContent=allMembers.length;
+  const totalPoin=allMembers.reduce((s,m)=>s+Number(m.poin||m.point||0),0);
+  document.getElementById('adm-stat-poin').textContent=fmt(totalPoin);
+  // Tampilkan hasil
+  document.getElementById('reg-result').style.display='block';
+  document.getElementById('reg-result').innerHTML=`<div class="glass" style="border-color:rgba(16,185,129,0.3)">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:28px">✅</div>
+      <div style="font-size:15px;font-weight:900;color:#34D399;margin-top:4px">Member Berhasil Didaftarkan!</div>
+    </div>
+    <div class="info-row"><div class="info-key">Nama</div><div class="info-val">${nama}</div></div>
+    <div class="info-row"><div class="info-key">No HP</div><div class="info-val">0${hp.replace(/^0/,'')}</div></div>
+    <div class="info-row"><div class="info-key">Member ID</div><div class="info-val" style="font-size:11px;word-break:break-all;color:var(--sky)">${memberId}</div></div>
+    <div style="text-align:center;margin-top:16px">
+      <canvas id="qr-reg" width="140" height="140"></canvas>
+      <div style="font-size:9px;color:var(--muted);margin-top:4px;font-weight:600">QR Code Member</div>
+    </div>
+    <button class="btn btn-green" style="margin-top:14px" onclick="kirimWAMember('${nama}','0${hp.replace(/^0/,'')}','${memberId}')">
+      <i class="fab fa-whatsapp"></i> Kirim Info via WhatsApp
+    </button>
+  </div>`;
+  setTimeout(()=>renderQR(memberId,'qr-reg'),300);
+  // Reset form
+  ['reg-nama','reg-hp','reg-email','reg-pin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderMemberList();
+}
+
+function kirimWAMember(nama,hp,memberId){
+  const tokoNm=tokoData?.namaToko||tokoData?.nama||'Toko Kami';
+  const pesan=`🎉 Halo, ${nama}!\n\nSelamat datang! Kamu telah berhasil terdaftar sebagai *Member* kami. 🏪✨\n\n━━━━━━━━━━━━━━\n🪪 *Member ID Kamu:*\n${memberId}\n━━━━━━━━━━━━━━\n\n📱 *Cara cek poin & kartu member:*\n1. Buka link yang diberikan kasir\n2. Pilih *Cek Poin Pelanggan*\n3. Masukkan kode toko\n4. Login dengan HP & nama kamu\n\n⭐ *Cara kumpulkan poin:*\nTunjukkan Member ID kamu setiap transaksi di *${tokoNm}*, poin otomatis masuk!\n\n🎁 Kumpulkan poin → Tukar hadiah menarik!\n\n📌 Simpan Member ID ini baik-baik ya!\n😊`;
+  const hpBersih=hp.replace(/\D/g,'').replace(/^0/,'62');
+  window.open(`https://wa.me/${hpBersih}?text=${encodeURIComponent(pesan)}`,'_blank');
+}
+
+function listenAdmRequests(){
+  if(admReqListener)admReqListener();
+  admReqListener=window._db.collection('poin_requests').where('storeId','==',storeId).where('status','==','pending').onSnapshot(snap=>{
+    const dot=document.getElementById('adm-req-dot');
+    if(dot)dot.style.display=snap&&!snap.empty?'inline-block':'none';
+  },()=>{});
+}
+
+async function renderAdmRequests(){
+  const db=window._db;
+  const snap=await db.collection('poin_requests').where('storeId','==',storeId).where('status','==','pending').orderBy('createdAt','desc').get().catch(()=>null);
+  if(!snap||snap.empty){document.getElementById('adm-req-list').innerHTML=`<div class="empty-state"><div class="ico">🎁</div><p>Tidak ada request penukaran pending</p></div>`;return;}
+  document.getElementById('adm-req-list').innerHTML=snap.docs.map(doc=>{
+    const r=doc.data();const rid=doc.id;
+    const label=r.tipe==='diskon'?`💸 Diskon Rp ${fmt(r.nilaiDiskon)}`:`🎁 ${r.hadiah}`;
+    return`<div class="glass" style="margin-bottom:10px">
+      <div style="font-size:14px;font-weight:900;color:#fff;margin-bottom:4px">${r.pelangganNama||'—'}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">${r.pelangganHp||'—'} • ${r.tgl||'—'} ${r.jam||''}</div>
+      <div style="font-size:13px;font-weight:800;color:#38BDF8;margin-bottom:4px">${label}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Poin saat request: ⭐ ${fmt(r.poinSaatIni)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-green" style="padding:10px;font-size:12px" onclick="konfirmRequest('${rid}',true)"><i class="fas fa-check"></i> Konfirmasi</button>
+        <button class="btn btn-danger" style="padding:10px;font-size:12px" onclick="konfirmRequest('${rid}',false)"><i class="fas fa-times"></i> Tolak</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function konfirmRequest(rid,approve){
+  const db=window._db;
+  const doc=await db.collection('poin_requests').doc(rid).get().catch(()=>null);
+  if(!doc||!doc.exists)return;
+  const r=doc.data();
+  if(approve){
+    // Kurangi poin member
+    const idx=allMembers.findIndex(m=>(m.id||m.hp||'')===(r.pelangganId));
+    if(idx>=0){
+      const p=allMembers[idx];
+      const poinLama=Number(p.poin||p.point||0);
+      const poinBaru=Math.max(0,poinLama-r.poinDipakai);
+      const label=r.tipe==='diskon'?`Tukar diskon Rp${fmt(r.nilaiDiskon)}`:`Tukar hadiah: ${r.hadiah}`;
+      const entri={tanggal:tglNow(),jam:jamNow(),aktivitas:label,poin:-r.poinDipakai,tipe:'keluar'};
+      allMembers[idx]={...p,poin:poinBaru,point:poinBaru,riwayatPoin:[...(p.riwayatPoin||[]),entri]};
+      await savePelangganList(allMembers);
+      renderMemberList();
+    }
+  }
+  await db.collection('poin_requests').doc(rid).update({status:approve?'approved':'rejected',processedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  renderAdmRequests();
+  swalOk(approve?'Request Dikonfirmasi ✅':'Request Ditolak',approve?'Poin member berhasil dikurangi.':'Request ditolak.');
+}
+
+function logoutAdmin(){
+  storeId=null;tokoData=null;adminData=null;allMembers=[];
+  document.getElementById('top-admin-badge').style.display='none';
+  if(admReqListener){admReqListener();admReqListener=null;}
+  document.getElementById('adm-kode').value='';
+  document.getElementById('adm-pin').value='';
+  showPage('home');
 }
 
 /* ═══════════════════ INIT ═══════════════════ */
-async function init() {
-  await new Promise(r=>{const t=setInterval(()=>{if(window._db){clearInterval(t);r();}},50);});
-
-  const urlParams  = new URLSearchParams(window.location.search);
-  const paramToko  = (urlParams.get('toko')||'').trim();
-  const candidateId = paramToko || sessionStorage.getItem('ku_store_id');
-
-  if (candidateId) {
-    const inp = document.getElementById('inp-kode-toko');
-    const kode6 = candidateId.length>=6 ? candidateId.substring(0,6).toUpperCase() : candidateId.toUpperCase();
-    if(inp) inp.value = kode6;
-    showPage('toko');
-    const btn = document.getElementById('btn-cari-toko');
-    if (btn) setBtnLoad(btn,'Memuat toko...');
-
-    let data=null,id=null;
-    const tries=[
-      candidateId.length>=6?candidateId.substring(0,6).toUpperCase():null,
-      candidateId, candidateId.toUpperCase()
-    ].filter(Boolean);
-
-    const db = window._db;
-    for (const kode of tries) {
-      if (data) break;
-      let s = await db.collection('user_stores').where('kode_toko','==',kode).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;break;}
-      s = await db.collection('stores').where('kode_toko','==',kode).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;break;}
-      let doc = await db.collection('user_stores').doc(kode).get().catch(()=>null);
-      if(doc&&doc.exists){data=doc.data();id=kode;break;}
-      doc = await db.collection('stores').doc(kode).get().catch(()=>null);
-      if(doc&&doc.exists){data=doc.data();id=kode;break;}
-      s = await db.collection('user_stores').where('uid','==',kode).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;break;}
-      s = await db.collection('stores').where('uid','==',kode).limit(1).get().catch(()=>null);
-      if(s&&!s.empty){data=s.docs[0].data();id=s.docs[0].id;break;}
-    }
-
-    if(btn) setBtnBack(btn,'<i class="fas fa-search"></i> Cari Toko');
-    if (data&&id) { storeId=id; tokoData=data; sessionStorage.setItem('ku_store_id',storeId); showLoginPage(); return; }
+async function init(){
+  await waitDB();
+  // Cek URL param toko untuk shortcut pelanggan
+  const urlParams=new URLSearchParams(window.location.search);
+  const paramToko=(urlParams.get('toko')||'').trim();
+  if(paramToko){
+    document.getElementById('inp-kode-toko').value=paramToko.toUpperCase();
+    showPage('toko-pelanggan');
+    cariToko();
+    return;
   }
-  showPage('toko');
+  showPage('home');
 }
 init();
 </script>
