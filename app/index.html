@@ -3973,6 +3973,32 @@
             <button id="btn-kasir-login" class="login-btn-main mt-1" onclick="doKasirLogin()" style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 55%,#c084fc 100%);box-shadow:0 10px 32px rgba(124,58,237,0.5);">
               <span id="btn-kasir-login-text"><i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK SEBAGAI KASIR</span>
             </button>
+            <!-- ── ATAU: Scan QR Kasir ── -->
+            <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+              <div style="flex:1;height:1px;background:rgba(255,255,255,0.10);"></div>
+              <span style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.30);letter-spacing:0.08em;">ATAU</span>
+              <div style="flex:1;height:1px;background:rgba(255,255,255,0.10);"></div>
+            </div>
+            <div class="flex gap-2">
+              <button id="btn-scan-qr-kasir" onclick="startScanQRKasir()" class="flex-1 py-2.5 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:rgba(124,58,237,0.15);color:#c4b5fd;border:1.5px solid rgba(124,58,237,0.3);">
+                <i class="fas fa-camera"></i> Scan QR Kamera
+              </button>
+              <button onclick="scanQRFromGaleri()" class="flex-1 py-2.5 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:rgba(124,58,237,0.15);color:#c4b5fd;border:1.5px solid rgba(124,58,237,0.3);">
+                <i class="fas fa-image"></i> Dari Galeri
+              </button>
+            </div>
+            <!-- Scan area kamera -->
+            <div id="kasir-qr-scan-area" style="display:none;border-radius:16px;overflow:hidden;position:relative;background:#000;">
+              <video id="kasir-qr-video" style="width:100%;height:200px;object-fit:cover;display:block;" playsinline></video>
+              <div style="position:absolute;top:8px;right:8px;">
+                <button onclick="stopScanQRKasir()" style="background:rgba(0,0,0,0.6);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;"><i class="fas fa-times mr-1"></i>Tutup</button>
+              </div>
+              <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center;">
+                <span style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:99px;">Arahkan kamera ke QR kasir</span>
+              </div>
+            </div>
+            <!-- Input galeri tersembunyi -->
+            <input type="file" id="kasir-qr-file-input" accept="image/*" style="display:none;" onchange="processQRImageFile(this)">
           </div>
 
         </div><!-- end glass card -->
@@ -5595,6 +5621,43 @@
     </div>
     <!-- END MODAL KELOLA KASIR -->
 
+
+    <!-- ===== MODAL: QR KASIR ===== -->
+    <div id="modal-qr-kasir" class="modal-overlay" style="z-index:3300;">
+      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:90vh;overflow-y:auto;">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h4 class="text-lg font-black">QR Login Kasir</h4>
+            <p class="text-[9px] text-slate-400 font-bold" id="qr-kasir-subtitle">Scan untuk login otomatis</p>
+          </div>
+          <button onclick="closeModal('modal-qr-kasir')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="flex items-center gap-3 p-3 rounded-2xl mb-4" style="background:linear-gradient(135deg,#faf5ff,#f5f3ff);border:1.5px solid #ede9fe;">
+          <div id="qr-kasir-avatar" class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-lg flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">?</div>
+          <div>
+            <p class="text-[13px] font-black text-slate-800" id="qr-kasir-nama">—</p>
+            <p class="text-[10px] text-slate-400 font-bold" id="qr-kasir-username">@—</p>
+          </div>
+        </div>
+        <div class="flex flex-col items-center py-4 mb-4 rounded-2xl" style="background:#f8fafc;border:1.5px solid #e2e8f0;">
+          <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-3">Scan QR ini untuk login kasir</p>
+          <div id="qr-kasir-canvas-wrap" class="flex items-center justify-center" style="width:200px;height:200px;background:white;border-radius:16px;padding:10px;box-shadow:0 4px 20px rgba(124,58,237,0.12);border:2px solid #ede9fe;">
+            <i class="fas fa-spinner fa-spin text-violet-300 text-2xl"></i>
+          </div>
+          <p class="text-[9px] text-slate-400 font-bold mt-3" id="qr-kasir-link-text" style="word-break:break-all;text-align:center;max-width:220px;"></p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="unduhQRKasir()" class="flex-1 py-3 rounded-xl font-black text-[11px] text-white cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#0061C2,#2563eb);box-shadow:0 6px 18px rgba(0,97,194,0.3);">
+            <i class="fas fa-download"></i> Unduh QR
+          </button>
+          <button onclick="salinLinkQRKasir()" class="flex-1 py-3 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:#f1f5f9;color:#1e293b;">
+            <i class="fas fa-copy"></i> Salin Link
+          </button>
+        </div>
+        <p class="text-[8px] text-slate-400 font-bold mt-4 text-center">* QR ini berisi data login kasir. Bagikan hanya ke kasir yang bersangkutan.</p>
+      </div>
+    </div>
+    <!-- END MODAL QR KASIR -->
     <!-- ===== MODAL: ABSENSI KASIR ===== -->
     <div id="modal-absensi-kasir" class="modal-overlay" style="z-index:3200;">
       <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:92vh;overflow-y:auto;padding:0;">
@@ -17345,6 +17408,9 @@ ${t.bayar ? `
             <p class="text-[9px] text-slate-400 font-bold">@${k.username} &nbsp;·&nbsp; ${_izinLabel(k.izin)}</p>
           </div>
           <div class="flex gap-1.5 flex-shrink-0">
+            <button onclick="showKasirQR('${k.id}','${(k.nama||'').replace(/'/g,"\\'")}','${k.username||''}','${k.kode_toko||''}')"
+              class="w-8 h-8 rounded-xl text-violet-500 border-0 cursor-pointer flex items-center justify-center"
+              style="background:#f5f3ff;" title="QR Kasir"><i class="fas fa-qrcode text-[10px]"></i></button>
             <button onclick="editKasir('${k.id}')"
               class="w-8 h-8 rounded-xl text-blue-500 border-0 cursor-pointer flex items-center justify-center"
               style="background:#eff6ff;" title="Edit"><i class="fas fa-pen text-[10px]"></i></button>
@@ -26862,3 +26928,190 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 </body>
+
+<!-- ===== QR KASIR: Barcode per kasir + Scan login ===== -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+/* ──────────────────────────────────────────
+   QR PER KASIR (tampil di kelola kasir)
+────────────────────────────────────────── */
+let _kasirQRData = null; // {kasirId, nama, username, kodeToko}
+let _kasirQRCanvas = null;
+
+function showKasirQR(kasirId, nama, username, kodeToko) {
+  _kasirQRData = { kasirId, nama, username, kodeToko };
+  // Update info
+  const av = document.getElementById('qr-kasir-avatar');
+  if (av) { av.textContent = (nama||'?').charAt(0).toUpperCase(); }
+  const nm = document.getElementById('qr-kasir-nama');
+  if (nm) nm.textContent = nama || '—';
+  const un = document.getElementById('qr-kasir-username');
+  if (un) un.textContent = '@' + (username||'—');
+  // Build QR payload: JSON string dengan kode_toko + username
+  const payload = JSON.stringify({ kt: kodeToko, u: username, _k: 1 });
+  const wrap = document.getElementById('qr-kasir-canvas-wrap');
+  if (wrap) wrap.innerHTML = '<i class="fas fa-spinner fa-spin text-violet-300 text-2xl"></i>';
+  const linkTxt = document.getElementById('qr-kasir-link-text');
+  if (linkTxt) linkTxt.textContent = 'Kode Toko: ' + kodeToko + ' | @' + username;
+  openModal('modal-qr-kasir');
+  // Render QR
+  setTimeout(() => _renderKasirQRCode(payload), 200);
+}
+
+function _renderKasirQRCode(payload) {
+  const wrap = document.getElementById('qr-kasir-canvas-wrap');
+  if (!wrap) return;
+  // Pakai QRCode library (sudah dimuat dari cdn sebelumnya)
+  if (typeof QRCode !== 'undefined') {
+    wrap.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    canvas.width = 200; canvas.height = 200;
+    canvas.style.cssText = 'border-radius:8px;display:block;';
+    wrap.appendChild(canvas);
+    _kasirQRCanvas = canvas;
+    QRCode.toCanvas(canvas, payload, { width: 200, margin: 2, color: { dark: '#3b0764', light: '#ffffff' } }, function(err) {
+      if (err) { wrap.innerHTML = '<p style="font-size:10px;color:#ef4444;">Gagal render QR</p>'; }
+    });
+  } else {
+    // Fallback: image dari API
+    const encoded = encodeURIComponent(payload);
+    wrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=' + encoded + '" style="border-radius:8px;width:200px;height:200px;" onerror="this.src=\'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encoded + '\'">';
+    _kasirQRCanvas = null;
+  }
+}
+
+function unduhQRKasir() {
+  if (!_kasirQRData) return;
+  if (_kasirQRCanvas) {
+    const a = document.createElement('a');
+    a.download = 'qr-kasir-' + (_kasirQRData.username||'kasir') + '.png';
+    a.href = _kasirQRCanvas.toDataURL('image/png');
+    a.click();
+    return;
+  }
+  // Fallback image
+  const img = document.querySelector('#qr-kasir-canvas-wrap img');
+  if (img) {
+    const a = document.createElement('a');
+    a.download = 'qr-kasir-' + (_kasirQRData.username||'kasir') + '.png';
+    a.href = img.src; a.target = '_blank'; a.click();
+  }
+}
+
+function salinLinkQRKasir() {
+  if (!_kasirQRData) return;
+  const payload = JSON.stringify({ kt: _kasirQRData.kodeToko, u: _kasirQRData.username, _k: 1 });
+  navigator.clipboard.writeText(payload).then(() => {
+    (window.Swal||alert) && typeof Swal !== 'undefined'
+      ? Swal.fire({ icon:'success', title:'Disalin!', text:'Data QR kasir berhasil disalin', timer:2000, showConfirmButton:false })
+      : alert('Disalin!');
+  }).catch(() => { prompt('Data QR:', payload); });
+}
+
+/* ──────────────────────────────────────────
+   SCAN QR KASIR DI LOGIN (kamera + galeri)
+────────────────────────────────────────── */
+let _kasirScanStream = null;
+let _kasirScanInterval = null;
+
+function startScanQRKasir() {
+  const area = document.getElementById('kasir-qr-scan-area');
+  const video = document.getElementById('kasir-qr-video');
+  if (!area || !video) return;
+  area.style.display = 'block';
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+      _kasirScanStream = stream;
+      video.srcObject = stream;
+      video.play();
+      _kasirScanInterval = setInterval(() => _kasirScanVideoFrame(video), 350);
+    })
+    .catch(err => {
+      area.style.display = 'none';
+      alert('Kamera tidak tersedia: ' + err.message);
+    });
+}
+
+function stopScanQRKasir() {
+  clearInterval(_kasirScanInterval);
+  if (_kasirScanStream) { _kasirScanStream.getTracks().forEach(t => t.stop()); _kasirScanStream = null; }
+  const area = document.getElementById('kasir-qr-scan-area');
+  if (area) area.style.display = 'none';
+}
+
+function _kasirScanVideoFrame(video) {
+  if (!video.videoWidth) return;
+  const cvs = document.createElement('canvas');
+  cvs.width = video.videoWidth; cvs.height = video.videoHeight;
+  const ctx = cvs.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  const imgData = ctx.getImageData(0, 0, cvs.width, cvs.height);
+  if (typeof jsQR !== 'undefined') {
+    const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'dontInvert' });
+    if (code && code.data) {
+      stopScanQRKasir();
+      _applyKasirQRData(code.data);
+    }
+  }
+}
+
+function scanQRFromGaleri() {
+  const fi = document.getElementById('kasir-qr-file-input');
+  if (fi) fi.click();
+}
+
+function processQRImageFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const cvs = document.createElement('canvas');
+      cvs.width = img.width; cvs.height = img.height;
+      const ctx = cvs.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imgData = ctx.getImageData(0, 0, cvs.width, cvs.height);
+      if (typeof jsQR !== 'undefined') {
+        const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' });
+        if (code && code.data) {
+          _applyKasirQRData(code.data);
+        } else {
+          alert('QR tidak terbaca. Pastikan gambar jelas dan merupakan QR kasir yang valid.');
+        }
+      } else {
+        alert('Library QR belum dimuat, coba beberapa saat lagi.');
+      }
+    };
+    img.src = e.target.result;
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function _applyKasirQRData(raw) {
+  try {
+    const data = JSON.parse(raw);
+    if (data && data._k === 1 && data.kt && data.u) {
+      // Isi form login kasir otomatis
+      const sc = document.getElementById('kasir-store-code');
+      const un = document.getElementById('kasir-username');
+      if (sc) { sc.value = data.kt.toUpperCase(); }
+      if (un) { un.value = data.u.toLowerCase(); }
+      // Fokus ke password
+      const pw = document.getElementById('kasir-password');
+      if (pw) { pw.focus(); }
+      // Feedback
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({ icon:'success', title:'QR Kasir Terbaca!', html:'Kode Toko & username sudah terisi.<br>Silakan masukkan <b>password</b>.', timer:2500, showConfirmButton:false });
+      } else {
+        alert('QR terbaca! Silakan masukkan password.');
+      }
+    } else {
+      alert('QR tidak valid atau bukan QR kasir.');
+    }
+  } catch(e) {
+    alert('Format QR tidak dikenali. Pastikan menggunakan QR yang dihasilkan dari menu Kelola Kasir.');
+  }
+}
+</script>
