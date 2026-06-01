@@ -567,40 +567,21 @@ async function getTokoDoc(kode){
 
 async function getPelangganList(){
   const db=window._db;
-  // 1. Coba ambil dari field array 'pelanggan' di dalam dokumen toko (user_stores)
-  let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  // Ambil langsung dari doc yang sudah kita tahu ID-nya (storeId = doc ID user_stores)
+  // Field pelanggan ada di dalam dokumen user_stores
+  const doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
   if(doc&&doc.exists){
     const d=doc.data();
     const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];
-    if(a.length)return a.map((c,i)=>({id:c.id||String(i),...c}));
+    return a.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
   }
-  // 2. Coba ambil dari field array 'pelanggan' di dalam dokumen toko (stores)
-  doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){
-    const d=doc.data();
+  // Fallback: stores (struktur lama)
+  const doc2=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  if(doc2&&doc2.exists){
+    const d=doc2.data();
     const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];
-    if(a.length)return a.map((c,i)=>({id:c.id||String(i),...c}));
+    return a.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
   }
-  // 3. Coba sub-collection 'pelanggan' di user_stores
-  let snap=await db.collection('user_stores').doc(storeId).collection('pelanggan').get().catch(()=>null);
-  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
-  // 4. Coba sub-collection 'members' di user_stores
-  snap=await db.collection('user_stores').doc(storeId).collection('members').get().catch(()=>null);
-  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
-  // 5. Coba sub-collection 'pelanggan' di stores
-  snap=await db.collection('stores').doc(storeId).collection('pelanggan').get().catch(()=>null);
-  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
-  // 6. Coba sub-collection 'members' di stores
-  snap=await db.collection('stores').doc(storeId).collection('members').get().catch(()=>null);
-  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
-  // 7. Coba collection 'pelanggan' flat dengan filter storeId
-  snap=await db.collection('pelanggan').where('storeId','==',storeId).get().catch(()=>null);
-  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
-  snap=await db.collection('pelanggan').where('toko_id','==',storeId).get().catch(()=>null);
-  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
-  // 8. Coba collection 'members' flat dengan filter storeId
-  snap=await db.collection('members').where('storeId','==',storeId).get().catch(()=>null);
-  if(snap&&!snap.empty)return snap.docs.map(d=>({id:d.id,...d.data()}));
   return[];
 }
 
@@ -850,6 +831,7 @@ async function loginKasir(){
   setBtnLoad(btn,'Memverifikasi...');
   try{
     const db=window._db;
+    // 1. Verifikasi akun kasir (kasir_accounts bisa dibaca publik sesuai rules)
     const snap=await db.collection('kasir_accounts')
       .where('kode_toko','==',kodeRaw)
       .where('username','==',username)
@@ -858,12 +840,42 @@ async function loginKasir(){
     if(snap.empty){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Username atau kode toko salah.');return;}
     const kasir=snap.docs[0].data();
     if(!_verifyHash(pwd,kasir.pw_hash)){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Password kasir salah.');return;}
-    // Ambil data toko berdasarkan store_id atau owner_uid
-    storeId=kasir.store_id||kasir.owner_uid;
-    const result=await getTokoDoc(kodeRaw).catch(()=>null);
-    tokoData=result?result.data:{namaToko:kasir.store_name||'Toko'};
-    if(result)storeId=result.id;
-    adminData={...kasir,isKasir:true};
+
+    // 2. Login anonymous ke Firebase Auth (diperlukan agar rules kasir_sessions & user_stores bisa diakses)
+    setBtnLoad(btn,'Masuk sebagai kasir...');
+    let anonUser=window._auth.currentUser;
+    if(!anonUser||!anonUser.isAnonymous){
+      const anonCred=await window._auth.signInAnonymously();
+      anonUser=anonCred.user;
+    }
+    const anonUid=anonUser.uid;
+
+    // 3. owner_uid kasir ini adalah storeId yang sebenarnya
+    const ownerUid=kasir.owner_uid||kasir.store_id;
+    if(!ownerUid){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Data kasir tidak lengkap (owner_uid kosong).');return;}
+
+    // 4. Buat/update kasir_session dengan doc ID = anonUid (sesuai Firestore rules)
+    await db.collection('kasir_sessions').doc(anonUid).set({
+      owner_uid: ownerUid,
+      kasir_username: username,
+      kode_toko: kodeRaw,
+      is_active: true,
+      login_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // 5. Ambil data toko dari user_stores where uid == ownerUid
+    let tokoSnap=await db.collection('user_stores').where('uid','==',ownerUid).limit(1).get().catch(()=>null);
+    if(tokoSnap&&!tokoSnap.empty){
+      storeId=tokoSnap.docs[0].id;
+      tokoData=tokoSnap.docs[0].data();
+    } else {
+      // Fallback: doc ID = ownerUid
+      const tokoDoc=await db.collection('user_stores').doc(ownerUid).get().catch(()=>null);
+      if(tokoDoc&&tokoDoc.exists){storeId=ownerUid;tokoData=tokoDoc.data();}
+      else{storeId=ownerUid;tokoData={namaToko:kasir.store_name||kodeRaw};}
+    }
+
+    adminData={...kasir,isKasir:true,anonUid};
     setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');
     await loadPoinCfg();
     await _masukDashboardAdmin();
@@ -1090,13 +1102,15 @@ async function konfirmRequest(rid,approve){
   swalOk(approve?'Request Dikonfirmasi ✅':'Request Ditolak',approve?'Poin member berhasil dikurangi.':'Request ditolak.');
 }
 
-function logoutAdmin(){
+async function logoutAdmin(){
+  // Hapus kasir_session jika login sebagai kasir (anonymous)
+  if(adminData?.isKasir&&adminData?.anonUid&&window._db){
+    try{await window._db.collection('kasir_sessions').doc(adminData.anonUid).update({is_active:false});}catch(e){}
+  }
   storeId=null;tokoData=null;adminData=null;allMembers=[];
   document.getElementById('top-admin-badge').style.display='none';
   if(admReqListener){admReqListener();admReqListener=null;}
-  // Sign out Firebase jika login sebagai admin
   if(window._auth&&window._auth.currentUser) window._auth.signOut().catch(()=>{});
-  // Reset form
   ['adm-email','adm-password','kasir-kode','kasir-username','kasir-pwd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showPage('home');
 }
