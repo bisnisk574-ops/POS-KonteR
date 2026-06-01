@@ -11,6 +11,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script>
   const firebaseConfig = {
@@ -264,10 +265,64 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
 <!-- ======== PAGE: LOGIN PELANGGAN ======== -->
 <div id="page-login-pelanggan" class="page" style="display:none">
   <div id="toko-badge-login"></div>
-  <div class="glass">
+
+  <!-- Mode tabs: Scan QR vs Manual -->
+  <div class="mode-tabs" style="margin-bottom:14px">
+    <button class="mode-btn active" id="tab-plg-qr" onclick="switchLoginPlgMode('qr')">
+      <i class="fas fa-qrcode"></i> Scan QR
+    </button>
+    <button class="mode-btn" id="tab-plg-manual" onclick="switchLoginPlgMode('manual')">
+      <i class="fas fa-keyboard"></i> Manual
+    </button>
+  </div>
+
+  <!-- Mode: Scan QR -->
+  <div id="panel-plg-qr" class="glass" style="margin-bottom:14px">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:900;color:#fff;margin-bottom:4px;">📷 Scan Kartu Member</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted)">Arahkan kamera ke QR Code pada kartu member</div>
+    </div>
+    <!-- Camera preview -->
+    <div id="qr-scanner-wrap" style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:1;margin-bottom:14px;display:none">
+      <video id="qr-video" style="width:100%;height:100%;object-fit:cover" playsinline></video>
+      <!-- Scan overlay -->
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+        <div style="width:55%;height:55%;border:3px solid var(--sky);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
+      </div>
+      <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center">
+        <span style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.5);padding:3px 10px;border-radius:20px">Arahkan QR ke kotak</span>
+      </div>
+    </div>
+    <div id="qr-scanner-placeholder" style="text-align:center;padding:20px 0;margin-bottom:14px">
+      <div style="font-size:48px;margin-bottom:8px">📱</div>
+      <div style="font-size:11px;color:var(--muted);font-weight:600">Kamera belum aktif</div>
+    </div>
+    <button id="btn-start-scan" class="btn btn-blue" onclick="startQRScan()">
+      <i class="fas fa-camera"></i> Buka Kamera
+    </button>
+    <button id="btn-stop-scan" class="btn btn-ghost" onclick="stopQRScan()" style="display:none;margin-top:8px">
+      <i class="fas fa-stop"></i> Tutup Kamera
+    </button>
+    <!-- PIN for QR flow -->
+    <div id="panel-qr-pin" style="display:none;margin-top:14px">
+      <div class="field">
+        <label class="label">PIN <span style="font-size:9px;font-weight:600;color:var(--muted)">(jika ada)</span></label>
+        <input id="inp-qr-pin" type="password" inputmode="numeric" placeholder="••••" maxlength="4" autocomplete="off"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"
+          onkeydown="if(event.key==='Enter')loginDenganMemberId()">
+      </div>
+      <div id="qr-scanned-id-info" style="font-size:11px;color:var(--sky);font-weight:700;margin-bottom:12px"></div>
+      <button class="btn btn-blue" onclick="loginDenganMemberId()">
+        <i class="fas fa-star"></i> Masuk
+      </button>
+    </div>
+  </div>
+
+  <!-- Mode: Manual (HP + Nama) -->
+  <div id="panel-plg-manual" class="glass" style="display:none;margin-bottom:14px">
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:34px;margin-bottom:8px;">👤</div>
-      <div style="font-size:16px;font-weight:900;color:#fff;">Login Pelanggan</div>
+      <div style="font-size:16px;font-weight:900;color:#fff;">Login Manual</div>
       <div style="font-size:11px;font-weight:600;color:var(--muted);margin-top:4px;">Masukkan data sesuai yang didaftarkan</div>
     </div>
     <div class="field">
@@ -287,8 +342,10 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
     <button id="btn-login-plg" class="btn btn-blue" onclick="loginPelanggan()">
       <i class="fas fa-star"></i> Cek Poin Saya
     </button>
-    <button class="btn btn-ghost" onclick="showPage('toko-pelanggan')" style="margin-top:8px;">
-      <i class="fas fa-arrow-left"></i> Ganti Toko
+  </div>
+
+  <button class="btn btn-ghost" onclick="showPage('toko-pelanggan')" style="margin-top:0px;">
+    <i class="fas fa-arrow-left"></i> Ganti Toko
     </button>
     <p style="text-align:center;font-size:10px;color:#3B4F6A;margin-top:12px;font-weight:600;">
       Belum terdaftar? Minta kasir mendaftarkan kamu dulu.
@@ -636,6 +693,117 @@ async function cariToko(){
   showPage('login-pelanggan');
 }
 
+/* ── Mode switch login pelanggan ── */
+let scannedMemberId = null;
+let qrScanner = null;
+
+function switchLoginPlgMode(mode){
+  ['qr','manual'].forEach(m=>{
+    document.getElementById('panel-plg-'+m).style.display=m===mode?'block':'none';
+    document.getElementById('tab-plg-'+m).classList.toggle('active',m===mode);
+  });
+  if(mode!=='qr') stopQRScan();
+}
+
+/* ── QR Scanner ── */
+function startQRScan(){
+  const wrap=document.getElementById('qr-scanner-wrap');
+  const ph=document.getElementById('qr-scanner-placeholder');
+  const btnStart=document.getElementById('btn-start-scan');
+  const btnStop=document.getElementById('btn-stop-scan');
+  wrap.style.display='block';
+  ph.style.display='none';
+  btnStart.style.display='none';
+  btnStop.style.display='';
+  document.getElementById('panel-qr-pin').style.display='none';
+  scannedMemberId=null;
+
+  const video=document.getElementById('qr-video');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    video.srcObject=stream;
+    video.play();
+    // Decode QR using ZXing if available, fallback to BarcodeDetector
+    if(typeof ZXing !== 'undefined'){
+      const hints=new Map();
+      const formats=[ZXing.BarcodeFormat.QR_CODE];
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,formats);
+      const reader=new ZXing.BrowserQRCodeReader(hints);
+      qrScanner={reader, stream};
+      reader.decodeFromVideoElement(video).then(result=>{
+        if(result) handleQRResult(result.getText());
+      }).catch(()=>{});
+    } else if('BarcodeDetector' in window){
+      const detector=new BarcodeDetector({formats:['qr_code']});
+      qrScanner={stream, interval: setInterval(async()=>{
+        try{
+          const results=await detector.detect(video);
+          if(results.length>0){handleQRResult(results[0].rawValue);}
+        }catch(e){}
+      },300)};
+    } else {
+      swalErr('Browser tidak mendukung scan QR. Gunakan mode Manual.');
+      stopQRScan();
+    }
+  }).catch(()=>{
+    swalErr('Tidak bisa akses kamera. Coba mode Manual atau izinkan akses kamera.');
+    stopQRScan();
+  });
+}
+
+function stopQRScan(){
+  const wrap=document.getElementById('qr-scanner-wrap');
+  const ph=document.getElementById('qr-scanner-placeholder');
+  const btnStart=document.getElementById('btn-start-scan');
+  const btnStop=document.getElementById('btn-stop-scan');
+  if(wrap)wrap.style.display='none';
+  if(ph)ph.style.display='';
+  if(btnStart)btnStart.style.display='';
+  if(btnStop)btnStop.style.display='none';
+  if(qrScanner){
+    if(qrScanner.interval) clearInterval(qrScanner.interval);
+    if(qrScanner.stream) qrScanner.stream.getTracks().forEach(t=>t.stop());
+    if(qrScanner.reader) try{qrScanner.reader.reset();}catch(e){}
+    qrScanner=null;
+  }
+  const video=document.getElementById('qr-video');
+  if(video&&video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;}
+}
+
+function handleQRResult(text){
+  if(!text)return;
+  stopQRScan();
+  scannedMemberId=text.trim();
+  document.getElementById('qr-scanned-id-info').textContent='Member ID: '+scannedMemberId;
+  document.getElementById('panel-qr-pin').style.display='block';
+  document.getElementById('inp-qr-pin').focus();
+}
+
+async function loginDenganMemberId(){
+  if(!scannedMemberId){swalErr('Belum ada QR yang discan.');return;}
+  const pin=(document.getElementById('inp-qr-pin')?.value||'').trim();
+  const btn=document.querySelector('#panel-plg-qr .btn-blue:last-of-type');
+  if(btn)setBtnLoad(btn,'Mencari data...');
+  const list=await getPelangganList();
+  if(btn)setBtnBack(btn,'<i class="fas fa-star"></i> Masuk');
+  if(!list||!list.length){swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.');return;}
+  const found=list.find(p=>p.id===scannedMemberId||(p.id||'').trim()===scannedMemberId);
+  if(!found){
+    Swal.fire({icon:'warning',title:'Member Tidak Ditemukan',html:'QR Code tidak dikenali.<br><span style="font-size:12px;color:#94a3b8">Pastikan kartu member dari toko yang benar.</span>',customClass:{popup:'swal2-ku'}});
+    return;
+  }
+  if(found.pin){
+    if(!pin||pin.length<4){swalErr('Akun ini dilindungi PIN. Masukkan PIN 4 digit.');document.getElementById('inp-qr-pin')?.focus();return;}
+    if(String(pin)!==String(found.pin)){
+      Swal.fire({icon:'error',title:'PIN Salah',html:'PIN salah.<br><span style="font-size:12px;color:#94a3b8">Hubungi kasir jika lupa PIN.</span>',customClass:{popup:'swal2-ku'}});
+      document.getElementById('inp-qr-pin').value='';document.getElementById('inp-qr-pin')?.focus();return;
+    }
+  }
+  pelanggan=found;
+  await loadPoinCfg();
+  showDashboardPelanggan();
+}
+
+/* ── Login manual (HP + Nama) — tetap dipertahankan sebagai fallback ── */
 async function loginPelanggan(){
   const hp=(document.getElementById('inp-hp').value||'').trim().replace(/\D/g,'');
   const nama=(document.getElementById('inp-nama').value||'').trim().toLowerCase();
@@ -648,14 +816,15 @@ async function loginPelanggan(){
   setBtnBack(btn,'<i class="fas fa-star"></i> Cek Poin Saya');
   if(!list||!list.length){swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.');return;}
   const found=list.find(p=>{
-    const hpP=(p.hp||p.noHp||p.telepon||'').replace(/\D/g,'');
+    // index.html pakai field 'phone', support juga 'hp'/'noHp' untuk backward compat
+    const hpP=(p.phone||p.hp||p.noHp||p.telepon||'').replace(/\D/g,'');
     const nmP=(p.nama||p.name||'').trim().toLowerCase();
-    const hpOk=hpP===hp||hpP==='0'+hp||'0'+hpP===hp;
+    const hpOk=hpP===hp||hpP==='0'+hp||'0'+hpP===hp||hpP===hp.replace(/^0/,'');
     const nmOk=nmP===nama||nmP.includes(nama)||nama.includes(nmP);
     return hpOk&&nmOk;
   });
   if(!found){
-    Swal.fire({icon:'warning',title:'Data Tidak Ditemukan',html:'Nomor HP atau nama tidak cocok.<br><span style="font-size:12px;color:#94a3b8">Pastikan data sesuai yang didaftarkan.</span>',customClass:{popup:'swal2-ku'}});
+    Swal.fire({icon:'warning',title:'Data Tidak Ditemukan',html:'Nomor HP atau nama tidak cocok.<br><span style="font-size:12px;color:#94a3b8">Pastikan data sesuai yang didaftarkan, atau scan QR kartu member.</span>',customClass:{popup:'swal2-ku'}});
     return;
   }
   if(found.pin){
@@ -687,8 +856,8 @@ function showDashboardPelanggan(){
   document.getElementById('d-poin').textContent=fmt(poin);
   const badge=document.getElementById('d-status-badge');
   if(status==='NONAKTIF'||status==='INACTIVE'){badge.className='card-status-badge nonaktif';badge.innerHTML='<i class="fas fa-times-circle" style="font-size:10px"></i> NONAKTIF';}
-  renderQR(pelanggan.id||pelanggan.hp||'NO-ID');
-  document.getElementById('d-hp').textContent=pelanggan.hp||pelanggan.noHp||'—';
+  renderQR(pelanggan.id||'NO-ID');
+  document.getElementById('d-hp').textContent=pelanggan.phone||pelanggan.hp||pelanggan.noHp||'—';
   document.getElementById('d-email').textContent=pelanggan.email||'—';
   document.getElementById('d-status-text').textContent=status;
   document.getElementById('d-nilai-100').textContent='Rp '+fmt(nilaiTukar);
@@ -758,7 +927,10 @@ async function reloadPoin(){
 
 function logoutPelanggan(){
   pelanggan=null;
-  ['inp-hp','inp-nama','inp-pin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  stopQRScan();
+  scannedMemberId=null;
+  ['inp-hp','inp-nama','inp-pin','inp-qr-pin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const pinPanel=document.getElementById('panel-qr-pin');if(pinPanel)pinPanel.style.display='none';
   if(reqListener){reqListener();reqListener=null;}
   showPage('login-pelanggan');
 }
@@ -914,7 +1086,7 @@ function renderMemberList(){
   }
   document.getElementById('adm-member-list').innerHTML=filtered.map(p=>{
     const nm=p.nama||p.name||'?';
-    const hp=p.hp||p.noHp||'—';
+    const hp=p.phone||p.hp||p.noHp||'—';
     const poin=Number(p.poin||p.point||0);
     const status=(p.status||'aktif').toLowerCase();
     const inisial=nm.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
@@ -937,7 +1109,7 @@ function admDetailMember(id){
   if(!p)return;
   const poin=Number(p.poin||p.point||0);
   const nm=p.nama||p.name||'—';
-  const hp=p.hp||p.noHp||'—';
+  const hp=p.phone||p.hp||p.noHp||'—';
   const rw=(p.riwayatPoin||[]).slice(-5).reverse();
   Swal.fire({
     title:'',
@@ -1011,7 +1183,10 @@ async function daftarMember(){
   const btn=document.getElementById('btn-reg');
   setBtnLoad(btn,'Mendaftarkan...');
   const memberId=generateMemberId();
-  const newMember={id:memberId,nama,hp:'0'+hp.replace(/^0/,''),email,pin:pin||'',poin:0,point:0,totalTransaksi:0,status:'aktif',tglDaftar:tglNow(),riwayatPoin:[]};
+  // Simpan dengan field yang kompatibel dengan index.html (phone, id: C-xxx)
+  const memberId2='C-'+Date.now()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+  const newMember={id:memberId2,nama,phone:'0'+hp.replace(/^0/,''),hp:'0'+hp.replace(/^0/,''),email,pin:pin||'',poin:0,totalTransaksi:0,status:'aktif',tglDaftar:new Date().toLocaleDateString('id-ID'),riwayatPoin:[]};
+  const memberId=memberId2;
   allMembers.push(newMember);
   await savePelangganList(allMembers);
   setBtnBack(btn,'<i class="fas fa-user-plus"></i> Daftarkan Member');
