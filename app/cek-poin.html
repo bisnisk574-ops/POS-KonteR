@@ -661,49 +661,46 @@ function generateMemberId(){
 /* ═══════════════════ FIREBASE DB ═══════════════════ */
 async function waitDB(){return new Promise(r=>{const t=setInterval(()=>{if(window._db&&window._auth){clearInterval(t);r();}},50);});}
 
+/* ── Helper ekstrak data ── */
+function _extractPelanggan(d){
+  // index.html simpan di root: d.pelanggan[]
+  // fallback: d.data.pelanggan (user_stores baru) atau d.db.pelanggan (lama)
+  return (d.pelanggan)||(d.data&&d.data.pelanggan)||(d.db&&d.db.pelanggan)||[];
+}
+function _normPelanggan(arr){
+  return arr.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
+}
+function _extractNamaToko(d){
+  return d.namaToko||d.nama||d.store_name||(d.data&&d.data.store_name)||'KonterKU';
+}
+
 async function getTokoDoc(kode){
   const db=window._db;
-  // Coba semua kemungkinan: huruf besar, huruf kecil, asli
-  const tries=[kode, kode.toUpperCase(), kode.toLowerCase()];
-  // Kalau formatnya STORE_XXX_timestamp (dari QR index.html), coba juga versi lowercase
-  // index.html menyimpan storeId sebagai 'store_xxxxxxxx_timestamp' (lowercase)
-  const unique=[...new Set(tries)];
-  for(const k of unique){
-    // Cari berdasarkan field kode_toko
-    let s=await db.collection('user_stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
-    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
-    s=await db.collection('stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
-    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
-    // Cari langsung sebagai doc ID
-    let d=await db.collection('user_stores').doc(k).get().catch(()=>null);
+  const tries=[...new Set([kode,kode.toUpperCase(),kode.toLowerCase()])];
+  for(const k of tries){
+    // 1. Langsung cari di 'stores' (struktur utama index.html)
+    let d=await db.collection('stores').doc(k).get().catch(()=>null);
     if(d&&d.exists)return{data:d.data(),id:k};
-    d=await db.collection('stores').doc(k).get().catch(()=>null);
+    // 2. Cari di 'user_stores' (struktur kasir/multi-toko)
+    d=await db.collection('user_stores').doc(k).get().catch(()=>null);
     if(d&&d.exists)return{data:d.data(),id:k};
+    // 3. Query by field kode_toko
+    let s=await db.collection('stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    s=await db.collection('user_stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
   }
   return null;
 }
 
-function _extractPelanggan(d){
-  // Semua kemungkinan lokasi data pelanggan:
-  // 1. d.data.pelanggan  (struktur index.html / KonterKU Cloud - data tersimpan di field "data")
-  // 2. d.pelanggan       (struktur langsung)
-  // 3. d.db.pelanggan    (struktur lama nested db)
-  const a=(d.data&&d.data.pelanggan)||(d.pelanggan)||(d.db&&d.db.pelanggan)||[];
-  return a.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
-}
-
-function _extractNamaToko(d){
-  // index.html: store_name atau data.store_name
-  // cek-poin lama: namaToko / nama
-  return d.store_name||(d.data&&d.data.store_name)||d.namaToko||d.nama||'KonterKU';
-}
-
 async function getPelangganList(){
   const db=window._db;
-  const doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists) return _extractPelanggan(doc.data());
-  const doc2=await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if(doc2&&doc2.exists) return _extractPelanggan(doc2.data());
+  // Utama: collection 'stores' (struktur index.html), doc ID = storeId (Firebase Auth UID)
+  let doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists)return _normPelanggan(_extractPelanggan(doc.data()));
+  // Fallback: user_stores (kasir/multi-toko)
+  doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists)return _normPelanggan(_extractPelanggan(doc.data()));
   return[];
 }
 
@@ -733,10 +730,15 @@ async function savePelangganList(list){
 
 async function loadPoinCfg(){
   const db=window._db;
-  let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){const d=doc.data();const r=d.settingPoin||(d.db&&d.db.settingPoin)||{};if(r.nilaiTukar||r.daftarHadiah){poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);return;}}
-  doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){const d=doc.data();const r=d.settingPoin||(d.db&&d.db.settingPoin)||{};poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);}
+  function _extractPoinCfg(d){
+    return d.settingPoin||(d.data&&d.data.settingPoin)||(d.db&&d.db.settingPoin)||{};
+  }
+  // Utama: stores (index.html)
+  let doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){const r=_extractPoinCfg(doc.data());poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);return;}
+  // Fallback: user_stores
+  doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){const r=_extractPoinCfg(doc.data());poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);}
 }
 
 /* ═══════════════════ FLOW: PELANGGAN ═══════════════════ */
@@ -837,7 +839,7 @@ function stopQRScan(){
 function handleQRResult(text){
   if(!text)return;
   stopQRScan();
-  // Support format baru: storeId::memberId  maupun format lama: memberId saja
+  // Support format baru: storeId::memberId
   const parts=text.trim().split('::');
   scannedMemberId=(parts.length>=2?parts[1]:parts[0]).trim();
   document.getElementById('qr-scanned-id-info').textContent='Member ID: '+scannedMemberId;
@@ -907,91 +909,37 @@ async function handleHomeScanResult(text){
   if(!text)return;
   stopHomeScan();
 
-  // Tampilkan loading
-  Swal.fire({title:'Memuat data...',allowOutsideClick:false,showConfirmButton:false,customClass:{popup:'swal2-ku'},
-    didOpen:()=>Swal.showLoading()});
+  // Format QR: storeId::memberId
+  // storeId = doc ID di collection 'stores' (Firebase Auth UID pemilik toko)
+  const parts=text.trim().split('::');
+  if(parts.length<2){
+    Swal.fire({
+      icon:'warning',title:'QR Tidak Dikenali',
+      html:'Format QR tidak valid.<br><span style="font-size:11px;color:#94a3b8">Gunakan Login Manual dengan kode toko.</span>',
+      confirmButtonText:'Login Manual',showCancelButton:true,cancelButtonText:'Batal',
+      customClass:{popup:'swal2-ku'},background:'#141e33',color:'#E2E8F0'
+    }).then(r=>{if(r.isConfirmed)showPage('toko-pelanggan');});
+    return;
+  }
+  const qrStoreId=parts[0].trim();
+  const qrMemberId=parts[1].trim();
+
+  Swal.fire({title:'Memuat data...',allowOutsideClick:false,showConfirmButton:false,
+    customClass:{popup:'swal2-ku'},didOpen:()=>Swal.showLoading()});
 
   await waitDB();
   const db=window._db;
 
-  // Parse format baru: storeId::memberId
-  const parts=text.trim().split('::');
-  let qrStoreId=null, qrMemberId=null;
-
-  if(parts.length>=2){
-    // Format baru: storeId::memberId
-    qrStoreId=parts[0].trim();
-    qrMemberId=parts[1].trim();
-  } else {
-    // Format lama: hanya memberId saja
-    qrMemberId=parts[0].trim();
-    // Coba ambil storeId dari session (toko terakhir yang dipakai)
-    const savedStore=sessionStorage.getItem('ku_store_id')||'';
-    if(savedStore) qrStoreId=savedStore;
-  }
-
-  let tokoFound=null;
-
-  // === Jika ada storeId, cari toko langsung ===
-  if(qrStoreId){
-    let tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
+  // Cari dokumen toko — utama: 'stores', fallback: 'user_stores'
+  let tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
+  let tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+  if(!tokoFound){
+    tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
     tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
-    if(!tokoFound){
-      tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
-      tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
-    }
   }
-
-  // === Fallback: cari memberId di semua toko (untuk QR format lama) ===
-  if(!tokoFound && !qrStoreId){
-    Swal.update({title:'Mencari member...'});
-    // Cari di user_stores
-    try{
-      const snap=await db.collection('user_stores').get();
-      for(const docSnap of snap.docs){
-        const d=docSnap.data();
-        const list=_extractPelanggan(d);
-        const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
-        if(found){
-          qrStoreId=docSnap.id;
-          tokoFound=d;
-          break;
-        }
-      }
-    }catch(e){}
-    // Jika belum ketemu, coba di stores
-    if(!tokoFound){
-      try{
-        const snap=await db.collection('stores').get();
-        for(const docSnap of snap.docs){
-          const d=docSnap.data();
-          const list=_extractPelanggan(d);
-          const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
-          if(found){
-            qrStoreId=docSnap.id;
-            tokoFound=d;
-            break;
-          }
-        }
-      }catch(e){}
-    }
-  }
-
   if(!tokoFound){
     Swal.close();
-    // Jika QR lama (tanpa ::), arahkan ke login manual dengan kode toko
-    if(parts.length<2){
-      Swal.fire({
-        icon:'warning',
-        title:'QR Versi Lama',
-        html:'QR ini berasal dari versi lama. Silakan masukkan <b>Kode Toko</b> untuk login manual.<br><span style="font-size:11px;color:#94a3b8">Hubungi kasir untuk mendapatkan QR baru.</span>',
-        confirmButtonText:'Login Manual',
-        showCancelButton:true, cancelButtonText:'Batal',
-        customClass:{popup:'swal2-ku'},background:'#141e33',color:'#E2E8F0'
-      }).then(r=>{if(r.isConfirmed) showPage('toko-pelanggan');});
-    } else {
-      swalErr('Toko tidak ditemukan. QR mungkin sudah tidak aktif.');
-    }
+    swalErr('Toko tidak ditemukan. Coba Login Manual dengan kode toko.');
     return;
   }
 
@@ -1000,9 +948,12 @@ async function handleHomeScanResult(text){
   sessionStorage.setItem('ku_store_id',storeId);
   await loadPoinCfg();
 
-  // Cari member
-  const list=await getPelangganList();
-  const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
+  // Cari member di daftar pelanggan toko
+  const allList=_normPelanggan(_extractPelanggan(tokoFound));
+  const found=allList.find(p=>
+    (p.id||'').trim()===qrMemberId ||
+    (p.hp||'').replace(/\D/g,'')===qrMemberId.replace(/\D/g,'')
+  );
   Swal.close();
 
   if(!found){
@@ -1041,7 +992,7 @@ async function loginDenganMemberId(){
   const list=await getPelangganList();
   if(btn)setBtnBack(btn,'<i class="fas fa-star"></i> Masuk');
   if(!list||!list.length){swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.');return;}
-  const found=list.find(p=>(p.id||'').trim()===scannedMemberId||(p.hp||'').replace(/\D/g,'')===scannedMemberId.replace(/\D/g,''));
+  const found=list.find(p=>p.id===scannedMemberId||(p.id||'').trim()===scannedMemberId);
   if(!found){
     Swal.fire({icon:'warning',title:'Member Tidak Ditemukan',html:'QR Code tidak dikenali.<br><span style="font-size:12px;color:#94a3b8">Pastikan kartu member dari toko yang benar.</span>',customClass:{popup:'swal2-ku'}});
     return;
