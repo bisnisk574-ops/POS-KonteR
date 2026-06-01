@@ -75,6 +75,8 @@ select option{background:#1e2d45;color:var(--text)}
 
 /* Buttons */
 .btn{width:100%;padding:14px;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Sora',sans-serif;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn[style*="flex:0 0"]{width:auto!important}
+.btn-gallery{flex:0 0 52px!important;width:52px!important;min-width:52px!important;max-width:52px!important;padding:0!important}
 .btn:active{transform:scale(.97);opacity:.88}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn-blue{background:linear-gradient(135deg,var(--blue),var(--sky));color:#fff;box-shadow:0 4px 18px rgba(37,99,235,0.35)}
@@ -260,7 +262,7 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
       <button id="btn-home-scan" class="btn btn-blue" onclick="startHomeScan()" style="flex:1">
         <i class="fas fa-camera"></i> Buka Kamera
       </button>
-      <button class="btn" onclick="document.getElementById('gallery-qr-input-home').value='';document.getElementById('gallery-qr-input-home').click()" style="flex:0 0 auto;padding:0 16px;background:rgba(56,189,248,0.12);border:1.5px solid rgba(56,189,248,0.3);color:var(--sky)" title="Scan dari Galeri">
+      <button class="btn btn-gallery" onclick="document.getElementById('gallery-qr-input-home').value='';document.getElementById('gallery-qr-input-home').click()" style="background:rgba(56,189,248,0.12);border:1.5px solid rgba(56,189,248,0.3);color:var(--sky)" title="Scan dari Galeri">
         <i class="fas fa-image"></i>
       </button>
     </div>
@@ -347,7 +349,7 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
       <button id="btn-start-scan" class="btn btn-blue" onclick="startQRScan()" style="flex:1">
         <i class="fas fa-camera"></i> Buka Kamera
       </button>
-      <button class="btn" onclick="document.getElementById('gallery-qr-input-plg').value='';document.getElementById('gallery-qr-input-plg').click()" style="flex:0 0 auto;padding:0 16px;background:rgba(56,189,248,0.12);border:1.5px solid rgba(56,189,248,0.3);color:var(--sky)" title="Scan dari Galeri">
+      <button class="btn btn-gallery" onclick="document.getElementById('gallery-qr-input-plg').value='';document.getElementById('gallery-qr-input-plg').click()" style="background:rgba(56,189,248,0.12);border:1.5px solid rgba(56,189,248,0.3);color:var(--sky)" title="Scan dari Galeri">
         <i class="fas fa-image"></i>
       </button>
     </div>
@@ -1400,11 +1402,9 @@ async function daftarMember(){
   if(dup){swalErr('Nomor HP sudah terdaftar: '+dup.nama);return;}
   const btn=document.getElementById('btn-reg');
   setBtnLoad(btn,'Mendaftarkan...');
-  // Gunakan generateMemberId() agar format konsisten
-  const memberId=generateMemberId();
-  const hpFull='0'+hp.replace(/^0/,'');
-  const tokoNm=tokoData?.namaToko||tokoData?.nama||'KonterKU';
-  const newMember={id:memberId,nama,phone:hpFull,hp:hpFull,email,pin:pin||'',poin:0,totalTransaksi:0,status:'aktif',tglDaftar:new Date().toLocaleDateString('id-ID'),riwayatPoin:[]};
+  // Format C-xxx agar kompatibel dengan index.html
+  const memberId='C-'+Date.now()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+  const newMember={id:memberId,nama,phone:'0'+hp.replace(/^0/,''),hp:'0'+hp.replace(/^0/,''),email,pin:pin||'',poin:0,totalTransaksi:0,status:'aktif',tglDaftar:new Date().toLocaleDateString('id-ID'),riwayatPoin:[]};
   allMembers.push(newMember);
   await savePelangganList(allMembers);
   setBtnBack(btn,'<i class="fas fa-user-plus"></i> Daftarkan Member');
@@ -1412,91 +1412,34 @@ async function daftarMember(){
   document.getElementById('adm-stat-member').textContent=allMembers.length;
   const totalPoin=allMembers.reduce((s,m)=>s+Number(m.poin||m.point||0),0);
   document.getElementById('adm-stat-poin').textContent=fmt(totalPoin);
-  // Tampilkan hasil + kartu member + QR
-  const inisial=nama.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  // Tampilkan hasil
   document.getElementById('reg-result').style.display='block';
-  document.getElementById('reg-result').innerHTML=`
-  <div class="glass" style="border-color:rgba(16,185,129,0.3);margin-bottom:0">
-    <div style="text-align:center;margin-bottom:14px">
+  document.getElementById('reg-result').innerHTML=`<div class="glass" style="border-color:rgba(16,185,129,0.3)">
+    <div style="text-align:center;margin-bottom:12px">
       <div style="font-size:28px">✅</div>
       <div style="font-size:15px;font-weight:900;color:#34D399;margin-top:4px">Member Berhasil Didaftarkan!</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px;font-weight:600">${nama} | ${hpFull}</div>
     </div>
-
-    <!-- Kartu Member Visual -->
-    <div id="kartu-reg-wrap" style="border-radius:18px;background:linear-gradient(135deg,#1541C4 0%,#2563EB 50%,#1B9EE3 100%);padding:18px;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 10px 32px rgba(21,65,196,0.5)">
-      <div style="position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06);top:-70px;right:-50px"></div>
-      <div style="position:absolute;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.04);bottom:-50px;left:-30px"></div>
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;position:relative;z-index:1">
-        <div>
-          <div style="font-size:9px;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.1em">MEMBER CARD</div>
-          <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:.06em;text-transform:uppercase;margin-top:2px">${tokoNm}</div>
-          <div style="font-size:19px;font-weight:900;color:#fff;margin-top:6px;letter-spacing:-.01em">${nama}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:3px">ID: ${memberId}</div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.45);margin-top:1px">No HP: ${hpFull}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1">
-          <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff">${inisial}</div>
-          <div style="background:#fff;border-radius:10px;padding:8px;display:flex;align-items:center;justify-content:center">
-            <canvas id="qr-reg" width="90" height="90"></canvas>
-          </div>
-          <div style="font-size:8px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.05em">SCAN QR</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1">
-        <div style="background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.5);border-radius:7px;padding:3px 9px;font-size:10px;font-weight:900;color:#6EE7B7">⭐ AKTIF</div>
-        <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700">Poin: 0</div>
-      </div>
+    <div class="info-row"><div class="info-key">Nama</div><div class="info-val">${nama}</div></div>
+    <div class="info-row"><div class="info-key">No HP</div><div class="info-val">0${hp.replace(/^0/,'')}</div></div>
+    <div class="info-row"><div class="info-key">Member ID</div><div class="info-val" style="font-size:11px;word-break:break-all;color:var(--sky)">${memberId}</div></div>
+    <div style="text-align:center;margin-top:16px">
+      <canvas id="qr-reg" width="140" height="140"></canvas>
+      <div style="font-size:9px;color:var(--muted);margin-top:4px;font-weight:600">QR Code Member</div>
     </div>
-
-    <!-- Info ID -->
-    <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 14px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08)">
-      <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Member ID</div>
-      <div style="font-size:13px;font-weight:900;color:var(--sky);word-break:break-all;letter-spacing:.02em">${memberId}</div>
-    </div>
-
-    <!-- Tombol Aksi -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;box-shadow:0 4px 14px rgba(37,211,102,0.35)" onclick="kirimWAMember('${nama}','${hpFull}','${memberId}')">
-        <i class="fab fa-whatsapp"></i> Kirim WA Selamat Datang ke Member
-      </button>
-      <button class="btn" style="background:rgba(56,189,248,0.12);border:1.5px solid rgba(56,189,248,0.3);color:var(--sky)" onclick="unduhKartuReg('${nama}')">
-        <i class="fas fa-download"></i> Unduh Kartu Member (PNG)
-      </button>
-    </div>
-    <p style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px;font-weight:600">WA sudah otomatis dibuka. Tombol ini untuk kirim ulang.</p>
+    <button class="btn btn-green" style="margin-top:14px" onclick="kirimWAMember('${nama}','0${hp.replace(/^0/,'')}','${memberId}')">
+      <i class="fab fa-whatsapp"></i> Kirim Info via WhatsApp
+    </button>
   </div>`;
   const qrPayload=storeId+'::'+memberId;
-  setTimeout(()=>{
-    renderQR(qrPayload,'qr-reg');
-    // Auto buka WA setelah 600ms
-    setTimeout(()=>kirimWAMember(nama,hpFull,memberId),600);
-  },300);
+  setTimeout(()=>renderQR(qrPayload,'qr-reg'),300);
   // Reset form
   ['reg-nama','reg-hp','reg-email','reg-pin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   renderMemberList();
-  // Scroll ke hasil
-  setTimeout(()=>document.getElementById('reg-result').scrollIntoView({behavior:'smooth',block:'nearest'}),400);
-}
-
-async function unduhKartuReg(nama){
-  const wrap=document.getElementById('kartu-reg-wrap');
-  if(!wrap){swalErr('Kartu belum siap');return;}
-  try{
-    if(typeof html2canvas!=='undefined'){
-      const canvas=await html2canvas(wrap,{scale:2,backgroundColor:null,useCORS:true,logging:false});
-      const a=document.createElement('a');
-      a.download='kartu-member-'+(nama||'member').replace(/\s+/g,'-').toLowerCase()+'.png';
-      a.href=canvas.toDataURL('image/png');
-      a.click();
-    } else {
-      swalErr('Library unduh belum siap, coba lagi sesaat.');
-    }
-  }catch(e){swalErr('Gagal mengunduh kartu: '+e.message);}
 }
 
 function kirimWAMember(nama,hp,memberId){
   const tokoNm=tokoData?.namaToko||tokoData?.nama||'Toko Kami';
+  // Buat link langsung ke portal dengan storeId
   const origin=window.location.origin;
   const base=window.location.pathname.replace(/\/[^\/]*$/,'');
   const linkPortal=origin+base+'/cek-poin.html?toko='+encodeURIComponent(storeId);
