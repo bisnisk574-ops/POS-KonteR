@@ -683,23 +683,27 @@ async function getTokoDoc(kode){
   return null;
 }
 
+function _extractPelanggan(d){
+  // Semua kemungkinan lokasi data pelanggan:
+  // 1. d.data.pelanggan  (struktur index.html / KonterKU Cloud - data tersimpan di field "data")
+  // 2. d.pelanggan       (struktur langsung)
+  // 3. d.db.pelanggan    (struktur lama nested db)
+  const a=(d.data&&d.data.pelanggan)||(d.pelanggan)||(d.db&&d.db.pelanggan)||[];
+  return a.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
+}
+
+function _extractNamaToko(d){
+  // index.html: store_name atau data.store_name
+  // cek-poin lama: namaToko / nama
+  return d.store_name||(d.data&&d.data.store_name)||d.namaToko||d.nama||'KonterKU';
+}
+
 async function getPelangganList(){
   const db=window._db;
-  // Ambil langsung dari doc yang sudah kita tahu ID-nya (storeId = doc ID user_stores)
-  // Field pelanggan ada di dalam dokumen user_stores
   const doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){
-    const d=doc.data();
-    const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];
-    return a.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
-  }
-  // Fallback: stores (struktur lama)
+  if(doc&&doc.exists) return _extractPelanggan(doc.data());
   const doc2=await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if(doc2&&doc2.exists){
-    const d=doc2.data();
-    const a=d.pelanggan||(d.db&&d.db.pelanggan)||[];
-    return a.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
-  }
+  if(doc2&&doc2.exists) return _extractPelanggan(doc2.data());
   return[];
 }
 
@@ -720,7 +724,7 @@ async function savePelangganList(list){
   if(!saved){
     // Kalau dokumen belum ada, set baru
     try{
-      await db.collection('user_stores').doc(storeId).set({pelanggan:list,kode_toko:storeId,namaToko:tokoData?.namaToko||'Toko'},{merge:true});
+      await db.collection('user_stores').doc(storeId).set({pelanggan:list,kode_toko:storeId,namaToko:_extractNamaToko(tokoData||{})},{merge:true});
     }catch(e){console.error('Save gagal',e);}
   }
   // Refresh cache
@@ -749,7 +753,7 @@ async function cariToko(){
   }
   storeId=result.id;tokoData=result.data;
   sessionStorage.setItem('ku_store_id',storeId);
-  const namaToko=tokoData?.namaToko||tokoData?.nama||'Toko';
+  const namaToko=_extractNamaToko(tokoData||{});
   document.getElementById('toko-badge-login').innerHTML=tokoBadge(namaToko,'ID: '+storeId);
   showPage('login-pelanggan');
 }
@@ -946,7 +950,7 @@ async function handleHomeScanResult(text){
       const snap=await db.collection('user_stores').get();
       for(const docSnap of snap.docs){
         const d=docSnap.data();
-        const list=d.pelanggan||(d.db&&d.db.pelanggan)||[];
+        const list=_extractPelanggan(d);
         const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
         if(found){
           qrStoreId=docSnap.id;
@@ -961,7 +965,7 @@ async function handleHomeScanResult(text){
         const snap=await db.collection('stores').get();
         for(const docSnap of snap.docs){
           const d=docSnap.data();
-          const list=d.pelanggan||(d.db&&d.db.pelanggan)||[];
+          const list=_extractPelanggan(d);
           const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
           if(found){
             qrStoreId=docSnap.id;
@@ -1093,7 +1097,7 @@ async function loginPelanggan(){
 function showDashboardPelanggan(){
   showPage('dashboard-pelanggan');
   switchTab('info');
-  const namaToko=tokoData?.namaToko||tokoData?.nama||'KonterKU';
+  const namaToko=_extractNamaToko(tokoData||{});
   const poin=Number(pelanggan.poin||pelanggan.point||0);
   const nilaiTukar=poinCfg.nilaiTukar||1000;
   const nilaiDiskon=Math.floor(poin/100)*nilaiTukar;
@@ -1312,7 +1316,7 @@ async function loginKasir(){
 async function _masukDashboardAdmin(){
   // Tampilkan halaman & loading dulu
   document.getElementById('top-admin-badge').style.display='';
-  document.getElementById('adm-toko-name').textContent=tokoData?.namaToko||tokoData?.nama||'KonterKU';
+  document.getElementById('adm-toko-name').textContent=_extractNamaToko(tokoData||{});
   showPage('dashboard-admin');
   _checkAutoOpenDaftar();
   admSwitchTab('list');
@@ -1499,7 +1503,7 @@ async function daftarMember(){
 }
 
 function kirimWAMember(nama,hp,memberId){
-  const tokoNm=tokoData?.namaToko||tokoData?.nama||'Toko Kami';
+  const tokoNm=_extractNamaToko(tokoData||{});
   // Buat link langsung ke portal dengan storeId
   const origin=window.location.origin;
   const base=window.location.pathname.replace(/\/[^\/]*$/,'');
