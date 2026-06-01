@@ -4004,8 +4004,26 @@
 
         </div><!-- end glass card -->
 
-        <!-- ── BOTTOM INFO ── -->
+        <!-- ── CEK POIN MEMBER ── -->
         <div class="mt-5 text-center">
+          <p class="text-[10px] mb-2.5" style="color:rgba(255,255,255,0.30);">Kamu pelanggan / member toko?</p>
+          <a href="cek-poin.html" 
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-black"
+            style="background:rgba(124,58,237,0.15);border:1.5px solid rgba(124,58,237,0.35);color:#c4b5fd;text-decoration:none;transition:all 0.2s;width:100%;justify-content:center;">
+            <i class="fas fa-star text-sm"></i> Cek Poin & Kartu Member
+          </a>
+          <p class="text-[9px] mt-2" style="color:rgba(255,255,255,0.18);">Masukkan kode toko + ID member kamu</p>
+        </div>
+
+        <!-- ── DIVIDER ── -->
+        <div class="mt-3 mb-0 flex items-center gap-3">
+          <div class="h-px flex-1" style="background:rgba(255,255,255,0.07);"></div>
+          <span style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.15);letter-spacing:0.08em;">UNTUK PEMILIK TOKO</span>
+          <div class="h-px flex-1" style="background:rgba(255,255,255,0.07);"></div>
+        </div>
+
+        <!-- ── BOTTOM INFO ── -->
+        <div class="mt-3 text-center">
           <p class="text-[10px] mb-2.5" style="color:rgba(255,255,255,0.22);">Butuh bantuan setup akun?</p>
           <a href="https://wa.me/6285959317155" target="_blank"
             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[11px] font-black"
@@ -27631,10 +27649,12 @@ function _populateIdCard(c) {
   const tb = el('card-tier-badge');
   if (tb) { tb.textContent = tier; tb.style.background = tc.bg; tb.style.border = '1px solid ' + tc.border; tb.style.color = tc.text; }
 
-  // Render mini QR
+  // Render mini QR — payload = URL langsung ke cek-poin.html
   const miniWrap = el('card-qr-mini-wrap');
   if (miniWrap) {
-    const payload = storeId + '::' + c.id;
+    const _origin = window.location.origin;
+    const _base   = window.location.pathname.replace(/\/[^\/]*$/, '');
+    const payload  = _origin + _base + '/cek-poin.html?toko=' + encodeURIComponent(storeId) + '&id=' + encodeURIComponent(c.id);
     miniWrap.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
       const miniCanvas = document.createElement('canvas');
@@ -27744,11 +27764,13 @@ function cetakStrukIdCard() {
   if (s('struk-tgl'))       s('struk-tgl').textContent       = 'Bergabung: ' + tglNow;
   if (s('struk-portal-url')) s('struk-portal-url').textContent = link.replace('https://','');
 
-  // Render QR di struk
+  // Render QR di struk — payload = URL langsung ke cek-poin.html
   const struqWrap = s('struk-qr-wrap');
   if (struqWrap) {
     struqWrap.innerHTML = '';
-    const payload = storeId + '::' + d.id;
+    const _origin2 = window.location.origin;
+    const _base2   = window.location.pathname.replace(/\/[^\/]*$/, '');
+    const payload  = _origin2 + _base2 + '/cek-poin.html?toko=' + encodeURIComponent(storeId) + '&id=' + encodeURIComponent(d.id);
     if (typeof QRCode !== 'undefined') {
       const qCanvas = document.createElement('canvas');
       struqWrap.appendChild(qCanvas);
