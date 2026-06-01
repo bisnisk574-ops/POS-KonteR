@@ -11132,11 +11132,28 @@
     }
 
     // ---- FIREBASE: Simpan data toko ----
+    // Hapus semua nilai undefined secara rekursif agar Firestore tidak reject
+    function _sanitizeForFirestore(obj) {
+      if (Array.isArray(obj)) {
+        return obj.map(_sanitizeForFirestore);
+      }
+      if (obj !== null && typeof obj === 'object' && !(obj instanceof Date)) {
+        const clean = {};
+        for (const key of Object.keys(obj)) {
+          const val = obj[key];
+          if (val === undefined) continue; // buang undefined
+          clean[key] = _sanitizeForFirestore(val);
+        }
+        return clean;
+      }
+      return obj;
+    }
+
     async function saveFirebaseData(storeId, data) {
       await waitFirebase();
       const uid    = _resolveStoreId(storeId);
       const docRef = window._fbFirestore.collection('stores').doc(uid);
-      await docRef.set(data);
+      await docRef.set(_sanitizeForFirestore(data));
       return { status: 'success' };
     }
 
@@ -12546,7 +12563,7 @@
               <button onclick="deleteCustomerDirect('${c.id}')" class="w-9 h-9 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Hapus">
                 <i class="fas fa-trash-alt text-[11px]"></i>
               </button>
-              <button onclick="showMemberQR('${c.id}','${c.nama.replace(/'/g,\"\\'\")}','${c.phone||\"\"}')" class="w-9 h-9 hover:opacity-80 text-white rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" title="QR Kartu Member">
+              <button onclick="showMemberQR(this)" data-cid="${c.id}" data-nama="${(c.nama||'').replace(/"/g,'&quot;')}" data-phone="${(c.phone||'').replace(/"/g,'&quot;')}" class="w-9 h-9 hover:opacity-80 text-white rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" title="QR Kartu Member">
                 <i class="fas fa-qrcode text-[11px]"></i>
               </button>
             </div>
@@ -16770,7 +16787,7 @@ ${t.bayar ? `
         await _refreshAndGetUid(uid);
       }
       await window._fbFirestore.collection('user_stores').doc(storeId).update({
-        data      : dbData,
+        data      : _sanitizeForFirestore(dbData),
         last_sync : new Date(),
         ...(isKasirMode ? { last_kasir: localStorage.getItem('k_kasir_nama') || '' } : {})
       });
@@ -26986,7 +27003,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-</body>
 
 <!-- ===== QR KASIR: Barcode per kasir + Scan login ===== -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -27185,7 +27201,16 @@ function _applyKasirQRData(raw) {
 let _mqrData = null; // { id, nama, phone, poin, storeId }
 let _mqrCanvas = null;
 
-function showMemberQR(custId, nama, phone) {
+function showMemberQR(elOrId, _unused, _unused2) {
+  // Support dipanggil dengan element (data-attribute) atau langsung string id
+  let custId, nama, phone;
+  if (elOrId && typeof elOrId === 'object' && elOrId.dataset) {
+    custId = elOrId.dataset.cid;
+    nama   = elOrId.dataset.nama;
+    phone  = elOrId.dataset.phone;
+  } else {
+    custId = elOrId; nama = _unused; phone = _unused2;
+  }
   const storeId = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
   const cust = (db.pelanggan||[]).find(c => c.id === custId);
   const poin = Number((cust||{}).poin||0);
@@ -27303,3 +27328,6 @@ function kirimWAMember() {
   window.open(waUrl, '_blank');
 }
 </script>
+
+</body>
+</html>
