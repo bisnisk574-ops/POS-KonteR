@@ -184,6 +184,7 @@ select option{background:#1e2d45;color:var(--text)}
 /* Spinner */
 .spin{animation:spin 1s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes scanLine{0%{top:22.5%}50%{top:77.5%}100%{top:22.5%}}
 
 /* Fade page */
 .page{animation:fadeUp .32s ease}
@@ -222,23 +223,60 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
   <div id="top-admin-badge" style="display:none"><span class="admin-badge"><i class="fas fa-shield-alt"></i> Admin</span></div>
 </div>
 
-<!-- ======== PAGE: PILIH MODE ======== -->
+<!-- ======== PAGE: HOME ======== -->
 <div id="page-home" class="page">
-  <div class="glass" style="text-align:center;margin-bottom:14px;">
-    <div style="font-size:42px;margin-bottom:10px;">🏪</div>
-    <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:4px;">Selamat Datang!</div>
-    <div style="font-size:11px;font-weight:600;color:var(--muted);">Portal member &amp; manajemen poin toko</div>
+  <div class="glass" style="text-align:center;margin-bottom:16px;">
+    <div style="font-size:44px;margin-bottom:10px;">🏪</div>
+    <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:4px;">Portal Member</div>
+    <div style="font-size:11px;font-weight:600;color:var(--muted);">Scan kartu member untuk cek & kelola poin</div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-    <button class="btn btn-blue" onclick="showPage('toko-pelanggan')" style="flex-direction:column;gap:6px;padding:20px 10px;">
-      <span style="font-size:28px">📱</span>
-      <span>Cek Poin<br>Pelanggan</span>
+
+  <!-- Scan QR kamera langsung -->
+  <div class="glass" style="margin-bottom:14px">
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:900;color:#fff;margin-bottom:4px">📷 Scan Kartu Member</div>
+      <div style="font-size:11px;color:var(--muted);font-weight:600">Arahkan kamera ke QR Code kartu member kamu</div>
+    </div>
+    <!-- Camera preview -->
+    <div id="home-qr-wrap" style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:1;margin-bottom:14px;display:none">
+      <video id="home-qr-video" style="width:100%;height:100%;object-fit:cover" playsinline></video>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+        <div style="width:55%;height:55%;border:3px solid var(--sky);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5)"></div>
+      </div>
+      <!-- Scan line animation -->
+      <div id="home-scan-line" style="position:absolute;left:22.5%;right:22.5%;height:2px;background:linear-gradient(90deg,transparent,var(--sky),transparent);animation:scanLine 2s linear infinite;pointer-events:none"></div>
+      <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center">
+        <span style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.8);background:rgba(0,0,0,0.55);padding:4px 12px;border-radius:20px">Arahkan QR ke kotak biru</span>
+      </div>
+    </div>
+    <div id="home-qr-placeholder" style="text-align:center;padding:20px 0;margin-bottom:14px">
+      <div style="font-size:52px;margin-bottom:8px">📱</div>
+      <div style="font-size:11px;color:var(--muted);font-weight:600">Kamera belum aktif</div>
+    </div>
+    <button id="btn-home-scan" class="btn btn-blue" onclick="startHomeScan()">
+      <i class="fas fa-camera"></i> Buka Kamera & Scan
     </button>
-    <button class="btn" onclick="showPage('login-admin')" style="flex-direction:column;gap:6px;padding:20px 10px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#C4B5FD;">
-      <span style="font-size:28px">🔐</span>
-      <span>Login<br>Admin/Kasir</span>
+    <button id="btn-home-stop" class="btn btn-ghost" onclick="stopHomeScan()" style="display:none;margin-top:8px">
+      <i class="fas fa-stop"></i> Tutup Kamera
     </button>
   </div>
+
+  <!-- Divider -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+    <span style="font-size:10px;color:var(--muted);font-weight:700">ATAU</span>
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+  </div>
+
+  <!-- Login Manual (masuk kode toko dulu) -->
+  <button class="btn" onclick="showPage('toko-pelanggan')" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:var(--text);margin-bottom:10px">
+    <i class="fas fa-keyboard" style="color:var(--sky)"></i> Login Manual (Kode Toko)
+  </button>
+
+  <!-- Admin/Kasir -->
+  <button class="btn" onclick="showPage('login-admin')" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);color:#C4B5FD;">
+    <i class="fas fa-shield-alt"></i> Login Admin / Kasir
+  </button>
 </div>
 
 <!-- ======== PAGE: CARI TOKO (PELANGGAN) ======== -->
@@ -550,6 +588,8 @@ const now=()=>new Date();
 
 /* ═══ HELPERS ═══ */
 function showPage(p) {
+  // Stop kamera home jika meninggalkan home
+  if(p!=='home' && typeof stopHomeScan==='function') stopHomeScan();
   const pages=['home','toko-pelanggan','login-pelanggan','dashboard-pelanggan','login-admin','dashboard-admin'];
   pages.forEach(x=>{
     const el=document.getElementById('page-'+x);
@@ -772,10 +812,139 @@ function stopQRScan(){
 function handleQRResult(text){
   if(!text)return;
   stopQRScan();
-  scannedMemberId=text.trim();
+  // Support format baru: storeId::memberId
+  const parts=text.trim().split('::');
+  scannedMemberId=(parts.length>=2?parts[1]:parts[0]).trim();
   document.getElementById('qr-scanned-id-info').textContent='Member ID: '+scannedMemberId;
   document.getElementById('panel-qr-pin').style.display='block';
   document.getElementById('inp-qr-pin').focus();
+}
+
+/* ══ HOME QR SCANNER (scan dari halaman utama, tanpa pilih toko dulu) ══ */
+let homeScannerObj=null;
+
+function startHomeScan(){
+  const wrap=document.getElementById('home-qr-wrap');
+  const ph=document.getElementById('home-qr-placeholder');
+  const btnStart=document.getElementById('btn-home-scan');
+  const btnStop=document.getElementById('btn-home-stop');
+  wrap.style.display='block'; ph.style.display='none';
+  btnStart.style.display='none'; btnStop.style.display='';
+
+  const video=document.getElementById('home-qr-video');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(stream=>{
+    video.srcObject=stream; video.play();
+
+    function _setupDecoder(){
+      if(typeof ZXing!=='undefined'){
+        const reader=new ZXing.BrowserQRCodeReader();
+        homeScannerObj={reader,stream};
+        reader.decodeFromVideoElement(video).then(r=>{
+          if(r) handleHomeScanResult(r.getText());
+        }).catch(()=>{});
+      } else if('BarcodeDetector' in window){
+        const det=new BarcodeDetector({formats:['qr_code']});
+        homeScannerObj={stream, interval:setInterval(async()=>{
+          try{const res=await det.detect(video);if(res.length>0)handleHomeScanResult(res[0].rawValue);}catch(e){}
+        },300)};
+      } else {
+        swalErr('Browser tidak mendukung scan QR. Gunakan Login Manual.');
+        stopHomeScan();
+      }
+    }
+    _setupDecoder();
+  }).catch(()=>{
+    swalErr('Tidak bisa akses kamera. Coba Login Manual.');
+    stopHomeScan();
+  });
+}
+
+function stopHomeScan(){
+  const wrap=document.getElementById('home-qr-wrap');
+  const ph=document.getElementById('home-qr-placeholder');
+  const btnStart=document.getElementById('btn-home-scan');
+  const btnStop=document.getElementById('btn-home-stop');
+  if(wrap)wrap.style.display='none';
+  if(ph)ph.style.display='';
+  if(btnStart)btnStart.style.display='';
+  if(btnStop)btnStop.style.display='none';
+  if(homeScannerObj){
+    if(homeScannerObj.interval)clearInterval(homeScannerObj.interval);
+    if(homeScannerObj.stream)homeScannerObj.stream.getTracks().forEach(t=>t.stop());
+    if(homeScannerObj.reader)try{homeScannerObj.reader.reset();}catch(e){}
+    homeScannerObj=null;
+  }
+  const video=document.getElementById('home-qr-video');
+  if(video&&video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;}
+}
+
+async function handleHomeScanResult(text){
+  if(!text)return;
+  stopHomeScan();
+
+  // Parse format: storeId::memberId
+  const parts=text.trim().split('::');
+  if(parts.length<2){
+    swalErr('QR tidak valid. Pastikan ini QR kartu member KonterKU.');
+    return;
+  }
+  const qrStoreId=parts[0].trim();
+  const qrMemberId=parts[1].trim();
+
+  // Tampilkan loading
+  Swal.fire({title:'Memuat data...',allowOutsideClick:false,showConfirmButton:false,customClass:{popup:'swal2-ku'},
+    didOpen:()=>Swal.showLoading()});
+
+  await waitDB();
+  // Fetch dokumen toko langsung pakai storeId dari QR
+  const db=window._db;
+  let tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
+  let tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+  if(!tokoFound){
+    tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
+    tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+  }
+  if(!tokoFound){
+    Swal.close();
+    swalErr('Toko tidak ditemukan. QR mungkin dari versi lama.');
+    return;
+  }
+
+  storeId=qrStoreId;
+  tokoData=tokoFound;
+  await loadPoinCfg();
+
+  // Cari member
+  const list=await getPelangganList();
+  const found=list.find(p=>p.id===qrMemberId);
+  Swal.close();
+
+  if(!found){
+    swalErr('Member tidak ditemukan di toko ini.');
+    return;
+  }
+
+  // Cek PIN
+  if(found.pin){
+    const res=await Swal.fire({
+      title:'Masukkan PIN',
+      input:'password',
+      inputAttributes:{inputmode:'numeric',maxlength:'4',autocomplete:'off'},
+      inputPlaceholder:'4 digit PIN',
+      confirmButtonText:'Masuk',
+      showCancelButton:true,cancelButtonText:'Batal',
+      customClass:{popup:'swal2-ku'},
+      inputValidator:v=>{if(!v||v.length<4)return 'PIN harus 4 digit';}
+    });
+    if(!res.isConfirmed)return;
+    if(String(res.value)!==String(found.pin)){
+      swalErr('PIN salah. Hubungi kasir jika lupa.');
+      return;
+    }
+  }
+
+  pelanggan=found;
+  showDashboardPelanggan();
 }
 
 async function loginDenganMemberId(){
@@ -856,7 +1025,7 @@ function showDashboardPelanggan(){
   document.getElementById('d-poin').textContent=fmt(poin);
   const badge=document.getElementById('d-status-badge');
   if(status==='NONAKTIF'||status==='INACTIVE'){badge.className='card-status-badge nonaktif';badge.innerHTML='<i class="fas fa-times-circle" style="font-size:10px"></i> NONAKTIF';}
-  renderQR(pelanggan.id||'NO-ID');
+  renderQR((storeId||'')+'::'+pelanggan.id||pelanggan.id||'NO-ID');
   document.getElementById('d-hp').textContent=pelanggan.phone||pelanggan.hp||pelanggan.noHp||'—';
   document.getElementById('d-email').textContent=pelanggan.email||'—';
   document.getElementById('d-status-text').textContent=status;
@@ -1182,11 +1351,9 @@ async function daftarMember(){
   if(dup){swalErr('Nomor HP sudah terdaftar: '+dup.nama);return;}
   const btn=document.getElementById('btn-reg');
   setBtnLoad(btn,'Mendaftarkan...');
-  const memberId=generateMemberId();
-  // Simpan dengan field yang kompatibel dengan index.html (phone, id: C-xxx)
-  const memberId2='C-'+Date.now()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
-  const newMember={id:memberId2,nama,phone:'0'+hp.replace(/^0/,''),hp:'0'+hp.replace(/^0/,''),email,pin:pin||'',poin:0,totalTransaksi:0,status:'aktif',tglDaftar:new Date().toLocaleDateString('id-ID'),riwayatPoin:[]};
-  const memberId=memberId2;
+  // Format C-xxx agar kompatibel dengan index.html
+  const memberId='C-'+Date.now()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+  const newMember={id:memberId,nama,phone:'0'+hp.replace(/^0/,''),hp:'0'+hp.replace(/^0/,''),email,pin:pin||'',poin:0,totalTransaksi:0,status:'aktif',tglDaftar:new Date().toLocaleDateString('id-ID'),riwayatPoin:[]};
   allMembers.push(newMember);
   await savePelangganList(allMembers);
   setBtnBack(btn,'<i class="fas fa-user-plus"></i> Daftarkan Member');
@@ -1212,7 +1379,8 @@ async function daftarMember(){
       <i class="fab fa-whatsapp"></i> Kirim Info via WhatsApp
     </button>
   </div>`;
-  setTimeout(()=>renderQR(memberId,'qr-reg'),300);
+  const qrPayload=storeId+'::'+memberId;
+  setTimeout(()=>renderQR(qrPayload,'qr-reg'),300);
   // Reset form
   ['reg-nama','reg-hp','reg-email','reg-pin'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   renderMemberList();
