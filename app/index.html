@@ -12404,7 +12404,7 @@
               <button onclick="bukaProfilPelangganKu('${c.id}')" class="w-9 h-9 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Profil">
                 <i class="fas fa-user-circle text-[11px]"></i>
               </button>
-              <button onclick="window.open('tukar-poin.html?id=${c.id}','_blank')" class="w-9 h-9 bg-violet-50 hover:bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Tukar Poin">
+              <button onclick="window.open('cek-poin.html?toko='+(localStorage.getItem('k_active_store_id')||localStorage.getItem('k_sid')||''),'_blank')" class="w-9 h-9 bg-violet-50 hover:bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Tukar Poin">
                 <i class="fas fa-gift text-[11px]"></i>
               </button>
               <button onclick="editCustomer('${c.id}')" class="w-9 h-9 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Edit">
@@ -15475,7 +15475,7 @@ ${t.bayar ? `
             <p class="text-[9px] text-slate-400 font-bold">${c.phone ? '📱 '+c.phone : 'Tanpa nomor'} &nbsp;·&nbsp; ${trxCount} transaksi</p>
           </div>
           <div class="flex gap-1.5 flex-shrink-0">
-            <button onclick="window.open('tukar-poin.html?id=${c.id}','_blank')" class="w-8 h-8 bg-violet-50 text-violet-500 rounded-xl flex items-center justify-center cursor-pointer border-0 hover:bg-violet-100 transition-colors" title="Tukar Poin">
+            <button onclick="window.open('cek-poin.html?toko='+(localStorage.getItem('k_active_store_id')||localStorage.getItem('k_sid')||''),'_blank')" class="w-8 h-8 bg-violet-50 text-violet-500 rounded-xl flex items-center justify-center cursor-pointer border-0 hover:bg-violet-100 transition-colors" title="Tukar Poin">
               <i class="fas fa-gift text-[10px]"></i>
             </button>
             <button onclick="editCustomerFromSidebar('${c.id}')" class="w-8 h-8 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center cursor-pointer border-0 hover:bg-blue-100 transition-colors" title="Edit">
@@ -24453,9 +24453,9 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
               </button>
             </div>
             <div style="margin-top:8px;">
-              <a href="tukar-poin.html?id=${c.id}" target="_blank"
+              <a href="#" onclick="window.open('cek-poin.html?toko='+(localStorage.getItem('k_active_store_id')||localStorage.getItem('k_sid')||''),'_blank');return false;"
                 style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border-radius:10px;font-size:9px;font-weight:900;color:#059669;background:rgba(5,150,105,0.08);border:1.5px solid rgba(5,150,105,0.20);cursor:pointer;text-decoration:none;">
-                <i class="fas fa-external-link-alt" style="font-size:8px;"></i>Buka Halaman Tukar Poin
+                <i class="fas fa-external-link-alt" style="font-size:8px;"></i>Buka Portal Member
               </a>
             </div>
           </div>
