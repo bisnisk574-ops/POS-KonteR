@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -383,19 +384,45 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
     <div style="text-align:center;margin-bottom:20px">
       <div style="font-size:34px;margin-bottom:8px">🔐</div>
       <div style="font-size:16px;font-weight:900;color:#fff">Login Admin / Kasir</div>
-      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-top:4px">Masukkan kode toko dan PIN admin</div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-top:4px">Pilih mode login</div>
     </div>
-    <div class="field">
-      <label class="label">Kode Toko</label>
-      <input id="adm-kode" type="text" placeholder="Kode toko Anda" autocomplete="off">
+    <!-- Tab Admin vs Kasir -->
+    <div class="mode-tabs" style="margin-bottom:16px">
+      <button class="mode-btn active" id="tab-login-admin" onclick="switchLoginMode('admin')">🔑 Admin</button>
+      <button class="mode-btn" id="tab-login-kasir" onclick="switchLoginMode('kasir')">👤 Kasir</button>
     </div>
-    <div class="field">
-      <label class="label">PIN Admin</label>
-      <input id="adm-pin" type="password" placeholder="PIN admin" autocomplete="off" onkeydown="if(event.key==='Enter')loginAdmin()">
+    <!-- Form Admin (Firebase Auth) -->
+    <div id="form-login-admin">
+      <div class="field">
+        <label class="label">Email Admin</label>
+        <input id="adm-email" type="email" placeholder="email@toko.com" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="label">Password</label>
+        <input id="adm-password" type="password" placeholder="Password Firebase" autocomplete="off" onkeydown="if(event.key==='Enter')loginAdmin()">
+      </div>
+      <button id="btn-login-adm" class="btn" onclick="loginAdmin()" style="background:linear-gradient(135deg,#6D28D9,var(--purple));color:#fff;box-shadow:0 4px 18px rgba(109,40,217,0.35)">
+        <i class="fas fa-shield-alt"></i> Masuk sebagai Admin
+      </button>
     </div>
-    <button id="btn-login-adm" class="btn btn-blue" onclick="loginAdmin()" style="background:linear-gradient(135deg,#6D28D9,var(--purple))">
-      <i class="fas fa-shield-alt"></i> Masuk sebagai Admin
-    </button>
+    <!-- Form Kasir -->
+    <div id="form-login-kasir" style="display:none">
+      <div class="field">
+        <label class="label">Kode Toko</label>
+        <input id="kasir-kode" type="text" placeholder="Kode toko (6 huruf)" autocomplete="off" style="text-transform:uppercase">
+      </div>
+      <div class="field">
+        <label class="label">Username Kasir</label>
+        <input id="kasir-username" type="text" placeholder="Username kasir" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="label">Password Kasir</label>
+        <input id="kasir-pwd" type="password" placeholder="Password kasir" autocomplete="off" onkeydown="if(event.key==='Enter')loginKasir()">
+      </div>
+      <button id="btn-login-kasir" class="btn" onclick="loginKasir()" style="background:linear-gradient(135deg,#0369a1,#0284c7);color:#fff;box-shadow:0 4px 18px rgba(3,105,161,0.35)">
+        <i class="fas fa-user-check"></i> Masuk sebagai Kasir
+      </button>
+    </div>
   </div>
 </div>
 
@@ -725,34 +752,99 @@ function logoutPelanggan(){
 }
 
 /* ═══════════════════ FLOW: ADMIN ═══════════════════ */
+/* ─── LOGIN MODE SWITCH ─── */
+function switchLoginMode(mode){
+  ['admin','kasir'].forEach(m=>{
+    document.getElementById('form-login-'+m).style.display=m===mode?'block':'none';
+    document.getElementById('tab-login-'+m).classList.toggle('active',m===mode);
+  });
+}
+
+/* ─── SIMPLE HASH (sama dgn index.html) ─── */
+function _simpleHash(str){
+  let h=0;
+  for(let i=0;i<str.length;i++){h=Math.imul(31,h)+str.charCodeAt(i)|0;}
+  return h.toString(16);
+}
+function _verifyHash(plain,hash){return _simpleHash(plain)===hash;}
+
+/* ─── LOGIN ADMIN (Firebase Auth) ─── */
 async function loginAdmin(){
-  const kode=(document.getElementById('adm-kode').value||'').trim().toUpperCase();
-  const pin=(document.getElementById('adm-pin').value||'').trim();
-  if(!kode){swalErr('Kode toko tidak boleh kosong');return;}
-  if(!pin){swalErr('PIN admin tidak boleh kosong');return;}
+  const email=(document.getElementById('adm-email').value||'').trim();
+  const password=(document.getElementById('adm-password').value||'').trim();
+  if(!email){swalErr('Email tidak boleh kosong');return;}
+  if(!password){swalErr('Password tidak boleh kosong');return;}
   const btn=document.getElementById('btn-login-adm');
   setBtnLoad(btn,'Memverifikasi...');
-  const result=await getTokoDoc(kode).catch(()=>null);
-  setBtnBack(btn,'<i class="fas fa-shield-alt"></i> Masuk sebagai Admin');
-  if(!result){swalErr('Toko tidak ditemukan. Periksa kode toko.');return;}
-  const data=result.data;
-  // Cek PIN admin dari data toko
-  const adminPin=data.adminPin||data.pinAdmin||data.pin||data.password||'';
-  if(adminPin&&String(pin)!==String(adminPin)){
-    Swal.fire({icon:'error',title:'PIN Admin Salah',text:'PIN tidak sesuai. Hubungi pemilik toko.',customClass:{popup:'swal2-ku'}});return;
+  try{
+    const cred=await window._auth.signInWithEmailAndPassword(email,password);
+    const uid=cred.user.uid;
+    // Ambil data toko dari Firestore berdasarkan uid
+    const db=window._db;
+    let tokoSnap=await db.collection('user_stores').where('uid','==',uid).limit(1).get().catch(()=>null);
+    if(!tokoSnap||tokoSnap.empty) tokoSnap=await db.collection('stores').where('uid','==',uid).limit(1).get().catch(()=>null);
+    // Fallback: coba doc id = uid
+    if(!tokoSnap||tokoSnap.empty){
+      const d=await db.collection('user_stores').doc(uid).get().catch(()=>null);
+      if(d&&d.exists){storeId=uid;tokoData=d.data();}
+      else{const d2=await db.collection('stores').doc(uid).get().catch(()=>null);if(d2&&d2.exists){storeId=uid;tokoData=d2.data();}}
+    } else {
+      storeId=tokoSnap.docs[0].id;tokoData=tokoSnap.docs[0].data();
+    }
+    setBtnBack(btn,'<i class="fas fa-shield-alt"></i> Masuk sebagai Admin');
+    if(!tokoData){swalErr('Data toko tidak ditemukan di database.');return;}
+    adminData=tokoData;
+    await loadPoinCfg();
+    await _masukDashboardAdmin();
+  }catch(e){
+    setBtnBack(btn,'<i class="fas fa-shield-alt"></i> Masuk sebagai Admin');
+    const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Email atau password salah.':
+              e.code==='auth/user-not-found'?'Akun tidak ditemukan.':
+              e.code==='auth/invalid-email'?'Format email tidak valid.':(e.message||'Login gagal.');
+    swalErr(msg);
   }
-  if(!adminPin){
-    // Kalau tidak ada PIN di data, tanya konfirmasi
-    const ok=await Swal.fire({icon:'warning',title:'PIN Admin Belum Diset',html:'Toko ini belum punya PIN admin di database.<br>Lanjut sebagai admin tanpa verifikasi?',showCancelButton:true,confirmButtonText:'Lanjut',cancelButtonText:'Batal',customClass:{popup:'swal2-ku'}});
-    if(!ok.isConfirmed)return;
+}
+
+/* ─── LOGIN KASIR ─── */
+async function loginKasir(){
+  const kodeRaw=(document.getElementById('kasir-kode').value||'').trim().toUpperCase();
+  const username=(document.getElementById('kasir-username').value||'').trim();
+  const pwd=(document.getElementById('kasir-pwd').value||'').trim();
+  if(!kodeRaw){swalErr('Kode toko tidak boleh kosong');return;}
+  if(!username){swalErr('Username tidak boleh kosong');return;}
+  if(!pwd){swalErr('Password tidak boleh kosong');return;}
+  const btn=document.getElementById('btn-login-kasir');
+  setBtnLoad(btn,'Memverifikasi...');
+  try{
+    const db=window._db;
+    const snap=await db.collection('kasir_accounts')
+      .where('kode_toko','==',kodeRaw)
+      .where('username','==',username)
+      .where('is_active','==',true)
+      .limit(1).get();
+    if(snap.empty){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Username atau kode toko salah.');return;}
+    const kasir=snap.docs[0].data();
+    if(!_verifyHash(pwd,kasir.pw_hash)){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Password kasir salah.');return;}
+    // Ambil data toko berdasarkan store_id atau owner_uid
+    storeId=kasir.store_id||kasir.owner_uid;
+    const result=await getTokoDoc(kodeRaw).catch(()=>null);
+    tokoData=result?result.data:{namaToko:kasir.store_name||'Toko'};
+    if(result)storeId=result.id;
+    adminData={...kasir,isKasir:true};
+    setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');
+    await loadPoinCfg();
+    await _masukDashboardAdmin();
+  }catch(e){
+    setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');
+    swalErr(e.message||'Login kasir gagal.');
   }
-  storeId=result.id;tokoData=data;adminData=data;
-  await loadPoinCfg();
+}
+
+/* ─── MASUK DASHBOARD ADMIN (shared) ─── */
+async function _masukDashboardAdmin(){
   document.getElementById('top-admin-badge').style.display='';
-  document.getElementById('adm-toko-name').textContent=data.namaToko||data.nama||'KonterKU';
-  // Load semua member
+  document.getElementById('adm-toko-name').textContent=tokoData?.namaToko||tokoData?.nama||'KonterKU';
   allMembers=await getPelangganList();
-  // Stats
   const totalPoin=allMembers.reduce((s,p)=>s+Number(p.poin||p.point||0),0);
   document.getElementById('adm-stat-member').textContent=allMembers.length;
   document.getElementById('adm-stat-poin').textContent=fmt(totalPoin);
@@ -967,8 +1059,10 @@ function logoutAdmin(){
   storeId=null;tokoData=null;adminData=null;allMembers=[];
   document.getElementById('top-admin-badge').style.display='none';
   if(admReqListener){admReqListener();admReqListener=null;}
-  document.getElementById('adm-kode').value='';
-  document.getElementById('adm-pin').value='';
+  // Sign out Firebase jika login sebagai admin
+  if(window._auth&&window._auth.currentUser) window._auth.signOut().catch(()=>{});
+  // Reset form
+  ['adm-email','adm-password','kasir-kode','kasir-username','kasir-pwd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showPage('home');
 }
 
