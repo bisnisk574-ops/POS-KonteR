@@ -909,8 +909,17 @@ async function handleHomeScanResult(text){
   if(!text)return;
   stopHomeScan();
 
-  // Format QR: storeId::memberId
-  // storeId = doc ID di collection 'stores' (Firebase Auth UID pemilik toko)
+  // ── Deteksi QR Toko: URL cek-poin.html?toko=storeId ──
+  const urlTokoMatch=text.match(/[?&]toko=([^&\s#]+)/);
+  if(urlTokoMatch){
+    const kode=decodeURIComponent(urlTokoMatch[1]).trim();
+    document.getElementById('inp-kode-toko').value=kode;
+    showPage('toko-pelanggan');
+    cariToko();
+    return;
+  }
+
+  // ── Format QR Member: storeId::memberId ──
   const parts=text.trim().split('::');
   if(parts.length<2){
     Swal.fire({
