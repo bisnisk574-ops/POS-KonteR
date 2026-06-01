@@ -24,6 +24,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
   <!-- ===== FIREBASE SDK ===== -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -8981,6 +8982,75 @@
               style="letter-spacing:0.3em;font-size:18px;font-weight:900;">
             <p style="font-size:9px;color:#94a3b8;margin-top:4px;font-weight:600;">⚠️ PIN ini dipakai pelanggan untuk login di portal Cek Poin. Beritahu ke pelanggan.</p>
           </div>
+          <!-- ===== KARTU MEMBER ID CARD (tampil saat Edit) ===== -->
+          <div id="cust-id-card-wrap" class="hidden">
+            <div style="margin-bottom:6px;">
+              <p style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">📇 Kartu Member</p>
+            </div>
+            <!-- ID Card Horizontal -->
+            <div id="cust-id-card" style="
+              width:100%;max-width:360px;margin:0 auto;
+              background:linear-gradient(135deg,#1541C4 0%,#2563EB 45%,#06b6d4 100%);
+              border-radius:18px;padding:18px 20px;position:relative;overflow:hidden;
+              box-shadow:0 10px 32px rgba(21,65,196,0.35);
+              font-family:'Plus Jakarta Sans',sans-serif;
+            ">
+              <!-- Decorative circles -->
+              <div style="position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.07);top:-80px;right:-50px;pointer-events:none;"></div>
+              <div style="position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.05);bottom:-50px;left:-30px;pointer-events:none;"></div>
+              <!-- Top row: store + tier badge -->
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative;z-index:1;">
+                <div>
+                  <p style="font-size:8px;font-weight:900;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;">MEMBER CARD</p>
+                  <p style="font-size:11px;font-weight:900;color:#fff;margin-top:2px;" id="card-store-nm">—</p>
+                </div>
+                <div id="card-tier-badge" style="background:rgba(245,158,11,0.25);border:1px solid rgba(245,158,11,0.6);border-radius:8px;padding:3px 10px;font-size:9px;font-weight:900;color:#fcd34d;letter-spacing:0.06em;">BRONZE</div>
+              </div>
+              <!-- Middle: avatar + info -->
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;position:relative;z-index:1;">
+                <div id="card-avatar" style="width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;">?</div>
+                <div style="flex:1;min-width:0;">
+                  <p style="font-size:15px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="card-nama">—</p>
+                  <p style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.65);margin-top:2px;" id="card-phone">—</p>
+                </div>
+                <!-- QR kecil di kanan -->
+                <div id="card-qr-mini-wrap" style="width:54px;height:54px;background:white;border-radius:10px;padding:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:14px;"></i>
+                </div>
+              </div>
+              <!-- Bottom: member ID + poin -->
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1;border-top:1px solid rgba(255,255,255,0.15);padding-top:10px;">
+                <div>
+                  <p style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;">Member ID</p>
+                  <p style="font-size:10px;font-weight:900;color:#fff;letter-spacing:0.02em;word-break:break-all;" id="card-member-id">—</p>
+                </div>
+                <div style="text-align:right;">
+                  <p style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;">Poin</p>
+                  <p style="font-size:16px;font-weight:900;color:#fcd34d;line-height:1;" id="card-poin">0</p>
+                </div>
+              </div>
+            </div>
+            <!-- Tombol aksi kartu -->
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button onclick="unduhIdCard()" style="flex:1;padding:10px 0;border-radius:12px;border:none;background:linear-gradient(135deg,#0061C2,#2563eb);color:#fff;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(0,97,194,0.3);">
+                <i class="fas fa-download"></i> Unduh Kartu
+              </button>
+              <button onclick="bagikanIdCard()" style="flex:1;padding:10px 0;border-radius:12px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <i class="fas fa-share-alt"></i> Bagikan
+              </button>
+            </div>
+            <button onclick="kirimWAIdCard()" style="width:100%;margin-top:8px;padding:10px 0;border-radius:12px;border:1.5px solid rgba(37,211,102,0.35);background:rgba(37,211,102,0.08);color:#16a34a;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <i class="fab fa-whatsapp"></i> Kirim via WhatsApp
+            </button>
+            <button onclick="showMemberQRFromCard()" style="width:100%;margin-top:8px;padding:9px 0;border-radius:12px;border:1.5px solid rgba(124,58,237,0.25);background:rgba(124,58,237,0.07);color:#7c3aed;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <i class="fas fa-qrcode"></i> Lihat QR Code
+            </button>
+            <button onclick="cetakStrukIdCard()" style="width:100%;margin-top:8px;padding:9px 0;border-radius:12px;border:1.5px solid rgba(249,115,22,0.3);background:rgba(249,115,22,0.07);color:#ea580c;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <i class="fas fa-print"></i> Cetak Struk (58mm)
+            </button>
+          </div>
+          <!-- END KARTU MEMBER -->
+
           <div id="cust-edit-actions" class="hidden grid grid-cols-2 gap-3">
             <button onclick="deleteCustomer()" class="py-4 bg-red-50 text-red-600 rounded-2xl font-black cursor-pointer border-0">HAPUS</button>
             <button onclick="saveCustomer()" class="py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">UPDATE</button>
@@ -9048,6 +9118,108 @@
       </div>
     </div>
     <!-- END MODAL QR MEMBER -->
+
+    <!-- ===== MODAL: CETAK STRUK ID CARD 58mm ===== -->
+    <div id="modal-cetak-struk" class="modal-overlay" style="z-index:3400;">
+      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:95vh;overflow-y:auto;padding:20px 16px 24px;">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h4 class="text-base font-black">Cetak Struk Kartu Member</h4>
+            <p style="font-size:9px;color:#94a3b8;font-weight:600;">Ukuran kertas thermal 58mm</p>
+          </div>
+          <button onclick="closeModal('modal-cetak-struk')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Preview struk -->
+        <div style="display:flex;justify-content:center;margin-bottom:16px;">
+          <div style="background:#f1f5f9;border-radius:14px;padding:12px 16px;display:inline-block;">
+            <p style="font-size:8px;font-weight:800;color:#94a3b8;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em;">Preview Struk 58mm</p>
+            <!-- Struk -->
+            <div id="struk-idcard-preview" style="
+              width:220px;
+              background:#fff;
+              font-family:'Courier New',Courier,monospace;
+              padding:10px 10px 14px;
+              border-radius:6px;
+              box-shadow:0 2px 12px rgba(0,0,0,0.12);
+              position:relative;
+            ">
+              <!-- Gigi atas struk -->
+              <div style="position:absolute;top:-8px;left:0;right:0;display:flex;justify-content:space-between;padding:0 4px;">
+                <span style="font-size:16px;line-height:1;">▽</span><span style="font-size:16px;line-height:1;">▽</span><span style="font-size:16px;line-height:1;">▽</span><span style="font-size:16px;line-height:1;">▽</span><span style="font-size:16px;line-height:1;">▽</span><span style="font-size:16px;line-height:1;">▽</span><span style="font-size:16px;line-height:1;">▽</span><span style="font-size:16px;line-height:1;">▽</span>
+              </div>
+
+              <!-- Header toko -->
+              <div style="text-align:center;border-bottom:1px dashed #cbd5e1;padding-bottom:8px;margin-bottom:8px;">
+                <p style="font-size:13px;font-weight:900;color:#1e293b;letter-spacing:0.02em;margin:0;" id="struk-toko-nm">TOKO</p>
+                <p style="font-size:8px;color:#64748b;margin:2px 0 0;" id="struk-toko-sub">Member Card</p>
+              </div>
+
+              <!-- QR Code -->
+              <div style="display:flex;justify-content:center;margin-bottom:8px;">
+                <div id="struk-qr-wrap" style="width:110px;height:110px;background:#fff;border-radius:6px;border:1.5px solid #e2e8f0;display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:18px;"></i>
+                </div>
+              </div>
+
+              <!-- Nama member -->
+              <div style="text-align:center;border-bottom:1px dashed #cbd5e1;padding-bottom:8px;margin-bottom:8px;">
+                <p style="font-size:13px;font-weight:900;color:#1e293b;letter-spacing:0.01em;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="struk-nama">NAMA</p>
+                <p style="font-size:8px;color:#64748b;font-weight:600;margin:2px 0 0;" id="struk-phone">—</p>
+              </div>
+
+              <!-- Member ID -->
+              <div style="background:#f8fafc;border-radius:5px;padding:6px 8px;margin-bottom:8px;">
+                <p style="font-size:6.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 2px;">Member ID</p>
+                <p style="font-size:8.5px;font-weight:900;color:#1e293b;word-break:break-all;line-height:1.3;margin:0;" id="struk-member-id">—</p>
+              </div>
+
+              <!-- Poin & Tier -->
+              <div style="display:flex;gap:5px;margin-bottom:8px;">
+                <div style="flex:1;background:#faf5ff;border:1px solid #ede9fe;border-radius:5px;padding:5px 4px;text-align:center;">
+                  <p style="font-size:6px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin:0;">Poin</p>
+                  <p style="font-size:14px;font-weight:900;color:#7c3aed;line-height:1;margin:2px 0 0;" id="struk-poin">0</p>
+                </div>
+                <div style="flex:1;background:#faf5ff;border:1px solid #ede9fe;border-radius:5px;padding:5px 4px;text-align:center;">
+                  <p style="font-size:6px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;margin:0;">Tier</p>
+                  <p style="font-size:12px;font-weight:900;line-height:1;margin:2px 0 0;" id="struk-tier">BRONZE</p>
+                </div>
+              </div>
+
+              <!-- Tanggal daftar -->
+              <div style="border-top:1px dashed #cbd5e1;padding-top:7px;text-align:center;">
+                <p style="font-size:7px;color:#94a3b8;font-weight:600;margin:0;" id="struk-tgl">—</p>
+                <p style="font-size:6px;color:#cbd5e1;font-weight:600;margin:3px 0 0;">Scan QR untuk cek poin</p>
+                <p style="font-size:6px;color:#cbd5e1;font-weight:600;margin:1px 0 0;" id="struk-portal-url">—</p>
+              </div>
+
+              <!-- Gigi bawah struk -->
+              <div style="position:absolute;bottom:-8px;left:0;right:0;display:flex;justify-content:space-between;padding:0 4px;">
+                <span style="font-size:16px;line-height:1;">△</span><span style="font-size:16px;line-height:1;">△</span><span style="font-size:16px;line-height:1;">△</span><span style="font-size:16px;line-height:1;">△</span><span style="font-size:16px;line-height:1;">△</span><span style="font-size:16px;line-height:1;">△</span><span style="font-size:16px;line-height:1;">△</span><span style="font-size:16px;line-height:1;">△</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div style="background:#fff7ed;border:1.5px solid rgba(249,115,22,0.2);border-radius:12px;padding:10px 12px;margin-bottom:14px;">
+          <p style="font-size:9px;font-weight:800;color:#ea580c;margin-bottom:4px;"><i class="fas fa-lightbulb"></i> Tips Cetak</p>
+          <p style="font-size:8px;color:#78350f;font-weight:600;line-height:1.5;margin:0;">• Gunakan printer thermal <b>58mm</b><br>• Pilih "Actual size" / "No scaling" saat print<br>• Margin: 0mm di semua sisi<br>• Cocok untuk Epson TM-T20, GOOJPRT, Rongta, dll</p>
+        </div>
+
+        <!-- Tombol -->
+        <button onclick="cetakStrukLangsung()" style="width:100%;padding:13px 0;border-radius:14px;border:none;background:linear-gradient(135deg,#ea580c,#f97316);color:#fff;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(234,88,12,0.3);margin-bottom:8px;">
+          <i class="fas fa-print"></i> Cetak Sekarang
+        </button>
+        <button onclick="unduhStrukPNG()" style="width:100%;padding:11px 0;border-radius:14px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+          <i class="fas fa-image"></i> Unduh sebagai Gambar (PNG)
+        </button>
+        <button onclick="kirimWAStruk()" style="width:100%;padding:11px 0;border-radius:14px;border:1.5px solid rgba(37,211,102,0.35);background:rgba(37,211,102,0.08);color:#16a34a;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <i class="fab fa-whatsapp"></i> Kirim Info via WhatsApp
+        </button>
+      </div>
+    </div>
+    <!-- END MODAL CETAK STRUK -->
 
         <!-- Modal: Produk -->
     <div id="modal-produk" class="modal-overlay">
@@ -12660,6 +12832,28 @@
       const cp = document.getElementById('c-pin'); if (cp) cp.value = c.pin||'';
       document.getElementById('cust-edit-actions').classList.remove('hidden');
       document.getElementById('cust-save-btn').classList.add('hidden');
+      // Tampilkan ID card
+      const cardWrap = document.getElementById('cust-id-card-wrap');
+      if (cardWrap) {
+        cardWrap.classList.remove('hidden');
+        _populateIdCard(c);
+      }
+      openModal('modal-pelanggan');
+    }
+
+    // Sembunyikan card saat tambah baru
+    const _origOpenAddCustomerModal = window.openAddCustomerModal;
+    function openAddCustomerModal() {
+      document.getElementById('cust-modal-title').innerText = "Pelanggan Baru";
+      document.getElementById('c-id').value = "";
+      document.getElementById('c-nama').value = "";
+      document.getElementById('c-phone').value = "";
+      const bd = document.getElementById('c-birthday'); if (bd) bd.value = "";
+      const cp = document.getElementById('c-pin'); if (cp) cp.value = "";
+      document.getElementById('cust-edit-actions').classList.add('hidden');
+      document.getElementById('cust-save-btn').classList.remove('hidden');
+      const cardWrap = document.getElementById('cust-id-card-wrap');
+      if (cardWrap) cardWrap.classList.add('hidden');
       openModal('modal-pelanggan');
     }
 
@@ -27347,9 +27541,26 @@ function _renderMemberQR(payload) {
 function unduhMemberQR() {
   if (!_mqrData) return;
   const nama = (_mqrData.nama||'member').replace(/\s+/g,'-').toLowerCase();
+  // Coba unduh dengan html2canvas (seluruh area QR+info)
+  const qrSection = document.querySelector('#modal-member-qr .modal-content');
+  if (typeof html2canvas !== 'undefined' && qrSection) {
+    // Buat snapshot area kartu QR saja
+    const qrBox = document.getElementById('mqr-canvas-wrap')?.closest('.rounded-2xl') || qrSection;
+    html2canvas(qrBox, { scale: 3, useCORS: true, backgroundColor: '#f8fafc', logging: false }).then(canvas => {
+      const a = document.createElement('a');
+      a.download = 'qr-member-' + nama + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }).catch(() => _fallbackDownloadQR(nama));
+    return;
+  }
+  _fallbackDownloadQR(nama);
+}
+
+function _fallbackDownloadQR(nama) {
   if (_mqrCanvas) {
     const a = document.createElement('a');
-    a.download = 'member-' + nama + '.png';
+    a.download = 'qr-member-' + nama + '.png';
     a.href = _mqrCanvas.toDataURL('image/png');
     a.click();
     return;
@@ -27357,7 +27568,7 @@ function unduhMemberQR() {
   const img = document.querySelector('#mqr-canvas-wrap img');
   if (img) {
     const a = document.createElement('a');
-    a.download = 'member-' + nama + '.png';
+    a.download = 'qr-member-' + nama + '.png';
     a.href = img.src; a.target = '_blank'; a.click();
   }
 }
@@ -27394,6 +27605,264 @@ function kirimWAMember() {
 
   const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesan);
   window.open(waUrl, '_blank');
+}
+
+/* ═══════════════════ ID CARD FUNCTIONS ═══════════════════ */
+let _idCardData = null;
+
+function _populateIdCard(c) {
+  const storeId = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
+  const tokoNm  = localStorage.getItem('k_store_name') || 'KonterKU';
+  const poin    = Number(c.poin || 0);
+  const tier    = poin >= 5000 ? 'GOLD' : poin >= 1000 ? 'SILVER' : 'BRONZE';
+  const tierColors = { GOLD: { bg:'rgba(245,158,11,0.25)', border:'rgba(245,158,11,0.6)', text:'#fcd34d' }, SILVER: { bg:'rgba(100,116,139,0.25)', border:'rgba(100,116,139,0.6)', text:'#cbd5e1' }, BRONZE: { bg:'rgba(180,83,9,0.25)', border:'rgba(180,83,9,0.6)', text:'#fcd34d' } };
+  const tc = tierColors[tier];
+  const inisial = (c.nama||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+
+  _idCardData = { id: c.id, nama: c.nama, phone: c.phone, poin, storeId, tokoNm };
+
+  const el = (id) => document.getElementById(id);
+  if (el('card-store-nm')) el('card-store-nm').textContent = tokoNm;
+  if (el('card-avatar'))   el('card-avatar').textContent = inisial;
+  if (el('card-nama'))     el('card-nama').textContent = c.nama || '—';
+  if (el('card-phone'))    el('card-phone').textContent = c.phone || '—';
+  if (el('card-member-id')) el('card-member-id').textContent = c.id;
+  if (el('card-poin'))     el('card-poin').textContent = poin;
+  const tb = el('card-tier-badge');
+  if (tb) { tb.textContent = tier; tb.style.background = tc.bg; tb.style.border = '1px solid ' + tc.border; tb.style.color = tc.text; }
+
+  // Render mini QR
+  const miniWrap = el('card-qr-mini-wrap');
+  if (miniWrap) {
+    const payload = storeId + '::' + c.id;
+    miniWrap.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+      const miniCanvas = document.createElement('canvas');
+      miniWrap.appendChild(miniCanvas);
+      QRCode.toCanvas(miniCanvas, payload, { width: 44, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {});
+    } else {
+      const enc = encodeURIComponent(payload);
+      miniWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=44x44&margin=1&data=' + enc + '" style="width:44px;height:44px;border-radius:6px;">';
+    }
+  }
+}
+
+function unduhIdCard() {
+  const card = document.getElementById('cust-id-card');
+  if (!card || !_idCardData) return;
+  const nama = (_idCardData.nama||'member').replace(/\s+/g,'-').toLowerCase();
+  // Gunakan html2canvas jika tersedia
+  if (typeof html2canvas !== 'undefined') {
+    html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null, logging: false }).then(canvas => {
+      const a = document.createElement('a');
+      a.download = 'kartu-member-' + nama + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }).catch(() => _fallbackUnduhIdCard(nama));
+  } else {
+    _fallbackUnduhIdCard(nama);
+  }
+}
+
+function _fallbackUnduhIdCard(nama) {
+  // Fallback: unduh QR saja
+  if (_mqrCanvas) {
+    const a = document.createElement('a');
+    a.download = 'kartu-member-' + (nama||'member') + '.png';
+    a.href = _mqrCanvas.toDataURL('image/png');
+    a.click();
+  } else if (_idCardData) {
+    const storeId = _idCardData.storeId;
+    const payload = storeId + '::' + _idCardData.id;
+    const enc = encodeURIComponent(payload);
+    window.open('https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=4&data=' + enc, '_blank');
+  }
+}
+
+function bagikanIdCard() {
+  if (!_idCardData) return;
+  const storeId = _idCardData.storeId;
+  const custId  = _idCardData.id;
+  const origin  = window.location.origin;
+  const base    = window.location.pathname.replace(/\/[^\/]*$/, '');
+  const link    = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(storeId);
+  const text    = '🌟 Kartu Member ' + (_idCardData.nama||'') + '\nMember ID: ' + custId + '\nPoin: ' + _idCardData.poin + '\nCek poin di: ' + link;
+  if (navigator.share) {
+    navigator.share({ title: 'Kartu Member KonterKU', text, url: link }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      Swal.fire({ icon:'success', title:'Info Disalin!', html:'<p style="font-size:11px;word-break:break-all;color:#64748b;">' + link + '</p>', timer:3000, showConfirmButton:false });
+    }).catch(() => prompt('Salin info berikut:', text));
+  }
+}
+
+function kirimWAIdCard() {
+  if (!_idCardData) return;
+  const storeId = _idCardData.storeId;
+  const custId  = _idCardData.id;
+  const origin  = window.location.origin;
+  const base    = window.location.pathname.replace(/\/[^\/]*$/, '');
+  const link    = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(storeId);
+  const nama    = _idCardData.nama || 'Pelanggan';
+  const phone   = (_idCardData.phone||'').replace(/\D/g,'').replace(/^0/,'62');
+  const poin    = _idCardData.poin || 0;
+
+  const pesan = `🎉 Halo, *${nama}*!\n\nIni *Kartu Member* kamu di *${_idCardData.tokoNm||'toko kami'}* 🏪✨\n\n━━━━━━━━━━━━━━\n🪴 *Member ID:* ${custId}\n⭐ *Poin Saat Ini:* ${poin}\n━━━━━━━━━━━━━━\n\n📱 *Cek poin kapan saja:*\n👉 ${link}\n\nScan QR kartu member kamu atau masuk pakai Member ID di atas.\n\n🎁 Kumpulkan poin & tukar dengan hadiah menarik!\n📌 Simpan pesan ini ya! 😊`;
+
+  const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesan);
+  window.open(waUrl, '_blank');
+}
+
+function showMemberQRFromCard() {
+  if (!_idCardData) return;
+  showMemberQR(_idCardData.id, _idCardData.nama, _idCardData.phone);
+}
+
+/* ═══════════════════ CETAK STRUK 58mm ═══════════════════ */
+function cetakStrukIdCard() {
+  if (!_idCardData) return;
+  const d   = _idCardData;
+  const storeId = d.storeId;
+  const tokoNm  = d.tokoNm || localStorage.getItem('k_store_name') || 'KonterKU';
+  const poin    = d.poin || 0;
+  const tier    = poin >= 5000 ? 'GOLD' : poin >= 1000 ? 'SILVER' : 'BRONZE';
+  const tierColors = { GOLD:'#d97706', SILVER:'#64748b', BRONZE:'#b45309' };
+  const origin  = window.location.origin;
+  const base    = window.location.pathname.replace(/\/[^\/]*$/, '');
+  const link    = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(storeId);
+  const tglNow  = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+
+  // Isi data struk
+  const s = (id) => document.getElementById(id);
+  if (s('struk-toko-nm'))   s('struk-toko-nm').textContent   = tokoNm.toUpperCase();
+  if (s('struk-toko-sub'))  s('struk-toko-sub').textContent  = 'Portal Member KonterKU';
+  if (s('struk-nama'))      s('struk-nama').textContent      = (d.nama||'—').toUpperCase();
+  if (s('struk-phone'))     s('struk-phone').textContent     = d.phone || '—';
+  if (s('struk-member-id')) s('struk-member-id').textContent = d.id;
+  if (s('struk-poin'))      s('struk-poin').textContent      = poin;
+  if (s('struk-tier'))      { s('struk-tier').textContent = tier; s('struk-tier').style.color = tierColors[tier]; }
+  if (s('struk-tgl'))       s('struk-tgl').textContent       = 'Bergabung: ' + tglNow;
+  if (s('struk-portal-url')) s('struk-portal-url').textContent = link.replace('https://','');
+
+  // Render QR di struk
+  const struqWrap = s('struk-qr-wrap');
+  if (struqWrap) {
+    struqWrap.innerHTML = '';
+    const payload = storeId + '::' + d.id;
+    if (typeof QRCode !== 'undefined') {
+      const qCanvas = document.createElement('canvas');
+      struqWrap.appendChild(qCanvas);
+      QRCode.toCanvas(qCanvas, payload, { width: 100, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {});
+    } else {
+      const enc = encodeURIComponent(payload);
+      struqWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=1&data=' + enc + '" style="width:100px;height:100px;">';
+    }
+  }
+
+  openModal('modal-cetak-struk');
+}
+
+function cetakStrukLangsung() {
+  const struk = document.getElementById('struk-idcard-preview');
+  if (!struk) return;
+  const html = `<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<style>
+  @page { size: 58mm auto; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 58mm; font-family: 'Courier New', Courier, monospace; background: #fff; }
+  .struk { width: 58mm; padding: 4mm 3mm 6mm; background: #fff; }
+  .header { text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 2mm; margin-bottom: 2mm; }
+  .toko-nm { font-size: 14pt; font-weight: 900; color: #1e293b; }
+  .toko-sub { font-size: 7pt; color: #64748b; margin-top: 1mm; }
+  .qr-center { display: flex; justify-content: center; margin: 2mm 0; }
+  .qr-center img, .qr-center canvas { width: 28mm; height: 28mm; display: block; }
+  .member-section { text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 2mm; margin-bottom: 2mm; }
+  .member-nama { font-size: 13pt; font-weight: 900; color: #1e293b; }
+  .member-phone { font-size: 7pt; color: #64748b; margin-top: 0.5mm; }
+  .id-box { background: #f8fafc; border-radius: 2mm; padding: 1.5mm 2mm; margin-bottom: 2mm; }
+  .id-label { font-size: 6pt; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
+  .id-val { font-size: 8pt; font-weight: 900; color: #1e293b; word-break: break-all; line-height: 1.4; margin-top: 0.5mm; }
+  .stats { display: flex; gap: 1.5mm; margin-bottom: 2mm; }
+  .stat-box { flex: 1; border: 1px solid #e9d5ff; border-radius: 2mm; padding: 1.5mm; text-align: center; }
+  .stat-lbl { font-size: 6pt; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+  .stat-val-poin { font-size: 16pt; font-weight: 900; color: #7c3aed; line-height: 1; margin-top: 0.5mm; }
+  .stat-val-tier { font-size: 12pt; font-weight: 900; line-height: 1; margin-top: 0.5mm; }
+  .footer { border-top: 1px dashed #ccc; padding-top: 1.5mm; text-align: center; }
+  .footer p { font-size: 6pt; color: #94a3b8; line-height: 1.6; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head><body>
+<div class="struk">
+  <div class="header">
+    <div class="toko-nm">${document.getElementById('struk-toko-nm').textContent}</div>
+    <div class="toko-sub">${document.getElementById('struk-toko-sub').textContent}</div>
+  </div>
+  <div class="qr-center">
+    ${(() => {
+      const wrap = document.getElementById('struk-qr-wrap');
+      const canvas = wrap && wrap.querySelector('canvas');
+      if (canvas) return '<img src="' + canvas.toDataURL('image/png') + '" style="width:28mm;height:28mm;">';
+      const img = wrap && wrap.querySelector('img');
+      return img ? '<img src="' + img.src + '" style="width:28mm;height:28mm;">' : '';
+    })()}
+  </div>
+  <div class="member-section">
+    <div class="member-nama">${document.getElementById('struk-nama').textContent}</div>
+    <div class="member-phone">${document.getElementById('struk-phone').textContent}</div>
+  </div>
+  <div class="id-box">
+    <div class="id-label">Member ID</div>
+    <div class="id-val">${document.getElementById('struk-member-id').textContent}</div>
+  </div>
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-lbl">Poin</div>
+      <div class="stat-val-poin">${document.getElementById('struk-poin').textContent}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">Tier</div>
+      <div class="stat-val-tier" style="color:${document.getElementById('struk-tier').style.color}">${document.getElementById('struk-tier').textContent}</div>
+    </div>
+  </div>
+  <div class="footer">
+    <p>${document.getElementById('struk-tgl').textContent}</p>
+    <p>Scan QR untuk cek poin</p>
+    <p>${document.getElementById('struk-portal-url').textContent}</p>
+  </div>
+</div>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=300,height=600');
+  if (!win) { alert('Popup diblokir. Izinkan popup untuk halaman ini.'); return; }
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => { win.focus(); win.print(); };
+}
+
+function unduhStrukPNG() {
+  const struk = document.getElementById('struk-idcard-preview');
+  if (!struk || typeof html2canvas === 'undefined') {
+    alert('Library html2canvas belum dimuat. Coba lagi sebentar.');
+    return;
+  }
+  const nama = (_idCardData?.nama||'member').replace(/\s+/g,'-').toLowerCase();
+  // Sembunyikan gigi struk sementara agar bersih
+  const gigiEls = struk.querySelectorAll('div[style*="position:absolute"]');
+  gigiEls.forEach(el => el.style.visibility = 'hidden');
+  html2canvas(struk, { scale: 4, useCORS: true, backgroundColor: '#ffffff', logging: false }).then(canvas => {
+    gigiEls.forEach(el => el.style.visibility = 'visible');
+    const a = document.createElement('a');
+    a.download = 'struk-member-' + nama + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }).catch(err => { gigiEls.forEach(el => el.style.visibility = 'visible'); alert('Gagal unduh: ' + err.message); });
+}
+
+function kirimWAStruk() {
+  if (!_idCardData) return;
+  kirimWAIdCard(); // reuse fungsi yang sudah ada
 }
 </script>
 
