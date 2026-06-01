@@ -930,20 +930,35 @@ async function handleHomeScanResult(text){
   await waitDB();
   const db=window._db;
 
-  // Cari dokumen toko — utama: 'stores', fallback: 'user_stores'
+  // Cari dokumen toko — coba direct doc ID dulu, lalu fallback getTokoDoc (query by field)
+  let tokoFound=null, resolvedStoreId=qrStoreId;
   let tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
-  let tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+  if(tokoDoc&&tokoDoc.exists){tokoFound=tokoDoc.data();}
   if(!tokoFound){
     tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
-    tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+    if(tokoDoc&&tokoDoc.exists)tokoFound=tokoDoc.data();
+  }
+  // Fallback: query by store_id field atau kode_toko field
+  if(!tokoFound){
+    const result=await getTokoDoc(qrStoreId).catch(()=>null);
+    if(result){tokoFound=result.data;resolvedStoreId=result.id;}
+  }
+  // Fallback: query stores where store_id == qrStoreId
+  if(!tokoFound){
+    const s=await db.collection('stores').where('store_id','==',qrStoreId).limit(1).get().catch(()=>null);
+    if(s&&!s.empty){tokoFound=s.docs[0].data();resolvedStoreId=s.docs[0].id;}
   }
   if(!tokoFound){
     Swal.close();
-    swalErr('Toko tidak ditemukan. Coba Login Manual dengan kode toko.');
+    Swal.fire({icon:'error',title:'Toko Tidak Ditemukan',
+      html:'QR tidak dikenali.<br><span style="font-size:11px;color:#94a3b8">Coba <b>Login Manual</b> dengan kode toko.</span>',
+      confirmButtonText:'Login Manual',showCancelButton:true,cancelButtonText:'Batal',
+      customClass:{popup:'swal2-ku'},background:'#141e33',color:'#E2E8F0'
+    }).then(r=>{if(r.isConfirmed)showPage('toko-pelanggan');});
     return;
   }
 
-  storeId=qrStoreId;
+  storeId=resolvedStoreId;
   tokoData=tokoFound;
   sessionStorage.setItem('ku_store_id',storeId);
   await loadPoinCfg();
