@@ -12663,6 +12663,14 @@
       openModal('modal-pelanggan');
     }
 
+    function _generateMemberId() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      const tgl = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+      const rand = Math.random().toString(36).substring(2,8).toUpperCase();
+      return tgl + rand;
+    }
+
     async function saveCustomer() {
       const id = document.getElementById('c-id').value;
       const nama = document.getElementById('c-nama').value.trim();
@@ -12672,14 +12680,73 @@
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama pelanggan harus diisi!', 'warning');
       if (!pinRaw || pinRaw.length < 4) return (_getMySwal()||Swal).fire('Error', 'PIN harus 4 digit!', 'warning');
       const pin = pinRaw.slice(0,4);
+
       if (id) {
+        // Mode EDIT — simpan & tutup seperti biasa
         const idx = db.pelanggan.findIndex(c => c.id === id);
         if (idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone, birthday, pin };
-      } else {
-        db.pelanggan.push({ id: 'C-'+Date.now(), nama, phone, birthday, pin, poin: 0, tglDaftar: new Date().toLocaleDateString('id-ID') });
+        closeModal('modal-pelanggan');
+        await sync();
+        return;
       }
-      closeModal('modal-pelanggan');
+
+      // Mode BARU — generate ID, simpan, tampilkan kartu + auto WA
+      const memberId = _generateMemberId();
+      const storeId  = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
+      const tokoNm   = localStorage.getItem('k_store_name') || 'KonterKU';
+      db.pelanggan.push({ id: memberId, nama, phone, birthday, pin, poin: 0, tglDaftar: new Date().toLocaleDateString('id-ID') });
       await sync();
+
+      // Tutup modal form, buka modal kartu member langsung
+      closeModal('modal-pelanggan');
+
+      // Beri sedikit jeda agar modal form benar-benar tertutup
+      setTimeout(() => {
+        // Isi data ke modal-member-qr yang sudah ada
+        const inisial = nama.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+        const av = document.getElementById('mqr-avatar'); if (av) av.textContent = inisial;
+        const nm = document.getElementById('mqr-nama'); if (nm) nm.textContent = nama;
+        const ph = document.getElementById('mqr-phone'); if (ph) ph.textContent = phone || 'Tanpa nomor';
+        const mid = document.getElementById('mqr-member-id'); if (mid) mid.textContent = 'Member ID: ' + memberId;
+        const pp = document.getElementById('mqr-poin'); if (pp) pp.textContent = '0';
+        const tt = document.getElementById('mqr-tier'); if (tt) { tt.textContent = 'BRONZE'; tt.style.color = '#b45309'; }
+        const sl = document.getElementById('mqr-store-label'); if (sl) sl.textContent = 'Toko: ' + tokoNm;
+        const wrap = document.getElementById('mqr-canvas-wrap');
+        if (wrap) wrap.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:24px;"></i>';
+
+        // Simpan ke _mqrData agar tombol WA / unduh berfungsi
+        window._mqrData = { id: memberId, nama, phone, poin: 0, storeId };
+
+        // Tambahkan banner "Baru Didaftarkan" di atas modal jika belum ada
+        const existBanner = document.getElementById('mqr-new-banner');
+        if (!existBanner) {
+          const header = document.querySelector('#modal-member-qr .modal-content > .flex');
+          if (header) {
+            const banner = document.createElement('div');
+            banner.id = 'mqr-new-banner';
+            banner.style.cssText = 'background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(5,150,105,0.08));border:1.5px solid rgba(16,185,129,0.3);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;';
+            banner.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i><div style="flex:1"><p style="font-size:11px;font-weight:900;color:#059669;margin:0;">Member Berhasil Didaftarkan!</p><p style="font-size:9px;color:#64748b;font-weight:600;margin:2px 0 0;word-break:break-all;">ID: ' + memberId + '</p></div>';
+            header.insertAdjacentElement('afterend', banner);
+          }
+        } else {
+          existBanner.style.display = 'flex';
+          const idEl = existBanner.querySelector('p:last-child');
+          if (idEl) idEl.textContent = 'ID: ' + memberId;
+        }
+
+        openModal('modal-member-qr');
+
+        // Render QR
+        const payload = storeId + '::' + memberId;
+        if (typeof _renderMemberQR === 'function') {
+          setTimeout(() => _renderMemberQR(payload), 250);
+        }
+
+        // Auto kirim WA setelah 700ms
+        setTimeout(() => {
+          if (phone) kirimWAMember();
+        }, 700);
+      }, 300);
     }
 
     async function deleteCustomer() {
@@ -27215,6 +27282,10 @@ function showMemberQR(elOrId, _unused, _unused2) {
   const tierColor = poin >= 5000 ? '#f59e0b' : poin >= 1000 ? '#64748b' : '#b45309';
 
   _mqrData = { id: custId, nama, phone, poin, storeId };
+
+  // Sembunyikan banner "baru didaftarkan" saat buka untuk member lama
+  const existBanner = document.getElementById('mqr-new-banner');
+  if (existBanner) existBanner.style.display = 'none';
 
   // Update UI
   const av = document.getElementById('mqr-avatar');
