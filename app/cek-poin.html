@@ -1238,6 +1238,7 @@ async function _masukDashboardAdmin(){
   document.getElementById('top-admin-badge').style.display='';
   document.getElementById('adm-toko-name').textContent=tokoData?.namaToko||tokoData?.nama||'KonterKU';
   showPage('dashboard-admin');
+  _checkAutoOpenDaftar();
   admSwitchTab('list');
   document.getElementById('adm-member-list').innerHTML=`<div class="empty-state"><div class="ico"><i class="fas fa-spinner spin" style="font-size:28px;color:var(--sky)"></i></div><p>Memuat data pelanggan...</p></div>`;
   allMembers=await getPelangganList();
@@ -1265,16 +1266,17 @@ function renderMemberList(){
     const poin=Number(p.poin||p.point||0);
     const status=(p.status||'aktif').toLowerCase();
     const inisial=nm.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-    return`<div class="member-item" onclick="admDetailMember('${p.id||hp}')">
+    return`<div class="member-item" style="position:relative" onclick="admDetailMember('${p.id||hp}')">
       <div class="member-avatar">${inisial}</div>
       <div style="flex:1">
         <div class="member-nm">${nm}</div>
         <div class="member-hp">${hp}</div>
       </div>
-      <div style="text-align:right">
+      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         <div class="member-poin">⭐ ${fmt(poin)}</div>
         <span class="member-status ${status}">${status.toUpperCase()}</span>
       </div>
+      <button onclick="event.stopPropagation();hapusMember('${p.id||hp}')" style="margin-left:8px;width:32px;height:32px;border-radius:9px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#F87171;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s" onmouseover="this.style.background='rgba(239,68,68,0.25)'" onmouseout="this.style.background='rgba(239,68,68,0.12)'"><i class="fas fa-trash-alt"></i></button>
     </div>`;
   }).join('');
 }
@@ -1319,8 +1321,36 @@ function admDetailMember(id){
     background:'#141e33',
     color:'#E2E8F0',
     customClass:{popup:'swal2-ku',closeButton:'swal2-close-ku'},
-    width:'90%'
+    width:'90%',
+    footer:`<button onclick="Swal.close();hapusMember('${p.id||hp}')" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#F87171;padding:9px 20px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:6px"><i class="fas fa-trash-alt"></i> Hapus Member Ini</button>`
   });
+}
+
+async function hapusMember(memberId){
+  const p=allMembers.find(m=>(m.id||m.hp||'')===(memberId));
+  if(!p)return;
+  const nm=p.nama||p.name||'Member';
+  const res=await Swal.fire({
+    icon:'warning',
+    title:'Hapus Member?',
+    html:`Yakin hapus <b>${nm}</b>?<br><span style="font-size:11px;color:#94a3b8">Data member akan dihapus permanen.</span>`,
+    showCancelButton:true,
+    confirmButtonColor:'#ef4444',
+    confirmButtonText:'Ya, Hapus',
+    cancelButtonText:'Batal',
+    background:'#141e33',
+    color:'#E2E8F0',
+    customClass:{popup:'swal2-ku'}
+  });
+  if(!res.isConfirmed)return;
+  allMembers=allMembers.filter(m=>(m.id||m.hp||'')!==memberId);
+  await savePelangganList(allMembers);
+  document.getElementById('adm-stat-member').textContent=allMembers.length;
+  const totalPoin=allMembers.reduce((s,m)=>s+Number(m.poin||m.point||0),0);
+  document.getElementById('adm-stat-poin').textContent=fmt(totalPoin);
+  Swal.close();
+  renderMemberList();
+  swalOk('Member Dihapus','Data '+nm+' berhasil dihapus.');
 }
 
 async function admTambahPoin(memberId,tambah){
@@ -1469,18 +1499,56 @@ async function logoutAdmin(){
 }
 
 /* ═══════════════════ INIT ═══════════════════ */
+// Flag: langsung buka tab daftar setelah login admin (dari URL #daftar)
+let _autoOpenDaftar = false;
+
 async function init(){
   await waitDB();
-  // Cek URL param toko untuk shortcut pelanggan
   const urlParams=new URLSearchParams(window.location.search);
   const paramToko=(urlParams.get('toko')||'').trim();
+  // Cek apakah URL punya hash #daftar → langsung ke form pendaftaran member
+  if(window.location.hash==='#daftar') _autoOpenDaftar=true;
   if(paramToko){
-    document.getElementById('inp-kode-toko').value=paramToko; // Jangan toUpperCase, storeId dari index.html adalah lowercase
+    document.getElementById('inp-kode-toko').value=paramToko;
+    // Jika ada #daftar, langsung coba login admin dengan storeId ini
+    // Tampilkan halaman login admin
+    if(_autoOpenDaftar){
+      // Simpan kode toko, arahkan ke login admin
+      sessionStorage.setItem('ku_pending_store',paramToko);
+      showPage('home');
+      // Tampilkan pesan panduan
+      setTimeout(()=>{
+        Swal.fire({
+          icon:'info',
+          title:'Login Admin Dulu',
+          html:'Login sebagai <b>Admin</b> untuk mendaftarkan member baru.<br><span style="font-size:11px;color:#64748b">Kode toko sudah terisi otomatis.</span>',
+          confirmButtonText:'OK',
+          background:'#141e33',color:'#E2E8F0',customClass:{popup:'swal2-ku'}
+        }).then(()=>{
+          // Arahkan ke menu login admin
+          const homeEl=document.getElementById('page-home');
+          // Scroll ke bawah / klik login admin
+          const adminBtn=document.querySelector('[onclick*="login-admin"],[onclick*="loginAdmin"],[onclick*="page-login-admin"]');
+          if(adminBtn) adminBtn.click();
+          else showPage('login-admin');
+        });
+      },500);
+      return;
+    }
     showPage('toko-pelanggan');
     cariToko();
     return;
   }
   showPage('home');
+}
+
+// Hook: setelah login admin berhasil, cek apakah perlu auto buka tab daftar
+const _origLoginAdminSuccess = window.loginAdminSuccess;
+function _checkAutoOpenDaftar(){
+  if(_autoOpenDaftar){
+    _autoOpenDaftar=false;
+    setTimeout(()=>admSwitchTab('daftar'),400);
+  }
 }
 init();
 </script>
