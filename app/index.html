@@ -3976,19 +3976,19 @@
             <!-- ── ATAU: Scan QR Kasir ── -->
             <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
               <div style="flex:1;height:1px;background:rgba(255,255,255,0.10);"></div>
-              <span style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.30);letter-spacing:0.08em;">ATAU</span>
+              <span style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.30);letter-spacing:0.08em;">ATAU SCAN QR KASIR</span>
               <div style="flex:1;height:1px;background:rgba(255,255,255,0.10);"></div>
             </div>
-            <div class="flex gap-2">
-              <button id="btn-scan-qr-kasir" onclick="startScanQRKasir()" class="flex-1 py-2.5 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:rgba(124,58,237,0.15);color:#c4b5fd;border:1.5px solid rgba(124,58,237,0.3);">
-                <i class="fas fa-camera"></i> Scan QR Kamera
+            <div style="display:flex;gap:8px;width:100%;">
+              <button id="btn-scan-qr-kasir" onclick="startScanQRKasir()" style="flex:1;min-width:0;padding:10px 8px;border-radius:12px;font-weight:800;font-size:10px;cursor:pointer;border:1.5px solid rgba(124,58,237,0.3);background:rgba(124,58,237,0.15);color:#c4b5fd;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;">
+                <i class="fas fa-camera" style="font-size:11px;flex-shrink:0;"></i><span>Kamera</span>
               </button>
-              <button onclick="scanQRFromGaleri()" class="flex-1 py-2.5 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:rgba(124,58,237,0.15);color:#c4b5fd;border:1.5px solid rgba(124,58,237,0.3);">
-                <i class="fas fa-image"></i> Dari Galeri
+              <button onclick="scanQRFromGaleri()" style="flex:1;min-width:0;padding:10px 8px;border-radius:12px;font-weight:800;font-size:10px;cursor:pointer;border:1.5px solid rgba(124,58,237,0.3);background:rgba(124,58,237,0.15);color:#c4b5fd;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;">
+                <i class="fas fa-image" style="font-size:11px;flex-shrink:0;"></i><span>Galeri</span>
               </button>
             </div>
             <!-- Scan area kamera -->
-            <div id="kasir-qr-scan-area" style="display:none;border-radius:16px;overflow:hidden;position:relative;background:#000;">
+            <div id="kasir-qr-scan-area" style="display:none;border-radius:16px;overflow:hidden;position:relative;background:#000;margin-top:4px;">
               <video id="kasir-qr-video" style="width:100%;height:200px;object-fit:cover;display:block;" playsinline></video>
               <div style="position:absolute;top:8px;right:8px;">
                 <button onclick="stopScanQRKasir()" style="background:rgba(0,0,0,0.6);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;"><i class="fas fa-times mr-1"></i>Tutup</button>
@@ -6323,7 +6323,7 @@
           </div>
         </div>
         <!-- Banner Daftar Member -->
-        <button onclick="bukaPortalDaftarMember()" style="width:100%;margin-bottom:12px;padding:11px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left;">
+        <button onclick="openAddCustomerFromSidebar()" style="width:100%;margin-bottom:12px;padding:11px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left;">
           <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <i class="fas fa-id-card" style="color:#fff;font-size:14px;"></i>
           </div>
@@ -8993,7 +8993,66 @@
       </div>
     </div>
 
-    <!-- Modal: Produk -->
+    <!-- ===== MODAL: QR KARTU MEMBER ===== -->
+    <div id="modal-member-qr" class="modal-overlay" style="z-index:3300;">
+      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:92vh;overflow-y:auto;">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h4 class="text-lg font-black">Kartu Member</h4>
+            <p class="text-[9px] text-slate-400 font-bold">QR untuk portal cek poin pelanggan</p>
+          </div>
+          <button onclick="closeModal('modal-member-qr')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Info pelanggan -->
+        <div class="flex items-center gap-3 p-3 rounded-2xl mb-4" style="background:linear-gradient(135deg,#faf5ff,#f5f3ff);border:1.5px solid #ede9fe;">
+          <div id="mqr-avatar" class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-lg flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">?</div>
+          <div class="flex-1">
+            <p class="text-[14px] font-black text-slate-800" id="mqr-nama">—</p>
+            <p class="text-[10px] text-slate-400 font-bold" id="mqr-phone">—</p>
+            <p class="text-[9px] font-black mt-1" style="color:#7c3aed;" id="mqr-member-id">ID: —</p>
+          </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="flex flex-col items-center py-5 mb-4 rounded-2xl" style="background:#f8fafc;border:1.5px solid #e2e8f0;">
+          <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-3">Scan QR untuk cek poin</p>
+          <div id="mqr-canvas-wrap" class="flex items-center justify-center" style="width:210px;height:210px;background:white;border-radius:16px;padding:10px;box-shadow:0 4px 24px rgba(124,58,237,0.15);border:2px solid #ede9fe;">
+            <i class="fas fa-spinner fa-spin text-violet-300 text-2xl"></i>
+          </div>
+          <p class="text-[8px] text-violet-500 font-bold mt-3" id="mqr-store-label"></p>
+        </div>
+
+        <!-- Poin & Tier -->
+        <div class="flex gap-2 mb-4">
+          <div class="flex-1 p-3 rounded-xl text-center" style="background:#faf5ff;border:1px solid #ede9fe;">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Poin</p>
+            <p class="text-[18px] font-black" style="color:#7c3aed;" id="mqr-poin">0</p>
+          </div>
+          <div class="flex-1 p-3 rounded-xl text-center" style="background:#faf5ff;border:1px solid #ede9fe;">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tier</p>
+            <p class="text-[14px] font-black" id="mqr-tier">BRONZE</p>
+          </div>
+        </div>
+
+        <!-- Aksi -->
+        <div class="flex gap-2 mb-3">
+          <button onclick="unduhMemberQR()" class="flex-1 py-3 rounded-xl font-black text-[11px] text-white cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#0061C2,#2563eb);box-shadow:0 6px 18px rgba(0,97,194,0.3);">
+            <i class="fas fa-download"></i> Unduh QR
+          </button>
+          <button onclick="bagikanMemberQR()" class="flex-1 py-3 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:#f1f5f9;color:#1e293b;">
+            <i class="fas fa-share-alt"></i> Bagikan
+          </button>
+        </div>
+        <button onclick="kirimWAMember()" class="w-full py-3 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:rgba(37,211,102,0.1);border:1.5px solid rgba(37,211,102,0.3);color:#16a34a;">
+          <i class="fab fa-whatsapp"></i> Kirim via WhatsApp
+        </button>
+        <p class="text-[8px] text-slate-400 font-bold mt-3 text-center">* Pelanggan scan QR ini di portal cek poin untuk login otomatis</p>
+      </div>
+    </div>
+    <!-- END MODAL QR MEMBER -->
+
+        <!-- Modal: Produk -->
     <div id="modal-produk" class="modal-overlay">
       <div class="modal-content">
         <div class="flex justify-between items-center mb-5">
@@ -12487,8 +12546,8 @@
               <button onclick="deleteCustomerDirect('${c.id}')" class="w-9 h-9 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Hapus">
                 <i class="fas fa-trash-alt text-[11px]"></i>
               </button>
-              <button onclick="bukaPortalDaftarMember()" class="w-9 h-9 hover:opacity-80 text-white rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" title="Daftarkan sebagai Member">
-                <i class="fas fa-id-card text-[11px]"></i>
+              <button onclick="showMemberQR('${c.id}','${c.nama.replace(/'/g,\"\\'\")}','${c.phone||\"\"}')" class="w-9 h-9 hover:opacity-80 text-white rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" title="QR Kartu Member">
+                <i class="fas fa-qrcode text-[11px]"></i>
               </button>
             </div>
           </div>
@@ -27113,5 +27172,134 @@ function _applyKasirQRData(raw) {
   } catch(e) {
     alert('Format QR tidak dikenali. Pastikan menggunakan QR yang dihasilkan dari menu Kelola Kasir.');
   }
+}
+</script>
+
+<!-- ===== QR KARTU MEMBER ===== -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+/* ──────────────────────────────────────────
+   QR KARTU MEMBER — tampil dari menu Pelanggan
+   Payload: storeId::memberId  (sama dengan cek-poin.html)
+────────────────────────────────────────── */
+let _mqrData = null; // { id, nama, phone, poin, storeId }
+let _mqrCanvas = null;
+
+function showMemberQR(custId, nama, phone) {
+  const storeId = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
+  const cust = (db.pelanggan||[]).find(c => c.id === custId);
+  const poin = Number((cust||{}).poin||0);
+  const tier = poin >= 5000 ? 'GOLD' : poin >= 1000 ? 'SILVER' : 'BRONZE';
+  const tierColor = poin >= 5000 ? '#f59e0b' : poin >= 1000 ? '#64748b' : '#b45309';
+
+  _mqrData = { id: custId, nama, phone, poin, storeId };
+
+  // Update UI
+  const av = document.getElementById('mqr-avatar');
+  if (av) av.textContent = (nama||'?').trim().charAt(0).toUpperCase();
+  const nm = document.getElementById('mqr-nama'); if (nm) nm.textContent = nama||'—';
+  const ph = document.getElementById('mqr-phone'); if (ph) ph.textContent = phone||'Tanpa nomor';
+  const mid = document.getElementById('mqr-member-id'); if (mid) mid.textContent = 'Member ID: ' + custId;
+  const pp = document.getElementById('mqr-poin'); if (pp) pp.textContent = poin;
+  const tt = document.getElementById('mqr-tier'); if (tt) { tt.textContent = tier; tt.style.color = tierColor; }
+  const sl = document.getElementById('mqr-store-label'); if (sl) sl.textContent = 'Toko ID: ' + storeId;
+  const wrap = document.getElementById('mqr-canvas-wrap');
+  if (wrap) wrap.innerHTML = '<i class="fas fa-spinner fa-spin text-violet-300 text-2xl"></i>';
+
+  openModal('modal-member-qr');
+
+  // Build QR payload: storeId::memberId (format yang dibaca cek-poin.html)
+  const payload = storeId + '::' + custId;
+  setTimeout(() => _renderMemberQR(payload), 220);
+}
+
+function _renderMemberQR(payload) {
+  const wrap = document.getElementById('mqr-canvas-wrap');
+  if (!wrap) return;
+
+  function _tryRender() {
+    if (typeof QRCode !== 'undefined') {
+      wrap.innerHTML = '';
+      const canvas = document.createElement('canvas');
+      canvas.width = 220; canvas.height = 220;
+      canvas.style.cssText = 'border-radius:10px;display:block;';
+      wrap.appendChild(canvas);
+      _mqrCanvas = canvas;
+      QRCode.toCanvas(canvas, payload, {
+        width: 220, margin: 2,
+        color: { dark: '#3b0764', light: '#ffffff' }
+      }, function(err) {
+        if (err) {
+          wrap.innerHTML = '<p style="font-size:10px;color:#ef4444;text-align:center;">Gagal render QR</p>';
+        }
+      });
+    } else {
+      // Fallback img API
+      _mqrCanvas = null;
+      const enc = encodeURIComponent(payload);
+      wrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&margin=4&data=' + enc + '" style="border-radius:10px;width:210px;height:210px;" onerror="this.src=\'https://chart.googleapis.com/chart?chs=210x210&cht=qr&chl=' + enc + '\'">';
+    }
+  }
+
+  // Tunggu library maks 3 detik
+  if (typeof QRCode !== 'undefined') { _tryRender(); return; }
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    if (typeof QRCode !== 'undefined') { clearInterval(iv); _tryRender(); }
+    else if (tries > 30) { clearInterval(iv); _tryRender(); }
+  }, 100);
+}
+
+function unduhMemberQR() {
+  if (!_mqrData) return;
+  const nama = (_mqrData.nama||'member').replace(/\s+/g,'-').toLowerCase();
+  if (_mqrCanvas) {
+    const a = document.createElement('a');
+    a.download = 'member-' + nama + '.png';
+    a.href = _mqrCanvas.toDataURL('image/png');
+    a.click();
+    return;
+  }
+  const img = document.querySelector('#mqr-canvas-wrap img');
+  if (img) {
+    const a = document.createElement('a');
+    a.download = 'member-' + nama + '.png';
+    a.href = img.src; a.target = '_blank'; a.click();
+  }
+}
+
+function bagikanMemberQR() {
+  if (!_mqrData) return;
+  const storeId = _mqrData.storeId;
+  const custId = _mqrData.id;
+  const origin = window.location.origin;
+  const base = window.location.pathname.replace(/\/[^\/]*$/, '');
+  const link = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(storeId);
+  const text = '🌟 Kartu Member ' + (_mqrData.nama||'') + '\nMember ID: ' + custId + '\nCek poin di: ' + link;
+
+  if (navigator.share) {
+    navigator.share({ title: 'Kartu Member KonterKU', text, url: link }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      (typeof Swal !== 'undefined') && Swal.fire({ icon:'success', title:'Link Disalin!', html: '<p style="font-size:11px;word-break:break-all;color:#64748b;">' + link + '</p>', timer:3000, showConfirmButton:false });
+    }).catch(() => prompt('Salin info berikut:', text));
+  }
+}
+
+function kirimWAMember() {
+  if (!_mqrData) return;
+  const storeId = _mqrData.storeId;
+  const custId = _mqrData.id;
+  const origin = window.location.origin;
+  const base = window.location.pathname.replace(/\/[^\/]*$/, '');
+  const link = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(storeId);
+  const nama = _mqrData.nama || 'Pelanggan';
+  const phone = (_mqrData.phone||'').replace(/\D/g,'').replace(/^0/,'62');
+
+  const pesan = `🎉 Halo, ${nama}!\n\nSelamat datang sebagai *Member* toko kami! 🏪✨\n\n━━━━━━━━━━━━━━\n🪴 *Member ID Kamu:*\n${custId}\n━━━━━━━━━━━━━━\n\n📱 *Cara cek poin:*\n1. Buka: ${link}\n2. Scan QR kartu member atau masuk pakai Member ID\n\n⭐ Kumpulkan poin setiap transaksi!\n🎁 Tukar poin dengan hadiah menarik!\n\n📌 Simpan Member ID ini ya! 😊`;
+
+  const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesan);
+  window.open(waUrl, '_blank');
 }
 </script>
