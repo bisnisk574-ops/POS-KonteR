@@ -661,6 +661,14 @@ function generateMemberId(){
 /* ═══════════════════ FIREBASE DB ═══════════════════ */
 async function waitDB(){return new Promise(r=>{const t=setInterval(()=>{if(window._db&&window._auth){clearInterval(t);r();}},50);});}
 
+/* Pastikan user terautentikasi (anonymous) sebelum query Firestore */
+async function ensureAuth(){
+  await waitDB();
+  if(!window._auth.currentUser){
+    try{ await window._auth.signInAnonymously(); }catch(e){ console.warn('[auth]',e.message); }
+  }
+}
+
 /* ── Helper ekstrak data ── */
 function _extractPelanggan(d){
   // index.html simpan di root: d.pelanggan[]
@@ -675,6 +683,7 @@ function _extractNamaToko(d){
 }
 
 async function getTokoDoc(kode){
+  await ensureAuth();
   const db=window._db;
   const tries=[...new Set([kode,kode.toUpperCase(),kode.toLowerCase()])];
   for(const k of tries){
@@ -747,6 +756,7 @@ async function cariToko(){
   if(!kode){swalErr('Kode toko tidak boleh kosong');return;}
   const btn=document.getElementById('btn-cari-toko');
   setBtnLoad(btn,'Mencari...');
+  await ensureAuth();
   const result=await getTokoDoc(kode).catch(()=>null);
   setBtnBack(btn,'<i class="fas fa-search"></i> Cari Toko');
   if(!result){
@@ -936,7 +946,7 @@ async function handleHomeScanResult(text){
   Swal.fire({title:'Memuat data...',allowOutsideClick:false,showConfirmButton:false,
     customClass:{popup:'swal2-ku'},didOpen:()=>Swal.showLoading()});
 
-  await waitDB();
+  await ensureAuth();
   const db=window._db;
 
   // Cari dokumen toko — coba direct doc ID dulu, lalu fallback getTokoDoc (query by field)
