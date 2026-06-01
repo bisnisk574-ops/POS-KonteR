@@ -833,7 +833,7 @@ function stopQRScan(){
 function handleQRResult(text){
   if(!text)return;
   stopQRScan();
-  // Support format baru: storeId::memberId
+  // Support format baru: storeId::memberId  maupun format lama: memberId saja
   const parts=text.trim().split('::');
   scannedMemberId=(parts.length>=2?parts[1]:parts[0]).trim();
   document.getElementById('qr-scanned-id-info').textContent='Member ID: '+scannedMemberId;
@@ -903,41 +903,102 @@ async function handleHomeScanResult(text){
   if(!text)return;
   stopHomeScan();
 
-  // Parse format: storeId::memberId
-  const parts=text.trim().split('::');
-  if(parts.length<2){
-    swalErr('QR tidak valid. Pastikan ini QR kartu member KonterKU.');
-    return;
-  }
-  const qrStoreId=parts[0].trim();
-  const qrMemberId=parts[1].trim();
-
   // Tampilkan loading
   Swal.fire({title:'Memuat data...',allowOutsideClick:false,showConfirmButton:false,customClass:{popup:'swal2-ku'},
     didOpen:()=>Swal.showLoading()});
 
   await waitDB();
-  // Fetch dokumen toko langsung pakai storeId dari QR
   const db=window._db;
-  let tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
-  let tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
-  if(!tokoFound){
-    tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
-    tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+
+  // Parse format baru: storeId::memberId
+  const parts=text.trim().split('::');
+  let qrStoreId=null, qrMemberId=null;
+
+  if(parts.length>=2){
+    // Format baru: storeId::memberId
+    qrStoreId=parts[0].trim();
+    qrMemberId=parts[1].trim();
+  } else {
+    // Format lama: hanya memberId saja
+    qrMemberId=parts[0].trim();
+    // Coba ambil storeId dari session (toko terakhir yang dipakai)
+    const savedStore=sessionStorage.getItem('ku_store_id')||'';
+    if(savedStore) qrStoreId=savedStore;
   }
+
+  let tokoFound=null;
+
+  // === Jika ada storeId, cari toko langsung ===
+  if(qrStoreId){
+    let tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
+    tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+    if(!tokoFound){
+      tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
+      tokoFound=tokoDoc&&tokoDoc.exists?tokoDoc.data():null;
+    }
+  }
+
+  // === Fallback: cari memberId di semua toko (untuk QR format lama) ===
+  if(!tokoFound && !qrStoreId){
+    Swal.update({title:'Mencari member...'});
+    // Cari di user_stores
+    try{
+      const snap=await db.collection('user_stores').get();
+      for(const docSnap of snap.docs){
+        const d=docSnap.data();
+        const list=d.pelanggan||(d.db&&d.db.pelanggan)||[];
+        const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
+        if(found){
+          qrStoreId=docSnap.id;
+          tokoFound=d;
+          break;
+        }
+      }
+    }catch(e){}
+    // Jika belum ketemu, coba di stores
+    if(!tokoFound){
+      try{
+        const snap=await db.collection('stores').get();
+        for(const docSnap of snap.docs){
+          const d=docSnap.data();
+          const list=d.pelanggan||(d.db&&d.db.pelanggan)||[];
+          const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
+          if(found){
+            qrStoreId=docSnap.id;
+            tokoFound=d;
+            break;
+          }
+        }
+      }catch(e){}
+    }
+  }
+
   if(!tokoFound){
     Swal.close();
-    swalErr('Toko tidak ditemukan. QR mungkin dari versi lama.');
+    // Jika QR lama (tanpa ::), arahkan ke login manual dengan kode toko
+    if(parts.length<2){
+      Swal.fire({
+        icon:'warning',
+        title:'QR Versi Lama',
+        html:'QR ini berasal dari versi lama. Silakan masukkan <b>Kode Toko</b> untuk login manual.<br><span style="font-size:11px;color:#94a3b8">Hubungi kasir untuk mendapatkan QR baru.</span>',
+        confirmButtonText:'Login Manual',
+        showCancelButton:true, cancelButtonText:'Batal',
+        customClass:{popup:'swal2-ku'},background:'#141e33',color:'#E2E8F0'
+      }).then(r=>{if(r.isConfirmed) showPage('toko-pelanggan');});
+    } else {
+      swalErr('Toko tidak ditemukan. QR mungkin sudah tidak aktif.');
+    }
     return;
   }
 
   storeId=qrStoreId;
   tokoData=tokoFound;
+  sessionStorage.setItem('ku_store_id',storeId);
   await loadPoinCfg();
 
   // Cari member
   const list=await getPelangganList();
-  const found=list.find(p=>p.id===qrMemberId);
+  const found=list.find(p=>(p.id||'').trim()===qrMemberId||(p.hp||'').trim()===qrMemberId);
   Swal.close();
 
   if(!found){
@@ -976,7 +1037,7 @@ async function loginDenganMemberId(){
   const list=await getPelangganList();
   if(btn)setBtnBack(btn,'<i class="fas fa-star"></i> Masuk');
   if(!list||!list.length){swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.');return;}
-  const found=list.find(p=>p.id===scannedMemberId||(p.id||'').trim()===scannedMemberId);
+  const found=list.find(p=>(p.id||'').trim()===scannedMemberId||(p.hp||'').replace(/\D/g,'')===scannedMemberId.replace(/\D/g,''));
   if(!found){
     Swal.fire({icon:'warning',title:'Member Tidak Ditemukan',html:'QR Code tidak dikenali.<br><span style="font-size:12px;color:#94a3b8">Pastikan kartu member dari toko yang benar.</span>',customClass:{popup:'swal2-ku'}});
     return;
