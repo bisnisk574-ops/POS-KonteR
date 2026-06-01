@@ -24,7 +24,8 @@
   function _initFB() {
     if (typeof firebase === 'undefined') { setTimeout(_initFB, 50); return; }
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    window._db = firebase.firestore();
+    window._db   = firebase.firestore();
+    window._auth = firebase.auth();
   }
   _initFB();
 </script>
@@ -546,7 +547,7 @@ function generateMemberId(){
 }
 
 /* ═══════════════════ FIREBASE DB ═══════════════════ */
-async function waitDB(){return new Promise(r=>{const t=setInterval(()=>{if(window._db){clearInterval(t);r();}},50);});}
+async function waitDB(){return new Promise(r=>{const t=setInterval(()=>{if(window._db&&window._auth){clearInterval(t);r();}},50);});}
 
 async function getTokoDoc(kode){
   const db=window._db;
@@ -776,6 +777,8 @@ async function loginAdmin(){
   if(!password){swalErr('Password tidak boleh kosong');return;}
   const btn=document.getElementById('btn-login-adm');
   setBtnLoad(btn,'Memverifikasi...');
+  await waitDB();
+  if(!window._auth){swalErr('Firebase Auth belum siap. Coba refresh halaman.');return;}
   try{
     const cred=await window._auth.signInWithEmailAndPassword(email,password);
     const uid=cred.user.uid;
