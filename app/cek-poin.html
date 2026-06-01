@@ -209,6 +209,9 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
 </style>
 </head>
 <body>
+<!-- Hidden input untuk scan dari galeri -->
+<input type="file" id="gallery-qr-input-home" accept="image/*" style="display:none" onchange="scanGaleriHome(this)">
+<input type="file" id="gallery-qr-input-plg" accept="image/*" style="display:none" onchange="scanGaleriPlg(this)">
 <div class="wrap">
 
 <!-- TOP BAR -->
@@ -253,9 +256,14 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
       <div style="font-size:52px;margin-bottom:8px">📱</div>
       <div style="font-size:11px;color:var(--muted);font-weight:600">Kamera belum aktif</div>
     </div>
-    <button id="btn-home-scan" class="btn btn-blue" onclick="startHomeScan()">
-      <i class="fas fa-camera"></i> Buka Kamera & Scan
-    </button>
+    <div style="display:flex;gap:8px;margin-bottom:0">
+      <button id="btn-home-scan" class="btn btn-blue" onclick="startHomeScan()" style="flex:1">
+        <i class="fas fa-camera"></i> Buka Kamera
+      </button>
+      <button class="btn" onclick="document.getElementById('gallery-qr-input-home').value='';document.getElementById('gallery-qr-input-home').click()" style="flex:0 0 auto;padding:0 16px;background:rgba(56,189,248,0.12);border:1.5px solid rgba(56,189,248,0.3);color:var(--sky)" title="Scan dari Galeri">
+        <i class="fas fa-image"></i>
+      </button>
+    </div>
     <button id="btn-home-stop" class="btn btn-ghost" onclick="stopHomeScan()" style="display:none;margin-top:8px">
       <i class="fas fa-stop"></i> Tutup Kamera
     </button>
@@ -335,9 +343,14 @@ mark{background:rgba(245,158,11,0.3);color:var(--gold);border-radius:3px;padding
       <div style="font-size:48px;margin-bottom:8px">📱</div>
       <div style="font-size:11px;color:var(--muted);font-weight:600">Kamera belum aktif</div>
     </div>
-    <button id="btn-start-scan" class="btn btn-blue" onclick="startQRScan()">
-      <i class="fas fa-camera"></i> Buka Kamera
-    </button>
+    <div style="display:flex;gap:8px;margin-bottom:0">
+      <button id="btn-start-scan" class="btn btn-blue" onclick="startQRScan()" style="flex:1">
+        <i class="fas fa-camera"></i> Buka Kamera
+      </button>
+      <button class="btn" onclick="document.getElementById('gallery-qr-input-plg').value='';document.getElementById('gallery-qr-input-plg').click()" style="flex:0 0 auto;padding:0 16px;background:rgba(56,189,248,0.12);border:1.5px solid rgba(56,189,248,0.3);color:var(--sky)" title="Scan dari Galeri">
+        <i class="fas fa-image"></i>
+      </button>
+    </div>
     <button id="btn-stop-scan" class="btn btn-ghost" onclick="stopQRScan()" style="display:none;margin-top:8px">
       <i class="fas fa-stop"></i> Tutup Kamera
     </button>
@@ -1496,6 +1509,74 @@ async function logoutAdmin(){
   if(window._auth&&window._auth.currentUser) window._auth.signOut().catch(()=>{});
   ['adm-email','adm-password','kasir-kode','kasir-username','kasir-pwd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showPage('home');
+}
+
+/* ═══════════════════ SCAN DARI GALERI ═══════════════════ */
+function _decodeQRFromImage(file, onResult, onError){
+  if(!file) return;
+  const fileReader = new FileReader();
+  fileReader.onload = async function(e){
+    const imgSrc = e.target.result;
+
+    // Coba ZXing (sudah di-load di head)
+    if(typeof ZXing !== 'undefined'){
+      try{
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
+        const reader = new ZXing.BrowserQRCodeReader(hints);
+        const result = await reader.decodeFromImageUrl(imgSrc);
+        if(result && result.getText()) return onResult(result.getText());
+      }catch(e2){/* fallthrough */}
+    }
+
+    // Coba BarcodeDetector
+    if('BarcodeDetector' in window){
+      const img = new Image();
+      img.onload = async function(){
+        try{
+          const det = new BarcodeDetector({formats:['qr_code']});
+          const res = await det.detect(img);
+          if(res && res.length > 0) return onResult(res[0].rawValue);
+        }catch(e3){}
+        onError('QR Code tidak terdeteksi. Pastikan gambar cukup jelas dan berisi QR kartu member.');
+      };
+      img.src = imgSrc;
+      return;
+    }
+
+    // Fallback: canvas + ZXing decode pixel
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      onError('QR Code tidak terdeteksi. Coba foto yang lebih jelas atau gunakan scan kamera.');
+    };
+    img.src = imgSrc;
+  };
+  fileReader.readAsDataURL(file);
+}
+
+function scanGaleriHome(input){
+  const file = input.files[0];
+  if(!file) return;
+  Swal.fire({title:'Membaca QR...',allowOutsideClick:false,showConfirmButton:false,
+    customClass:{popup:'swal2-ku'}, didOpen:()=>Swal.showLoading()});
+  _decodeQRFromImage(file,
+    text=>{ Swal.close(); handleHomeScanResult(text); },
+    msg=>{ Swal.close(); swalErr(msg); }
+  );
+}
+
+function scanGaleriPlg(input){
+  const file = input.files[0];
+  if(!file) return;
+  Swal.fire({title:'Membaca QR...',allowOutsideClick:false,showConfirmButton:false,
+    customClass:{popup:'swal2-ku'}, didOpen:()=>Swal.showLoading()});
+  _decodeQRFromImage(file,
+    text=>{ Swal.close(); handleQRResult(text); },
+    msg=>{ Swal.close(); swalErr(msg); }
+  );
 }
 
 /* ═══════════════════ INIT ═══════════════════ */
