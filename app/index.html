@@ -9005,46 +9005,58 @@
             <div style="margin-bottom:6px;">
               <p style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">📇 Kartu Member</p>
             </div>
-            <!-- ID Card Horizontal -->
+            <!-- ID Card — proporsi kartu ATM/KTP (85.6mm × 54mm ≈ ratio 1.586:1) -->
             <div id="cust-id-card" style="
-              width:100%;max-width:360px;margin:0 auto;
+              width:100%;max-width:340px;aspect-ratio:1.586/1;margin:0 auto;
               background:linear-gradient(135deg,#1541C4 0%,#2563EB 45%,#06b6d4 100%);
-              border-radius:18px;padding:18px 20px;position:relative;overflow:hidden;
+              border-radius:16px;padding:14px 16px 12px;position:relative;overflow:hidden;
               box-shadow:0 10px 32px rgba(21,65,196,0.35);
               font-family:'Plus Jakarta Sans',sans-serif;
+              display:flex;flex-direction:column;justify-content:space-between;
             ">
               <!-- Decorative circles -->
-              <div style="position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.07);top:-80px;right:-50px;pointer-events:none;"></div>
-              <div style="position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.05);bottom:-50px;left:-30px;pointer-events:none;"></div>
-              <!-- Top row: store + tier badge -->
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative;z-index:1;">
-                <div>
-                  <p style="font-size:8px;font-weight:900;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;">MEMBER CARD</p>
-                  <p style="font-size:11px;font-weight:900;color:#fff;margin-top:2px;" id="card-store-nm">—</p>
+              <div style="position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.07);top:-70px;right:-40px;pointer-events:none;"></div>
+              <div style="position:absolute;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,0.05);bottom:-40px;left:-25px;pointer-events:none;"></div>
+
+              <!-- Layout utama: kiri (info) + kanan (QR) -->
+              <div style="display:flex;gap:10px;flex:1;position:relative;z-index:1;">
+
+                <!-- Kolom kiri -->
+                <div style="display:flex;flex-direction:column;justify-content:space-between;flex:1;min-width:0;">
+                  <!-- Top: store + tier -->
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                      <p style="font-size:7px;font-weight:900;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;margin:0;">MEMBER CARD</p>
+                      <p style="font-size:10px;font-weight:900;color:#fff;margin:2px 0 0;" id="card-store-nm">—</p>
+                    </div>
+                    <div id="card-tier-badge" style="background:rgba(245,158,11,0.25);border:1px solid rgba(245,158,11,0.6);border-radius:6px;padding:2px 8px;font-size:8px;font-weight:900;color:#fcd34d;letter-spacing:0.06em;white-space:nowrap;">BRONZE</div>
+                  </div>
+
+                  <!-- Middle: avatar + nama -->
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+                    <div id="card-avatar" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0;">?</div>
+                    <div style="min-width:0;">
+                      <p style="font-size:13px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;" id="card-nama">—</p>
+                      <p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.65);margin:2px 0 0;" id="card-phone">—</p>
+                    </div>
+                  </div>
+
+                  <!-- Bottom: member ID + poin -->
+                  <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:7px;display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;">
+                    <div style="min-width:0;flex:1;margin-right:8px;">
+                      <p style="font-size:6px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;margin:0;">Member ID</p>
+                      <p style="font-size:8.5px;font-weight:900;color:#fff;letter-spacing:0.02em;word-break:break-all;margin:1px 0 0;line-height:1.2;" id="card-member-id">—</p>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                      <p style="font-size:6px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;margin:0;">POIN</p>
+                      <p style="font-size:16px;font-weight:900;color:#fcd34d;line-height:1;margin:1px 0 0;" id="card-poin">0</p>
+                    </div>
+                  </div>
                 </div>
-                <div id="card-tier-badge" style="background:rgba(245,158,11,0.25);border:1px solid rgba(245,158,11,0.6);border-radius:8px;padding:3px 10px;font-size:9px;font-weight:900;color:#fcd34d;letter-spacing:0.06em;">BRONZE</div>
-              </div>
-              <!-- Middle: avatar + info -->
-              <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;position:relative;z-index:1;">
-                <div id="card-avatar" style="width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;">?</div>
-                <div style="flex:1;min-width:0;">
-                  <p style="font-size:15px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="card-nama">—</p>
-                  <p style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.65);margin-top:2px;" id="card-phone">—</p>
-                </div>
-                <!-- QR di kanan -->
-                <div id="card-qr-mini-wrap" style="width:160px;height:160px;background:white;border-radius:14px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+
+                <!-- Kolom kanan: QR besar -->
+                <div id="card-qr-mini-wrap" style="width:114px;height:114px;background:white;border-radius:12px;padding:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.2);align-self:center;">
                   <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:14px;"></i>
-                </div>
-              </div>
-              <!-- Bottom: member ID + poin -->
-              <div style="display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1;border-top:1px solid rgba(255,255,255,0.15);padding-top:10px;">
-                <div>
-                  <p style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;">Member ID</p>
-                  <p style="font-size:10px;font-weight:900;color:#fff;letter-spacing:0.02em;word-break:break-all;" id="card-member-id">—</p>
-                </div>
-                <div style="text-align:right;">
-                  <p style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;">Poin</p>
-                  <p style="font-size:16px;font-weight:900;color:#fcd34d;line-height:1;" id="card-poin">0</p>
                 </div>
               </div>
             </div>
