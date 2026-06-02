@@ -9032,7 +9032,7 @@
                   <p style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.65);margin-top:2px;" id="card-phone">—</p>
                 </div>
                 <!-- QR di kanan -->
-                <div id="card-qr-mini-wrap" style="width:130px;height:130px;background:white;border-radius:14px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+                <div id="card-qr-mini-wrap" style="width:160px;height:160px;background:white;border-radius:14px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.15);">
                   <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:14px;"></i>
                 </div>
               </div>
@@ -9060,9 +9060,7 @@
             <button onclick="kirimWAIdCard()" style="width:100%;margin-top:8px;padding:10px 0;border-radius:12px;border:1.5px solid rgba(37,211,102,0.35);background:rgba(37,211,102,0.08);color:#16a34a;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
               <i class="fab fa-whatsapp"></i> Kirim via WhatsApp
             </button>
-            <button onclick="showMemberQRFromCard()" style="width:100%;margin-top:8px;padding:9px 0;border-radius:12px;border:1.5px solid rgba(124,58,237,0.25);background:rgba(124,58,237,0.07);color:#7c3aed;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-              <i class="fas fa-qrcode"></i> Lihat QR Code
-            </button>
+
             <button onclick="cetakStrukIdCard()" style="width:100%;margin-top:8px;padding:9px 0;border-radius:12px;border:1.5px solid rgba(29,78,216,0.3);background:rgba(29,78,216,0.07);color:#1d4ed8;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
               <i class="fas fa-receipt"></i> Cetak Struk POS/ePOS
             </button>
@@ -27664,20 +27662,18 @@ function _populateIdCard(c) {
   const tb = el('card-tier-badge');
   if (tb) { tb.textContent = tier; tb.style.background = tc.bg; tb.style.border = '1px solid ' + tc.border; tb.style.color = tc.text; }
 
-  // Render mini QR — payload = URL langsung ke cek-poin.html
+  // Render mini QR — payload = storeId::memberId (sama dengan cek-poin.html)
   const miniWrap = el('card-qr-mini-wrap');
   if (miniWrap) {
-    const _origin = window.location.origin;
-    const _base   = window.location.pathname.replace(/\/[^\/]*$/, '');
-    const payload  = _origin + _base + '/cek-poin.html?toko=' + encodeURIComponent(storeId) + '&id=' + encodeURIComponent(c.id);
+    const payload  = storeId + '::' + c.id;
     miniWrap.innerHTML = '';
     if (typeof QRCode !== 'undefined') {
       const miniCanvas = document.createElement('canvas');
       miniWrap.appendChild(miniCanvas);
-      QRCode.toCanvas(miniCanvas, payload, { width: 120, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {});
+      QRCode.toCanvas(miniCanvas, payload, { width: 148, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {});
     } else {
       const enc = encodeURIComponent(payload);
-      miniWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=1&data=' + enc + '" style="width:118px;height:118px;border-radius:8px;">';
+      miniWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=148x148&margin=1&data=' + enc + '" style="width:148px;height:148px;border-radius:8px;">';
     }
   }
 }
