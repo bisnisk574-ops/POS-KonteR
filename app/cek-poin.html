@@ -685,18 +685,32 @@ function _extractNamaToko(d){
 async function getTokoDoc(kode){
   await ensureAuth();
   const db=window._db;
-  const tries=[...new Set([kode,kode.toUpperCase(),kode.toLowerCase()])];
+  // Ekstrak shortcode dari format store_XXXX_timestamp
+  function _sc(k){const m=(k||'').match(/^store_([^_]+)_\d+$/);return m?m[1]:null;}
+  const sc=_sc(kode);
+  const tries=[...new Set([kode,kode.toUpperCase(),kode.toLowerCase(),...(sc?[sc,sc.toUpperCase(),sc.toLowerCase()]:[])])];
   for(const k of tries){
-    // 1. Langsung cari di 'stores' (struktur utama index.html)
+    if(!k)continue;
+    // 1. Direct doc ID di stores
     let d=await db.collection('stores').doc(k).get().catch(()=>null);
     if(d&&d.exists)return{data:d.data(),id:k};
-    // 2. Cari di 'user_stores' (struktur kasir/multi-toko)
+    // 2. Direct doc ID di user_stores
     d=await db.collection('user_stores').doc(k).get().catch(()=>null);
     if(d&&d.exists)return{data:d.data(),id:k};
-    // 3. Query by field kode_toko
+    // 3. Query by kode_toko
     let s=await db.collection('stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
     if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
     s=await db.collection('user_stores').where('kode_toko','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    // 4. Query by store_id
+    s=await db.collection('stores').where('store_id','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    s=await db.collection('user_stores').where('store_id','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    // 5. Query by uid
+    s=await db.collection('stores').where('uid','==',k).limit(1).get().catch(()=>null);
+    if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    s=await db.collection('user_stores').where('uid','==',k).limit(1).get().catch(()=>null);
     if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
   }
   return null;
@@ -849,15 +863,9 @@ function stopQRScan(){
 function handleQRResult(text){
   if(!text)return;
   stopQRScan();
-  // Support format URL: ?toko=...&id=memberId
-  const urlIdMatch=text.match(/[?&]id=([^&\s#]+)/);
-  if(urlIdMatch){
-    scannedMemberId=decodeURIComponent(urlIdMatch[1]).trim();
-  } else {
-    // Support format storeId::memberId
-    const parts=text.trim().split('::');
-    scannedMemberId=(parts.length>=2?parts[1]:parts[0]).trim();
-  }
+  // Support format baru: storeId::memberId
+  const parts=text.trim().split('::');
+  scannedMemberId=(parts.length>=2?parts[1]:parts[0]).trim();
   document.getElementById('qr-scanned-id-info').textContent='Member ID: '+scannedMemberId;
   document.getElementById('panel-qr-pin').style.display='block';
   document.getElementById('inp-qr-pin').focus();
@@ -925,62 +933,10 @@ async function handleHomeScanResult(text){
   if(!text)return;
   stopHomeScan();
 
-  // ── Deteksi QR Member via URL: ?toko=storeId&id=memberId ──
+  // ── Deteksi QR Toko: URL cek-poin.html?toko=storeId ──
   const urlTokoMatch=text.match(/[?&]toko=([^&\s#]+)/);
-  const urlIdMatch=text.match(/[?&]id=([^&\s#]+)/);
   if(urlTokoMatch){
     const kode=decodeURIComponent(urlTokoMatch[1]).trim();
-    if(urlIdMatch){
-      // Ada memberId juga — langsung auto-login member
-      const mid=decodeURIComponent(urlIdMatch[1]).trim();
-      Swal.fire({title:'Memuat data...',allowOutsideClick:false,showConfirmButton:false,
-        customClass:{popup:'swal2-ku'},didOpen:()=>Swal.showLoading()});
-      await ensureAuth();
-      const db=window._db;
-      // Cari toko dulu
-      const tokoResult=await getTokoDoc(kode).catch(()=>null);
-      if(!tokoResult){
-        Swal.close();
-        swalErr('Toko tidak ditemukan. Gunakan Login Manual dengan kode: '+kode.split('_')[1]||kode);
-        return;
-      }
-      storeId=tokoResult.id; tokoData=tokoResult.data;
-      sessionStorage.setItem('ku_store_id',storeId);
-      await loadPoinCfg();
-      // Cari member
-      const allList=_normPelanggan(_extractPelanggan(tokoResult.data));
-      const found=allList.find(p=>
-        (p.id||'').trim()===mid ||
-        (p.hp||'').replace(/\D/g,'')===mid.replace(/\D/g,'')
-      );
-      Swal.close();
-      if(!found){
-        // Member tidak ditemukan, fallback ke halaman login manual dengan toko sudah dipilih
-        document.getElementById('toko-badge-login').innerHTML=tokoBadge(_extractNamaToko(tokoResult.data),'ID: '+storeId);
-        scannedMemberId=mid;
-        document.getElementById('qr-scanned-id-info').textContent='Member ID: '+mid;
-        document.getElementById('panel-qr-pin').style.display='block';
-        showPage('login-pelanggan');
-        swalErr('Member tidak ditemukan otomatis. Coba login Manual dengan No. HP & Nama.');
-        return;
-      }
-      // Cek PIN
-      if(found.pin){
-        const res=await Swal.fire({
-          title:'Masukkan PIN',html:'<input id="auto-pin-inp" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff;font-size:18px;text-align:center;letter-spacing:4px">',
-          showCancelButton:true,confirmButtonText:'Masuk',cancelButtonText:'Batal',
-          customClass:{popup:'swal2-ku'},background:'#141e33',color:'#E2E8F0',
-          didOpen:()=>document.getElementById('auto-pin-inp').focus(),
-          preConfirm:()=>document.getElementById('auto-pin-inp').value
-        });
-        if(!res.isConfirmed)return;
-        if(String(res.value)!==String(found.pin)){swalErr('PIN salah.');return;}
-      }
-      pelanggan=found;
-      showDashboardPelanggan();
-      return;
-    }
-    // Hanya ada toko (QR toko, bukan member) — pergi ke halaman cari toko
     document.getElementById('inp-kode-toko').value=kode;
     showPage('toko-pelanggan');
     cariToko();
@@ -1081,10 +1037,29 @@ async function loginDenganMemberId(){
   const pin=(document.getElementById('inp-qr-pin')?.value||'').trim();
   const btn=document.querySelector('#panel-plg-qr .btn-blue:last-of-type');
   if(btn)setBtnLoad(btn,'Mencari data...');
-  const list=await getPelangganList();
+
+  // Coba ambil list pelanggan — kalau kosong, coba resolve storeId dulu via getTokoDoc
+  let list=await getPelangganList();
+  if(!list||!list.length){
+    // storeId mungkin format store_XXXX_ts yang belum di-resolve ke doc Firestore
+    const resolved=await getTokoDoc(storeId).catch(()=>null);
+    if(resolved){
+      storeId=resolved.id; tokoData=resolved.data;
+      sessionStorage.setItem('ku_store_id',storeId);
+      list=_normPelanggan(_extractPelanggan(resolved.data));
+    }
+  }
+
   if(btn)setBtnBack(btn,'<i class="fas fa-star"></i> Masuk');
   if(!list||!list.length){swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.');return;}
-  const found=list.find(p=>p.id===scannedMemberId||(p.id||'').trim()===scannedMemberId);
+
+  const mid=scannedMemberId;
+  const found=list.find(p=>
+    (p.id||'').trim()===mid ||
+    (p.phone||'').replace(/\D/g,'')===mid.replace(/\D/g,'') ||
+    (p.hp||'').replace(/\D/g,'')===mid.replace(/\D/g,'') ||
+    (p.noHp||'').replace(/\D/g,'')===mid.replace(/\D/g,'')
+  );
   if(!found){
     Swal.fire({icon:'warning',title:'Member Tidak Ditemukan',html:'QR Code tidak dikenali.<br><span style="font-size:12px;color:#94a3b8">Pastikan kartu member dari toko yang benar.</span>',customClass:{popup:'swal2-ku'}});
     return;
