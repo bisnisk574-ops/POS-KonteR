@@ -8292,7 +8292,7 @@
               </div>
               <div class="flex-1">
                 <p class="kasir-field-label">Jenis Layanan</p>
-                <select id="ke-jenis" class="kasir-field-input">
+                <select id="ke-jenis" class="kasir-field-input" onchange="if(window.refreshKasirPoinSection) refreshKasirPoinSection(this.value)">
                   <option value="Setor Tunai">💵 Setor Tunai</option>
                   <option value="Tarik Tunai">🏧 Tarik Tunai</option>
                   <option value="Top Up E-Wallet">📲 Top Up E-Wallet</option>
@@ -9005,57 +9005,45 @@
             <div style="margin-bottom:6px;">
               <p style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">📇 Kartu Member</p>
             </div>
-            <!-- ID Card — proporsi kartu ATM/KTP (85.6mm × 54mm ≈ ratio 1.586:1) -->
-            <div id="cust-id-card" style="
-              width:100%;max-width:340px;aspect-ratio:1.586/1;margin:0 auto;
-              background:linear-gradient(135deg,#1541C4 0%,#2563EB 45%,#06b6d4 100%);
-              border-radius:16px;padding:14px 16px 12px;position:relative;overflow:hidden;
-              box-shadow:0 10px 32px rgba(21,65,196,0.35);
-              font-family:'Plus Jakarta Sans',sans-serif;
-              display:flex;flex-direction:column;justify-content:space-between;
-            ">
+            <!-- ID Card — proporsi kartu ATM/KTP (85.6mm x 54mm ~= ratio 1.586:1) -->
+            <div id="cust-id-card" style="width:100%;max-width:340px;aspect-ratio:1.586/1;margin:0 auto;background:linear-gradient(135deg,#1541C4 0%,#2563EB 45%,#06b6d4 100%);border-radius:16px;padding:14px 16px 12px;position:relative;overflow:hidden;box-shadow:0 10px 32px rgba(21,65,196,0.35);font-family:'Plus Jakarta Sans',sans-serif;display:flex;flex-direction:column;justify-content:space-between;">
               <!-- Decorative circles -->
               <div style="position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.07);top:-70px;right:-40px;pointer-events:none;"></div>
               <div style="position:absolute;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,0.05);bottom:-40px;left:-25px;pointer-events:none;"></div>
-
-              <!-- Layout utama: kiri (info) + kanan (QR) -->
+              <!-- Layout utama: kiri + kanan QR -->
               <div style="display:flex;gap:10px;flex:1;position:relative;z-index:1;">
-
                 <!-- Kolom kiri -->
                 <div style="display:flex;flex-direction:column;justify-content:space-between;flex:1;min-width:0;">
-                  <!-- Top: store + tier -->
-                  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                      <p style="font-size:7px;font-weight:900;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;margin:0;">MEMBER CARD</p>
-                      <p style="font-size:10px;font-weight:900;color:#fff;margin:2px 0 0;" id="card-store-nm">—</p>
-                    </div>
-                    <div id="card-tier-badge" style="background:rgba(245,158,11,0.25);border:1px solid rgba(245,158,11,0.6);border-radius:6px;padding:2px 8px;font-size:8px;font-weight:900;color:#fcd34d;letter-spacing:0.06em;white-space:nowrap;">BRONZE</div>
+                  <!-- Top: label + nama toko -->
+                  <div>
+                    <p style="font-size:7px;font-weight:900;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;margin:0;">MEMBER CARD</p>
+                    <p style="font-size:10px;font-weight:900;color:#fff;margin:2px 0 0;" id="card-store-nm">—</p>
                   </div>
-
-                  <!-- Middle: avatar + nama -->
-                  <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-                    <div id="card-avatar" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0;">?</div>
-                    <div style="min-width:0;">
-                      <p style="font-size:13px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;" id="card-nama">—</p>
-                      <p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.65);margin:2px 0 0;" id="card-phone">—</p>
+                  <!-- Middle: avatar + nama + WA + tier + poin -->
+                  <div style="display:flex;align-items:flex-start;gap:9px;margin-top:6px;">
+                    <div id="card-avatar" style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0;margin-top:2px;">?</div>
+                    <div style="min-width:0;flex:1;">
+                      <!-- Nama: word-break agar tidak terpotong saat unduh -->
+                      <p style="font-size:13px;font-weight:900;color:#fff;word-break:break-word;line-height:1.2;margin:0;" id="card-nama">—</p>
+                      <p style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.65);margin:2px 0 5px;" id="card-phone">—</p>
+                      <!-- Tier badge + Poin di bawah nomor WA -->
+                      <div style="display:flex;align-items:center;gap:6px;">
+                        <div id="card-tier-badge" style="background:rgba(245,158,11,0.25);border:1px solid rgba(245,158,11,0.6);border-radius:5px;padding:2px 7px;font-size:8px;font-weight:900;color:#fcd34d;letter-spacing:0.06em;white-space:nowrap;">BRONZE</div>
+                        <div style="display:flex;align-items:baseline;gap:3px;">
+                          <span style="font-size:6px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;">POIN</span>
+                          <span style="font-size:14px;font-weight:900;color:#fcd34d;line-height:1;" id="card-poin">0</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <!-- Bottom: member ID + poin -->
-                  <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:7px;display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;">
-                    <div style="min-width:0;flex:1;margin-right:8px;">
-                      <p style="font-size:6px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;margin:0;">Member ID</p>
-                      <p style="font-size:8.5px;font-weight:900;color:#fff;letter-spacing:0.02em;word-break:break-all;margin:1px 0 0;line-height:1.2;" id="card-member-id">—</p>
-                    </div>
-                    <div style="text-align:right;flex-shrink:0;">
-                      <p style="font-size:6px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;margin:0;">POIN</p>
-                      <p style="font-size:16px;font-weight:900;color:#fcd34d;line-height:1;margin:1px 0 0;" id="card-poin">0</p>
-                    </div>
+                  <!-- Bottom: Member ID -->
+                  <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;margin-top:auto;">
+                    <p style="font-size:6px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase;margin:0;">MEMBER ID</p>
+                    <p style="font-size:8px;font-weight:900;color:#fff;letter-spacing:0.02em;word-break:break-all;margin:1px 0 0;line-height:1.2;" id="card-member-id">—</p>
                   </div>
                 </div>
-
-                <!-- Kolom kanan: QR besar -->
-                <div id="card-qr-mini-wrap" style="width:114px;height:114px;background:white;border-radius:12px;padding:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.2);align-self:center;">
+                <!-- Kolom kanan: QR — bingkai elegan -->
+                <div id="card-qr-mini-wrap" style="width:112px;height:112px;background:#fff;border-radius:14px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center;box-shadow:0 4px 20px rgba(0,0,0,0.25),0 0 0 1px rgba(255,255,255,0.18);">
                   <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:14px;"></i>
                 </div>
               </div>
@@ -10158,7 +10146,12 @@
       const ewlForm = document.getElementById('form-k-ewallet');
       if (ewlForm) ewlForm.classList.toggle('hidden', !isEwl);
       if (isDig) toggleManualProductInput();
-      if (isEwl) populateEwalletWallets();
+      if (isEwl) {
+        populateEwalletWallets();
+        // Auto-trigger poin section dengan jenis layanan yang sedang dipilih
+        const keJenis = document.getElementById('ke-jenis');
+        if (keJenis && window.refreshKasirPoinSection) refreshKasirPoinSection(keJenis.value);
+      }
       // Refresh filter kategori saat tab berganti
       if ((isDig || isFis) && typeof refreshKategoriFilters === 'function') refreshKategoriFilters();
     }
@@ -13398,6 +13391,7 @@
           pelanggan: cust, status,
           walletModal: wModalId, walletJual: wBayarId,
           tipe: 'ewallet',
+          kategori: jenis,
           adminBank, adminAgen, nominal,
           bayar: _keBayar || undefined, kembalian: _keBayar > 0 ? _keBayar - totalBayar : undefined,
           kasir_nama: localStorage.getItem('k_kasir_nama') || undefined
@@ -21907,7 +21901,7 @@ ${t.bayar ? `
   // ==================== SISTEM KATEGORI ====================
   (function() {
     // Default kategori — dipisah antara digital dan fisik
-    const DEFAULT_DIGITAL = ['Pulsa', 'Paket Data', 'Token PLN', 'Voucher Game', 'BPJS', 'TV Kabel', 'E-Money', 'Tagihan', 'Lainnya'];
+    const DEFAULT_DIGITAL = ['Pulsa', 'Paket Data', 'Token PLN', 'Voucher Game', 'BPJS', 'TV Kabel', 'E-Money', 'Tagihan', 'Setor Tunai', 'Tarik Tunai', 'Top Up E-Wallet', 'Transfer Antar Bank', 'Lainnya'];
     const DEFAULT_FISIK   = ['Aksesoris HP', 'Casing & Cover', 'Charger & Kabel', 'Earphone', 'Memory Card', 'Baterai', 'Tempered Glass', 'Spare Part', 'Lainnya'];
 
     function getKategoriList(tipe) {
@@ -21956,6 +21950,10 @@ ${t.bayar ? `
       'Baterai':         { emoji:'🔦', color:'#f59e0b', bg:'rgba(245,158,11,0.12)'  },
       'Tempered Glass':  { emoji:'🪟', color:'#38bdf8', bg:'rgba(56,189,248,0.12)'  },
       'Spare Part':      { emoji:'🔧', color:'#ef4444', bg:'rgba(239,68,68,0.12)'   },
+      'Setor Tunai':     { emoji:'💵', color:'#10b981', bg:'rgba(16,185,129,0.12)'  },
+      'Tarik Tunai':     { emoji:'🏧', color:'#f59e0b', bg:'rgba(245,158,11,0.12)'  },
+      'Top Up E-Wallet': { emoji:'📲', color:'#8b5cf6', bg:'rgba(139,92,246,0.12)'  },
+      'Transfer Antar Bank': { emoji:'🏦', color:'#3b82f6', bg:'rgba(59,130,246,0.12)' },
     };
     window.getKatStyle = function getKatStyle(nama) {
       return KAT_STYLE[nama] || { emoji:'🏷️', color:'#6366f1', bg:'rgba(99,102,241,0.12)' };
@@ -24431,11 +24429,14 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (window.refreshKasirPoinSection) refreshKasirPoinSection();
   }
 
-  /* ── Ambil semua kategori unik dari db.inventory ── */
+  /* ── Ambil semua kategori unik dari db.inventory + kategori khusus kasir e-wallet ── */
+  const EWALLET_KATEGORI = ['Setor Tunai', 'Tarik Tunai', 'Top Up E-Wallet', 'Transfer Antar Bank'];
+
   function getKategoriList() {
-    if (!window.db || !window.db.inventory) return [];
-    const cats = new Set();
-    window.db.inventory.forEach(p => { if (p.kategori) cats.add(p.kategori); });
+    const cats = new Set(EWALLET_KATEGORI); // selalu sertakan kategori e-wallet
+    if (window.db && window.db.inventory) {
+      window.db.inventory.forEach(p => { if (p.kategori) cats.add(p.kategori); });
+    }
     return Array.from(cats).sort();
   }
 
@@ -27652,6 +27653,7 @@ function kirimWAMember() {
 
 /* ═══════════════════ ID CARD FUNCTIONS ═══════════════════ */
 let _idCardData = null;
+let _idCardCanvasCache = null; // Cache pre-render untuk unduh instan
 
 function _populateIdCard(c) {
   const storeId = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
@@ -27679,29 +27681,69 @@ function _populateIdCard(c) {
   if (miniWrap) {
     const payload  = storeId + '::' + c.id;
     miniWrap.innerHTML = '';
+    _idCardCanvasCache = null; // Reset cache saat kartu baru dibuka
     if (typeof QRCode !== 'undefined') {
       const miniCanvas = document.createElement('canvas');
       miniWrap.appendChild(miniCanvas);
-      QRCode.toCanvas(miniCanvas, payload, { width: 148, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {});
+      QRCode.toCanvas(miniCanvas, payload, { width: 148, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {
+        // QR selesai → langsung pre-render kartu ke canvas di background
+        _preRenderIdCard();
+      });
     } else {
       const enc = encodeURIComponent(payload);
-      miniWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=148x148&margin=1&data=' + enc + '" style="width:148px;height:148px;border-radius:8px;">';
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { _preRenderIdCard(); };
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=148x148&margin=1&data=' + enc;
+      miniWrap.innerHTML = '';
+      miniWrap.appendChild(img);
+      img.style.cssText = 'width:148px;height:148px;border-radius:8px;';
     }
   }
+}
+
+function _preRenderIdCard() {
+  if (typeof html2canvas === 'undefined') return;
+  const card = document.getElementById('cust-id-card');
+  if (!card) return;
+  // Jalankan di background — tidak blocking UI
+  requestAnimationFrame(() => {
+    html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null, logging: false })
+      .then(canvas => { _idCardCanvasCache = canvas; })
+      .catch(() => {});
+  });
 }
 
 function unduhIdCard() {
   const card = document.getElementById('cust-id-card');
   if (!card || !_idCardData) return;
   const nama = (_idCardData.nama||'member').replace(/\s+/g,'-').toLowerCase();
-  // Gunakan html2canvas jika tersedia
+
+  const doDownload = (canvas) => {
+    const a = document.createElement('a');
+    a.download = 'kartu-member-' + nama + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  };
+
+  // Kalau cache sudah siap → unduh instan
+  if (_idCardCanvasCache) {
+    doDownload(_idCardCanvasCache);
+    return;
+  }
+
+  // Cache belum siap (jarang terjadi) → render sekarang dengan loading indicator
   if (typeof html2canvas !== 'undefined') {
+    const btn = document.querySelector('[onclick="unduhIdCard()"]');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; }
     html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null, logging: false }).then(canvas => {
-      const a = document.createElement('a');
-      a.download = 'kartu-member-' + nama + '.png';
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-    }).catch(() => _fallbackUnduhIdCard(nama));
+      _idCardCanvasCache = canvas;
+      doDownload(canvas);
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Unduh Kartu'; }
+    }).catch(() => {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Unduh Kartu'; }
+      _fallbackUnduhIdCard(nama);
+    });
   } else {
     _fallbackUnduhIdCard(nama);
   }
