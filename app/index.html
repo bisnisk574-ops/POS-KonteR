@@ -14073,11 +14073,10 @@
         $(enc(padLine('Pelanggan', t.pelanggan || 'Umum')), NL);
         $(enc(padLine('Tanggal',   (waktu || t.tgl || '-') + (jamTrx ? '  ' + jamTrx : ''))), NL);
         $(enc(divider()), NL);
-        $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON);
+        $(...CMD.ALIGN_LEFT, ...CMD.BOLD_ON);
         $(enc(namaProduk.substring(0, COLS)), NL);
         $(...CMD.BOLD_OFF);
-        $(enc(center(`Qty: ${t.qty||1} pcs`)), NL);
-        $(...CMD.ALIGN_LEFT);
+        $(enc(padLine('', `Qty: ${t.qty||1} pcs`)), NL);
 
         // (Keterangan dipindah ke footer)
 
@@ -14086,6 +14085,7 @@
         if (t.tipe === 'ewallet') {
           $(enc(padLine('Nominal',     rp(t.nominal))), NL);
           $(enc(padLine('Admin Bank',  rp(t.adminBank))), NL);
+          if (t.adminAgen) $(enc(padLine('Admin Agen',  rp(t.adminAgen))), NL);
           $(...CMD.BOLD_ON);
           $(enc(padLine('Total Bayar', rp(t.jual))), NL);
           $(...CMD.BOLD_OFF);
@@ -14154,15 +14154,15 @@
         _tagWords.forEach(w => {
           const _test = _tagLine ? _tagLine + ' ' + w : w;
           if (_test.length > COLS) {
-            $(enc(center(_tagLine)), NL);
+            $(enc(_tagLine), NL);
             _tagLine = w;
           } else {
             _tagLine = _test;
           }
         });
-        if (_tagLine) $(enc(center(_tagLine)), NL);
+        if (_tagLine) $(enc(_tagLine), NL);
         if (!opts.isPro) {
-          $(enc(center('- powered by KonterPro -')), NL);
+          $(enc('- powered by KonterPro -'), NL);
         }
 
         // Feed + cut
@@ -14941,6 +14941,7 @@ ${t.tipe === 'ewallet' ? `
   <span class="price-lbl">Admin Bank</span>
   <span class="price-val">${rp(t.adminBank)}</span>
 </div>
+${t.adminAgen ? `<div class="price-row"><span class="price-lbl">Admin Agen</span><span class="price-val">${rp(t.adminAgen)}</span></div>` : ''}
 <hr class="rule-thin">
 <div class="price-row">
   <span class="price-lbl">Total Bayar</span>
@@ -16243,7 +16244,7 @@ ${t.bayar ? `
             <button onclick="window.open('cek-poin.html?toko='+(localStorage.getItem('k_active_store_id')||localStorage.getItem('k_sid')||''),'_blank')" class="w-8 h-8 bg-violet-50 text-violet-500 rounded-xl flex items-center justify-center cursor-pointer border-0 hover:bg-violet-100 transition-colors" title="Tukar Poin">
               <i class="fas fa-gift text-[10px]"></i>
             </button>
-            <button onclick="editCustomerFromSidebar('${c.id}')" class="w-8 h-8 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center cursor-pointer border-0 hover:bg-blue-100 transition-colors" title="Edit">
+            <button onclick="editCustomerFromSidebar('${c.id}',event)" class="w-8 h-8 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center cursor-pointer border-0 hover:bg-blue-100 transition-colors" title="Edit">
               <i class="fas fa-edit text-[10px]"></i>
             </button>
           </div>
@@ -16262,10 +16263,15 @@ ${t.bayar ? `
       setTimeout(() => openAddCustomerModal(), 100);
     }
 
-    function editCustomerFromSidebar(id) {
+    function editCustomerFromSidebar(id, evt) {
+      if (evt) { evt.stopPropagation(); evt.preventDefault(); }
       closeModal('modal-sidebar-pelanggan');
-      setTimeout(() => editCustomer(id), 100);
+      setTimeout(() => editCustomer(id), 200);
     }
+
+
+
+
 
     function renderSidebarNotes() {
       const list = document.getElementById('sidebar-notes-list');
