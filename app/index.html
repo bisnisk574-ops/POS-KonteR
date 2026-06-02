@@ -2463,14 +2463,20 @@
     /* Dark mode sidebar desktop sidenav */
     [data-theme="dark"] .desktop-sidenav-item { color: #64748b; }
     [data-theme="dark"] .desktop-sidenav-item:hover { background: rgba(255,255,255,0.06); color: #94a3b8; }
-    [data-theme="dark"] .desktop-sidenav-item.active { background: linear-gradient(135deg,rgba(0,97,194,0.3),rgba(56,189,248,0.15)); color: #38BDF8; border: 1px solid rgba(56,189,248,0.2); }
-    [data-theme="dark"] .desktop-sidenav-item .dsn-icon { background: rgba(255,255,255,0.06); color: #64748b; }
+    [data-theme="dark"] .desktop-sidenav-item:hover .dsn-icon,
+    [data-theme="dark"] .desktop-sidenav-item:hover .dsn-icon i { color: #94a3b8 !important; }
+    [data-theme="dark"] .desktop-sidenav-item.active { background: rgba(0,200,120,0.12); color: #34d399; border: none; }
+    [data-theme="dark"] .desktop-sidenav-item.active .dsn-icon,
+    [data-theme="dark"] .desktop-sidenav-item.active .dsn-icon i { color: #34d399 !important; }
+    [data-theme="dark"] .desktop-sidenav-item .dsn-icon { background: transparent !important; color: #475569; }
+    [data-theme="dark"] .desktop-sidenav .sidebar-section-label { color: #475569 !important; }
+    [data-theme="dark"] .desktop-sidenav .sidebar-divider { background: rgba(255,255,255,0.07) !important; }
     /* Pertahankan warna ikon kustom (Pengaturan & Lainnya) di dark mode */
     [data-theme="dark"] .desktop-sidenav-item .dsn-icon[style*="color"] { background: rgba(255,255,255,0.06) !important; }
     /* Light mode sidebar desktop sidenav */
     [data-theme="light"] .desktop-sidenav-item:hover { background: rgba(0,97,194,0.07); color: #0061C2; }
-    [data-theme="light"] .desktop-sidenav-item.active { background: linear-gradient(135deg,rgba(0,97,194,0.12),rgba(56,189,248,0.08)); color: #0061C2; border: 1px solid rgba(0,97,194,0.2); }
-    [data-theme="light"] .desktop-sidenav-item .dsn-icon { background: #f1f5f9; color: #64748b; }
+    [data-theme="light"] .desktop-sidenav-item.active { background: rgba(0,130,80,0.09); color: #007a4d; border: none; font-weight: 700; }
+    [data-theme="light"] .desktop-sidenav-item .dsn-icon { background: transparent !important; color: #94a3b8; }
     /* Login light mode orbs — reduksi opacity agar tidak terlalu gelap */
     [data-theme="light"] #login-screen canvas { opacity: 0.08 !important; }
     [data-theme="light"] #login-screen .absolute.pointer-events-none { opacity: 0.4; }
@@ -2602,46 +2608,63 @@
       .desktop-sidenav {
         display: flex !important;
         flex-direction: column;
-        padding: 0 12px 16px;
-        gap: 2px;
+        padding: 0 8px 16px;
+        gap: 1px;
       }
       .desktop-sidenav-item {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 11px 14px;
-        border-radius: 14px;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 8px;
         cursor: pointer;
         border: none;
         background: transparent;
-        color: #64748b;
+        color: #475569;
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
         width: 100%;
         text-align: left;
-        transition: all 0.18s;
+        transition: all 0.15s;
+        line-height: 1.3;
       }
       .desktop-sidenav-item:hover { background: rgba(0,97,194,0.07); color: #0061C2; }
+      .desktop-sidenav-item:hover .dsn-icon,
+      .desktop-sidenav-item:hover .dsn-icon i { color: #0061C2 !important; }
       .desktop-sidenav-item.active {
-        background: linear-gradient(135deg, rgba(0,97,194,0.12), rgba(56,189,248,0.08));
-        color: #0061C2;
-        border: 1px solid rgba(0,97,194,0.2);
+        background: rgba(0,130,80,0.10);
+        color: #007a4d;
+        font-weight: 700;
+        border: none;
       }
+      .desktop-sidenav-item.active .dsn-icon,
+      .desktop-sidenav-item.active .dsn-icon i { color: #007a4d !important; }
       .desktop-sidenav-item .dsn-icon {
-        width: 34px; height: 34px; border-radius: 11px;
+        width: 20px; height: 20px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 13px; flex-shrink: 0;
-        background: #f1f5f9;
-        color: #64748b;
-        transition: all 0.18s;
+        font-size: 14px; flex-shrink: 0;
+        background: transparent !important;
+        color: #94a3b8;
+        transition: all 0.15s;
       }
-      .desktop-sidenav-item.active .dsn-icon {
-        background: linear-gradient(135deg, #0061C2, #38BDF8);
-        color: white;
-        box-shadow: 0 4px 14px rgba(0,97,194,0.4);
+      .desktop-sidenav .sidebar-section-label {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        color: #94a3b8 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        padding: 10px 12px 4px !important;
+        margin-top: 2px;
+      }
+      .desktop-sidenav .sidebar-divider {
+        height: 1px !important;
+        background: #e2e8f0 !important;
+        border: none !important;
+        margin: 4px 4px !important;
+        opacity: 1 !important;
       }
 
       /* ── View sections: full width, no overflow clip ── */
@@ -2724,8 +2747,8 @@
         display: flex !important;
         flex-direction: column;
         flex: 1;
-        padding: 0 12px 8px;
-        gap: 2px;
+        padding: 0 8px 8px;
+        gap: 1px;
         overflow-y: auto;
         overflow-x: hidden;
       }
@@ -4956,7 +4979,7 @@
 
           <!-- Supplier & Restok -->
           <button class="desktop-sidenav-item" id="dsn-supplier" onclick="(typeof openSidebarMenuSupplier === 'function') ? openSidebarMenuSupplier() : openModal('modal-sidebar-supplier')">
-            <div class="dsn-icon" style="background:rgba(234,88,12,0.15);"><i class="fas fa-truck" style="color:#ea580c;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-truck" style="color:#ea580c;"></i></div>
             Supplier
           </button>
 
@@ -4966,7 +4989,7 @@
 
           <!-- Kelola Toko -->
           <button class="desktop-sidenav-item" id="dsn-kelola-toko" onclick="openSidebarMenu('kelola-toko')">
-            <div class="dsn-icon" style="background:rgba(0,97,194,0.15);"><i class="fas fa-store" style="color:#0061C2;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-store" style="color:#0061C2;"></i></div>
             Kelola Toko
           </button>
 
@@ -4976,13 +4999,13 @@
 
           <!-- Akun Toko -->
           <button class="desktop-sidenav-item" onclick="openSidebarMenu('akun')">
-            <div class="dsn-icon" style="background:rgba(59,130,246,0.15);"><i class="fas fa-user-circle" style="color:#60a5fa;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-user-circle" style="color:#60a5fa;"></i></div>
             Akun Toko
           </button>
 
           <!-- Pengaturan -->
           <button class="desktop-sidenav-item" onclick="openSidebarMenu('setting')">
-            <div class="dsn-icon" style="background:rgba(15,118,110,0.15);"><i class="fas fa-sliders" style="color:#0f766e;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-sliders" style="color:#0f766e;"></i></div>
             Pengaturan
           </button>
 
@@ -4992,25 +5015,25 @@
 
           <!-- Kelola Kasir -->
           <button class="desktop-sidenav-item" id="dsn-kelola-kasir" onclick="openSidebarMenu('kelola-kasir')">
-            <div class="dsn-icon" style="background:rgba(139,92,246,0.15);"><i class="fas fa-users-gear" style="color:#a78bfa;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-users-gear" style="color:#a78bfa;"></i></div>
             Kelola Kasir
           </button>
 
           <!-- Absensi Kasir -->
           <button class="desktop-sidenav-item" id="dsn-absensi" onclick="openSidebarMenu('absensi-kasir')">
-            <div class="dsn-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-user-clock" style="color:#34d399;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-user-clock" style="color:#34d399;"></i></div>
             Absensi Kasir
           </button>
 
           <!-- Backup & Restore -->
           <button class="desktop-sidenav-item" onclick="openSidebarMenu('backup')">
-            <div class="dsn-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-cloud-arrow-up" style="color:#6ee7b7;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-cloud-arrow-up" style="color:#6ee7b7;"></i></div>
             Backup & Restore
           </button>
 
           <!-- Poin Pelanggan — hanya Admin/Owner -->
           <button id="dsn-poin-pelanggan" class="desktop-sidenav-item" onclick="openSidebarMenu('poin-pelanggan')" style="display:none;">
-            <div class="dsn-icon" style="background:rgba(124,58,237,0.15);"><i class="fas fa-star" style="color:#a78bfa;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-star" style="color:#a78bfa;"></i></div>
             Poin Pelanggan
           </button>
 
@@ -5020,13 +5043,13 @@
 
           <!-- Audit Trail -->
           <button class="desktop-sidenav-item" onclick="typeof bukaAuditLog === 'function' && bukaAuditLog()">
-            <div class="dsn-icon" style="background:rgba(239,68,68,0.15);"><i class="fas fa-shield-halved" style="color:#ef4444;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-shield-halved" style="color:#ef4444;"></i></div>
             Audit Trail
           </button>
 
           <!-- Push Notifikasi -->
           <button class="desktop-sidenav-item" onclick="typeof bukaNotifPWA === 'function' && bukaNotifPWA()">
-            <div class="dsn-icon" style="background:rgba(0,97,194,0.15);"><i class="fas fa-bell" style="color:#0061C2;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-bell" style="color:#0061C2;"></i></div>
             Notifikasi PWA
           </button>
 
@@ -5036,13 +5059,13 @@
 
           <!-- Tentang Aplikasi -->
           <button class="desktop-sidenav-item" onclick="openSidebarMenu('tentang')">
-            <div class="dsn-icon" style="background:rgba(139,92,246,0.15);"><i class="fas fa-circle-info" style="color:#a78bfa;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-circle-info" style="color:#a78bfa;"></i></div>
             Tentang Aplikasi
           </button>
 
           <!-- Panduan -->
           <button class="desktop-sidenav-item" onclick="openPanduanModal()">
-            <div class="dsn-icon" style="background:rgba(16,185,129,0.15);"><i class="fas fa-book-open" style="color:#34d399;"></i></div>
+            <div class="dsn-icon"><i class="fas fa-book-open" style="color:#34d399;"></i></div>
             <span style="color:#059669;">Panduan</span>
           </button>
 
@@ -5785,17 +5808,7 @@
         padding: 3px;
         border-radius: 14px;
         background: linear-gradient(135deg, #6d28d9, #8b5cf6, #06b6d4);
-      }
-      #modal-qr-kasir .idcard-qr-frame::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 14px;
-        padding: 1.5px;
-        background: linear-gradient(135deg, #6d28d9, #8b5cf6, #06b6d4);
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
+        box-shadow: 0 0 0 1px rgba(109,40,217,0.25), 0 4px 18px rgba(109,40,217,0.20);
       }
       #modal-qr-kasir .idcard-qr-inner {
         background: #fff;
@@ -5872,12 +5885,13 @@
         </div>
 
         <!-- ID CARD -->
+        <div id="idcard-kasir-wrap" style="padding:12px;margin:-12px;background:transparent;">
         <div class="idcard-kasir">
           <!-- Header Kartu -->
           <div class="idcard-header">
             <div class="idcard-brand">
               <div class="idcard-brand-dot"></div>
-              <span class="idcard-brand-name">KonterKU · POS System</span>
+              <span class="idcard-brand-name" id="qr-kasir-brand-nama">KonterKU · POS System</span>
             </div>
             <span class="idcard-type-badge"><i class="fas fa-cash-register mr-1"></i>KASIR</span>
             <div class="idcard-avatar-row">
@@ -5889,6 +5903,7 @@
                   <i class="fas fa-shield-alt idcard-role-icon"></i>
                   <span class="idcard-role-txt">Staff Kasir</span>
                 </div>
+                <div style="margin-top:5px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.50);letter-spacing:0.06em;"><i class="fas fa-store" style="margin-right:4px;font-size:8px;"></i><span id="qr-kasir-toko-nama">KonterKU</span></div>
               </div>
             </div>
           </div>
@@ -5911,17 +5926,18 @@
 
           <!-- Footer Kartu -->
           <div class="idcard-footer">
-            <span class="idcard-footer-brand">⚡ KonterKU</span>
+            <span class="idcard-footer-brand" id="qr-kasir-footer-brand">⚡ KonterKU</span>
             <div class="idcard-footer-dots">
               <span></span><span></span><span></span>
             </div>
           </div>
         </div>
+        </div><!-- /idcard-kasir-wrap -->
         <!-- END ID CARD -->
 
         <!-- Action Buttons -->
         <div class="flex gap-2 mt-4">
-          <button onclick="unduhQRKasir()" class="flex-1 py-3 rounded-xl font-black text-[11px] text-white cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#0061C2,#2563eb);box-shadow:0 6px 18px rgba(0,97,194,0.3);">
+          <button onclick="unduhQRKasir(this)" class="flex-1 py-3 rounded-xl font-black text-[11px] text-white cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#0061C2,#2563eb);box-shadow:0 6px 18px rgba(0,97,194,0.3);">
             <i class="fas fa-download"></i> Unduh QR
           </button>
           <button onclick="salinLinkQRKasir()" class="flex-1 py-3 rounded-xl font-black text-[11px] cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:#f1f5f9;color:#1e293b;">
@@ -27642,6 +27658,14 @@ function showKasirQR(kasirId, nama, username, kodeToko) {
   if (nm) nm.textContent = nama || '—';
   const un = document.getElementById('qr-kasir-username');
   if (un) un.textContent = '@' + (username||'—');
+  // Nama toko
+  const tokoNm = localStorage.getItem('k_store_name') || 'KonterKU';
+  const tokoEl = document.getElementById('qr-kasir-toko-nama');
+  if (tokoEl) tokoEl.textContent = tokoNm;
+  const brandEl = document.getElementById('qr-kasir-brand-nama');
+  if (brandEl) brandEl.textContent = tokoNm + ' · POS System';
+  const footerEl = document.getElementById('qr-kasir-footer-brand');
+  if (footerEl) footerEl.textContent = '⚡ ' + tokoNm;
   // Build QR payload: JSON string dengan kode_toko + username
   const payload = JSON.stringify({ kt: kodeToko, u: username, _k: 1 });
   const wrap = document.getElementById('qr-kasir-canvas-wrap');
@@ -27675,22 +27699,45 @@ function _renderKasirQRCode(payload) {
   }
 }
 
-function unduhQRKasir() {
+function unduhQRKasir(btnEl) {
   if (!_kasirQRData) return;
-  if (_kasirQRCanvas) {
-    const a = document.createElement('a');
-    a.download = 'qr-kasir-' + (_kasirQRData.username||'kasir') + '.png';
-    a.href = _kasirQRCanvas.toDataURL('image/png');
-    a.click();
+  const card = document.getElementById('idcard-kasir-wrap') || document.querySelector('#modal-qr-kasir .idcard-kasir');
+  if (!card) return;
+
+  // Feedback tombol
+  if (btnEl) { btnEl.disabled = true; btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; }
+
+  // Pastikan html2canvas tersedia
+  if (typeof html2canvas === 'undefined') {
+    if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="fas fa-download"></i> Unduh QR'; }
+    alert('Library html2canvas belum siap. Coba lagi sebentar.');
     return;
   }
-  // Fallback image
-  const img = document.querySelector('#qr-kasir-canvas-wrap img');
-  if (img) {
+
+  // Sembunyikan elemen yang tidak perlu di-render (misal pseudo-element masalah)
+  html2canvas(card, {
+    scale: 3,
+    useCORS: true,
+    backgroundColor: null,
+    logging: false,
+    onclone: function(doc) {
+      // Pastikan font & warna inline ke dalam clone
+      const cloneCard = doc.querySelector('.idcard-kasir');
+      if (cloneCard) cloneCard.style.borderRadius = '20px';
+    }
+  }).then(canvas => {
+    if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="fas fa-download"></i> Unduh QR'; }
+    const nama = (_kasirQRData.username || 'kasir').replace(/\s+/g, '-').toLowerCase();
     const a = document.createElement('a');
-    a.download = 'qr-kasir-' + (_kasirQRData.username||'kasir') + '.png';
-    a.href = img.src; a.target = '_blank'; a.click();
-  }
+    a.download = 'idcard-kasir-' + nama + '.png';
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }).catch(err => {
+    if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="fas fa-download"></i> Unduh QR'; }
+    alert('Gagal unduh: ' + err.message);
+  });
 }
 
 function salinLinkQRKasir() {
