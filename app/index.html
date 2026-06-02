@@ -9032,7 +9032,7 @@
                   <p style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.65);margin-top:2px;" id="card-phone">—</p>
                 </div>
                 <!-- QR di kanan -->
-                <div id="card-qr-mini-wrap" style="width:80px;height:80px;background:white;border-radius:12px;padding:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+                <div id="card-qr-mini-wrap" style="width:130px;height:130px;background:white;border-radius:14px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.15);">
                   <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:14px;"></i>
                 </div>
               </div>
@@ -17036,6 +17036,9 @@ ${t.bayar ? `
       uid        : authUid,
       email      : email,
       store_name : storeName,
+      kode_toko  : storeId,
+      store_id   : storeId,
+      namaToko   : storeName,
       created_at : new Date(),
       is_active  : true,
       last_sync  : null,
@@ -17076,7 +17079,19 @@ ${t.bayar ? `
     await waitMTFirebase();
     const doc = await window._fbFirestore.collection('user_stores').doc(storeId).get();
     if (!doc.exists) return null;
-    return doc.data();
+    const data = doc.data();
+    // PATCH: Tambahkan kode_toko, store_id, namaToko jika belum ada (backward compat)
+    if (!data.kode_toko || !data.store_id) {
+      try {
+        const patchFields = {};
+        if (!data.kode_toko) patchFields.kode_toko = storeId;
+        if (!data.store_id)  patchFields.store_id  = storeId;
+        if (!data.namaToko)  patchFields.namaToko  = data.store_name || localStorage.getItem("k_store_name") || "";
+        await window._fbFirestore.collection("user_stores").doc(storeId).update(patchFields);
+        Object.assign(data, patchFields);
+      } catch(e) { /* patch gagal, lanjut */ }
+    }
+    return data;
   }
 
   // =====================================================
@@ -27659,10 +27674,10 @@ function _populateIdCard(c) {
     if (typeof QRCode !== 'undefined') {
       const miniCanvas = document.createElement('canvas');
       miniWrap.appendChild(miniCanvas);
-      QRCode.toCanvas(miniCanvas, payload, { width: 70, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {});
+      QRCode.toCanvas(miniCanvas, payload, { width: 120, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {});
     } else {
       const enc = encodeURIComponent(payload);
-      miniWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&margin=1&data=' + enc + '" style="width:70px;height:70px;border-radius:6px;">';
+      miniWrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=1&data=' + enc + '" style="width:118px;height:118px;border-radius:8px;">';
     }
   }
 }
