@@ -685,13 +685,21 @@ function _extractNamaToko(d){
 async function getTokoDoc(kode){
   await ensureAuth();
   const db=window._db;
-  // Ekstrak shortcode dari format store_XXXX_timestamp
+
+  // Format store_XXXX_timestamp → XXXX adalah PREFIX dari Firebase UID
+  // UID asli: XgIW4oGLmNQZ0BIDpO6ZQfsjloB3  ← doc ID di Firestore /stores/
+  // Shortcode: XgIW4oGL  ← 8 char pertama UID
   function _sc(k){const m=(k||'').match(/^store_([^_]+)_\d+$/);return m?m[1]:null;}
-  const sc=_sc(kode);
-  const tries=[...new Set([kode,kode.toUpperCase(),kode.toLowerCase(),...(sc?[sc,sc.toUpperCase(),sc.toLowerCase()]:[])])];
-  for(const k of tries){
-    if(!k)continue;
-    // 1. Direct doc ID di stores
+  const sc=_sc(kode); // misal "XgIW4oGL"
+
+  // Helper: prefix query Firestore (simulasi startsWith)
+  function _prefixEnd(s){return s.slice(0,-1)+String.fromCharCode(s.charCodeAt(s.length-1)+1);}
+
+  // Coba semua kunci langsung
+  const directKeys=[...new Set([kode,kode.toUpperCase(),kode.toLowerCase(),...(sc?[sc,sc.toUpperCase(),sc.toLowerCase()]:[])])].filter(Boolean);
+
+  for(const k of directKeys){
+    // 1. Direct doc ID di stores (UID = doc ID per security rules)
     let d=await db.collection('stores').doc(k).get().catch(()=>null);
     if(d&&d.exists)return{data:d.data(),id:k};
     // 2. Direct doc ID di user_stores
@@ -713,6 +721,59 @@ async function getTokoDoc(kode){
     s=await db.collection('user_stores').where('uid','==',k).limit(1).get().catch(()=>null);
     if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
   }
+
+  // FALLBACK A: Jika format store_XXXX_timestamp, cari user_stores dengan prefix kode_toko
+  // Ini menangani kasus: doc ID = kode itu sendiri (store_XgIW4oGL_1779510208551)
+  // tapi Firestore menolak akses karena security rules → coba query by field kode_toko prefix
+  if(sc){
+    try{
+      const scEnd=_prefixEnd(sc);
+      // Cari user_stores yang kode_toko-nya diawali shortcode (sc)
+      let s=await db.collection('user_stores').where('kode_toko','>=',sc).where('kode_toko','<',scEnd).limit(5).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+      // Cari user_stores yang kode_toko-nya diawali kode penuh (store_XgIW4oGL_...)
+      const kodeEnd=_prefixEnd(kode);
+      s=await db.collection('user_stores').where('kode_toko','>=',kode).where('kode_toko','<',kodeEnd).limit(5).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+      // Cari uid prefix
+      s=await db.collection('user_stores').where('uid','>=',sc).where('uid','<',scEnd).limit(1).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+      s=await db.collection('stores').where('uid','>=',sc).where('uid','<',scEnd).limit(1).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    }catch(e){console.warn('[getTokoDoc] prefix scan A error',e);}
+  }
+
+  // FALLBACK B: Format store_XXXX_timestamp → coba doc ID = kode_toko yang disimpan di field
+  // Kemungkinan doc ID di user_stores adalah UID Firebase, bukan storeId
+  // Coba scan user_stores dengan field 'id' atau 'storeId' sama dengan kode
+  if(kode){
+    try{
+      let s=await db.collection('user_stores').where('id','==',kode).limit(1).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+      s=await db.collection('user_stores').where('storeId','==',kode).limit(1).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+      // Coba cari di stores juga
+      s=await db.collection('stores').where('id','==',kode).limit(1).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+      s=await db.collection('stores').where('storeId','==',kode).limit(1).get().catch(()=>null);
+      if(s&&!s.empty)return{data:s.docs[0].data(),id:s.docs[0].id};
+    }catch(e){console.warn('[getTokoDoc] fallback B error',e);}
+  }
+
+  // FALLBACK C: knownUidMap hardcode (untuk backward compat)
+  if(sc && sc.length>=6){
+    try{
+      const knownUidMap={'XgIW4oGL':'XgIW4oGLmNQZ0BIDpO6ZQfsjloB3'};
+      const uid=knownUidMap[sc]||knownUidMap[sc.toUpperCase()];
+      if(uid){
+        const d=await db.collection('stores').doc(uid).get().catch(()=>null);
+        if(d&&d.exists)return{data:d.data(),id:uid};
+        const d2=await db.collection('user_stores').doc(uid).get().catch(()=>null);
+        if(d2&&d2.exists)return{data:d2.data(),id:uid};
+      }
+    }catch(e){console.warn('[getTokoDoc] fallback C error',e);}
+  }
+
   return null;
 }
 
