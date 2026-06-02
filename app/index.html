@@ -5643,31 +5643,284 @@
     <!-- END MODAL KELOLA KASIR -->
 
 
-    <!-- ===== MODAL: QR KASIR ===== -->
+    <!-- ===== MODAL: QR KASIR (ID CARD STYLE) ===== -->
+    <style>
+      #modal-qr-kasir .idcard-kasir {
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(124,58,237,0.10);
+        position: relative;
+        background: #fff;
+      }
+      #modal-qr-kasir .idcard-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+        padding: 18px 18px 14px;
+        position: relative;
+        overflow: hidden;
+      }
+      #modal-qr-kasir .idcard-header::before {
+        content: '';
+        position: absolute;
+        top: -30px; right: -30px;
+        width: 120px; height: 120px;
+        border-radius: 50%;
+        background: rgba(124,58,237,0.18);
+      }
+      #modal-qr-kasir .idcard-header::after {
+        content: '';
+        position: absolute;
+        bottom: -20px; left: 30px;
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        background: rgba(99,102,241,0.12);
+      }
+      #modal-qr-kasir .idcard-brand {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 14px;
+        position: relative;
+        z-index: 1;
+      }
+      #modal-qr-kasir .idcard-brand-dot {
+        width: 8px; height: 8px;
+        background: linear-gradient(135deg,#a78bfa,#818cf8);
+        border-radius: 50%;
+      }
+      #modal-qr-kasir .idcard-brand-name {
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        color: rgba(255,255,255,0.55);
+        text-transform: uppercase;
+      }
+      #modal-qr-kasir .idcard-type-badge {
+        position: absolute;
+        top: 14px; right: 16px;
+        font-size: 7px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 99px;
+        background: rgba(124,58,237,0.30);
+        border: 1px solid rgba(167,139,250,0.35);
+        color: #c4b5fd;
+        z-index: 1;
+      }
+      #modal-qr-kasir .idcard-avatar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+      }
+      #modal-qr-kasir .idcard-avatar {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 900;
+        color: #fff;
+        background: linear-gradient(135deg,#7c3aed,#a855f7);
+        border: 2px solid rgba(255,255,255,0.15);
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(124,58,237,0.35);
+      }
+      #modal-qr-kasir .idcard-nama {
+        font-size: 16px;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: 0.01em;
+        line-height: 1.2;
+      }
+      #modal-qr-kasir .idcard-username {
+        font-size: 10px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.45);
+        margin-top: 2px;
+      }
+      #modal-qr-kasir .idcard-role-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 5px;
+      }
+      #modal-qr-kasir .idcard-role-icon {
+        font-size: 9px;
+        color: #a78bfa;
+      }
+      #modal-qr-kasir .idcard-role-txt {
+        font-size: 9px;
+        font-weight: 800;
+        color: #a78bfa;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      #modal-qr-kasir .idcard-body {
+        background: #ffffff;
+        padding: 16px 18px 14px;
+      }
+      #modal-qr-kasir .idcard-qr-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #modal-qr-kasir .idcard-qr-label {
+        font-size: 7.5px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #94a3b8;
+        margin-bottom: 10px;
+      }
+      /* ── Thin QR Frame ── */
+      #modal-qr-kasir .idcard-qr-frame {
+        position: relative;
+        padding: 3px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #6d28d9, #8b5cf6, #06b6d4);
+      }
+      #modal-qr-kasir .idcard-qr-frame::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 14px;
+        padding: 1.5px;
+        background: linear-gradient(135deg, #6d28d9, #8b5cf6, #06b6d4);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+      }
+      #modal-qr-kasir .idcard-qr-inner {
+        background: #fff;
+        border-radius: 11px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #modal-qr-kasir #qr-kasir-canvas-wrap {
+        width: 160px;
+        height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #modal-qr-kasir .idcard-qr-corner {
+        position: absolute;
+        width: 14px; height: 14px;
+        border-color: #7c3aed;
+        border-style: solid;
+        border-width: 0;
+      }
+      #modal-qr-kasir .idcard-qr-corner.tl { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; border-radius: 4px 0 0 0; }
+      #modal-qr-kasir .idcard-qr-corner.tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; border-radius: 0 4px 0 0; }
+      #modal-qr-kasir .idcard-qr-corner.bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; border-radius: 0 0 0 4px; }
+      #modal-qr-kasir .idcard-qr-corner.br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; border-radius: 0 0 4px 0; }
+      #modal-qr-kasir .idcard-kode {
+        font-size: 10px;
+        font-weight: 900;
+        color: #7c3aed;
+        letter-spacing: 0.14em;
+        margin-top: 10px;
+        font-family: 'Courier New', monospace;
+      }
+      #modal-qr-kasir .idcard-footer {
+        background: #faf5ff;
+        border-top: 1px solid #ede9fe;
+        padding: 10px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      #modal-qr-kasir .idcard-footer-brand {
+        font-size: 8px;
+        font-weight: 900;
+        color: #a78bfa;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      #modal-qr-kasir .idcard-footer-dots {
+        display: flex;
+        gap: 3px;
+      }
+      #modal-qr-kasir .idcard-footer-dots span {
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: linear-gradient(135deg,#7c3aed,#06b6d4);
+        opacity: 0.5;
+      }
+      #modal-qr-kasir .idcard-footer-dots span:nth-child(2) { opacity: 0.7; }
+      #modal-qr-kasir .idcard-footer-dots span:nth-child(3) { opacity: 1; }
+    </style>
+
     <div id="modal-qr-kasir" class="modal-overlay" style="z-index:3300;">
-      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:90vh;overflow-y:auto;">
-        <div class="flex justify-between items-center mb-4">
+      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:90vh;overflow-y:auto;padding-bottom:24px;">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center mb-5">
           <div>
-            <h4 class="text-lg font-black">QR Login Kasir</h4>
-            <p class="text-[9px] text-slate-400 font-bold" id="qr-kasir-subtitle">Scan untuk login otomatis</p>
+            <h4 class="text-lg font-black">ID Card Kasir</h4>
+            <p class="text-[9px] text-slate-400 font-bold" id="qr-kasir-subtitle">Kartu identitas &amp; login kasir</p>
           </div>
           <button onclick="closeModal('modal-qr-kasir')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
         </div>
-        <div class="flex items-center gap-3 p-3 rounded-2xl mb-4" style="background:linear-gradient(135deg,#faf5ff,#f5f3ff);border:1.5px solid #ede9fe;">
-          <div id="qr-kasir-avatar" class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-lg flex-shrink-0" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">?</div>
-          <div>
-            <p class="text-[13px] font-black text-slate-800" id="qr-kasir-nama">—</p>
-            <p class="text-[10px] text-slate-400 font-bold" id="qr-kasir-username">@—</p>
+
+        <!-- ID CARD -->
+        <div class="idcard-kasir">
+          <!-- Header Kartu -->
+          <div class="idcard-header">
+            <div class="idcard-brand">
+              <div class="idcard-brand-dot"></div>
+              <span class="idcard-brand-name">KonterKU · POS System</span>
+            </div>
+            <span class="idcard-type-badge"><i class="fas fa-cash-register mr-1"></i>KASIR</span>
+            <div class="idcard-avatar-row">
+              <div id="qr-kasir-avatar" class="idcard-avatar">?</div>
+              <div>
+                <div class="idcard-nama" id="qr-kasir-nama">—</div>
+                <div class="idcard-username" id="qr-kasir-username">@—</div>
+                <div class="idcard-role-row">
+                  <i class="fas fa-shield-alt idcard-role-icon"></i>
+                  <span class="idcard-role-txt">Staff Kasir</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Body QR -->
+          <div class="idcard-body">
+            <div class="idcard-qr-section">
+              <p class="idcard-qr-label"><i class="fas fa-qrcode mr-1"></i>Scan untuk login otomatis</p>
+              <!-- Frame QR tipis dengan gradient border -->
+              <div class="idcard-qr-frame">
+                <div class="idcard-qr-inner">
+                  <div id="qr-kasir-canvas-wrap">
+                    <i class="fas fa-spinner fa-spin text-violet-300 text-2xl"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="idcard-kode" id="qr-kasir-link-text"></p>
+            </div>
+          </div>
+
+          <!-- Footer Kartu -->
+          <div class="idcard-footer">
+            <span class="idcard-footer-brand">⚡ KonterKU</span>
+            <div class="idcard-footer-dots">
+              <span></span><span></span><span></span>
+            </div>
           </div>
         </div>
-        <div class="flex flex-col items-center py-4 mb-4 rounded-2xl" style="background:#f8fafc;border:1.5px solid #e2e8f0;">
-          <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-3">Scan QR ini untuk login kasir</p>
-          <div id="qr-kasir-canvas-wrap" class="flex items-center justify-center" style="width:200px;height:200px;background:white;border-radius:16px;padding:10px;box-shadow:0 4px 20px rgba(124,58,237,0.12);border:2px solid #ede9fe;">
-            <i class="fas fa-spinner fa-spin text-violet-300 text-2xl"></i>
-          </div>
-          <p class="text-[9px] text-slate-400 font-bold mt-3" id="qr-kasir-link-text" style="word-break:break-all;text-align:center;max-width:220px;"></p>
-        </div>
-        <div class="flex gap-2">
+        <!-- END ID CARD -->
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 mt-4">
           <button onclick="unduhQRKasir()" class="flex-1 py-3 rounded-xl font-black text-[11px] text-white cursor-pointer border-0 flex items-center justify-center gap-1.5" style="background:linear-gradient(135deg,#0061C2,#2563eb);box-shadow:0 6px 18px rgba(0,97,194,0.3);">
             <i class="fas fa-download"></i> Unduh QR
           </button>
@@ -5675,7 +5928,7 @@
             <i class="fas fa-copy"></i> Salin Link
           </button>
         </div>
-        <p class="text-[8px] text-slate-400 font-bold mt-4 text-center">* QR ini berisi data login kasir. Bagikan hanya ke kasir yang bersangkutan.</p>
+        <p class="text-[8px] text-slate-400 font-bold mt-3 text-center">* QR ini berisi data login kasir. Bagikan hanya ke kasir yang bersangkutan.</p>
       </div>
     </div>
     <!-- END MODAL QR KASIR -->
@@ -27407,17 +27660,17 @@ function _renderKasirQRCode(payload) {
   if (typeof QRCode !== 'undefined') {
     wrap.innerHTML = '';
     const canvas = document.createElement('canvas');
-    canvas.width = 200; canvas.height = 200;
-    canvas.style.cssText = 'border-radius:8px;display:block;';
+    canvas.width = 160; canvas.height = 160;
+    canvas.style.cssText = 'border-radius:6px;display:block;';
     wrap.appendChild(canvas);
     _kasirQRCanvas = canvas;
-    QRCode.toCanvas(canvas, payload, { width: 200, margin: 2, color: { dark: '#3b0764', light: '#ffffff' } }, function(err) {
+    QRCode.toCanvas(canvas, payload, { width: 160, margin: 1, color: { dark: '#3b0764', light: '#ffffff' } }, function(err) {
       if (err) { wrap.innerHTML = '<p style="font-size:10px;color:#ef4444;">Gagal render QR</p>'; }
     });
   } else {
     // Fallback: image dari API
     const encoded = encodeURIComponent(payload);
-    wrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=' + encoded + '" style="border-radius:8px;width:200px;height:200px;" onerror="this.src=\'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encoded + '\'">';
+    wrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=2&data=' + encoded + '" style="border-radius:6px;width:160px;height:160px;" onerror="this.src=\'https://chart.googleapis.com/chart?chs=160x160&cht=qr&chl=' + encoded + '\'">';
     _kasirQRCanvas = null;
   }
 }
