@@ -815,7 +815,7 @@ async function savePelangganList(list){
 async function loadPoinCfg(){
   const db=window._db;
   function _extractPoinCfg(d){
-    return d.settingPoin||(d.data&&d.data.settingPoin)||(d.db&&d.db.settingPoin)||{};
+    return d.poinConfig||(d.data&&d.data.poinConfig)||(d.db&&d.db.poinConfig)||d.settingPoin||(d.data&&d.data.settingPoin)||(d.db&&d.db.settingPoin)||{};
   }
   // Utama: stores (index.html)
   let doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
@@ -1201,8 +1201,8 @@ function showDashboardPelanggan(){
   if(poin<100){btnDiskon.className='btn-sm off';btnDiskon.onclick=null;}
   // Hadiah
   const hadiah=(poinCfg.daftarHadiah||[]).filter(h=>h.nama&&h.poin>0);
+  document.getElementById('d-hadiah-wrap').style.display='';
   if(hadiah.length){
-    document.getElementById('d-hadiah-wrap').style.display='';
     document.getElementById('d-hadiah-list').innerHTML=hadiah.map((h,i)=>{
       const bisa=poin>=h.poin;
       return`<div class="hadiah-card ${bisa?'bisa':''}">
@@ -1211,6 +1211,8 @@ function showDashboardPelanggan(){
         <button class="btn-sm ${bisa?'on':'off'}" ${bisa?`onclick="requestTukar('hadiah',${i})"`:' disabled'}>Request</button>
       </div>`;
     }).join('');
+  } else {
+    document.getElementById('d-hadiah-list').innerHTML='<div class="empty-state"><div class="ico">🎁</div><p>Belum ada hadiah yang tersedia.<br>Kasir bisa menambahkannya di Pengaturan Poin.</p></div>';
   }
   // Riwayat
   const rw=(pelanggan.riwayatPoin||pelanggan.poinHistory||[]).slice(-20).reverse();
