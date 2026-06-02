@@ -13340,6 +13340,11 @@
     }
 
     async function prosesKasir(tipe) {
+      // ===== KEAMANAN: Minta PIN sebelum proses transaksi =====
+      if (typeof askPin === 'function') {
+        const ok = await askPin('kasirTrx');
+        if (!ok) return;
+      }
       // ===== E-WALLET / TRANSFER =====
       if (tipe === 'ewallet') {
         const tgl    = document.getElementById('ke-tgl').value || getWIBDate();
@@ -23810,6 +23815,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     deleteHutangLunas: { label: 'Hapus Riwayat Hutang Lunas', icon: 'fa-check-circle',        color: '#16a34a' },
     deleteCustomer:    { label: 'Hapus Pelanggan',             icon: 'fa-user-minus',          color: '#db2777' },
     deleteNote:        { label: 'Hapus Catatan',               icon: 'fa-note-sticky',         color: '#7c3aed' },
+    kasirTrx:          { label: 'Proses Transaksi Kasir',      icon: 'fa-cash-register',       color: '#0061C2' },
   };
 
   /* ── tunggu app siap ── */
