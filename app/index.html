@@ -9307,6 +9307,44 @@
             </div>
           </div>
 
+          <!-- Produk Kasir E-Wallet / Transfer toggle -->
+          <div id="p-ewallet-wrap" style="background:linear-gradient(135deg,rgba(139,92,246,0.07),rgba(99,102,241,0.05));border:1.5px solid rgba(139,92,246,0.2);border-radius:14px;padding:11px 13px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <div style="width:28px;height:28px;border-radius:8px;background:rgba(139,92,246,0.13);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-mobile-screen-button" style="color:#7c3aed;font-size:12px;"></i>
+                </div>
+                <div>
+                  <p style="font-size:10px;font-weight:900;color:#4c1d95;margin:0;line-height:1.2;">Produk Kasir E-Wallet / Transfer</p>
+                  <p style="font-size:8.5px;color:#7c3aed;font-weight:700;margin:2px 0 0;line-height:1.3;">Aktifkan agar muncul di kategori Poin Pelanggan saat pilih E-Wallet/Transfer</p>
+                </div>
+              </div>
+              <!-- Toggle switch -->
+              <label style="display:flex;align-items:center;cursor:pointer;flex-shrink:0;">
+                <input type="checkbox" id="p-kasir-ewallet" onchange="onKasirEwalletChange()"
+                  style="display:none;">
+                <div id="p-kasir-ewallet-toggle"
+                  onclick="document.getElementById('p-kasir-ewallet').click()"
+                  style="width:42px;height:24px;border-radius:12px;background:#e2e8f0;position:relative;transition:background 0.2s;cursor:pointer;flex-shrink:0;">
+                  <div id="p-kasir-ewallet-knob"
+                    style="width:18px;height:18px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.18);"></div>
+                </div>
+              </label>
+            </div>
+            <!-- sub-kategori E-Wallet jika toggle aktif -->
+            <div id="p-ewallet-kat-wrap" style="display:none;margin-top:10px;border-top:1px dashed rgba(139,92,246,0.25);padding-top:9px;">
+              <label style="font-size:9px;font-weight:900;color:#7c3aed;display:block;margin-bottom:5px;letter-spacing:0.05em;"><i class="fas fa-tags" style="margin-right:4px;"></i>SUB-KATEGORI KASIR E-WALLET</label>
+              <select id="p-ewallet-kat" class="input-premium" style="font-size:11px;">
+                <option value="Top Up E-Wallet">📲 Top Up E-Wallet (GoPay, OVO, DANA, dll)</option>
+                <option value="Transfer Antar Bank">🏦 Transfer Antar Bank</option>
+                <option value="Setor Tunai">💵 Setor Tunai</option>
+                <option value="Tarik Tunai">🏧 Tarik Tunai</option>
+                <option value="Kasir E-Wallet Lainnya">🔄 Kasir E-Wallet Lainnya</option>
+              </select>
+              <p style="font-size:8px;color:#a78bfa;font-weight:700;margin:5px 0 0;"><i class="fas fa-circle-info" style="margin-right:3px;"></i>Sub-kategori ini akan muncul di dropdown "Ikat ke Kategori" pada Poin Pelanggan.</p>
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-3">
             <div><label>Harga Modal</label><input type="number" id="p-modal" class="input-premium" value="0"></div>
             <div><label>Harga Jual</label><input type="number" id="p-jual" class="input-premium" value="0"></div>
@@ -12463,6 +12501,19 @@
       renderKategoriOptions('p-kategori', tipe);
     }
 
+    /* ── Toggle E-Wallet switch di form produk ── */
+    window.onKasirEwalletChange = function() {
+      const ck     = document.getElementById('p-kasir-ewallet');
+      const toggle = document.getElementById('p-kasir-ewallet-toggle');
+      const knob   = document.getElementById('p-kasir-ewallet-knob');
+      const wrap   = document.getElementById('p-ewallet-kat-wrap');
+      if (!ck) return;
+      const on = ck.checked;
+      if (toggle) toggle.style.background = on ? 'linear-gradient(135deg,#7c3aed,#a78bfa)' : '#e2e8f0';
+      if (knob)   knob.style.left = on ? '21px' : '3px';
+      if (wrap)   wrap.style.display = on ? 'block' : 'none';
+    };
+
     function renderStok() {
       const list = document.getElementById('stok-list');
       const digital = db.inventory.filter(p => p.tipe === 'digital');
@@ -12560,6 +12611,7 @@
             <p class="stok-item-nama truncate" style="font-size:14px;font-weight:900;letter-spacing:-0.01em;line-height:1.3;">${p.nama||''}</p>
             <div class="flex items-center gap-2 mt-1 flex-wrap">
               ${p.kategori ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);"><i class="fas fa-tag text-[7px]" style="color:#6366f1;"></i><span class="font-black text-[8px]" style="color:#4f46e5;">${p.kategori}</span></span>` : ''}
+              ${p.kasir_ewallet ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg" style="background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);"><i class="fas fa-mobile-screen-button text-[7px]" style="color:#7c3aed;"></i><span class="font-black text-[8px]" style="color:#7c3aed;">E-Wallet${p.kasir_ewallet_kat ? ': '+p.kasir_ewallet_kat : ''}</span></span>` : ''}
               <span class="text-[9px] font-bold text-slate-400">Modal <span class="text-slate-600 font-black">Rp ${fmt(p.modal)}</span></span>
               <span class="text-slate-200">•</span>
               <span class="text-[9px] font-bold text-slate-400">Jual <span class="font-black" style="color:${accentColor};">Rp ${fmt(p.jual)}</span></span>
@@ -12989,6 +13041,9 @@
       const pb = document.getElementById('p-barcode'); if (pb) pb.value = "";
       const pk = document.getElementById('p-kategori'); if (pk) pk.value = "";
       const pm = document.getElementById('p-kategori-manual'); if (pm) pm.value = "";
+      // Reset kasir ewallet toggle
+      const ckEl = document.getElementById('p-kasir-ewallet');
+      if (ckEl) { ckEl.checked = false; onKasirEwalletChange(); }
       setKtgMode('pilih'); // default ke mode pilih
       openModal('modal-produk');
       setTimeout(() => setModalTipe(t), 50);
@@ -13017,6 +13072,14 @@
           setKtgMode('pilih');
           renderKategoriOptions('p-kategori', p.tipe||'digital', p.kategori||'');
         }
+        // Restore kasir_ewallet toggle
+        const ckEl = document.getElementById('p-kasir-ewallet');
+        if (ckEl) {
+          ckEl.checked = !!p.kasir_ewallet;
+          onKasirEwalletChange();
+          const katEl = document.getElementById('p-ewallet-kat');
+          if (katEl && p.kasir_ewallet_kat) katEl.value = p.kasir_ewallet_kat;
+        }
       }, 60);
     }
 
@@ -13029,6 +13092,10 @@
       const stok = Number(document.getElementById('p-stok').value);
       const batas_stok = tipe === 'fisik' ? Number(document.getElementById('p-batas-stok').value) : 0;
       const barcode = tipe === 'fisik' ? (document.getElementById('p-barcode')?.value.trim() || '') : '';
+
+      // Ambil field kasir_ewallet
+      const kasirEwalletOn = document.getElementById('p-kasir-ewallet')?.checked || false;
+      const kasirEwalletKat = kasirEwalletOn ? (document.getElementById('p-ewallet-kat')?.value || 'Top Up E-Wallet') : '';
 
       // Ambil kategori dari mode aktif (pilih dari select atau ketik manual)
       const ktgModeManual = document.getElementById('ktg-wrap-manual')?.classList.contains('hidden') === false;
@@ -13063,9 +13130,9 @@
 
       if (id) {
         const idx = db.inventory.findIndex(p => p.id === id);
-        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok, barcode, kategori };
+        if (idx !== -1) db.inventory[idx] = { ...db.inventory[idx], nama, tipe, modal, jual, stok, batas_stok, barcode, kategori, kasir_ewallet: kasirEwalletOn, kasir_ewallet_kat: kasirEwalletKat };
       } else {
-        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok, batas_stok, barcode, kategori });
+        db.inventory.push({ id: 'P-'+Date.now(), nama, tipe, modal, jual, stok, batas_stok, barcode, kategori, kasir_ewallet: kasirEwalletOn, kasir_ewallet_kat: kasirEwalletKat });
       }
       closeModal('modal-produk');
       await sync();
@@ -13340,11 +13407,6 @@
     }
 
     async function prosesKasir(tipe) {
-      // ===== KEAMANAN: Minta PIN sebelum proses transaksi =====
-      if (typeof askPin === 'function') {
-        const ok = await askPin('kasirTrx');
-        if (!ok) return;
-      }
       // ===== E-WALLET / TRANSFER =====
       if (tipe === 'ewallet') {
         const tgl    = document.getElementById('ke-tgl').value || getWIBDate();
@@ -21951,6 +22013,11 @@ ${t.bayar ? `
       'Baterai':         { emoji:'🔦', color:'#f59e0b', bg:'rgba(245,158,11,0.12)'  },
       'Tempered Glass':  { emoji:'🪟', color:'#38bdf8', bg:'rgba(56,189,248,0.12)'  },
       'Spare Part':      { emoji:'🔧', color:'#ef4444', bg:'rgba(239,68,68,0.12)'   },
+      'Top Up E-Wallet': { emoji:'📲', color:'#7c3aed', bg:'rgba(124,58,237,0.12)' },
+      'Transfer Antar Bank': { emoji:'🏦', color:'#0061C2', bg:'rgba(0,97,194,0.12)' },
+      'Setor Tunai':     { emoji:'💵', color:'#10b981', bg:'rgba(16,185,129,0.12)' },
+      'Tarik Tunai':     { emoji:'🏧', color:'#f59e0b', bg:'rgba(245,158,11,0.12)' },
+      'Kasir E-Wallet Lainnya': { emoji:'🔄', color:'#64748b', bg:'rgba(100,116,139,0.12)' },
     };
     window.getKatStyle = function getKatStyle(nama) {
       return KAT_STYLE[nama] || { emoji:'🏷️', color:'#6366f1', bg:'rgba(99,102,241,0.12)' };
@@ -23815,7 +23882,6 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     deleteHutangLunas: { label: 'Hapus Riwayat Hutang Lunas', icon: 'fa-check-circle',        color: '#16a34a' },
     deleteCustomer:    { label: 'Hapus Pelanggan',             icon: 'fa-user-minus',          color: '#db2777' },
     deleteNote:        { label: 'Hapus Catatan',               icon: 'fa-note-sticky',         color: '#7c3aed' },
-    kasirTrx:          { label: 'Proses Transaksi Kasir',      icon: 'fa-cash-register',       color: '#0061C2' },
   };
 
   /* ── tunggu app siap ── */
@@ -24427,11 +24493,15 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (window.refreshKasirPoinSection) refreshKasirPoinSection();
   }
 
-  /* ── Ambil semua kategori unik dari db.inventory ── */
+  /* ── Ambil semua kategori unik dari db.inventory + kategori kasir E-Wallet ── */
   function getKategoriList() {
     if (!window.db || !window.db.inventory) return [];
     const cats = new Set();
-    window.db.inventory.forEach(p => { if (p.kategori) cats.add(p.kategori); });
+    window.db.inventory.forEach(p => {
+      if (p.kategori) cats.add(p.kategori);
+      // Tambahkan sub-kategori E-Wallet dari produk yang ditandai kasir_ewallet
+      if (p.kasir_ewallet && p.kasir_ewallet_kat) cats.add(p.kasir_ewallet_kat);
+    });
     return Array.from(cats).sort();
   }
 
