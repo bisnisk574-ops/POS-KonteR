@@ -9764,7 +9764,8 @@
               inventory: p.inventory || [], hutang: p.hutang || [],
               hutang_lunas: p.hutang_lunas || [], pelanggan: p.pelanggan || [],
               mutasi: p.mutasi || [], notes: p.notes || [],
-              riwayat_hutang: p.riwayat_hutang || []
+              riwayat_hutang: p.riwayat_hutang || [],
+              poinConfig: p.poinConfig || null
             });
           } catch(e) { console.error("Gagal baca storage", e); }
         }
@@ -10801,7 +10802,9 @@
                   pelanggan     : d.pelanggan       || [],
                   mutasi        : d.mutasi          || [],
                   notes         : d.notes           || [],
-                  riwayat_hutang: d.riwayat_hutang  || []
+                  riwayat_hutang: d.riwayat_hutang  || [],
+                  // [FIX] Restore poinConfig agar tidak hilang saat refresh
+                  poinConfig    : d.poinConfig      || storeDoc.poinConfig || window.db?.poinConfig || null
                 });
                 saveLocalData();
                 renderAll();
@@ -10815,6 +10818,10 @@
         } else {
           // Belum ada active_store_id - cek apakah ada toko di user_stores
           try {
+            // [FIX] Refresh token sebelum query agar Firestore Rules tidak reject
+            if (window._fbAuth && window._fbAuth.currentUser) {
+              try { await window._fbAuth.currentUser.getIdToken(true); } catch(e) {}
+            }
             const snap = await window._fbFirestore
               .collection('user_stores')
               .where('uid', '==', uid)
@@ -10841,7 +10848,9 @@
                 pelanggan     : d.pelanggan       || [],
                 mutasi        : d.mutasi          || [],
                 notes         : d.notes           || [],
-                riwayat_hutang: d.riwayat_hutang  || []
+                riwayat_hutang: d.riwayat_hutang  || [],
+                // [FIX] Restore poinConfig agar tidak hilang saat refresh
+                poinConfig    : d.poinConfig      || firstDoc.data().poinConfig || window.db?.poinConfig || null
               });
               saveLocalData();
               renderAll();
@@ -17237,8 +17246,10 @@ ${t.bayar ? `
         const uid = localStorage.getItem('k_sid') || '';
         await _refreshAndGetUid(uid);
       }
+      // [FIX] Gabungkan poinConfig ke dalam data agar tersimpan di user_stores
+      const dataToSave = Object.assign({}, dbData);
       await window._fbFirestore.collection('user_stores').doc(storeId).update({
-        data      : _sanitizeForFirestore(dbData),
+        data      : _sanitizeForFirestore(dataToSave),
         last_sync : new Date(),
         ...(isKasirMode ? { last_kasir: localStorage.getItem('k_kasir_nama') || '' } : {})
       });
@@ -24579,6 +24590,8 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   function savePoinCfg(cfg) {
     if (!window.db) return;
     window.db.poinConfig = cfg;
+    // Simpan ke localStorage dulu (offline-first), lalu sync ke cloud jika online
+    if (typeof saveLocalData === 'function') saveLocalData();
     if (window.sync) window.sync();
   }
 
