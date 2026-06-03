@@ -4929,7 +4929,7 @@
               <p class="text-[12px] font-black text-slate-800">Asisten AI</p>
               <p class="text-[9px] text-slate-400 font-bold">Analisa toko, stok & penjualan</p>
             </div>
-            <span class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(6,182,212,0.15);color:#06b6d4;border:1px solid rgba(6,182,212,0.3);">PRO ⭐</span>
+            <span id="asisten-ai-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(6,182,212,0.15);color:#06b6d4;border:1px solid rgba(6,182,212,0.3);">PRO ⭐</span>
             <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
           </button>
 
@@ -16995,6 +16995,12 @@ ${t.bayar ? `
         const el = document.getElementById(id);
         if (el) el.style.display = rank < 2 ? 'inline' : 'none';
       });
+
+      // -- 4c. Badge PRO Asisten AI: sembunyikan jika sudah pro/unlimited --
+      const aiPlanBadge = document.getElementById('asisten-ai-plan-badge');
+      if (aiPlanBadge) {
+        aiPlanBadge.style.display = rank < 2 ? 'inline' : 'none';
+      }
       // Laporan, Pelanggan, Catatan sudah dibuka untuk semua paket - badge selalu tersembunyi
       ['laporan-pro-badge','pelanggan-pro-badge','catatan-pro-badge'].forEach(function(id) {
         const el = document.getElementById(id);
