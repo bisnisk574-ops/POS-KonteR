@@ -9049,6 +9049,112 @@
     </div>
 
     <!-- ===== MODAL: QR KARTU MEMBER ===== -->
+
+    <!-- ===== MODAL ID CARD KASIR ===== -->
+    <div id="modal-kasir-idcard" class="modal-overlay" style="z-index:3350;">
+      <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:96vh;overflow-y:auto;padding-bottom:28px;">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h4 class="text-lg font-black">ID Card Kasir</h4>
+            <p class="text-[9px] text-slate-400 font-bold">QR untuk login cepat kasir</p>
+          </div>
+          <button onclick="closeModal('modal-kasir-idcard')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- ===== ID CARD KASIR DESIGN ===== -->
+        <div id="kasir-idcard-wrap" style="display:flex;justify-content:center;margin-bottom:20px;">
+          <div id="kasir-idcard-card" style="
+            width:100%;
+            max-width:360px;
+            border-radius:24px;
+            overflow:hidden;
+            background:linear-gradient(145deg,#1a0533 0%,#3b0a6e 40%,#6d28d9 80%,#8b5cf6 100%);
+            box-shadow:0 20px 60px rgba(109,40,217,0.5), 0 4px 20px rgba(0,0,0,0.3);
+            font-family:'Plus Jakarta Sans',sans-serif;
+            position:relative;
+          ">
+            <!-- Background decoration -->
+            <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
+            <div style="position:absolute;bottom:-60px;left:-30px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>
+
+            <!-- Header bar -->
+            <div style="padding:18px 20px 14px;position:relative;z-index:1;border-bottom:1px solid rgba(255,255,255,0.1);">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <p style="font-size:8px;font-weight:900;letter-spacing:0.18em;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:2px;">KonterKU POS</p>
+                  <p style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.85);letter-spacing:0.05em;">ID CARD KASIR</p>
+                </div>
+                <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,0.2);">
+                  <i class="fas fa-store" style="color:#c4b5fd;font-size:16px;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- QR Code area — LARGE -->
+            <div style="display:flex;flex-direction:column;align-items:center;padding:24px 20px 20px;position:relative;z-index:1;">
+              <div id="kasir-idcard-qr-wrap" style="
+                background:#ffffff;
+                border-radius:20px;
+                padding:16px;
+                box-shadow:0 8px 32px rgba(0,0,0,0.35), 0 0 0 4px rgba(255,255,255,0.15);
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                width:220px;
+                height:220px;
+              ">
+                <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:28px;"></i>
+              </div>
+              <p style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);margin-top:12px;letter-spacing:0.05em;">SCAN UNTUK LOGIN KASIR</p>
+            </div>
+
+            <!-- Kasir info -->
+            <div style="padding:0 20px 22px;position:relative;z-index:1;">
+              <div style="background:rgba(255,255,255,0.1);border-radius:16px;padding:16px 18px;border:1.5px solid rgba(255,255,255,0.15);backdrop-filter:blur(4px);">
+                <div style="display:flex;align-items:center;gap:14px;">
+                  <div id="kasir-idcard-avatar" style="
+                    width:52px;height:52px;border-radius:14px;
+                    background:linear-gradient(135deg,#a855f7,#ec4899);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:22px;font-weight:900;color:#fff;flex-shrink:0;
+                    box-shadow:0 4px 14px rgba(168,85,247,0.5);
+                  ">?</div>
+                  <div style="flex:1;min-width:0;">
+                    <p style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:3px;">Nama Kasir</p>
+                    <p id="kasir-idcard-nama" style="font-size:17px;font-weight:900;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</p>
+                    <p id="kasir-idcard-username" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.55);margin-top:2px;">@—</p>
+                  </div>
+                </div>
+                <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.12);">
+                  <p style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">Nama Toko</p>
+                  <p id="kasir-idcard-toko" style="font-size:14px;font-weight:800;color:#c4b5fd;">—</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto;padding:0 16px;">
+          <button id="btn-kasir-idcard-download" onclick="downloadKasirIdCard(this)"
+            style="width:100%;padding:13px;border-radius:14px;border:0;cursor:pointer;font-weight:800;font-size:13px;
+              background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;
+              box-shadow:0 6px 20px rgba(124,58,237,0.4);display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i class="fas fa-download"></i> Unduh ID Card (PNG)
+          </button>
+          <button onclick="shareKasirIdCard()"
+            style="width:100%;padding:13px;border-radius:14px;border:1.5px solid rgba(124,58,237,0.4);cursor:pointer;font-weight:800;font-size:13px;
+              background:rgba(124,58,237,0.1);color:#7c3aed;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i class="fas fa-share-alt"></i> Bagikan ke Kasir
+          </button>
+        </div>
+
+        <p style="text-align:center;font-size:10px;font-weight:700;color:#94a3b8;margin-top:14px;padding:0 16px;">
+          <i class="fas fa-info-circle mr-1"></i>Kasir scan QR ini di layar login untuk masuk otomatis
+        </p>
+      </div>
+    </div>
+
     <div id="modal-member-qr" class="modal-overlay" style="z-index:3300;">
       <div class="modal-content" style="border-radius:28px 28px 0 0;max-height:92vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4">
@@ -17819,6 +17925,9 @@ ${t.bayar ? `
           </div>
           <div class="flex gap-1.5 flex-shrink-0">
 
+            <button onclick="showKasirIdCard('${k.id}','${(k.nama||'').replace(/'/g,\"\\\'\")}','${(k.username||'').replace(/'/g,\"\\\'\")}')"
+              class="w-8 h-8 rounded-xl text-violet-500 border-0 cursor-pointer flex items-center justify-center"
+              style="background:#f5f3ff;" title="ID Card QR"><i class="fas fa-id-card text-[10px]"></i></button>
             <button onclick="editKasir('${k.id}')"
               class="w-8 h-8 rounded-xl text-blue-500 border-0 cursor-pointer flex items-center justify-center"
               style="background:#eff6ff;" title="Edit"><i class="fas fa-pen text-[10px]"></i></button>
@@ -27226,6 +27335,109 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ===== QR KASIR: Barcode per kasir + Scan login ===== -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
+
+/* ------------------------------------------
+   SHOW KASIR ID CARD (QR Login)
+------------------------------------------ */
+let _kasirIdCardActive = null; // {id, nama, username, kodeToko, tokoNama}
+
+function showKasirIdCard(kasirId, nama, username) {
+  const kodeToko = (document.getElementById('kasir-kode-toko')?.textContent || '').trim() || getKodeToko(localStorage.getItem('k_sid') || '');
+  const tokoNama = localStorage.getItem('k_store_name') || 'Toko Saya';
+
+  _kasirIdCardActive = { id: kasirId, nama, username, kodeToko, tokoNama };
+
+  // Update UI teks
+  const avatarEl = document.getElementById('kasir-idcard-avatar');
+  if (avatarEl) avatarEl.textContent = (nama || '?').charAt(0).toUpperCase();
+  const namaEl = document.getElementById('kasir-idcard-nama');
+  if (namaEl) namaEl.textContent = nama || '-';
+  const userEl = document.getElementById('kasir-idcard-username');
+  if (userEl) userEl.textContent = '@' + (username || '-');
+  const tokoEl = document.getElementById('kasir-idcard-toko');
+  if (tokoEl) tokoEl.textContent = tokoNama;
+
+  // Reset QR area
+  const wrap = document.getElementById('kasir-idcard-qr-wrap');
+  if (wrap) wrap.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:28px;"></i>';
+
+  openModal('modal-kasir-idcard');
+
+  // Build QR payload sama seperti format scan login: {"_k":1,"kt":"KODTOKO","u":"username"}
+  const payload = JSON.stringify({ _k: 1, kt: kodeToko, u: username });
+  setTimeout(() => _renderKasirIdCardQR(payload), 250);
+}
+
+function _renderKasirIdCardQR(payload) {
+  const wrap = document.getElementById('kasir-idcard-qr-wrap');
+  if (!wrap) return;
+
+  function _doRender() {
+    wrap.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    canvas.width = 200; canvas.height = 200;
+    canvas.style.cssText = 'border-radius:10px;display:block;';
+    wrap.appendChild(canvas);
+    if (typeof QRCode !== 'undefined') {
+      QRCode.toCanvas(canvas, payload, {
+        width: 200, margin: 1,
+        color: { dark: '#3b0764', light: '#ffffff' }
+      }, function(err) {
+        if (err) wrap.innerHTML = '<p style="font-size:11px;color:#ef4444;text-align:center;">Gagal render QR</p>';
+      });
+    } else {
+      // Fallback img
+      const enc = encodeURIComponent(payload);
+      wrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=2&data=' + enc + '" style="border-radius:10px;width:200px;height:200px;" onerror="this.src='https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + enc + ''">';
+    }
+  }
+
+  if (typeof QRCode !== 'undefined') { _doRender(); return; }
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    if (typeof QRCode !== 'undefined') { clearInterval(iv); _doRender(); }
+    else if (tries > 40) { clearInterval(iv); _doRender(); }
+  }, 100);
+}
+
+function downloadKasirIdCard(btn) {
+  const card = document.getElementById('kasir-idcard-card');
+  if (!card) return;
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; }
+  const nama = (_kasirIdCardActive?.nama || 'kasir').replace(/\s+/g,'-').toLowerCase();
+  if (typeof html2canvas !== 'undefined') {
+    html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null, logging: false }).then(canvas => {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Unduh ID Card (PNG)'; }
+      const a = document.createElement('a');
+      a.download = 'idcard-kasir-' + nama + '.png';
+      a.href = canvas.toDataURL('image/png');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }).catch(err => {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Unduh ID Card (PNG)'; }
+      alert('Gagal unduh: ' + err.message);
+    });
+  } else {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Unduh ID Card (PNG)'; }
+    alert('Library html2canvas belum dimuat.');
+  }
+}
+
+function shareKasirIdCard() {
+  if (!_kasirIdCardActive) return;
+  const { nama, username, kodeToko, tokoNama } = _kasirIdCardActive;
+  const teks = `🏪 *${tokoNama}*\n\n🪪 *ID Card Kasir*\n👤 Nama : ${nama}\n🔑 Username : @${username}\n🏷️ Kode Toko : ${kodeToko}\n\n📱 Scan QR di layar login kasir untuk masuk otomatis.`;
+  if (navigator.share) {
+    navigator.share({ title: 'ID Card Kasir - ' + nama, text: teks }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(teks).then(() => {
+      (typeof Swal !== 'undefined' ? Swal : window).fire ? Swal.fire({ icon:'success', title:'Tersalin!', text:'Info kasir disalin ke clipboard.', timer:1800, showConfirmButton:false }) : alert('Info disalin!');
+    }).catch(() => alert(teks));
+  }
+}
+
 /* ------------------------------------------
    QR PER KASIR (tampil di kelola kasir)
 ------------------------------------------ */
