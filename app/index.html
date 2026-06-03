@@ -17925,7 +17925,7 @@ ${t.bayar ? `
           </div>
           <div class="flex gap-1.5 flex-shrink-0">
 
-            <button onclick="showKasirIdCard('${k.id}','${(k.nama||'').replace(/'/g,\"\\\'\")}','${(k.username||'').replace(/'/g,\"\\\'\")}')"
+            <button onclick="showKasirIdCard('${k.id}','${(k.nama||'').replace(/'/g,"&#39;")}','${(k.username||'').replace(/'/g,"&#39;")}')"
               class="w-8 h-8 rounded-xl text-violet-500 border-0 cursor-pointer flex items-center justify-center"
               style="background:#f5f3ff;" title="ID Card QR"><i class="fas fa-id-card text-[10px]"></i></button>
             <button onclick="editKasir('${k.id}')"
