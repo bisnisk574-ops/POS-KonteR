@@ -7869,7 +7869,7 @@
               </div>
               <div class="flex-1">
                 <p class="kasir-field-label">Dompet Modal Keluar</p>
-                <select id="kd-w-modal" class="kasir-field-input"></select>
+                <select id="kd-w-modal" class="kasir-field-input" onchange="setLastModalWallet(this.value)"></select>
               </div>
             </div>
             <!-- Keterangan -->
@@ -8230,7 +8230,7 @@
                 <div class="flex-1 min-w-0">
                   <p style="font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.35);">SUMBER DANA (Modal Keluar)</p>
                   <div class="ewl-custom-select-wrap" id="ke-w-modal-wrap">
-                    <select id="ke-w-modal" class="kasir-field-input ewl-hidden-select" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;z-index:2;" onchange="syncEwlLabel('modal')"></select>
+                    <select id="ke-w-modal" class="kasir-field-input ewl-hidden-select" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;z-index:2;" onchange="syncEwlLabel('modal');setLastModalWallet(this.value)"></select>
                     <span id="ke-w-modal-label" style="font-size:12px;font-weight:700;color:white;pointer-events:none;">— Pilih Dompet —</span>
                     <i class="fas fa-chevron-down" style="font-size:9px;color:rgba(255,255,255,0.4);pointer-events:none;"></i>
                   </div>
@@ -9494,7 +9494,7 @@
           <button onclick="closeModal('modal-tr-wallet')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
         </div>
         <div class="space-y-4">
-          <div><label>Dari Dompet</label><select id="tr-from" class="input-premium"></select></div>
+          <div><label>Dari Dompet</label><select id="tr-from" class="input-premium" onchange="setLastModalWallet(this.value)"></select></div>
           <div><label>Ke Dompet</label><select id="tr-to" class="input-premium"></select></div>
           <div><label>Jumlah Transfer</label><input type="number" id="tr-amount" class="input-premium" placeholder="0"></div>
           <button onclick="processTransfer()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">TRANSFER</button>
@@ -10149,7 +10149,7 @@
         </div>
         <i id="rw-dcheck-all" class="fas fa-check" style="font-size:9px;color:#38BDF8;${currentTrDompet==='all'?'':'display:none;'}"></i>
       </div>`;
-      wallets.forEach(w => {
+      [...wallets].sort((a,b)=>(a.nama||'').localeCompare(b.nama||'','id')).forEach(w => {
         const isKas = w.tipe === 'kas';
         const color = isKas ? '#10b981' : '#38BDF8';
         const bg    = isKas ? 'rgba(16,185,129,0.15)' : 'rgba(56,189,248,0.15)';
@@ -10997,12 +10997,19 @@
       const sel = document.getElementById('cart-all-wallet');
       if (!sel) return;
       sel.innerHTML = '<option value="">- Pilih Dompet Penerima -</option>';
-      (db.dompet || []).forEach(w => {
+      [...(db.dompet || [])].sort((a,b)=>(a.nama||'').localeCompare(b.nama||'','id')).forEach(w => {
         const o = document.createElement('option');
         o.value = w.id;
         o.textContent = (w.icon || '💼') + ' ' + w.nama + ' (Rp ' + fmt(w.saldo) + ')';
         sel.appendChild(o);
       });
+      // Auto-pilih dompet kas/tunai pertama jika belum ada pilihan
+      if (!sel.value) {
+        const defaultWallet = (db.dompet || [])
+          .filter(w => w.tipe === 'kas')
+          .sort((a,b) => (a.nama||'').localeCompare(b.nama||'','id'))[0];
+        if (defaultWallet) sel.value = defaultWallet.id;
+      }
       syncCartWalletLabel();
     }
 
@@ -12107,7 +12114,7 @@
 
       // Isi dropdown dompet modal & metode bayar
       const wallets = db.dompet || [];
-      const walletOpts = wallets.map(w =>
+      const walletOpts = [...wallets].sort((a,b)=>(a.nama||'').localeCompare(b.nama||'','id')).map(w =>
         `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo||0)})</option>`
       ).join('');
       const emptyModal = '<option value=>— Tidak Ada / Tunai —</option>';
@@ -12301,8 +12308,9 @@
 
     function renderWallets() {
       const items = document.getElementById('wallet-items');
-      const kasWallets  = db.dompet.filter(w => w.tipe === 'kas');
-      const digWallets  = db.dompet.filter(w => w.tipe === 'digital');
+      const sortNama = (a,b) => (a.nama||'').localeCompare(b.nama||'','id');
+      const kasWallets  = db.dompet.filter(w => w.tipe === 'kas').sort(sortNama);
+      const digWallets  = db.dompet.filter(w => w.tipe === 'digital').sort(sortNama);
 
       const kasHtml = kasWallets.length
         ? `<div class="grid grid-cols-2 gap-4">${kasWallets.map((w,i) => buildWalletCard(w,i)).join('')}</div>`
@@ -12971,14 +12979,47 @@
     }
 
     // ---- UPDATE SELECTS ----
+    // ---- LAST USED MODAL WALLET ----
+    const LAST_MODAL_WALLET_KEY = 'ku_last_modal_wallet';
+    function setLastModalWallet(id) {
+      if (id) localStorage.setItem(LAST_MODAL_WALLET_KEY, id);
+    }
+    function getLastModalWallet() {
+      return localStorage.getItem(LAST_MODAL_WALLET_KEY) || '';
+    }
+    function resolveDefaultModal(sortedDompet) {
+      // Pakai last-used jika masih ada di daftar dompet, fallback ke digital pertama
+      const lastId = getLastModalWallet();
+      if (lastId && sortedDompet.find(w => w.id === lastId)) return lastId;
+      return (sortedDompet.find(w => w.tipe === 'digital') || sortedDompet[0] || {}).id || '';
+    }
+
     function updateSelects() {
-      const wOpts = db.dompet.map(w => `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo)})</option>`).join('');
+      const sortedDompet = [...db.dompet].sort((a,b)=>(a.nama||'').localeCompare(b.nama||'','id'));
+      const wOpts = sortedDompet.map(w => `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo)})</option>`).join('');
       const cOpts = db.pelanggan.map(c => `<option value="${c.nama}">${c.nama}</option>`).join('');
 
-      // Dompet selects
-      ['m-h-wallet','pay-h-wallet','tr-from','tr-to','adj-wallet','kd-w-modal','kd-w-penerima','kf-w-penerima','cart-all-wallet'].forEach(id => {
+      // Default dompet: modal → last-used wallet, penerima → kas pertama
+      const defaultKas     = (sortedDompet.find(w => w.tipe === 'kas')     || sortedDompet[0] || {}).id || '';
+      const defaultModal   = resolveDefaultModal(sortedDompet);
+
+      // Dompet selects — urut abjad + auto-select default jika belum ada pilihan
+      const walletSelectMap = {
+        'm-h-wallet'   : defaultKas,
+        'pay-h-wallet' : defaultKas,
+        'tr-from'      : defaultModal,
+        'tr-to'        : defaultKas,
+        'adj-wallet'   : defaultKas,
+        'kd-w-modal'   : defaultModal,
+        'kd-w-penerima': defaultKas,
+        'kf-w-penerima': defaultKas,
+        'cart-all-wallet': defaultKas,
+      };
+      Object.entries(walletSelectMap).forEach(([id, defVal]) => {
         const el = document.getElementById(id);
-        if (el) el.innerHTML = '<option value="">- Pilih Dompet -</option>' + wOpts;
+        if (!el) return;
+        el.innerHTML = '<option value="">- Pilih Dompet -</option>' + wOpts;
+        if (!el.value && defVal) el.value = defVal;
       });
 
       // Customer select di modal hutang
@@ -13503,12 +13544,25 @@
     // ============================================================
     function populateEwalletWallets() {
       const wallets = db.dompet || [];
-      const opts = wallets.map(w => `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo||0)})</option>`).join('');
+      const opts = [...wallets].sort((a,b)=>(a.nama||'').localeCompare(b.nama||'','id')).map(w => `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo||0)})</option>`).join('');
       const fallback = '<option value="">-- Pilih Dompet --</option>';
       ['ke-w-modal','ke-w-penerima'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.innerHTML = (wallets.length ? '<option value="">- Pilih Dompet -</option>' : fallback) + opts;
+          // Auto-pilih default dompet jika belum ada pilihan
+          if (!el.value) {
+            const sorted = [...wallets].sort((a,b)=>(a.nama||'').localeCompare(b.nama||'','id'));
+            let preferred;
+            if (id === 'ke-w-modal') {
+              // Modal → last-used wallet, fallback ke digital pertama
+              preferred = sorted.find(w => w.id === getLastModalWallet()) || sorted.find(w => w.tipe === 'digital') || sorted[0];
+            } else {
+              // Penerima → dompet kas/tunai pertama
+              preferred = sorted.find(w => w.tipe === 'kas') || sorted[0];
+            }
+            if (preferred) el.value = preferred.id;
+          }
           // Sync label custom select
           const suffix = id === 'ke-w-modal' ? 'modal' : 'penerima';
           syncEwlLabel(suffix);
@@ -27226,7 +27280,7 @@ window._kuDdWalletItems = function(opts) {
   if (opts.allowEmpty !== false) {
     items.push({ value: '', label: '- Pilih Dompet -', icon: 'fa-wallet', color: 'rgba(255,255,255,0.3)', sub: null });
   }
-  wallets.forEach(function(w) {
+  [...wallets].sort(function(a,b){ return (a.nama||'').localeCompare(b.nama||'','id'); }).forEach(function(w) {
     const isKas = w.tipe === 'kas';
     items.push({
       value : w.id,
@@ -27247,12 +27301,18 @@ window._kuDdWalletItems = function(opts) {
 // -- Dompet Modal Keluar (kasir digital) --
 window._kuCfg_kd_w_modal = function() {
   const sel = document.getElementById('kd-w-modal');
+  const wallets = (window.db && window.db.dompet) ? [...window.db.dompet] : [];
+  const lastId = localStorage.getItem('ku_last_modal_wallet') || '';
+  const defVal = (lastId && wallets.find(function(w){ return w.id===lastId; }))
+    ? lastId
+    : ((wallets.find(function(w){ return w.tipe==='digital'; }) || wallets[0] || {}).id || '');
+  const val = (sel && sel.value) ? sel.value : defVal;
   return {
     items: _kuDdWalletItems(),
-    value: sel ? sel.value : '',
+    value: val,
     onSelect: function(val) {
       const sel = document.getElementById('kd-w-modal');
-      if (sel) { sel.value = val; }
+      if (sel) { sel.value = val; localStorage.setItem('ku_last_modal_wallet', val); }
     }
   };
 };
@@ -27307,21 +27367,30 @@ window._kuCfg_pay_h_wallet = function() {
 // -- Transfer: Dari Dompet --
 window._kuCfg_tr_from = function() {
   const sel = document.getElementById('tr-from');
+  const wallets = (window.db && window.db.dompet) ? [...window.db.dompet].sort(function(a,b){ return (a.nama||'').localeCompare(b.nama||'','id'); }) : [];
+  const lastId = localStorage.getItem('ku_last_modal_wallet') || '';
+  const defVal = (lastId && wallets.find(function(w){ return w.id===lastId; }))
+    ? lastId
+    : ((wallets.find(function(w){ return w.tipe==='digital'; }) || wallets[0] || {}).id || '');
+  const val = (sel && sel.value) ? sel.value : defVal;
   return {
     items: _kuDdWalletItems({ allowEmpty: false }),
-    value: sel ? sel.value : '',
+    value: val,
     onSelect: function(val) {
       const sel = document.getElementById('tr-from');
-      if (sel) sel.value = val;
+      if (sel) { sel.value = val; localStorage.setItem('ku_last_modal_wallet', val); }
     }
   };
 };
 // -- Transfer: Ke Dompet --
 window._kuCfg_tr_to = function() {
   const sel = document.getElementById('tr-to');
+  const wallets = (window.db && window.db.dompet) ? [...window.db.dompet].sort(function(a,b){ return (a.nama||'').localeCompare(b.nama||'','id'); }) : [];
+  const defKas = (wallets.find(function(w){ return w.tipe==='kas'; }) || wallets[0] || {}).id || '';
+  const val = (sel && sel.value) ? sel.value : defKas;
   return {
     items: _kuDdWalletItems({ allowEmpty: false }),
-    value: sel ? sel.value : '',
+    value: val,
     onSelect: function(val) {
       const sel = document.getElementById('tr-to');
       if (sel) sel.value = val;
