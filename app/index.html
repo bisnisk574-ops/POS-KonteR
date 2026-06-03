@@ -17641,13 +17641,13 @@ ${t.bayar ? `
   // =====================================================
   // PATCH: openSidebarMenu → load multi-toko saat buka Akun
   // =====================================================
+  // [FIX] Gunakan registry handler agar tidak overwrite handler lain (kelola-kasir, absensi-kasir, poin-pelanggan)
   (function() {
-    // Tunggu sampai openSidebarMenu tersedia
     function patchOpenSidebar() {
       if (typeof openSidebarMenu !== 'function') { setTimeout(patchOpenSidebar, 100); return; }
-      const _orig = openSidebarMenu;
+      // Simpan referensi fungsi SAAT INI (sudah include semua patch sebelumnya)
+      const _prev = window.openSidebarMenu;
       window.openSidebarMenu = function(menu) {
-        // Handle menu baru sebelum diteruskan
         if (menu === 'kelola-toko') {
           closeSidebar && closeSidebar();
           openModal('modal-sidebar-kelola-toko');
@@ -17666,12 +17666,14 @@ ${t.bayar ? `
           setTimeout(_startMonitorAutoRefresh, 800);
           return;
         }
-        _orig(menu);
+        // Teruskan ke chain sebelumnya (termasuk kelola-kasir, absensi-kasir, poin-pelanggan)
+        _prev(menu);
         if (menu === 'akun') setTimeout(renderMultiTokoSection, 200);
         if (menu === 'admin') setTimeout(injectAdminMonitorBtn, 300);
       };
     }
-    patchOpenSidebar();
+    // [FIX] Jalankan setelah semua patch sinkron selesai, bukan polling
+    setTimeout(patchOpenSidebar, 0);
   })();
 
   // =====================================================
