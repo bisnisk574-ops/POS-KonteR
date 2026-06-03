@@ -8018,6 +8018,29 @@
           </div>
           <select id="kf-kategori-filter" style="display:none;" onchange="filterKasirByKategori('fisik')"><option value="">Semua Produk</option></select>
 
+          <!-- Info Poin Pelanggan Fisik -->
+          <div id="kf-poin-info-card" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(139,92,246,0.05));border:1.5px solid rgba(124,58,237,0.2);border-radius:16px;padding:12px 14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <div style="width:28px;height:28px;border-radius:10px;background:rgba(124,58,237,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-star" style="font-size:11px;color:#7c3aed;"></i>
+                </div>
+                <div>
+                  <p style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.07em;margin:0;">Poin Pelanggan</p>
+                  <p id="kf-poin-info-nama" style="font-size:10px;font-weight:800;color:#1e293b;margin:1px 0 0;"></p>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:9px;font-weight:700;color:#94a3b8;margin:0;">Saldo Poin</p>
+                <p id="kf-poin-info-saldo" style="font-size:15px;font-weight:900;color:#7c3aed;margin:1px 0 0;line-height:1;">0 poin</p>
+              </div>
+            </div>
+            <div id="kf-poin-info-estimasi" style="display:none;background:rgba(124,58,237,0.1);border-radius:10px;padding:7px 11px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
+              <span id="kf-poin-info-estimasi-val" style="font-size:12px;font-weight:900;color:#7c3aed;">+0 poin</span>
+            </div>
+          </div>
+
           <!-- Scan Barcode Banner -->
           <div style="background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(167,139,250,0.05));border:1.5px dashed rgba(167,139,250,0.35);border-radius:16px;padding:12px 14px;">
             <div class="flex items-center justify-between">
@@ -8072,7 +8095,7 @@
                 <p class="kasir-field-label" style="color:#166534;">JUAL</p>
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] font-black text-emerald-600">Rp</span>
-                  <input type="number" id="kf-jual" class="kasir-field-input text-emerald-800" style="background:transparent;" placeholder="0" oninput="updateKasirLaba('fisik')">
+                  <input type="number" id="kf-jual" class="kasir-field-input text-emerald-800" style="background:transparent;" placeholder="0" oninput="updateKasirLaba('fisik');refreshKfPoinInfo();">
                 </div>
               </div>
             </div>
@@ -8104,7 +8127,7 @@
               </div>
               <div class="flex-1">
                 <p class="kasir-field-label">Pelanggan</p>
-                <select id="kf-customer" class="kasir-field-input"></select>
+                <select id="kf-customer" class="kasir-field-input" onchange="refreshKfPoinInfo();if(window.refreshKasirPoinSection)refreshKasirPoinSection();"></select>
               </div>
             </div>
             <div class="kasir-field-row">
@@ -8239,6 +8262,29 @@
         <!-- ===== FORM E-WALLET / TRANSFER ===== -->
         <div id="form-k-ewallet" class="hidden space-y-3">
 
+          <!-- Info Poin Pelanggan E-Wallet -->
+          <div id="ke-poin-info-card" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(139,92,246,0.05));border:1.5px solid rgba(124,58,237,0.2);border-radius:16px;padding:12px 14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <div style="width:28px;height:28px;border-radius:10px;background:rgba(124,58,237,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-star" style="font-size:11px;color:#7c3aed;"></i>
+                </div>
+                <div>
+                  <p style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.07em;margin:0;">Poin Pelanggan</p>
+                  <p id="ke-poin-info-nama" style="font-size:10px;font-weight:800;color:#1e293b;margin:1px 0 0;"></p>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:9px;font-weight:700;color:#94a3b8;margin:0;">Saldo Poin</p>
+                <p id="ke-poin-info-saldo" style="font-size:15px;font-weight:900;color:#7c3aed;margin:1px 0 0;line-height:1;">0 poin</p>
+              </div>
+            </div>
+            <div id="ke-poin-info-estimasi" style="display:none;background:rgba(124,58,237,0.1);border-radius:10px;padding:7px 11px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
+              <span id="ke-poin-info-estimasi-val" style="font-size:12px;font-weight:900;color:#7c3aed;">+0 poin</span>
+            </div>
+          </div>
+
           <!-- Flow visual header card -->
           <div class="ewl-flow-card" style="position:relative;z-index:1;">
             <div class="flex items-center gap-3 mb-3" style="position:relative;z-index:1;">
@@ -8325,7 +8371,7 @@
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] font-black text-slate-400">Rp</span>
                   <input type="number" id="ke-nominal" class="kasir-field-input" placeholder="0"
-                    oninput="updateEwalletCalc();if(typeof renderQuickBayarBtns==='function')renderQuickBayarBtns('ke');if(typeof hitungKembalian==='function')hitungKembalian('ke')">
+                    oninput="updateEwalletCalc();if(typeof renderQuickBayarBtns==='function')renderQuickBayarBtns('ke');if(typeof hitungKembalian==='function')hitungKembalian('ke');refreshKePoinInfo();">
                 </div>
               </div>
             </div>
@@ -8417,7 +8463,7 @@
               </div>
               <div class="flex-1">
                 <p class="kasir-field-label">Pelanggan / No. HP</p>
-                <select id="ke-customer" class="kasir-field-input"></select>
+                <select id="ke-customer" class="kasir-field-input" onchange="refreshKePoinInfo();if(window.refreshKasirPoinSection)refreshKasirPoinSection();"></select>
               </div>
             </div>
             <div class="kasir-field-row" style="border:none;">
@@ -10315,8 +10361,8 @@
       if (isEwl) populateEwalletWallets();
       // Refresh filter kategori saat tab berganti
       if ((isDig || isFis) && typeof refreshKategoriFilters === 'function') refreshKategoriFilters();
-      // Refresh info poin pelanggan & banner saat tab digital aktif
-      if (isDig) setTimeout(function(){ refreshKdPoinInfo(); refreshKasirPoinBanner(); }, 50);
+      // Refresh info poin pelanggan & banner saat tab berganti
+      setTimeout(function(){ refreshAllPoinInfo(); refreshKasirPoinBanner(); }, 50);
     }
 
     function updateKasirLaba(tipe) {
@@ -11095,7 +11141,7 @@
 
       // Refresh section poin
       if (window.refreshKasirPoinSection) window.refreshKasirPoinSection();
-      if (typeof refreshKdPoinInfo === 'function') refreshKdPoinInfo();
+      if (typeof refreshAllPoinInfo === 'function') refreshAllPoinInfo();
 
       let totalBayar = 0, totalLaba = 0;
       items.forEach(it => {
@@ -13019,35 +13065,32 @@
     }
 
     // ---- UPDATE SELECTS ----
-    // ---- INFO POIN DI KASIR DIGITAL ----
-    function refreshKdPoinInfo() {
-      const card = document.getElementById('kd-poin-info-card');
+    // ---- INFO POIN DI KASIR (Digital / Fisik / E-Wallet) ----
+    function _refreshPoinInfoCard(prefix, jualElId) {
+      const card    = document.getElementById(prefix + '-poin-info-card');
       if (!card) return;
-
-      // Ambil config poin — tersedia sebagai window.getPoinConfig setelah modul poin load
       const cfg = window.getPoinConfig ? window.getPoinConfig() : null;
       if (!cfg || !cfg.aktif) { card.style.display = 'none'; return; }
 
-      const custSel  = document.getElementById('kd-customer');
+      const custSel  = document.getElementById(prefix + '-customer');
       const custName = custSel ? custSel.value : '';
       if (!custName || custName === 'Umum') { card.style.display = 'none'; return; }
 
-      // Cari di db.pelanggan (field poin tersimpan di sana via db.customers yg sama referensi)
       const allCust = (db.customers || db.pelanggan || []);
-      const cust = allCust.find(c => c.nama === custName);
+      const cust    = allCust.find(c => c.nama === custName);
       if (!cust) { card.style.display = 'none'; return; }
 
       card.style.display = 'block';
 
-      const namaEl  = document.getElementById('kd-poin-info-nama');
-      const saldoEl = document.getElementById('kd-poin-info-saldo');
-      const estWrap = document.getElementById('kd-poin-info-estimasi');
-      const estVal  = document.getElementById('kd-poin-info-estimasi-val');
+      const namaEl  = document.getElementById(prefix + '-poin-info-nama');
+      const saldoEl = document.getElementById(prefix + '-poin-info-saldo');
+      const estWrap = document.getElementById(prefix + '-poin-info-estimasi');
+      const estVal  = document.getElementById(prefix + '-poin-info-estimasi-val');
 
       if (namaEl)  namaEl.textContent  = cust.nama;
       if (saldoEl) saldoEl.textContent = (cust.poin || 0).toLocaleString('id-ID') + ' poin';
 
-      // Estimasi poin: ambil dari jenis trx yg dipilih di keranjang, atau hitung per nominal
+      // Estimasi dari jenis trx keranjang atau per nominal
       const jenisSel = document.getElementById('kasir-poin-jenis-trx');
       const idx      = jenisSel ? parseInt(jenisSel.value) : NaN;
       const bonusTrx = cfg.bonusTrx || [];
@@ -13055,9 +13098,9 @@
         if (estWrap) estWrap.style.display = 'flex';
         if (estVal)  estVal.textContent = '+' + bonusTrx[idx].poin + ' poin';
       } else {
-        const jual        = Number(document.getElementById('kd-jual')?.value) || 0;
-        const poinPer     = cfg.poinPerNominal || 0;
-        const kelipatan   = cfg.kelipatanNominal || 1;
+        const jual      = Number(document.getElementById(jualElId)?.value) || 0;
+        const poinPer   = cfg.poinPerNominal || 0;
+        const kelipatan = cfg.kelipatanNominal || 1;
         if (poinPer > 0 && jual > 0) {
           const est = Math.floor(jual / kelipatan) * poinPer;
           if (estWrap) estWrap.style.display = 'flex';
@@ -13067,6 +13110,10 @@
         }
       }
     }
+    function refreshKdPoinInfo() { _refreshPoinInfoCard('kd', 'kd-jual'); }
+    function refreshKfPoinInfo() { _refreshPoinInfoCard('kf', 'kf-jual'); }
+    function refreshKePoinInfo() { _refreshPoinInfoCard('ke', 'ke-nominal'); }
+    function refreshAllPoinInfo() { refreshKdPoinInfo(); refreshKfPoinInfo(); refreshKePoinInfo(); }
 
     // ---- BANNER POIN AKTIF DI KASIR ----
     function refreshKasirPoinBanner() {
@@ -13150,7 +13197,7 @@
         const el = document.getElementById(id);
         if (el) el.innerHTML = '<option value="Umum">Umum</option>' + cOpts;
       });
-      refreshKdPoinInfo();
+      refreshAllPoinInfo();
       refreshKasirPoinBanner();
     }
 
@@ -25075,6 +25122,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     window.loadPoinSettingForm();
     window.refreshKasirPoinSection();
     if (typeof refreshKasirPoinBanner === 'function') refreshKasirPoinBanner();
+    if (typeof refreshAllPoinInfo === 'function') refreshAllPoinInfo();
   });
 
   /* -- Ekspor -- */
