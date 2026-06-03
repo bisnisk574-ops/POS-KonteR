@@ -4460,7 +4460,7 @@
             if (subData.store_name) {
               localStorage.setItem('k_store_name', subData.store_name);
             }
-            if (subData.plan) localStorage.setItem('k_plan', subData.plan);
+            if (subData.plan) localStorage.setItem('k_plan', subData.plan.toLowerCase().trim());
             if (subData.expired_at) {
               let expTs = subData.expired_at;
               if (expTs && expTs.toDate) expTs = expTs.toDate();
@@ -4908,7 +4908,7 @@
           </button>
 
           <!-- Poin Pelanggan — hanya Admin/Owner -->
-          <button id="sidebar-poin-pelanggan-menu" class="sidebar-menu-item" onclick="openSidebarMenu('poin-pelanggan')" style="display:none;">
+          <button id="sidebar-poin-pelanggan-menu" class="sidebar-menu-item" onclick="openSidebarMenu('poin-pelanggan')">
             <div class="sidebar-icon-wrap" style="background:rgba(124,58,237,0.12);">
               <i class="fas fa-star" style="color:#a855f7;"></i>
             </div>
@@ -5030,7 +5030,7 @@
           </button>
 
           <!-- Poin Pelanggan — hanya Admin/Owner -->
-          <button id="dsn-poin-pelanggan" class="desktop-sidenav-item" onclick="openSidebarMenu('poin-pelanggan')" style="display:none;">
+          <button id="dsn-poin-pelanggan" class="desktop-sidenav-item" onclick="openSidebarMenu('poin-pelanggan')">
             <div class="dsn-icon"><i class="fas fa-star" style="color:#a78bfa;"></i></div>
             Poin Pelanggan
           </button>
@@ -9831,7 +9831,7 @@
 
     function showView(v) {
       // -- FEATURE GATE: cek paket sebelum navigasi --
-      const plan = localStorage.getItem('k_plan') || 'trial';
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
       const rank = PLAN_RANK[plan] ?? 0;
 
@@ -9969,7 +9969,7 @@
     function showUpgradeModal(featureKey, minPlan, onUnlock) {
       const info = _UPGRADE_INFO[minPlan] || _UPGRADE_INFO.basic;
       const featureLabel = _FEATURE_LABEL[featureKey] || featureKey;
-      const plan = localStorage.getItem('k_plan') || 'trial';
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
       const rank = PLAN_RANK[plan] ?? 0;
 
@@ -11617,7 +11617,7 @@
                   const sidebarName = document.getElementById('sidebar-store-name');
                   if (sidebarName) sidebarName.innerText = subData.store_name;
                 }
-                if (subData.plan) localStorage.setItem('k_plan', subData.plan);
+                if (subData.plan) localStorage.setItem('k_plan', subData.plan.toLowerCase().trim());
               }
             } catch(subErr) {
               console.warn('[fetchCloudData] Gagal baca store_name:', subErr.message);
@@ -13236,7 +13236,7 @@
       const limits = getPlanLimits();
       const totalDompet = (db.dompet || []).length;
       if (totalDompet >= limits.dompet) {
-        const plan = localStorage.getItem('k_plan') || 'trial';
+        const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
         const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
         const rank = PLAN_RANK[plan] ?? 0;
         const nextPlan = rank < 1 ? 'basic' : rank < 2 ? 'pro' : 'unlimited';
@@ -15385,7 +15385,7 @@ ${t.bayar ? `
                   expiredDate = expTs.toISOString().split('T')[0];
                   localStorage.setItem('k_expired_date', expiredDate); // update cache
                 }
-                planLabel = sub.plan || planLabel;
+                planLabel = (sub.plan || planLabel).toLowerCase().trim();
                 localStorage.setItem('k_plan', planLabel);
               }
             } catch(e) {
@@ -15900,8 +15900,8 @@ ${t.bayar ? `
     }
 
     // -- Export Excel (.xlsx via SheetJS CDN) --
-    function doExportExcel() {
-      const _planRank = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
+    async function doExportExcel() {
+      const _planRank = await _getPlanRankLive();
       if (_planRank < 2) { showUpgradeModal('ekspor_excel','pro'); return; }
       const d = window._lapCurrentData;
       if (!d) { alert('Render laporan dulu.'); return; }
@@ -15976,8 +15976,8 @@ ${t.bayar ? `
     }
 
     // -- Share ringkasan via WhatsApp --
-    function doShareWhatsApp() {
-      const _planRank = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
+    async function doShareWhatsApp() {
+      const _planRank = await _getPlanRankLive();
       if (_planRank < 2) { showUpgradeModal('share_whatsapp','pro'); return; }
       const d = window._lapCurrentData;
       if (!d) { alert('Render laporan dulu.'); return; }
@@ -16561,10 +16561,9 @@ ${t.bayar ? `
       return { start, end };
     }
 
-    function doExportPDF() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      if ((PLAN_RANK[plan] ?? 0) < 2) {
+    async function doExportPDF() {
+      const _pr = await _getPlanRankLive();
+      if (_pr < 2) {
         showUpgradeModal('ekspor_pdf', 'pro');
         return;
       }
@@ -16711,10 +16710,9 @@ ${t.bayar ? `
     let _pantauOpen = false;
     let _pantauInterval = null;
 
-    function togglePantauStok() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
-      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      if ((PLAN_RANK[plan] ?? 0) < 2) {
+    async function togglePantauStok() {
+      const _pr = await _getPlanRankLive();
+      if (_pr < 2) {
         showUpgradeModal('pantau_stok', 'pro');
         return;
       }
@@ -16841,9 +16839,9 @@ ${t.bayar ? `
     }
 
     function checkLowStockNotif() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      if ((PLAN_RANK[plan] ?? 0) < 2) return; // hanya Pro & Unlimited
+      if ((PLAN_RANK[plan.toLowerCase().trim()] ?? 0) < 2) return; // hanya Pro & Unlimited
       const fisikProduk = db.inventory.filter(p => p.tipe === 'fisik');
       const warnings = fisikProduk.filter(p => {
         const stokVal = p.stok || 0;
@@ -16911,7 +16909,7 @@ ${t.bayar ? `
 
     // ========== APPLY PLAN UI LOCKS ==========
     function applyPlanUI() {
-      const plan = localStorage.getItem('k_plan') || 'trial';
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
       const rank = PLAN_RANK[plan] ?? 0;
 
@@ -17657,7 +17655,7 @@ ${t.bayar ? `
           return;
         }
         if (menu === 'monitor-cabang') {
-          var _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
+          var _r = ({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0;
           if (_r < 2) {
             if (typeof showUpgradeModal === 'function') showUpgradeModal('monitor_cabang','pro');
             return;
@@ -18272,7 +18270,7 @@ ${t.bayar ? `
         const subSnap = await window._fbFirestore.collection('subscriptions').doc(ownerUid).get();
         if (subSnap.exists) {
           const sub = subSnap.data();
-          if (sub.plan) localStorage.setItem('k_plan', sub.plan);
+          if (sub.plan) localStorage.setItem('k_plan', sub.plan.toLowerCase().trim());
           if (sub.expired_at) {
             let exp = sub.expired_at;
             if (exp && exp.toDate) exp = exp.toDate();
@@ -18547,37 +18545,67 @@ ${t.bayar ? `
   window._tampilBannerAbsensi = _tampilBannerAbsensi;
 
   // --- HOOK: Tambahkan "Kelola Kasir" di openSidebarMenu ---
+  // ===== HELPER: Ambil plan rank dari Firestore (real-time, tidak bergantung cache) =====
+  async function _getPlanRankLive() {
+    const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
+    // 1. Baca dari localStorage dulu (instan)
+    const cached = localStorage.getItem('k_plan') || 'trial';
+    const cachedRank = PLAN_RANK[cached.toLowerCase().trim()] ?? 0;
+
+    // 2. Jika sudah unlimited / pro dari cache, percayai (cepat)
+    if (cachedRank >= 2) return cachedRank;
+
+    // 3. Jika rank rendah dari cache, coba ambil ulang dari Firestore (mungkin belum sync)
+    try {
+      if (!window._fbFirestore) return cachedRank;
+      const uid = (window._fbAuth && window._fbAuth.currentUser)
+        ? window._fbAuth.currentUser.uid
+        : (localStorage.getItem('k_sid') || '');
+      if (!uid || uid === 'DEMO') return cachedRank;
+
+      const snap = await window._fbFirestore.collection('subscriptions').doc(uid).get();
+      if (snap.exists) {
+        const data = snap.data();
+        const livePlan = (data.plan || 'trial').toLowerCase().trim();
+        localStorage.setItem('k_plan', livePlan); // update cache
+        return PLAN_RANK[livePlan] ?? 0;
+      }
+    } catch(e) {
+      console.warn('[PlanCheck] Gagal ambil plan dari Firestore:', e.message);
+    }
+    return cachedRank;
+  }
+
   // Extend fungsi openSidebarMenu yang sudah ada agar bisa handle 'kelola-kasir'
   const _origOpenSidebarMenu = typeof openSidebarMenu === 'function' ? openSidebarMenu : null;
   window.openSidebarMenu = function(menu) {
     if (menu === 'kelola-kasir') {
-      // Hanya pemilik toko (bukan kasir) yang boleh buka
       if (localStorage.getItem('k_kasir_mode') === 'true') {
         (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengelola kasir.', 'warning');
         return;
       }
-      // -- FEATURE GATE: minimal PRO --
-      { const _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
-        if (_r < 2) { showUpgradeModal('kelola_kasir','pro'); return; } }
-      closeSidebar();
-      openKelolaKasirModal();
+      (async () => {
+        const rank = await _getPlanRankLive();
+        if (rank < 2) { showUpgradeModal('kelola_kasir','pro'); return; }
+        closeSidebar();
+        openKelolaKasirModal();
+      })();
       return;
     }
     if (menu === 'poin-pelanggan') {
-      // Hanya pemilik toko (bukan kasir) yang boleh buka
       if (localStorage.getItem('k_kasir_mode') === 'true') {
         (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengatur sistem poin.', 'warning');
         return;
       }
-      // -- FEATURE GATE: minimal PRO --
-      { const _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
-        if (_r < 2) { showUpgradeModal('poin_pelanggan','pro'); return; } }
-      closeSidebar && closeSidebar();
-      // Buka modal dedicated poin pelanggan
-      if (typeof openModal === 'function') openModal('modal-poin-pelanggan');
-      setTimeout(function() {
-        if (typeof window.loadPoinSettingForm === 'function') window.loadPoinSettingForm();
-      }, 200);
+      (async () => {
+        const rank = await _getPlanRankLive();
+        if (rank < 2) { showUpgradeModal('poin_pelanggan','pro'); return; }
+        closeSidebar && closeSidebar();
+        if (typeof openModal === 'function') openModal('modal-poin-pelanggan');
+        setTimeout(function() {
+          if (typeof window.loadPoinSettingForm === 'function') window.loadPoinSettingForm();
+        }, 200);
+      })();
       return;
     }
     if (_origOpenSidebarMenu) _origOpenSidebarMenu(menu);
@@ -19962,16 +19990,12 @@ ${t.bayar ? `
     const _prev = typeof openSidebarMenu === 'function' ? openSidebarMenu : null;
     window.openSidebarMenu = function(menu) {
       if (menu === 'absensi-kasir') {
-        // -- FEATURE GATE: minimal paket PRO --
-        const plan = localStorage.getItem('k_plan') || 'trial';
-        const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-        const rank = PLAN_RANK[plan] ?? 0;
-        if (rank < 2) {
-          showUpgradeModal('absensi', 'pro');
-          return;
-        }
-        closeSidebar();
-        openAbsensiKasirModal();
+        (async () => {
+          const rank = await _getPlanRankLive();
+          if (rank < 2) { showUpgradeModal('absensi','pro'); return; }
+          closeSidebar();
+          openAbsensiKasirModal();
+        })();
         return;
       }
       if (_prev) _prev(menu);
@@ -23741,7 +23765,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   // ------------------------------------------
 
   window.bukaNotifPWA = function() {
-    var _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
+    var _r = ({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0;
     if (_r < 3) {
       if (typeof showUpgradeModal === 'function') showUpgradeModal('notif_pwa','unlimited');
       return;
@@ -24346,8 +24370,8 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   }
 
   /* -- Buka modal Audit Trail -- */
-  window.bukaAuditLog = function () {
-    var _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
+  window.bukaAuditLog = async function () {
+    var _r = (typeof _getPlanRankLive === 'function') ? await _getPlanRankLive() : (({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0);
     if (_r < 2) {
       if (typeof showUpgradeModal === 'function') showUpgradeModal('audit_trail','pro');
       return;
@@ -25803,8 +25827,8 @@ function fmtRp(n) {
 }
 
 // --- OPEN SIDEBAR SUPPLIER ---
-function openSidebarMenuSupplier() {
-  const _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
+async function openSidebarMenuSupplier() {
+  const _r = (typeof _getPlanRankLive === 'function') ? await _getPlanRankLive() : (({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0);
   if (_r < 1) {
     if (typeof showUpgradeModal === 'function') showUpgradeModal('supplier_restok','basic');
     return;
