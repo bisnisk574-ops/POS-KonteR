@@ -43,7 +43,7 @@
       measurementId:     "G-W8E39FLYKP"
     };
 
-    // ===== INISIALISASI FIREBASE (safe — tunggu SDK siap) =====
+    // ===== INISIALISASI FIREBASE (safe - tunggu SDK siap) =====
     function _initFirebase() {
       if (typeof firebase === 'undefined') {
         // SDK belum selesai dimuat, coba lagi 50ms kemudian
@@ -1304,7 +1304,7 @@
     }
   </style>
   <script>
-    /* ── Time Greeting Logic ── */
+    /* -- Time Greeting Logic -- */
     (function() {
       function updateTimeGreeting() {
         const hour = new Date().getHours();
@@ -2097,8 +2097,6 @@
       background: rgba(239,68,68,0.06) !important;
     }
     [data-theme="dark"] #modal-sidebar-setting .border-amber-100 { border-color:rgba(217,119,6,0.2) !important; }
-      background: #0f172a !important;
-    }
 
     /* ══════════════════════════════════════════════════
        DARK MODE — Panel Admin (#modal-admin-panel)
@@ -3225,7 +3223,7 @@
         const loginCanvas = document.getElementById('login-canvas');
         if (loginCanvas) loginCanvas.style.opacity = isDark ? '0.5' : '0.07';
 
-        // ── Update elemen login hardcoded ──
+        // -- Update elemen login hardcoded --
         // "atau" divider span
         const dividerSpan = loginScreen ? loginScreen.querySelector('.login-divider span') : null;
         if (dividerSpan) dividerSpan.style.color = isDark ? 'rgba(255,255,255,0.18)' : '#94a3b8';
@@ -3248,7 +3246,7 @@
         if (glassCard) glassCard.style.boxShadow = isDark
           ? '0 24px 64px rgba(0,0,0,0.55)'
           : '0 24px 64px rgba(0,97,194,0.10), 0 4px 20px rgba(0,0,0,0.08)';
-        // Sidebar menu item texts (force refresh via CSS var — no JS needed, handled by [data-theme])
+        // Sidebar menu item texts (force refresh via CSS var - no JS needed, handled by [data-theme])
         // Sidebar panel background update via CSS var
 
         // Login page toggle button
@@ -3270,7 +3268,7 @@
         applyTheme(current === 'dark' ? 'light' : 'dark');
       };
 
-      // Init: load saved theme — set data-theme langsung (aman sebelum DOM),
+      // Init: load saved theme - set data-theme langsung (aman sebelum DOM),
       // terapkan ulang setelah DOM siap agar semua elemen UI ter-update.
       const saved = localStorage.getItem(THEME_KEY) || 'light';
       document.documentElement.setAttribute('data-theme', saved);
@@ -3281,7 +3279,7 @@
     })();
     // ===== END TEMA SISTEM =====
 
-    // ===== MYSWAL — Global SweetAlert2 Mixin Premium =====
+    // ===== MYSWAL - Global SweetAlert2 Mixin Premium =====
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof Swal === 'undefined') return;
       window.MySwal = Swal.mixin({
@@ -3332,11 +3330,11 @@
     }
   </script>
 <script>
-  /* ── Global db shim ──────────────────────────────────────────────────────
+  /* -- Global db shim ------------------------------------------
      TIDAK deklarasi var/let db di sini agar tidak konflik dengan let db di
      script utama. Cukup pastikan window.db awal tidak undefined.
      Script utama akan overwrite window.db via Object.defineProperty.
-  ──────────────────────────────────────────────────────────────────────── */
+  ------------------------------------------ */
   window._shimDb = { dompet:[], transaksi:[], inventory:[], hutang:[], hutang_lunas:[], pelanggan:[], mutasi:[], notes:[], riwayat_hutang:[] };
   window.db = window._shimDb;
 </script>
@@ -3399,7 +3397,7 @@
   </div>
 
   <script>
-    // Jalankan SEBELUM DOM selesai — cegah flash login screen saat refresh
+    // Jalankan SEBELUM DOM selesai - cegah flash login screen saat refresh
     (function() {
       if (localStorage.getItem('k_logged') === 'true') {
         document.addEventListener('DOMContentLoaded', function() {
@@ -3638,7 +3636,7 @@
 
   <!-- ==================== LOGIN SCREEN ==================== -->
   <script>
-    // Jalankan SEBELUM login-screen dirender — cegah flash sama sekali
+    // Jalankan SEBELUM login-screen dirender - cegah flash sama sekali
     if (localStorage.getItem('k_logged') === 'true') {
       document.write('<style>#login-screen{display:none!important}</style>');
     }
@@ -4206,7 +4204,7 @@
   }
 
   // === FIREBASE AUTH LOGIC ===
-  // ─── TAB SWITCHER ───
+  // --- TAB SWITCHER ---
   function switchAuthTab(tab) {
     const panelLogin    = document.getElementById('panel-login');
     const panelRegister = document.getElementById('panel-register');
@@ -4226,7 +4224,7 @@
     }
   }
 
-  // ─── SHOW/HIDE PASSWORD ───
+  // --- SHOW/HIDE PASSWORD ---
   function togglePwd(inputId, btn) {
     const inp = document.getElementById(inputId);
     const icon = btn.querySelector('i');
@@ -4239,7 +4237,7 @@
     }
   }
 
-  // ─── PASSWORD STRENGTH ───
+  // --- PASSWORD STRENGTH ---
   function checkPwdStrength(val) {
     const bar   = document.getElementById('pwd-strength-bar');
     const label = document.getElementById('pwd-strength-label');
@@ -4265,7 +4263,7 @@
     label.style.color = cfg.color;
   }
 
-  // ─── ERROR DISPLAY ───
+  // --- ERROR DISPLAY ---
   function showLoginError(msg) {
     const el   = document.getElementById('login-error');
     const text = document.getElementById('login-error-text');
@@ -4278,7 +4276,7 @@
     if (el) el.classList.remove('show');
   }
 
-  // ─── BUTTON LOADING STATE ───
+  // --- BUTTON LOADING STATE ---
   function setLoginBtnLoading(btnId, textId, loading, label='') {
     const btn  = document.getElementById(btnId);
     const text = document.getElementById(textId);
@@ -4291,7 +4289,7 @@
     }
   }
 
-  // ─── LOGIN SUCCESS BUTTON ANIMATION ───
+  // --- LOGIN SUCCESS BUTTON ANIMATION ---
   function _triggerLoginBtnSuccess(btnId) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
@@ -4316,7 +4314,7 @@
     setTimeout(() => { try { btn.removeChild(ripple); } catch(e){} }, 800);
   }
 
-  // ─── GET FIREBASE AUTH INSTANCE ───
+  // --- GET FIREBASE AUTH INSTANCE ---
   // Menggunakan Firebase SDK yang sudah diinisialisasi di <head>
   async function firebaseSignIn(email, password) {
     try {
@@ -4360,7 +4358,7 @@
     }
   }
 
-  // ─── ERROR MESSAGE MAPPING ───
+  // --- ERROR MESSAGE MAPPING ---
   function firebaseAuthError(code) {
     const map = {
       'auth/user-not-found':          'Email tidak terdaftar. Silakan daftar terlebih dahulu.',
@@ -4389,7 +4387,7 @@
     return 'Terjadi kesalahan: ' + code;
   }
 
-  // ─── MAIN LOGIN ───
+  // --- MAIN LOGIN ---
   async function doLogin() {
     hideLoginError();
     const email    = (document.getElementById('login-email')?.value || '').trim();
@@ -4443,7 +4441,7 @@
       // Ripple effect on login button
       _triggerLoginBtnSuccess('btn-login');
 
-      // ── AMBIL store_name dari Firestore subscriptions ──
+      // -- AMBIL store_name dari Firestore subscriptions --
       // Ini memastikan nama toko selalu sesuai per akun, bukan dari cache device lain
       try {
         await new Promise(resolve => {
@@ -4475,7 +4473,7 @@
         console.warn('[doLogin] Gagal ambil store_name dari subscriptions:', subErr.message);
       }
 
-      // ── CEK EXPIRED SEBELUM MASUK APP ──
+      // -- CEK EXPIRED SEBELUM MASUK APP --
       let isExpiredAccount = false;
       const expDateStr = localStorage.getItem('k_expired_date');
       if (expDateStr) {
@@ -4498,7 +4496,7 @@
       }
 
       // skipCloudFetch=false agar data langsung diambil dari Firestore setelah login
-      initApp(false);
+      (window.initApp || initApp)(false);
     } catch(err) {
       showLoginError(err.message || 'Login gagal. Periksa email dan password.');
       setLoginBtnLoading('btn-login', 'btn-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK');
@@ -4507,7 +4505,7 @@
     }
   }
 
-  // ─── HELPER EXPIRED OVERLAY ───
+  // --- HELPER EXPIRED OVERLAY ---
   function _showExpiredOverlay(email, uid, expDateStr) {
     const overlay = document.getElementById('expired-overlay');
     if (!overlay) return;
@@ -4520,7 +4518,7 @@
       const d = new Date(expDateStr);
       elDate.textContent = d.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
     }
-    if (elUid) elUid.textContent = uid || localStorage.getItem('k_sid') || '—';
+    if (elUid) elUid.textContent = uid || localStorage.getItem('k_sid') || '-';
     overlay.style.display = 'flex';
     overlay.style.opacity = '0';
     overlay.style.transition = 'opacity 0.4s ease';
@@ -4528,9 +4526,9 @@
   }
 
   function expiredOverlayWhatsapp() {
-    const uid   = document.getElementById('exp-overlay-uid')?.textContent || localStorage.getItem('k_sid') || '—';
-    const email = document.getElementById('exp-overlay-email')?.textContent || localStorage.getItem('k_email') || '—';
-    const expD  = document.getElementById('exp-overlay-date')?.textContent || '—';
+    const uid   = document.getElementById('exp-overlay-uid')?.textContent || localStorage.getItem('k_sid') || '-';
+    const email = document.getElementById('exp-overlay-email')?.textContent || localStorage.getItem('k_email') || '-';
+    const expD  = document.getElementById('exp-overlay-date')?.textContent || '-';
     const msg   = encodeURIComponent(
       '🔴 *Perpanjang Langganan KonterKU*\n\n' +
       '📧 Email: ' + email + '\n' +
@@ -4554,7 +4552,7 @@
     if (passEl)  { passEl.value  = ''; passEl.classList.remove('error'); }
   }
 
-  // ─── REGISTER ───
+  // --- REGISTER ---
   async function doRegister() {
     hideLoginError();
     const storeName = (document.getElementById('reg-store-name')?.value || '').trim();
@@ -4594,7 +4592,7 @@
       localStorage.setItem('k_store_name', storeName);
       if (token) localStorage.setItem('k_token', token);
 
-      // ── OTOMATIS BUAT SUBSCRIPTION TRIAL 7 HARI ──
+      // -- OTOMATIS BUAT SUBSCRIPTION TRIAL 7 HARI --
       // Berjalan di background, tidak menghambat alur login
       createSubscription(uid, email, storeName);
 
@@ -4606,14 +4604,14 @@
                </span><br>
                <small style="color:#94a3b8;">UID: ${uid}</small>`,
         icon: 'success', timer: 3000, showConfirmButton: false
-      }).then(() => initApp(false));
+      }).then(() => (window.initApp || initApp)(false));
     } catch(err) {
       showLoginError(err.message || 'Pendaftaran gagal.');
       setLoginBtnLoading('btn-register', 'btn-register-text', false, '<i class="fas fa-user-plus mr-2"></i>BUAT AKUN');
     }
   }
 
-  // ─── FORGOT PASSWORD ───
+  // --- FORGOT PASSWORD ---
   async function doForgotPassword() {
     const email = (document.getElementById('login-email')?.value || '').trim();
     const { value: inputEmail } = await (_getMySwal()||Swal).fire({
@@ -4637,10 +4635,10 @@
     }
   }
 
-  // ─── LEGACY handleLogin (kept for auto-login compatibility) ───
+  // --- LEGACY handleLogin (kept for auto-login compatibility) ---
   function handleLogin() { doLogin(); }
 
-  // ─── AUTO-CREATE SUBSCRIPTION (Trial 7 hari) ───
+  // --- AUTO-CREATE SUBSCRIPTION (Trial 7 hari) ---
   // Dipanggil saat user baru berhasil daftar.
   // Menulis dokumen ke: subscriptions/{uid}
   async function createSubscription(uid, email, storeName) {
@@ -4696,7 +4694,7 @@
   }
 
   // ===== ADMIN CONFIG =====
-  // UID admin yang aman — JANGAN diubah sembarangan
+  // UID admin yang aman - JANGAN diubah sembarangan
   const ADMIN_UID = 'XgIW4oGLmNQZ0BIDpO6ZQfsjloB3';
 
   function isAdminUser() {
@@ -5650,7 +5648,6 @@
 
 
     <!-- ===== MODAL: QR KASIR (ID CARD STYLE) ===== -->
-    <style>
     
     <!-- ===== MODAL: ABSENSI KASIR ===== -->
     <div id="modal-absensi-kasir" class="modal-overlay" style="z-index:3200;">
@@ -9498,7 +9495,7 @@
         const firestore = window._fbFirestore;
         if (!firestore) { setTimeout(bridge, 50); return; }
         // Emulasikan API yang sama dengan modul ES sebelumnya
-        // PENTING: JANGAN gunakan toUpperCase() — Firebase UID bersifat case-sensitive
+        // PENTING: JANGAN gunakan toUpperCase() - Firebase UID bersifat case-sensitive
         window._fbDoc = (storeId) => {
           // Gunakan UID dari Firebase Auth yang sedang login sebagai prioritas utama
           // agar path Firestore selalu cocok dengan request.auth.uid di Security Rules
@@ -9530,7 +9527,7 @@
       return new Promise(resolve => {
         // Sudah siap → langsung resolve
         if (window._fbReady && window._fbFirestore) { resolve(); return; }
-        // Polling setiap 100ms, max 15 detik — tidak bergantung pada event yang mungkin sudah lewat
+        // Polling setiap 100ms, max 15 detik - tidak bergantung pada event yang mungkin sudah lewat
         let waited = 0;
         const iv = setInterval(function() {
           waited += 100;
@@ -9538,9 +9535,9 @@
             clearInterval(iv);
             resolve();
           } else if (waited >= 15000) {
-            // Timeout — resolve saja agar app tidak hang selamanya
+            // Timeout - resolve saja agar app tidak hang selamanya
             clearInterval(iv);
-            console.warn('[waitFirebase] Timeout 15s — melanjutkan tanpa Firebase');
+            console.warn('[waitFirebase] Timeout 15s - melanjutkan tanpa Firebase');
             resolve();
           }
         }, 100);
@@ -9553,7 +9550,7 @@
     }
 
     let db = { dompet: [], transaksi: [], inventory: [], hutang: [], hutang_lunas: [], pelanggan: [], mutasi: [], notes: [], riwayat_hutang: [] };
-    // Sync ke window.db — simple, tidak ada loop, tidak ada Proxy
+    // Sync ke window.db - simple, tidak ada loop, tidak ada Proxy
     window.db = db;
     // Helper: gunakan ini ganti `db = {...}` agar window.db selalu sync
     function setDb(newData) {
@@ -9595,7 +9592,7 @@
       }
     });
 
-    // ---- SYNC PILL (legacy stub — digantikan sync engine v3) ----
+    // ---- SYNC PILL (legacy stub - digantikan sync engine v3) ----
     function showSync(s) { /* digantikan showSyncToast */ }
 
     // ---- TANGGAL WIB ----
@@ -9692,7 +9689,7 @@
     }
 
     // ---- NAVIGASI ----
-    // ── TOGGLE SECTION PENGATURAN (accordion) ──
+    // -- TOGGLE SECTION PENGATURAN (accordion) --
     function toggleSettingSection(bodyId, chevronId) {
       const body    = document.getElementById(bodyId);
       const chevron = document.getElementById(chevronId);
@@ -9702,7 +9699,7 @@
       if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
     }
 
-    // ── TOGGLE CARD ASET ──
+    // -- TOGGLE CARD ASET --
     function toggleAsetCard() {
       const card = document.getElementById("aset-card-body");
       const icon = document.getElementById("icon-toggle-aset");
@@ -9727,7 +9724,7 @@
     });
 
     function showView(v) {
-      // ── FEATURE GATE: cek paket sebelum navigasi ──
+      // -- FEATURE GATE: cek paket sebelum navigasi --
       const plan = localStorage.getItem('k_plan') || 'trial';
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
       const rank = PLAN_RANK[plan] ?? 0;
@@ -9774,7 +9771,7 @@
       if (el) el.classList.add('active');
     }
 
-    // ── PLAN LIMITS ──
+    // -- PLAN LIMITS --
     const PLAN_LIMITS = {
       trial:     { produk: 100,  dompet: 20  },
       basic:     { produk: 200,  dompet: 20  },
@@ -9786,7 +9783,7 @@
       return PLAN_LIMITS[plan] || PLAN_LIMITS.trial;
     }
 
-    // ── UPGRADE MODAL ──
+    // -- UPGRADE MODAL --
     const _UPGRADE_INFO = {
       basic: {
         color: '#0ea5e9', bg: 'rgba(14,165,233,0.08)', border: 'rgba(14,165,233,0.2)',
@@ -9839,13 +9836,13 @@
     };
 
     const _FEATURE_LABEL = {
-      // ── Fitur basic ──
+      // -- Fitur basic --
       hutang:               'Hutang Piutang',
       limit_produk:         'Tambah Produk',
       limit_dompet:         'Tambah Dompet',
       manajemen_pelanggan:  'Manajemen Pelanggan',
       catatan_premium:      'Catatan Bisnis',
-      // ── Fitur pro ──
+      // -- Fitur pro --
       ekspor_pdf:           'Laporan & Ekspor PDF',
       ekspor_excel:         'Ekspor Excel',
       share_whatsapp:       'Bagikan Laporan via WhatsApp',
@@ -9857,7 +9854,7 @@
       supplier_restok:      'Supplier & Restok',
       poin_pelanggan:       'Sistem Poin Pelanggan & Reward',
       audit_trail:          'Audit Trail',
-      // ── Fitur unlimited ──
+      // -- Fitur unlimited --
       cloud_sync:           'Multi-Device Cloud Sync',
       monitor_cabang:       'Monitor Cabang Real-Time',
       notif_pwa:            'Notifikasi PWA',
@@ -9950,21 +9947,21 @@
     }
 
     // ---- FILTER TRANSAKSI ----
-    // ══════════════════════════════════════════════════════════════════
-    //  RIWAYAT FILTER v2 — Dropdown Jenis + Periode + Dompet + Search
-    // ══════════════════════════════════════════════════════════════════
+    // ------------------------------------------
+    //  RIWAYAT FILTER v2 - Dropdown Jenis + Periode + Dompet + Search
+    // ------------------------------------------
 
     let currentTrSearch   = '';
     let currentTrDompet   = 'all'; // 'all' | wallet.id
 
-    // ── Legacy compat ──
+    // -- Legacy compat --
     function setTrFilter(f)   { selectRwJenis(f, '', ''); }
     function setTimeFilter(f) { selectRwPeriode(f, '', '', '', ''); }
 
-    // ── Dropdown controller ──
+    // -- Dropdown controller --
     // _rwDdOpen dan toggleRwDd didefinisikan di bawah (fixed-position version)
 
-    // ── Pilih Jenis ──
+    // -- Pilih Jenis --
     function selectRwJenis(val, icon, label) {
       currentTrFilter = val;
       currentTrPage   = 1;
@@ -9991,7 +9988,7 @@
       renderDashboard();
     }
 
-    // ── Pilih Periode ──
+    // -- Pilih Periode --
     function selectRwPeriode(val, icon, label, bgHint, colorHint) {
       currentTimeFilter = val;
       currentTrPage     = 1;
@@ -10017,7 +10014,7 @@
       renderDashboard();
     }
 
-    // ── Render isi Dropdown Dompet (dinamis dari db.dompet) ──
+    // -- Render isi Dropdown Dompet (dinamis dari db.dompet) --
     function renderDompetDropdown() {
       const panel = document.getElementById('dd-dompet-panel');
       if (!panel) return;
@@ -10058,7 +10055,7 @@
       panel.innerHTML = html;
     }
 
-    // ── Pilih Dompet ──
+    // -- Pilih Dompet --
     function selectRwDompet(id) {
       currentTrDompet = id;
       currentTrPage   = 1;
@@ -10079,7 +10076,7 @@
       renderDashboard();
     }
 
-    // ── Search ──
+    // -- Search --
     function onTrxSearchInput(val) {
       currentTrSearch = val.trim().toLowerCase();
       currentTrPage   = 1;
@@ -10140,7 +10137,7 @@
       return filtered;
     }
 
-    // ── Helper format angka (lokal di scope kasir) ──────────────────────────
+    // -- Helper format angka (lokal di scope kasir) --------------------------
     function _fmt(n) { return Number(n || 0).toLocaleString('id-ID'); }
 
     // ---- TAB SWITCHES ----
@@ -10226,7 +10223,7 @@
       if (pill) {
         pill.style.left   = isList ? '4px' : 'calc(50%)';
       }
-      // Update button text colors — reaktif terhadap tema
+      // Update button text colors - reaktif terhadap tema
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const inactiveColor = isDark ? 'rgba(255,255,255,0.35)' : '#94A3B8';
       const btnList   = document.getElementById('btn-w-list');
@@ -10447,7 +10444,7 @@
           showSyncToast('ok', 'LOGIN BERHASIL ✓');
           initApp(true); // skip fetchCloud, data sudah fresh dari login
         } else if (response && response.status === 'error' && response.message === 'not found') {
-          // ID toko baru — buat dokumen baru di Firebase
+          // ID toko baru - buat dokumen baru di Firebase
           showSyncToast('saving', 'MEMBUAT AKUN BARU...');
           localStorage.setItem('k_logged', 'true');
           localStorage.setItem('k_sid', sid);
@@ -10489,7 +10486,7 @@
     }
 
     function initApp(skipCloudFetch = false, isRefresh = false) {
-      // ── TAMPILKAN LOGIN SUCCESS ANIMATION (hanya saat login baru, bukan refresh) ──
+      // -- TAMPILKAN LOGIN SUCCESS ANIMATION (hanya saat login baru, bukan refresh) --
       const overlay = document.getElementById('login-success-overlay');
       const loginScreen = document.getElementById('login-screen');
 
@@ -10525,7 +10522,7 @@
           }, 600);
         }, 3200);
       } else {
-        // Refresh — sembunyikan splash screen dengan animasi keren
+        // Refresh - sembunyikan splash screen dengan animasi keren
         if (overlay) { overlay.style.display = 'none'; }
         if (loginScreen) { loginScreen.style.display = 'none'; }
         const splash = document.getElementById('refresh-splash');
@@ -10587,7 +10584,7 @@
       resetKasirForms();
       renderAll();
 
-      // ── Tampilkan menu Poin Pelanggan untuk Owner/Admin (bukan kasir) ──
+      // -- Tampilkan menu Poin Pelanggan untuk Owner/Admin (bukan kasir) --
       if (!localStorage.getItem('k_kasir_mode')) {
         setTimeout(function() {
           const _pm = document.getElementById('sidebar-poin-pelanggan-menu');
@@ -10597,14 +10594,14 @@
         }, 600);
       }
 
-      // ── RESTORE VIEW TERAKHIR saat refresh (isRefresh) ──
+      // -- RESTORE VIEW TERAKHIR saat refresh (isRefresh) --
       if (isRefresh) {
         const lastView = localStorage.getItem('k_active_view') || 'dashboard';
         const validViews = ['dashboard','kasir','stok','wallets','hutang'];
         showView(validViews.includes(lastView) ? lastView : 'dashboard');
       }
 
-      // ── LOAD DATA TOKO AKTIF DARI user_stores (multi-toko) ──
+      // -- LOAD DATA TOKO AKTIF DARI user_stores (multi-toko) --
       // Dipanggil setelah app tampil, tidak memblokir UI
       if (_sid && _sid !== 'DEMO') {
         setTimeout(() => _loadActiveStoreOnInit(skipCloudFetch), 800);
@@ -10612,6 +10609,8 @@
         setTimeout(fetchCloudData, 1500);
       }
     }
+    // Expose initApp ke window agar dapat diakses dari script block lain
+    window.initApp = initApp;
 
     // Muat data toko yang aktif dari user_stores, lalu sync ke stores/{uid}
     async function _loadActiveStoreOnInit(skipCloudFetch) {
@@ -10651,7 +10650,7 @@
         }
 
         if (activeStoreId) {
-          // Ada toko aktif — load datanya dari user_stores
+          // Ada toko aktif - load datanya dari user_stores
           showSyncToast('saving', 'MEMUAT DATA TOKO...');
           try {
             const doc = await window._fbFirestore.collection('user_stores').doc(activeStoreId).get();
@@ -10689,7 +10688,7 @@
             console.warn('[initApp] Gagal load user_stores:', e.message);
           }
         } else {
-          // Belum ada active_store_id — cek apakah ada toko di user_stores
+          // Belum ada active_store_id - cek apakah ada toko di user_stores
           try {
             const snap = await window._fbFirestore
               .collection('user_stores')
@@ -10739,7 +10738,7 @@
     }
 
     // ============================================================
-    // KASIR CART — TRANSAKSI BERULANG (MULTI-ITEM)
+    // KASIR CART - TRANSAKSI BERULANG (MULTI-ITEM)
     // ============================================================
 
     // Keranjang gabungan universal
@@ -10870,7 +10869,7 @@
     function populateCartWallet() {
       const sel = document.getElementById('cart-all-wallet');
       if (!sel) return;
-      sel.innerHTML = '<option value="">— Pilih Dompet Penerima —</option>';
+      sel.innerHTML = '<option value="">- Pilih Dompet Penerima -</option>';
       (db.dompet || []).forEach(w => {
         const o = document.createElement('option');
         o.value = w.id;
@@ -10885,7 +10884,7 @@
       const lbl = document.getElementById('cart-all-wallet-label');
       if (!sel || !lbl) return;
       const opt = sel.options[sel.selectedIndex];
-      lbl.textContent = opt && opt.value ? opt.text : '— Pilih Dompet Penerima —';
+      lbl.textContent = opt && opt.value ? opt.text : '- Pilih Dompet Penerima -';
     }
 
     function hapusItemKeranjangAll(itemId) {
@@ -10986,7 +10985,7 @@
         return;
       }
 
-      // Ambil field umum dari form manapun (tanggal/pelanggan/status) — pakai tab yang aktif
+      // Ambil field umum dari form manapun (tanggal/pelanggan/status) - pakai tab yang aktif
       const activeTgl    = document.getElementById('kd-tgl')?.value || document.getElementById('kf-tgl')?.value || document.getElementById('ke-tgl')?.value || getWIBDate();
       const activeStatus = document.getElementById('kd-status')?.value || 'Lunas';
       const activeCust   = document.getElementById('kd-customer')?.value || document.getElementById('kf-customer')?.value || document.getElementById('ke-customer')?.value || 'Umum';
@@ -11062,7 +11061,7 @@
       renderKeranjangAll();
       resetKasirForms();
 
-      // ── Catat poin pelanggan jika sistem poin aktif ──
+      // -- Catat poin pelanggan jika sistem poin aktif --
       const _poinCfg = window.getPoinConfig ? window.getPoinConfig() : null;
       if (_poinCfg && _poinCfg.aktif && activeCust && activeCust !== 'Umum') {
         const _poinSelIdx = parseInt(document.getElementById('kasir-poin-jenis-trx')?.value);
@@ -11096,7 +11095,7 @@
       syncImmediate().then(ok => { if (!ok && navigator.onLine) console.warn('[Kasir] Cloud sync gagal'); });
     }
 
-    // ── Live total preview kasir fisik ──
+    // -- Live total preview kasir fisik --
     function updateKasirFisikTotal() {
       const jualDasar     = Number(document.getElementById('kf-jual')?.value) || 0;
       const diskonVal     = Number(document.getElementById('kf-diskon-val')?.value) || 0;
@@ -11127,7 +11126,7 @@
       renderQuickBayarBtns('kf');
     }
 
-    // ── Hitung total per tipe (untuk quick buttons & kembalian) ──────────────
+    // -- Hitung total per tipe (untuk quick buttons & kembalian) --------------
     function _getTotal(prefix) {
       if (prefix === 'kf') {
         const jualDasar     = Number(document.getElementById('kf-jual')?.value) || 0;
@@ -11149,7 +11148,7 @@
       return 0;
     }
 
-    // ── Render tombol nominal cepat ────────────────────────────────────────────
+    // -- Render tombol nominal cepat ------------------------------------------
     function renderQuickBayarBtns(prefix) {
       const total = _getTotal(prefix);
       const wrap  = document.getElementById(prefix + '-quick-btns');
@@ -11240,7 +11239,7 @@
     }
 
     // ============================================================
-    // FIREBASE SYNC ENGINE — Menggantikan Google Apps Script
+    // FIREBASE SYNC ENGINE - Menggantikan Google Apps Script
     // ============================================================
 
     let _syncTimer     = null;
@@ -11375,7 +11374,7 @@
       });
     }
 
-    // Sync langsung tanpa debounce — dipakai oleh kasir agar tidak ada delay
+    // Sync langsung tanpa debounce - dipakai oleh kasir agar tidak ada delay
     async function syncImmediate() {
       const sid = localStorage.getItem('k_sid');
       if (!sid) return false;
@@ -11390,7 +11389,7 @@
       if (!sid) return false;
 
       if (!navigator.onLine) {
-        showSyncToast('offline', 'OFFLINE — Data tersimpan lokal');
+        showSyncToast('offline', 'OFFLINE - Data tersimpan lokal');
         localStorage.setItem('k_pending_sync', 'true');
         _toastTimer = setTimeout(() => showSyncToast('hide'), 3000);
         return false;
@@ -11437,7 +11436,7 @@
         showSyncToast('ok', 'TERSIMPAN ✓');
         const el = document.getElementById('backup-last-sync');
         if (el) el.innerText = 'Terakhir sync: ' + now;
-        // ── Update user_stores agar data toko aktif selalu fresh ──
+        // -- Update user_stores agar data toko aktif selalu fresh --
         const _activeId = localStorage.getItem('k_active_store_id');
         if (_activeId && typeof saveCurrentStoreData === 'function') {
           saveCurrentStoreData(_activeId, db).catch(() => {});
@@ -11445,7 +11444,7 @@
       } else {
         localStorage.setItem('k_pending_sync', 'true');
         console.warn('[Firebase Sync] Semua attempt gagal:', lastErr);
-        showSyncToast('error', 'CLOUD GAGAL — Data lokal aman ✓ Tap retry');
+        showSyncToast('error', 'CLOUD GAGAL - Data lokal aman ✓ Tap retry');
         const toast = document.getElementById('sync-toast');
         if (toast) {
           toast.style.pointerEvents = 'auto';
@@ -11499,7 +11498,7 @@
           _syncedVersion = _syncVersion;
           saveLocalData();
 
-          // ── Refresh store_name dari subscriptions agar selalu up-to-date ──
+          // -- Refresh store_name dari subscriptions agar selalu up-to-date --
           if (sid !== 'DEMO' && window._fbFirestore) {
             try {
               const subSnap = await window._fbFirestore.collection('subscriptions').doc(sid).get();
@@ -11564,7 +11563,7 @@
       renderNotes();
       updateSelects();
       renderProfitChart();
-      // ── TARGET PENJUALAN HARIAN & REKAP KASIR (Owner Only) ──
+      // -- TARGET PENJUALAN HARIAN & REKAP KASIR (Owner Only) --
       const _isOwner = !localStorage.getItem('k_kasir_mode');
       const _cardTarget = document.getElementById('card-target-omset');
       const _cardRekap  = document.getElementById('card-rekap-kasir');
@@ -11577,9 +11576,9 @@
       setTimeout(applyPlanUI, 200);
     }
 
-    // ──────────────────────────────────────────────
+    // ------------------------------------------
     //  TARGET LABA HARIAN (disimpan per cabang di Firebase)
-    // ──────────────────────────────────────────────
+    // ------------------------------------------
 
     // Ambil target laba dari Firebase untuk store/cabang aktif
     async function getTargetLabaFirebase() {
@@ -11646,7 +11645,7 @@
       if (!pctEl) return;
 
       if (target <= 0) {
-        pctEl.textContent   = '—';
+        pctEl.textContent   = '-';
         detEl.textContent   = 'Belum ada target';
         sisaEl.textContent  = 'Tap SET TARGET untuk menentukan target laba harian';
         if (bar) bar.style.width = '0%';
@@ -11713,9 +11712,9 @@
     }
     window.openSetTarget = openSetTarget;
 
-    // ──────────────────────────────────────────────
+    // ------------------------------------------
     //  REKAP PER KASIR
-    // ──────────────────────────────────────────────
+    // ------------------------------------------
     function renderRekapKasir() {
       const list    = document.getElementById('rekap-kasir-list');
       const periodeEl = document.getElementById('rekap-kasir-periode');
@@ -11827,8 +11826,8 @@
         const profitPos = profit >= 0;
 
         // Resolve nama dompet
-        const wModal  = t.walletModal ? (db.dompet.find(w => w.id === t.walletModal)||{}).nama || '—' : null;
-        const wJual   = t.walletJual  ? (db.dompet.find(w => w.id === t.walletJual) ||{}).nama || '—' : null;
+        const wModal  = t.walletModal ? (db.dompet.find(w => w.id === t.walletModal)||{}).nama || '-' : null;
+        const wJual   = t.walletJual  ? (db.dompet.find(w => w.id === t.walletJual) ||{}).nama || '-' : null;
 
         // Warna & ikon badge tipe produk
         const badgeInfo = isAdj
@@ -11906,7 +11905,7 @@
                 </div>
                 <div class="rounded-xl p-2.5 flex flex-col gap-0.5" style="background:rgba(100,116,139,0.08);">
                   <p class="text-[7px] font-black uppercase tracking-wide" style="color:var(--sb-text-label);">Waktu</p>
-                  <p class="text-[10px] font-black leading-tight" style="color:var(--sb-text-title);">${t.tgl||'—'}</p>
+                  <p class="text-[10px] font-black leading-tight" style="color:var(--sb-text-title);">${t.tgl||'-'}</p>
                   ${jamTrx ? `<p class="text-[9px] font-black flex items-center gap-0.5 mt-0.5" style="color:#38BDF8;"><i class="fas fa-clock" style="font-size:7px;"></i> ${jamTrx}</p>` : ''}
                 </div>
               </div>`;
@@ -12267,7 +12266,7 @@
 
       let html = '';
 
-      // ── Section Aktif ──
+      // -- Section Aktif --
       if (aktif.length > 0) {
         html += `<div class="space-y-3">`;
         html += aktif.map(h => {
@@ -12321,7 +12320,7 @@
         </div>`;
       }
 
-      // ── Section Lunas — TIDAK menghilang, selalu tampil ──
+      // -- Section Lunas - TIDAK menghilang, selalu tampil --
       if (lunas.length > 0) {
         html += `
         <div class="mt-5">
@@ -12403,7 +12402,7 @@
       const activeBadge  = document.getElementById('stok-kat-active-badge-'  + tipeSuffix);
       const triggerBtn   = document.getElementById('stok-kat-trigger-'       + tipeSuffix);
       if (triggerLabel) triggerLabel.textContent = ktg === '' ? 'Semua Kategori' : (ktg === '__tanpa__' ? 'Tanpa Kategori' : ktg);
-      if (triggerSub)   triggerSub.textContent   = ktg ? '1 filter aktif — tap untuk ubah' : ('Tap untuk filter ' + tipeSuffix);
+      if (triggerSub)   triggerSub.textContent   = ktg ? '1 filter aktif - tap untuk ubah' : ('Tap untuk filter ' + tipeSuffix);
       if (activeBadge) {
         activeBadge.style.display = ktg ? 'inline-block' : 'none';
         activeBadge.textContent   = ktg === '__tanpa__' ? 'Tanpa Kategori' : ktg;
@@ -12427,7 +12426,7 @@
     }
 
 
-    // ── Tab Switch Helper: warna inactive adaptif tema ──
+    // -- Tab Switch Helper: warna inactive adaptif tema --
     function _tabInactiveStyle() {
       const dark = document.documentElement.getAttribute('data-theme') === 'dark';
       return dark ? 'background:transparent;color:rgba(255,255,255,0.3);box-shadow:none;'
@@ -12435,7 +12434,7 @@
     }
     function setStokTab(tab) {
       activeStokTab = tab;
-      // Tidak reset filter — tiap tab punya filter masing-masing
+      // Tidak reset filter - tiap tab punya filter masing-masing
       // Sync activeStokKtgFilter ke filter tab yang aktif
       activeStokKtgFilter = (tab === 'digital') ? activeStokKtgFilterDigital : activeStokKtgFilterFisik;
       // Reset search
@@ -12474,7 +12473,7 @@
       renderKategoriOptions('p-kategori', tipe);
     }
 
-    /* ── Toggle E-Wallet switch di form produk ── */
+    /* -- Toggle E-Wallet switch di form produk -- */
     window.onKasirEwalletChange = function() {
       const ck     = document.getElementById('p-kasir-ewallet');
       const toggle = document.getElementById('p-kasir-ewallet-toggle');
@@ -12672,7 +12671,7 @@
 
       // Update label count
       const countEl = document.getElementById('customer-count-label');
-      if (countEl) countEl.innerText = total + ' terdaftar' + (custSearchQuery ? ' — pencarian' : '');
+      if (countEl) countEl.innerText = total + ' terdaftar' + (custSearchQuery ? ' - pencarian' : '');
 
       // Update pagination controls
       const pageEl = document.getElementById('customer-page-indicator');
@@ -12792,7 +12791,7 @@
       // Dompet selects
       ['m-h-wallet','pay-h-wallet','tr-from','tr-to','adj-wallet','kd-w-modal','kd-w-penerima','kf-w-penerima','cart-all-wallet'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.innerHTML = '<option value="">— Pilih Dompet —</option>' + wOpts;
+        if (el) el.innerHTML = '<option value="">- Pilih Dompet -</option>' + wOpts;
       });
 
       // Customer select di modal hutang
@@ -12919,7 +12918,7 @@
       const pin = pinRaw.slice(0,4);
 
       if (id) {
-        // Mode EDIT — simpan & tutup seperti biasa
+        // Mode EDIT - simpan & tutup seperti biasa
         const idx = db.pelanggan.findIndex(c => c.id === id);
         if (idx !== -1) db.pelanggan[idx] = { ...db.pelanggan[idx], nama, phone, birthday, pin };
         closeModal('modal-pelanggan');
@@ -12927,7 +12926,7 @@
         return;
       }
 
-      // Mode BARU — generate ID, simpan, tampilkan kartu + auto WA
+      // Mode BARU - generate ID, simpan, tampilkan kartu + auto WA
       const memberId = _generateMemberId();
       const storeId  = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
       const tokoNm   = localStorage.getItem('k_store_name') || 'KonterKU';
@@ -13086,7 +13085,7 @@
 
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama produk harus diisi', 'warning');
 
-      // ── GATE: cek limit produk untuk produk baru ──
+      // -- GATE: cek limit produk untuk produk baru --
       if (!id) {
         const limits = getPlanLimits();
         const totalProduk = (db.inventory || []).length;
@@ -13127,7 +13126,7 @@
       const saldo = Number(document.getElementById('w-saldo').value||0);
       if (!nama) return (_getMySwal()||Swal).fire('Error', 'Nama dompet harus diisi!', 'warning');
 
-      // ── GATE: cek limit dompet ──
+      // -- GATE: cek limit dompet --
       const limits = getPlanLimits();
       const totalDompet = (db.dompet || []).length;
       if (totalDompet >= limits.dompet) {
@@ -13322,7 +13321,7 @@
       ['ke-w-modal','ke-w-penerima'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          el.innerHTML = (wallets.length ? '<option value="">— Pilih Dompet —</option>' : fallback) + opts;
+          el.innerHTML = (wallets.length ? '<option value="">- Pilih Dompet -</option>' : fallback) + opts;
           // Sync label custom select
           const suffix = id === 'ke-w-modal' ? 'modal' : 'penerima';
           syncEwlLabel(suffix);
@@ -13346,7 +13345,7 @@
       const lbl     = document.getElementById(lblId);
       if (!sel || !lbl) return;
       const opt     = sel.options[sel.selectedIndex];
-      lbl.textContent = opt && opt.value ? opt.text : '— Pilih Dompet —';
+      lbl.textContent = opt && opt.value ? opt.text : '- Pilih Dompet -';
     }
 
     function updateEwalletCalc() {
@@ -13418,7 +13417,7 @@
           db.hutang.push({ id: 'H-'+Date.now(), tipe: 'pelanggan', nama: cust, jumlah: totalBayar, tgl, ket: 'EWL: '+productName });
         }
 
-        // Simpan transaksi — modal = nominal+adminBank, jual = totalBayar, laba = adminAgen
+        // Simpan transaksi - modal = nominal+adminBank, jual = totalBayar, laba = adminAgen
         const _keBayar = Number(document.getElementById('ke-bayar')?.value) || 0;
         db.transaksi.push({
           id: 'TR-'+Date.now(), tgl,
@@ -13638,7 +13637,7 @@
     // Supports: WebUSB, Web Bluetooth, RawBT (Android), window.print
     // ============================================================
     const ThermalPrinter = (() => {
-      // ── ESC/POS byte constants ──────────────────────────────────
+      // -- ESC/POS byte constants ----------------------------------
       const ESC = 0x1B, GS = 0x1D, FS = 0x1C, NL = 0x0A;
       const CMD = {
         INIT:          [ESC, 0x40],
@@ -13658,10 +13657,10 @@
         CASH_DRAWER2:  [ESC, 0x70, 0x01, 0x19, 0xFA], // pin 5
       };
 
-      // ── Encode UTF-8 string → Uint8Array ───────────────────────
+      // -- Encode UTF-8 string → Uint8Array -----------------------
       function enc(str) { return new TextEncoder().encode(str); }
 
-      // ── Flatten array of (arrays|Uint8Arrays|numbers) ──────────
+      // -- Flatten array of (arrays|Uint8Arrays|numbers) ----------
       function build(...parts) {
         const out = [];
         for (const p of parts) {
@@ -13672,7 +13671,7 @@
         return new Uint8Array(out);
       }
 
-      // ── Pad/wrap text to 32 cols (58mm) ────────────────────────
+      // -- Pad/wrap text to 32 cols (58mm) ------------------------
       const COLS = 32;
       function padLine(left, right, cols = COLS) {
         const space = cols - left.length - right.length;
@@ -13684,7 +13683,7 @@
       }
       function divider(char = '-', cols = COLS) { return char.repeat(cols); }
 
-      // ── Build ESC/POS bytes from transaksi object ───────────────
+      // -- Build ESC/POS bytes from transaksi object ---------------
       function buildEscPos(t, opts = {}) {
         const storeName  = (opts.storeName  || 'KONTERKU').toUpperCase();
         const alamat     = opts.alamat     || '';
@@ -13741,14 +13740,14 @@
         // Open cash drawer BEFORE print if requested
         if (openDrawer) { $(...CMD.CASH_DRAWER); }
 
-        // ── Logo (jika ada, kirim sebagai ESC/POS raster bitmap) ──
+        // -- Logo (jika ada, kirim sebagai ESC/POS raster bitmap) --
         if (opts.logoBytes) {
           $(...CMD.ALIGN_CENTER);
           $(opts.logoBytes);
           $(NL);
         }
 
-        // ── Header ──────────────────────────────────────
+        // -- Header --------------------------------------
         $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON, ...CMD.DOUBLE_ON);
         $(enc(storeName), NL);
         $(...CMD.DOUBLE_OFF, ...CMD.BOLD_OFF);
@@ -13766,13 +13765,13 @@
         $(...CMD.ALIGN_LEFT);
         $(enc(divider('=')), NL);
 
-        // ── Tipe ────────────────────────────────────────
+        // -- Tipe ----------------------------------------
         $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON);
         $(enc(`[ ${tipeLabel} ]`), NL);
         $(...CMD.BOLD_OFF, ...CMD.ALIGN_LEFT);
         $(enc(divider()), NL);
 
-        // ── Info transaksi & produk ──────────────────────
+        // -- Info transaksi & produk ----------------------
         if (kasirName) $(enc(padLine('Kasir', kasirName)), NL);
         $(enc(padLine('Pelanggan', t.pelanggan || 'Umum')), NL);
         $(enc(padLine('Tanggal',   (waktu || t.tgl || '-') + (jamTrx ? '  ' + jamTrx : ''))), NL);
@@ -13784,7 +13783,7 @@
 
         // (Keterangan dipindah ke footer)
 
-        // ── Rincian harga ────────────────────────────────
+        // -- Rincian harga --------------------------------
         $(enc(divider()), NL);
         if (t.tipe === 'ewallet') {
           $(enc(padLine('Nominal',     rp(t.nominal))), NL);
@@ -13807,13 +13806,13 @@
           $(...CMD.BOLD_OFF);
         }
 
-        // ── Total ────────────────────────────────────────
+        // -- Total ----------------------------------------
         $(enc(divider('=')), NL);
         $(...CMD.BOLD_ON);
         $(enc(padLine('TOTAL', rp(t.jual))), NL);
         $(...CMD.BOLD_OFF);
 
-        // ── Metode Bayar ─────────────────────────────────
+        // -- Metode Bayar ---------------------------------
         $(enc(padLine('Metode Bayar', metodeBayar)), NL);
         if (t.bayar) {
           $(enc(padLine('Uang Bayar',  rp(t.bayar))), NL);
@@ -13821,7 +13820,7 @@
           $(enc(padLine('Kembalian', (kemVal < 0 ? '- ' : '') + rp(Math.abs(kemVal)))), NL);
         }
 
-        // ── Status ───────────────────────────────────────
+        // -- Status ---------------------------------------
         $(enc(divider()), NL);
         $(...CMD.ALIGN_CENTER, ...CMD.BOLD_ON);
         $(enc(isLunas ? '*** LUNAS ***' : '-- BELUM LUNAS --'), NL);
@@ -13829,8 +13828,8 @@
 
         $(enc(divider('=')), NL);
 
-        // ── Footer ───────────────────────────────────────
-        // Keterangan (nomor HP / SN) — tengah, besar, tebal
+        // -- Footer ---------------------------------------
+        // Keterangan (nomor HP / SN) - tengah, besar, tebal
         if (noteText) {
           $(...CMD.ALIGN_CENTER);
           $(enc(divider()), NL);
@@ -13850,7 +13849,7 @@
           }
           $(...CMD.DOUBLE_OFF, ...CMD.BOLD_OFF);
         }
-        // Word-wrap tagline — selalu tengah
+        // Word-wrap tagline - selalu tengah
         $(...CMD.ALIGN_CENTER);
         $(enc(divider('=')), NL);
         const _tagWords = tagline.split(' ');
@@ -13884,7 +13883,7 @@
         return result;
       }
 
-      // ── WebUSB print ────────────────────────────────────────────
+      // -- WebUSB print ------------------------------------------
       async function printWebUSB(data) {
         if (!navigator.usb) throw new Error('WebUSB tidak didukung browser ini.');
         const device = await navigator.usb.requestDevice({ filters: [] });
@@ -13900,7 +13899,7 @@
         await device.close();
       }
 
-      // ── Web Bluetooth print ─────────────────────────────────────
+      // -- Web Bluetooth print -------------------------------------
       // Kompatibel dengan printer BLE thermal (Nordic UART Service)
       async function printBluetooth(data) {
         if (!navigator.bluetooth) throw new Error('Web Bluetooth tidak didukung browser ini. Gunakan Chrome/Edge dengan flag experimental.');
@@ -13942,7 +13941,7 @@
         await device.gatt.disconnect();
       }
 
-      // ── RawBT (Android) ─────────────────────────────────────────
+      // -- RawBT (Android) -----------------------------------------
       // RawBT app menerima intent via deep link rawbt://
       function printRawBT(data) {
         // Convert ke base64
@@ -13959,7 +13958,7 @@
         setTimeout(() => document.body.removeChild(a), 1000);
       }
 
-      // ── Bagikan Gambar Struk (Share API) ──────────────────────────
+      // -- Bagikan Gambar Struk (Share API) --------------------------
       async function shareReceiptImage(t, opts = {}) {
         const Swal2loc = (_getMySwal() || Swal);
 
@@ -13983,7 +13982,7 @@
           const waktu = `${pad2(wib.getDate())}/${pad2(wib.getMonth()+1)}/${wib.getFullYear()} ` +
                         `${pad2(wib.getHours())}:${pad2(wib.getMinutes())}`;
 
-          // ── Render struk ke canvas murni — desain bersih modern ──
+          // -- Render struk ke canvas murni - desain bersih modern --
           const scale  = 2;
           const W      = 360;
           const PAD    = 22;
@@ -14023,7 +14022,7 @@
               return 'Tunai';
             })();
 
-            // ── Kalkulasi tinggi ──
+            // -- Kalkulasi tinggi --
             let H = PAD;
             if (logoImg) H += 64 + 12;
             H += 26;                           // store name
@@ -14290,7 +14289,7 @@
         }
       }
 
-      // ── Fallback: window.print() via popup ──────────────────────
+      // -- Fallback: window.print() via popup ----------------------
       function printBrowser(t, opts = {}) {
         const storeName  = (opts.storeName  || 'KONTERKU').toUpperCase();
         const alamat     = opts.alamat     || '';
@@ -14380,7 +14379,7 @@
     line-height: 1.4;
   }
 
-  /* ── HEADER ── */
+  /* -- HEADER -- */
   .header { text-align: center; padding-bottom: 4px; }
   .store-name {
     font-size: 9.5pt;
@@ -14409,12 +14408,12 @@
     letter-spacing: 0.04em;
   }
 
-  /* ── DIVIDERS ── */
+  /* -- DIVIDERS -- */
   .rule-solid { border: none; border-top: 1.5px solid var(--ink); margin: 5px 0; }
   .rule-dash  { border: none; border-top: 1px dashed var(--rule-dash); margin: 4px 0; }
   .rule-thin  { border: none; border-top: 1px solid var(--rule); margin: 3px 0; }
 
-  /* ── TYPE BADGE ── */
+  /* -- TYPE BADGE -- */
   .type-badge {
     display: inline-block;
     background: var(--badge-bg);
@@ -14428,7 +14427,7 @@
   }
   .type-wrap { text-align: center; }
 
-  /* ── PRODUCT ── */
+  /* -- PRODUCT -- */
   .product-name {
     font-size: 9.5pt;
     font-weight: 700;
@@ -14437,7 +14436,7 @@
     line-height: 1.3;
   }
 
-  /* ── INFO ROWS ── */
+  /* -- INFO ROWS -- */
   .info-row {
     display: flex;
     justify-content: space-between;
@@ -14466,7 +14465,7 @@
     font-family: 'DM Mono', 'Courier New', monospace;
   }
 
-  /* ── PRICE ROWS ── */
+  /* -- PRICE ROWS -- */
   .price-row {
     display: flex;
     justify-content: space-between;
@@ -14481,7 +14480,7 @@
     color: var(--ink);
   }
 
-  /* ── TOTAL BLOCK ── */
+  /* -- TOTAL BLOCK -- */
   .total-block {
     background: var(--total-bg);
     color: var(--total-fg);
@@ -14506,7 +14505,7 @@
     letter-spacing: 0.02em;
   }
 
-  /* ── STATUS BADGE ── */
+  /* -- STATUS BADGE -- */
   .status-wrap { text-align: center; margin: 4px 0; }
   .status-badge {
     display: inline-block;
@@ -14528,7 +14527,7 @@
     color: var(--hutang-ink);
   }
 
-  /* ── FOOTER ── */
+  /* -- FOOTER -- */
   .footer { text-align: center; margin-top: 5px; }
   .footer-tagline {
     font-size: 7.5pt;
@@ -14552,7 +14551,7 @@
     letter-spacing: 0.05em;
   }
 
-  /* ── PRINT BUTTON ── */
+  /* -- PRINT BUTTON -- */
   .noprint-bar {
     margin-top: 14px;
     text-align: center;
@@ -14730,7 +14729,7 @@ ${t.bayar ? `
       return { buildEscPos, printWebUSB, printBluetooth, printRawBT, shareReceiptImage, printBrowser };
     })();
 
-    // ── Modal pilih metode cetak ─────────────────────────────────
+    // -- Modal pilih metode cetak ---------------------------------
     async function cetakThermal(id) {
       const t = db.transaksi.find(x => x.id === id);
       if (!t) return;
@@ -14746,7 +14745,7 @@ ${t.bayar ? `
 
       const opts = { storeName, kasirName, alamat, tagline, autoCut, openDrawer, isPro };
 
-      // ── Konversi logo base64 → ESC/POS raster bitmap ────────────
+      // -- Konversi logo base64 → ESC/POS raster bitmap ------------
       const logoB64Raw = localStorage.getItem('k_struk_logo') || '';
       if (logoB64Raw) {
         try {
@@ -14766,7 +14765,7 @@ ${t.bayar ? `
                 cx.fillRect(0, 0, w, h);
                 cx.drawImage(img, 0, 0, w, h);
                 const imgData = cx.getImageData(0, 0, w, h).data;
-                // GS v 0 — raster bit image
+                // GS v 0 - raster bit image
                 const bytesPerRow = Math.ceil(w / 8);
                 const bmp = [];
                 for (let y2 = 0; y2 < h; y2++) {
@@ -14923,20 +14922,20 @@ ${t.bayar ? `
     function logout() {
       (_getMySwal()||Swal).fire({ title: 'Keluar?', text: 'Anda akan keluar dari sesi ini.', icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Keluar', cancelButtonText: 'Batal' }).then(async res => {
         if (res.isConfirmed) {
-          // ── Hapus sesi kasir dari Firestore (jika ada) ──
+          // -- Hapus sesi kasir dari Firestore (jika ada) --
           const _sessId = localStorage.getItem('k_session_doc_id');
           if (_sessId && window._fbFirestore) {
             try { await window._fbFirestore.collection('kasir_sessions').doc(_sessId).delete(); } catch(e) {}
           }
           if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
-          // ── Hapus SEMUA key sesi ──
+          // -- Hapus SEMUA key sesi --
           ['k_logged','k_token','k_sid','k_email','k_store_name','k_plan','k_expired_date',
            'k_owner_uid','k_session_doc_id',
            'k_active_store_id','k_sync_version','k_pending_sync','k_last_sync',
            'k_kasir_mode','k_kasir_id','k_kasir_nama','k_kasir_username','k_kasir_izin',
            'k_kasir_anon_uid','k_struk_alamat','k_struk_tagline','k_struk_logo'
           ].forEach(k => localStorage.removeItem(k));
-          // [FIX] Jangan hapus konterku_db_ saat kasir logout — data sudah tersync ke Firestore
+          // [FIX] Jangan hapus konterku_db_ saat kasir logout - data sudah tersync ke Firestore
           // Owner yang logout boleh hapus cache lokal, kasir tidak perlu
           Object.keys(localStorage).forEach(k => {
             if (k.startsWith('ktg_')) localStorage.removeItem(k);
@@ -14980,7 +14979,7 @@ ${t.bayar ? `
       });
       if (!step1.isConfirmed) return;
 
-      // === STEP 2: Konfirmasi kedua — input nama toko ===
+      // === STEP 2: Konfirmasi kedua - input nama toko ===
       const step2 = await Swal2.fire({
         icon: 'error',
         title: '🔐 Konfirmasi Penghapusan',
@@ -15052,7 +15051,7 @@ ${t.bayar ? `
           if (k.startsWith('konterku_db_') || k.startsWith('ktg_')) localStorage.removeItem(k);
         });
 
-        // Reset db in-memory — FIXED: assign ulang seluruh objek agar referensi sinkron
+        // Reset db in-memory - FIXED: assign ulang seluruh objek agar referensi sinkron
         setDb({
           dompet: [], transaksi: [], inventory: [], hutang: [],
           hutang_lunas: [], pelanggan: [], mutasi: [], notes: [],
@@ -15061,7 +15060,7 @@ ${t.bayar ? `
         window.db = db;
         saveLocalData(); // simpan state kosong ke localStorage sebelum reload
 
-        // Hapus dari Firestore (jika online) — hapus SEMUA sumber data
+        // Hapus dari Firestore (jika online) - hapus SEMUA sumber data
         const uid = _resolveStoreId(localStorage.getItem('k_sid'));
         const emptyDb = {
           dompet: [], transaksi: [], inventory: [], hutang: [],
@@ -15074,7 +15073,7 @@ ${t.bayar ? `
             await window._fbFirestore.collection('stores').doc(uid).set(emptyDb);
           } catch(e) { console.warn('[hapusSemuaData] Gagal reset stores:', e.message); }
 
-          // 2. Reset collection 'user_stores' (multi-toko) — INI YANG BIKIN DATA BALIK
+          // 2. Reset collection 'user_stores' (multi-toko) - INI YANG BIKIN DATA BALIK
           const activeStoreId = localStorage.getItem('k_active_store_id');
           if (activeStoreId) {
             try {
@@ -15106,7 +15105,7 @@ ${t.bayar ? `
           customClass: { popup: 'swal2-ku' }
         });
 
-        // Tandai bahwa baru saja dihapus — agar initApp tidak menarik data lama dari cloud
+        // Tandai bahwa baru saja dihapus - agar initApp tidak menarik data lama dari cloud
         localStorage.setItem('k_just_cleared', 'true');
 
         // Reload
@@ -15126,7 +15125,7 @@ ${t.bayar ? `
     // ============================================================
     // SIDEBAR FUNCTIONS
     // ============================================================
-    // ── JAM DIGITAL SIDEBAR ──────────────────────────────────────────────────
+    // -- JAM DIGITAL SIDEBAR ------------------------------------------
     let _clockInterval = null;
     let _colonVisible  = true;
 
@@ -15237,7 +15236,7 @@ ${t.bayar ? `
       document.body.style.overflow = '';
 
       if (menu === 'akun') {
-        const sid       = localStorage.getItem('k_sid') || '—';
+        const sid       = localStorage.getItem('k_sid') || '-';
         const email     = localStorage.getItem('k_email') || '';
         const storeName = localStorage.getItem('k_store_name') || '';
         const _displayName = storeName || (email ? email.split('@')[0].toUpperCase() : sid);
@@ -15251,20 +15250,20 @@ ${t.bayar ? `
         // UID
         document.getElementById('akun-store-id').innerText = sid;
 
-        // ── Generate QR Code untuk portal pelanggan ──
+        // -- Generate QR Code untuk portal pelanggan --
         // Pakai UID penuh agar cek-poin.html bisa cari lewat doc(uid) langsung
         // Pakai kode 6 karakter (= Kode Toko di Kelola Kasir) untuk QR
-        if (sid && sid !== '—' && sid !== 'DEMO') {
+        if (sid && sid !== '-' && sid !== 'DEMO') {
           // QR akun dihapus
         }
 
-        // ── BACA SUBSCRIPTION DARI FIRESTORE (real-time, fallback ke localStorage) ──
+        // -- BACA SUBSCRIPTION DARI FIRESTORE (real-time, fallback ke localStorage) --
         (async () => {
           let expiredDate = localStorage.getItem('k_expired_date');
           let planLabel   = localStorage.getItem('k_plan') || 'trial';
 
           // Coba ambil dari Firestore jika online
-          if (navigator.onLine && window._fbFirestore && sid && sid !== 'DEMO' && sid !== '—') {
+          if (navigator.onLine && window._fbFirestore && sid && sid !== 'DEMO' && sid !== '-') {
             try {
               const snap = await window._fbFirestore
                 .collection('subscriptions')
@@ -15290,14 +15289,14 @@ ${t.bayar ? `
           }
 
           // Fallback: jika belum ada, buat default 1 tahun (mode lama)
-          if (!expiredDate && sid !== 'DEMO' && sid !== '—') {
+          if (!expiredDate && sid !== 'DEMO' && sid !== '-') {
             const exp = new Date();
             exp.setFullYear(exp.getFullYear() + 1);
             expiredDate = exp.toISOString().split('T')[0];
             localStorage.setItem('k_expired_date', expiredDate);
           }
 
-          // ── TAMPILKAN BADGE PLAN ──
+          // -- TAMPILKAN BADGE PLAN --
           const planColors = {
             trial     : { bg:'rgba(99,102,241,0.08)', border:'rgba(99,102,241,0.25)', color:'#4338ca', label:'TRIAL' },
             basic     : { bg:'rgba(14,165,233,0.08)', border:'rgba(14,165,233,0.25)', color:'#0369a1', label:'BASIC' },
@@ -15325,7 +15324,7 @@ ${t.bayar ? `
               <i class="fas fa-crown" style="color:${pc.color};font-size:16px;"></i>
             </div>`;
 
-          // ── TAMPILKAN EXPIRED DATE ──
+          // -- TAMPILKAN EXPIRED DATE --
           const expWrap   = document.getElementById('akun-expired-wrap');
           const expDateEl = document.getElementById('akun-expired-date');
           const expSisaEl = document.getElementById('akun-expired-sisa');
@@ -15378,7 +15377,7 @@ ${t.bayar ? `
 
         }, 150);
 
-        // Tampilkan tombol Hapus Semua Data — SUDAH dipindah ke modal Setting
+        // Tampilkan tombol Hapus Semua Data - SUDAH dipindah ke modal Setting
       }
 
       else if (menu === 'setting') {
@@ -15449,7 +15448,7 @@ ${t.bayar ? `
         openModal('modal-sidebar-perpanjang');
       }
 
-      // ── SUPPLIER & RESTOK — langsung di sini, tidak perlu hook ──
+      // -- SUPPLIER & RESTOK - langsung di sini, tidak perlu hook --
       else if (menu === 'supplier') {
         document.getElementById('sidebar-overlay').classList.remove('open');
         document.body.style.overflow = '';
@@ -15462,9 +15461,9 @@ ${t.bayar ? `
       }
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // LAPORAN & ANALITIK v2 — renderSidebarLaporan + helpers
-    // ═══════════════════════════════════════════════════════════════
+    // ------------------------------------------
+    // LAPORAN & ANALITIK v2 - renderSidebarLaporan + helpers
+    // ------------------------------------------
 
     // State periode yang aktif
     window._lapPeriode = 'harian';
@@ -15557,7 +15556,7 @@ ${t.bayar ? `
         });
         return { labels, omset: omsetD, laba: labaD };
       }
-      // tahunan — per bulan
+      // tahunan - per bulan
       const yr = parseInt(range.start.split('-')[0]);
       const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
       const omsetD = months.map((_,mi) => {
@@ -15666,9 +15665,9 @@ ${t.bayar ? `
       window._lapCurrentData = { periode, range, omset, laba, trxCount, margin, avgTrx, piutang, hutang, filtered, top5 };
     }
 
-    // ══════════════════════════════════════════════════════════
-    // LAPORAN LABA-RUGI DETAIL — toggle & render
-    // ══════════════════════════════════════════════════════════
+    // ------------------------------------------
+    // LAPORAN LABA-RUGI DETAIL - toggle & render
+    // ------------------------------------------
     function toggleLabaRugiDetail() {
       const detail = document.getElementById('lap-lr-detail');
       const icon   = document.getElementById('lap-lr-toggle-icon');
@@ -15691,14 +15690,14 @@ ${t.bayar ? `
     }
 
     function renderLabaRugiDetail(filtered, periode) {
-      // ── Pendapatan per tipe ──
+      // -- Pendapatan per tipe --
       const pendDigital = filtered.filter(t=>t.tipe==='digital').reduce((a,b)=>a+Number(b.jual||0),0);
       const pendFisik   = filtered.filter(t=>t.tipe==='fisik').reduce((a,b)=>a+Number(b.jual||0),0);
       const pendEwallet = filtered.filter(t=>t.tipe==='ewallet').reduce((a,b)=>a+Number(b.jual||0),0);
       const pendLain    = filtered.filter(t=>!['digital','fisik','ewallet'].includes(t.tipe)).reduce((a,b)=>a+Number(b.jual||0),0);
       const totalPendapatan = pendDigital + pendFisik + pendEwallet + pendLain;
 
-      // ── HPP per tipe ──
+      // -- HPP per tipe --
       const hppDigital = filtered.filter(t=>t.tipe==='digital').reduce((a,b)=>a+Number(b.modal||0),0);
       const hppFisik   = filtered.filter(t=>t.tipe==='fisik').reduce((a,b)=>a+Number(b.modal||0),0);
       const hppEwallet = filtered.filter(t=>t.tipe==='ewallet').reduce((a,b)=>a+Number(b.modal||0),0);
@@ -15707,7 +15706,7 @@ ${t.bayar ? `
 
       const labaKotor = totalPendapatan - totalHPP;
 
-      // ── Beban Operasional (dari db.beban jika ada) ──
+      // -- Beban Operasional (dari db.beban jika ada) --
       const range = _lapGetDateRange(periode);
       const bebanList = (db.beban || []).filter(b => b.tgl >= range.start && b.tgl <= range.end);
       const bebanByKat = {};
@@ -15742,7 +15741,7 @@ ${t.bayar ? `
       const lbdEl = document.getElementById('lr-laba-bersih-detail');
       if (lbdEl) lbdEl.style.color = labaBersih < 0 ? '#dc2626' : '#059669';
 
-      // ── Pendapatan rows ──
+      // -- Pendapatan rows --
       const pendRows = document.getElementById('lr-pendapatan-rows');
       if (pendRows) {
         let html = '';
@@ -15758,7 +15757,7 @@ ${t.bayar ? `
         pendRows.innerHTML = html;
       }
 
-      // ── HPP rows ──
+      // -- HPP rows --
       const hppRows = document.getElementById('lr-hpp-rows');
       if (hppRows) {
         let html = '';
@@ -15775,7 +15774,7 @@ ${t.bayar ? `
         hppRows.innerHTML = html;
       }
 
-      // ── Beban Operasional rows ──
+      // -- Beban Operasional rows --
       const bebanRows = document.getElementById('lr-beban-rows');
       if (bebanRows) {
         let html = '';
@@ -15794,7 +15793,7 @@ ${t.bayar ? `
       }
     }
 
-    // ── Export Excel (.xlsx via SheetJS CDN) ──
+    // -- Export Excel (.xlsx via SheetJS CDN) --
     function doExportExcel() {
       const _planRank = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
       if (_planRank < 2) { showUpgradeModal('ekspor_excel','pro'); return; }
@@ -15816,9 +15815,9 @@ ${t.bayar ? `
       const wb = XLSX.utils.book_new();
       const storeName = localStorage.getItem('k_store_name') || 'KonterKU';
 
-      // ── Sheet 1: Ringkasan ──
+      // -- Sheet 1: Ringkasan --
       const ringSummary = [
-        [storeName+' — Laporan '+d.periode.charAt(0).toUpperCase()+d.periode.slice(1)],
+        [storeName+' - Laporan '+d.periode.charAt(0).toUpperCase()+d.periode.slice(1)],
         ['Periode:', d.range.label],
         ['Dibuat:', new Date().toLocaleString('id-ID')],
         [],
@@ -15837,7 +15836,7 @@ ${t.bayar ? `
       ws1['!cols'] = [{wch:28},{wch:20}];
       XLSX.utils.book_append_sheet(wb, ws1, 'Ringkasan');
 
-      // ── Sheet 2: Detail Transaksi ──
+      // -- Sheet 2: Detail Transaksi --
       const trxRows = [['No','Tanggal','Produk','Pelanggan','Modal','Harga Jual','Laba','Status','Tipe']];
       (d.filtered||[]).forEach((t,i) => {
         trxRows.push([
@@ -15853,7 +15852,7 @@ ${t.bayar ? `
       ws2['!cols'] = [{wch:5},{wch:12},{wch:24},{wch:18},{wch:14},{wch:14},{wch:14},{wch:10},{wch:10}];
       XLSX.utils.book_append_sheet(wb, ws2, 'Detail Transaksi');
 
-      // ── Sheet 3: Top 5 Produk ──
+      // -- Sheet 3: Top 5 Produk --
       const topRows = [['Rank','Produk','Jumlah Terjual','Total Omset','Total Laba']];
       (d.top5||[]).forEach(([nama,info],i) => {
         topRows.push([i+1, nama, info.qty, info.omset, info.laba]);
@@ -15870,7 +15869,7 @@ ${t.bayar ? `
       if (S) S.fire({ toast:true, position:'top-end', icon:'success', title:'✅ Export Excel berhasil!', timer:2500, showConfirmButton:false, customClass:{popup:'swal2-ku-toast'} });
     }
 
-    // ── Share ringkasan via WhatsApp ──
+    // -- Share ringkasan via WhatsApp --
     function doShareWhatsApp() {
       const _planRank = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
       if (_planRank < 2) { showUpgradeModal('share_whatsapp','pro'); return; }
@@ -15880,7 +15879,7 @@ ${t.bayar ? `
       const fmtRp = v => 'Rp ' + Number(v).toLocaleString('id-ID');
       const margin = d.omset > 0 ? (d.laba/d.omset*100).toFixed(1) : 0;
       const top5Lines = (d.top5||[]).map(([nama,info],i) =>
-        (i+1)+'. '+nama+' ('+info.qty+'x — '+fmtRp(info.omset)+')'
+        (i+1)+'. '+nama+' ('+info.qty+'x - '+fmtRp(info.omset)+')'
       ).join('\n');
 
       const periodeLabel = { harian:'Hari Ini', mingguan:'Minggu Ini', bulanan:'Bulan Ini', tahunan:'Tahun Ini' };
@@ -15888,16 +15887,16 @@ ${t.bayar ? `
       const tgl = now.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
       const msg = [
-        '📊 *LAPORAN '+(periodeLabel[d.periode]||d.periode).toUpperCase()+' — '+storeName.toUpperCase()+'*',
+        '📊 *LAPORAN '+(periodeLabel[d.periode]||d.periode).toUpperCase()+' - '+storeName.toUpperCase()+'*',
         '📅 '+tgl,
         '📆 Periode: '+d.range.label,
         '',
         '💰 *Ringkasan Keuangan*',
-        '├ Omset Total   : '+fmtRp(d.omset),
-        '├ Laba Bersih   : '+fmtRp(d.laba),
-        '├ Margin Laba   : '+margin+'%',
-        '├ Total Transaksi: '+d.trxCount+' trx',
-        '└ Rata-rata/Trx : '+fmtRp(d.trxCount>0?Math.round(d.omset/d.trxCount):0),
+        '- Omset Total   : '+fmtRp(d.omset),
+        '- Laba Bersih   : '+fmtRp(d.laba),
+        '- Margin Laba   : '+margin+'%',
+        '- Total Transaksi: '+d.trxCount+' trx',
+        '- Rata-rata/Trx : '+fmtRp(d.trxCount>0?Math.round(d.omset/d.trxCount):0),
         '',
         d.top5&&d.top5.length ? '🏆 *Top Produk Terlaris*\n'+top5Lines : '',
         '',
@@ -16107,7 +16106,7 @@ ${t.bayar ? `
     async function doImportJSON(event) {
       const file = event.target.files[0];
       if (!file) return;
-      const res = await (_getMySwal()||Swal).fire({ title: 'Import File Ini?', text: `"${file.name}" — Semua data lokal akan DITIMPA. Lanjutkan?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Import', cancelButtonText: 'Batal', confirmButtonColor: '#7c3aed' });
+      const res = await (_getMySwal()||Swal).fire({ title: 'Import File Ini?', text: `"${file.name}" - Semua data lokal akan DITIMPA. Lanjutkan?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Import', cancelButtonText: 'Batal', confirmButtonColor: '#7c3aed' });
       if (!res.isConfirmed) { event.target.value = ''; return; }
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -16187,7 +16186,7 @@ ${t.bayar ? `
           if (expTs && expTs.toDate) expTs = expTs.toDate();
           else if (expTs) expTs = new Date(expTs);
           _adminAllSubs.push({
-            uid: doc.id, email: d.email||'—', store_name: d.store_name||'—',
+            uid: doc.id, email: d.email||'-', store_name: d.store_name||'-',
             plan: d.plan||'trial', status: d.status||'active',
             expired_at: expTs ? expTs.toISOString().split('T')[0] : null,
             payment_ref: d.payment_ref||'',
@@ -16234,13 +16233,13 @@ ${t.bayar ? `
         const sc     = isExp ? '#ef4444' : (s.status==='suspended'?'#f59e0b':'#10b981');
         const sl     = isExp ? 'EXPIRED' : (s.status==='suspended'?'SUSPENDED':'AKTIF');
         const diff   = s.expired_at ? Math.ceil((new Date(s.expired_at)-today)/86400000) : null;
-        const sisa   = diff===null ? '—' : (diff<=0 ? 'Sudah expired' : (diff<=7 ? 'Sisa '+diff+' hari' : s.expired_at));
+        const sisa   = diff===null ? '-' : (diff<=0 ? 'Sudah expired' : (diff<=7 ? 'Sisa '+diff+' hari' : s.expired_at));
         return `<div class="bg-white rounded-2xl overflow-hidden cursor-pointer hover:shadow-md transition-all" style="border:1px solid #f1f5f9;border-left:4px solid ${sc};" onclick="adminOpenEdit('${s.uid}')">
           <div class="p-3 flex items-start gap-2.5">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-[10px]" style="background:linear-gradient(135deg,#0061C2,#38BDF8);">${(s.store_name||s.email).charAt(0).toUpperCase()}</div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
-                <p class="text-[11px] font-black text-slate-800 truncate">${s.store_name||'—'}</p>
+                <p class="text-[11px] font-black text-slate-800 truncate">${s.store_name||'-'}</p>
                 <span class="px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase" style="background:${p.bg};color:${p.color};border:1px solid ${p.border};">${s.plan.toUpperCase()}</span>
                 <span class="px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase" style="background:${isExp?'#fef2f2':'#f0fdf4'};color:${sc};">${sl}</span>
               </div>
@@ -16346,7 +16345,7 @@ ${t.bayar ? `
 
     // ---- AUTO LOGIN ----
     document.addEventListener('DOMContentLoaded', function() {
-      // ── Safety net: splash PASTI hilang max 6 detik ──
+      // -- Safety net: splash PASTI hilang max 6 detik --
       setTimeout(function() {
         var s = document.getElementById('refresh-splash');
         if (s && s.style.display !== 'none') {
@@ -16363,7 +16362,7 @@ ${t.bayar ? `
           const _autoExpDate = new Date(_autoExpStr + 'T23:59:59');
           const _autoToday   = new Date(); _autoToday.setHours(0,0,0,0);
           if (_autoExpDate < _autoToday) {
-            // Akun expired — hapus sesi, tampilkan overlay expired
+            // Akun expired - hapus sesi, tampilkan overlay expired
             localStorage.removeItem('k_logged');
             const _autoUid   = localStorage.getItem('k_sid') || '';
             const _autoEmail = localStorage.getItem('k_email') || '';
@@ -16376,7 +16375,7 @@ ${t.bayar ? `
       }
     });
 
-    // ── Fallback: kalau initApp gagal, paksa sembunyikan splash dan tampilkan app ──
+    // -- Fallback: kalau initApp gagal, paksa sembunyikan splash dan tampilkan app --
     window.addEventListener('error', function(e) {
       console.error('[KonterKU] JS Error:', e.message, e.filename, e.lineno);
       var s = document.getElementById('refresh-splash');
@@ -16496,7 +16495,7 @@ ${t.bayar ? `
         // Buat HTML laporan
         const rows = filtered.slice(0, 50).map((t, i) => {
           const tgl   = new Date(t.date || t.createdAt || t.timestamp || 0);
-          const nama  = t.nama || t.product || t.productName || t.name || '—';
+          const nama  = t.nama || t.product || t.productName || t.name || '-';
           const harga = Number(t.harga || t.price || 0);
           const qty   = Number(t.qty   || t.quantity || 1);
           const mode  = t.type === 'digital' || t.kasirMode === 'digital' ? '📱 Digital' : '📦 Fisik';
@@ -16810,7 +16809,7 @@ ${t.bayar ? `
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
       const rank = PLAN_RANK[plan] ?? 0;
 
-      // ── 1. Nav Hutang: tampilkan lock dot jika < basic ──
+      // -- 1. Nav Hutang: tampilkan lock dot jika < basic --
       const navHutang = document.getElementById('nav-hutang');
       if (navHutang) {
         let lockDot = navHutang.querySelector('.plan-lock-dot');
@@ -16828,7 +16827,7 @@ ${t.bayar ? `
         }
       }
 
-      // ── 2. Ekspor PDF: lock overlay jika < pro ──
+      // -- 2. Ekspor PDF: lock overlay jika < pro --
       const btnPdf = document.getElementById('btn-export-pdf');
       if (btnPdf) {
         if (rank < 2) {
@@ -16848,7 +16847,7 @@ ${t.bayar ? `
         }
       }
 
-      // ── 3. Banner pantau stok: badge PRO jika < pro ──
+      // -- 3. Banner pantau stok: badge PRO jika < pro --
       const lockBadge = document.getElementById('pantau-lock-badge');
       const pantauStatusTxt = document.getElementById('pantau-status-txt');
       if (lockBadge) {
@@ -16862,24 +16861,24 @@ ${t.bayar ? `
         }
       }
 
-      // ── 4. Badge PRO absensi kasir: tampil jika < pro ──
+      // -- 4. Badge PRO absensi kasir: tampil jika < pro --
       const absensiBadge = document.getElementById('absensi-plan-badge');
       if (absensiBadge) {
         absensiBadge.style.display = rank < 2 ? 'inline' : 'none';
       }
 
-      // ── 4b. Badge PRO Kelola Kasir, Poin Pelanggan ──
+      // -- 4b. Badge PRO Kelola Kasir, Poin Pelanggan --
       ['kelola-kasir-plan-badge','poin-pelanggan-plan-badge'].forEach(function(id) {
         const el = document.getElementById(id);
         if (el) el.style.display = rank < 2 ? 'inline' : 'none';
       });
-      // Laporan, Pelanggan, Catatan sudah dibuka untuk semua paket — badge selalu tersembunyi
+      // Laporan, Pelanggan, Catatan sudah dibuka untuk semua paket - badge selalu tersembunyi
       ['laporan-pro-badge','pelanggan-pro-badge','catatan-pro-badge'].forEach(function(id) {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
 
-      // ── 5. View hutang: paywall blur overlay jika < basic ──
+      // -- 5. View hutang: paywall blur overlay jika < basic --
       const viewHutang = document.getElementById('view-hutang');
       if (viewHutang) {
         let hutangWall = document.getElementById('hutang-paywall');
@@ -16894,7 +16893,7 @@ ${t.bayar ? `
               </div>
               <div style="text-align:center;">
                 <p style="font-size:16px;font-weight:900;color:white;margin-bottom:6px;">Hutang Piutang</p>
-                <p style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;line-height:1.5;">Fitur ini tersedia mulai paket<br><span style="color:#0ea5e9;font-weight:900;">BASIC — Rp20K/bulan</span></p>
+                <p style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;line-height:1.5;">Fitur ini tersedia mulai paket<br><span style="color:#0ea5e9;font-weight:900;">BASIC - Rp20K/bulan</span></p>
               </div>
               <button onclick="showUpgradeModal('hutang','basic')"
                 style="padding:14px 32px;border-radius:16px;border:0;background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:white;font-weight:900;font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 24px rgba(14,165,233,0.4);">
@@ -16909,7 +16908,7 @@ ${t.bayar ? `
         }
       }
 
-      // ── 6. Update label counter produk & dompet di header section ──
+      // -- 6. Update label counter produk & dompet di header section --
       const limits = getPlanLimits();
       const totalProduk = (typeof db !== 'undefined' && db.inventory) ? db.inventory.length : 0;
       const totalDompet = (typeof db !== 'undefined' && db.dompet) ? db.dompet.length : 0;
@@ -16982,7 +16981,7 @@ ${t.bayar ? `
           return;
         }
         if (Date.now() > deadline) {
-          reject(new Error('Firebase timeout — tidak siap dalam ' + (timeoutMs/1000) + 's'));
+          reject(new Error('Firebase timeout - tidak siap dalam ' + (timeoutMs/1000) + 's'));
           return;
         }
         setTimeout(check, 200);
@@ -17022,7 +17021,7 @@ ${t.bayar ? `
       snap.forEach(doc => stores.push({ id: doc.id, ...doc.data() }));
       return stores;
     } catch(e) {
-      // Index mungkin belum ada — coba tanpa orderBy sebagai fallback
+      // Index mungkin belum ada - coba tanpa orderBy sebagai fallback
       if (e.code === 'failed-precondition' || e.message.includes('index')) {
         try {
           const snap2 = await window._fbFirestore
@@ -17103,7 +17102,7 @@ ${t.bayar ? `
       await waitMTFirebase(5000);
       const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
       // [FIX] Mode kasir: jangan refresh token (token = anonymous, bukan owner)
-      // Langsung update Firestore — Security Rules harus mengizinkan kasir write
+      // Langsung update Firestore - Security Rules harus mengizinkan kasir write
       if (!isKasirMode) {
         // Mode owner: refresh token dulu untuk pastikan Auth valid
         const uid = localStorage.getItem('k_sid') || '';
@@ -17229,7 +17228,7 @@ ${t.bayar ? `
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
-            <p class="text-[12px] font-black text-slate-800 truncate">${s.store_name || '—'}</p>
+            <p class="text-[12px] font-black text-slate-800 truncate">${s.store_name || '-'}</p>
             ${isActive ? '<span class="px-1.5 py-0.5 rounded-full text-[7px] font-black text-white flex-shrink-0" style="background:#0061C2;">AKTIF</span>' : ''}
           </div>
           <p class="text-[8px] text-slate-400 font-bold">${trxCount} trx &nbsp;·&nbsp; ${prodCount} produk</p>
@@ -17275,7 +17274,7 @@ ${t.bayar ? `
     const plan = localStorage.getItem('k_plan') || 'trial';
     const max  = PLAN_STORE_LIMIT[plan] || 1;
     const el   = document.getElementById('tambah-toko-slot-info');
-    if (el) el.textContent = 'Paket ' + (PLAN_LABELS[plan]||plan) + ' — maks. ' + max + ' toko';
+    if (el) el.textContent = 'Paket ' + (PLAN_LABELS[plan]||plan) + ' - maks. ' + max + ' toko';
     const inp = document.getElementById('input-nama-toko-baru');
     if (inp) inp.value = '';
     openModal('modal-tambah-toko');
@@ -17285,7 +17284,7 @@ ${t.bayar ? `
   // ACTION: BUAT TOKO BARU
   // =====================================================
   async function doTambahToko() {
-    // [FIX] Kasir tidak boleh tambah toko — hanya owner
+    // [FIX] Kasir tidak boleh tambah toko - hanya owner
     if (localStorage.getItem('k_kasir_mode') === 'true') {
       (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa menambah toko baru.', 'warning');
       return;
@@ -17497,13 +17496,13 @@ ${t.bayar ? `
               const prod = (s.data && s.data.inventory)  ? s.data.inventory.length  : 0;
               const plg  = (s.data && s.data.pelanggan)  ? s.data.pelanggan.length  : 0;
               const om   = (s.data && s.data.transaksi)  ? s.data.transaksi.reduce((a,t)=>a+(Number(t.jual||0)),0) : 0;
-              const sync = s.last_sync ? (s.last_sync.toDate ? s.last_sync.toDate().toLocaleDateString('id-ID') : '—') : 'Belum sync';
+              const sync = s.last_sync ? (s.last_sync.toDate ? s.last_sync.toDate().toLocaleDateString('id-ID') : '-') : 'Belum sync';
               return `
               <div class="flex items-center gap-3 p-3 rounded-xl" style="background:#f8fafc;border:1px solid #f1f5f9;">
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-[11px]"
                      style="background:linear-gradient(135deg,#0061C2,#38BDF8);">${(s.store_name||'?').charAt(0).toUpperCase()}</div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-[11px] font-black text-slate-800 truncate">${s.store_name||'—'}</p>
+                  <p class="text-[11px] font-black text-slate-800 truncate">${s.store_name||'-'}</p>
                   <p class="text-[8px] text-slate-400 font-bold">${trx} trx &nbsp;·&nbsp; ${prod} produk &nbsp;·&nbsp; ${plg} pelanggan</p>
                   <p class="text-[8px] text-emerald-600 font-black">Omset: Rp ${om.toLocaleString('id-ID')}</p>
                   <p class="text-[7px] text-slate-300 font-bold">Sync: ${sync}</p>
@@ -17590,7 +17589,7 @@ ${t.bayar ? `
 
   // =====================================================
   // PATCH: sync() + syncImmediate() → auto-simpan ke user_stores
-  // [FIX] syncImmediate dipakai kasir — harus ikut update user_stores
+  // [FIX] syncImmediate dipakai kasir - harus ikut update user_stores
   // agar Monitor Cabang owner bisa melihat data kasir
   // =====================================================
   (function() {
@@ -17661,7 +17660,7 @@ ${t.bayar ? `
     }
     patchSync();
 
-    // [FIX] Patch syncImmediate juga — kasir pakai fungsi ini
+    // [FIX] Patch syncImmediate juga - kasir pakai fungsi ini
     function patchSyncImmediate() {
       if (typeof syncImmediate !== 'function') { setTimeout(patchSyncImmediate, 200); return; }
       const _origSyncImmediate = syncImmediate;
@@ -17711,7 +17710,7 @@ ${t.bayar ? `
         console.log('[MultiToko] Ditemukan', stores.length, 'toko untuk UID:', uid);
       }
     } catch(e) {
-      // Ini non-fatal — app tetap bisa berjalan normal
+      // Ini non-fatal - app tetap bisa berjalan normal
       console.warn('[MultiToko] initMultiToko error (non-fatal):', e.message);
     }
   }
@@ -17747,7 +17746,7 @@ ${t.bayar ? `
 
   // Prefix kode toko dari UID admin (6 karakter pertama, uppercase)
   function getKodeToko(uid) {
-    if (!uid || uid === 'DEMO') return '—';
+    if (!uid || uid === 'DEMO') return '-';
     return uid.substring(0, 6).toUpperCase();
   }
 
@@ -17762,7 +17761,7 @@ ${t.bayar ? `
   function copyKodeToko() {
     const uid = localStorage.getItem('k_sid') || '';
     const kode = getKodeToko(uid);
-    if (kode === '—') return;
+    if (kode === '-') return;
     navigator.clipboard.writeText(kode).then(() => {
       (_getMySwal()||Swal).fire({ title: 'Tersalin!', text: 'Kode toko ' + kode + ' disalin ke clipboard.', icon: 'success', timer: 1500, showConfirmButton: false });
     }).catch(() => {
@@ -17770,7 +17769,7 @@ ${t.bayar ? `
     });
   }
 
-  // ─── LOAD & RENDER DAFTAR KASIR ───
+  // --- LOAD & RENDER DAFTAR KASIR ---
   async function loadKasirList() {
     let uid = localStorage.getItem('k_sid');
     if (!uid || uid === 'DEMO') return;
@@ -17815,7 +17814,7 @@ ${t.bayar ? `
             ${(k.nama||'?').charAt(0).toUpperCase()}
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-[12px] font-black text-slate-800">${k.nama || '—'}</p>
+            <p class="text-[12px] font-black text-slate-800">${k.nama || '-'}</p>
             <p class="text-[9px] text-slate-400 font-bold">@${k.username} &nbsp;·&nbsp; ${_izinLabel(k.izin)}</p>
           </div>
           <div class="flex gap-1.5 flex-shrink-0">
@@ -17844,14 +17843,14 @@ ${t.bayar ? `
     return labels.length ? labels.join(' · ') : 'Hanya kasir';
   }
 
-  // ─── BUKA MODAL KELOLA KASIR ───
+  // --- BUKA MODAL KELOLA KASIR ---
   async function openKelolaKasirModal() {
     refreshKodeToko();
     openModal('modal-kelola-kasir');
     await loadKasirList();
   }
 
-  // ─── TAMBAH KASIR BARU ───
+  // --- TAMBAH KASIR BARU ---
   async function doTambahKasir() {
     const uid      = localStorage.getItem('k_sid');
     const nama     = (document.getElementById('new-kasir-nama')?.value || '').trim();
@@ -17922,7 +17921,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── HAPUS KASIR ───
+  // --- HAPUS KASIR ---
   async function deleteKasir(id, nama) {
     const res = await (_getMySwal()||Swal).fire({
       title: 'Hapus Kasir "' + nama + '"?',
@@ -17943,7 +17942,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── EDIT KASIR (reset password / ubah izin) ───
+  // --- EDIT KASIR (reset password / ubah izin) ---
   let _editKasirId = null;
   async function editKasir(id) {
     _editKasirId = id;
@@ -18008,7 +18007,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── SIMPLE HASH (untuk password kasir) ───
+  // --- SIMPLE HASH (untuk password kasir) ---
   // Bukan kriptografi kuat, tapi cukup untuk menyembunyikan password di Firestore
   function _simpleHash(str) {
     let hash = 5381;
@@ -18023,7 +18022,7 @@ ${t.bayar ? `
     return _simpleHash(plain) === hash;
   }
 
-  // ─── LOGIN KASIR (dari login screen) ───
+  // --- LOGIN KASIR (dari login screen) ---
   async function doKasirLogin() {
     const storeCode = (document.getElementById('kasir-store-code')?.value || '').trim().toUpperCase();
     const username  = (document.getElementById('kasir-username')?.value || '').trim().toLowerCase();
@@ -18055,11 +18054,11 @@ ${t.bayar ? `
       if (!kasir.is_active) throw new Error('Akun kasir ini telah dinonaktifkan.');
       if (!_verifyHash(password, kasir.pw_hash)) throw new Error('Password salah.');
 
-      // Login berhasil — set session kasir
+      // Login berhasil - set session kasir
       const ownerUid = kasir.owner_uid;
       const storeId  = kasir.store_id;
 
-      // ── Sign in anonymous ke Firebase Auth agar request.auth tersedia di Rules ──
+      // -- Sign in anonymous ke Firebase Auth agar request.auth tersedia di Rules --
       let anonUid = '';
       try {
         if (window._fbAuth.currentUser && window._fbAuth.currentUser.isAnonymous) {
@@ -18073,7 +18072,7 @@ ${t.bayar ? `
         console.warn('[KasirLogin] signInAnonymously gagal:', eAnon.message);
       }
 
-      // ── Buat device ID unik untuk device ini ──
+      // -- Buat device ID unik untuk device ini --
       let deviceId = localStorage.getItem('k_device_id');
       if (!deviceId) {
         deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
@@ -18097,7 +18096,7 @@ ${t.bayar ? `
       }
       localStorage.setItem('k_store_name', kasir.store_name || '');
 
-      // ── Simpan sesi kasir ke Firestore (lintas device) ──
+      // -- Simpan sesi kasir ke Firestore (lintas device) --
       try {
         const sessionData = {
           kasir_id       : kasirDoc.id,
@@ -18123,10 +18122,10 @@ ${t.bayar ? `
         localStorage.setItem('k_session_doc_id', sessDocId);
       } catch(eSess) {
         console.warn('[KasirLogin] Gagal simpan sesi ke Firestore:', eSess.message);
-        // Tidak fatal — sesi tetap jalan via localStorage
+        // Tidak fatal - sesi tetap jalan via localStorage
       }
 
-      // Ambil nama toko + plan owner — HARUS selesai sebelum initApp
+      // Ambil nama toko + plan owner - HARUS selesai sebelum initApp
       try {
         // 1. Ambil store_name dari user_stores
         let resolvedStoreId = storeId && storeId !== 'undefined' && storeId !== 'null' ? storeId : null;
@@ -18176,7 +18175,7 @@ ${t.bayar ? `
         console.warn('[KasirLogin] Gagal ambil info toko/plan:', e2.message);
       }
 
-      // ── CEK EXPIRED SEBELUM MASUK APP (kasir) ──
+      // -- CEK EXPIRED SEBELUM MASUK APP (kasir) --
       const _kasirExpStr = localStorage.getItem('k_expired_date');
       if (_kasirExpStr) {
         const _kasirExpDate = new Date(_kasirExpStr + 'T23:59:59');
@@ -18191,9 +18190,9 @@ ${t.bayar ? `
         }
       }
 
-      // Masuk ke app — store_name dan plan sudah tersimpan di localStorage
+      // Masuk ke app - store_name dan plan sudah tersimpan di localStorage
       _triggerLoginBtnSuccess('btn-kasir-login');
-      initApp(false);
+      (window.initApp || initApp)(false);
 
       // Setelah app tampil, terapkan batasan UI kasir
       setTimeout(applyKasirRestrictions, 1200);
@@ -18203,7 +18202,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── TERAPKAN BATASAN UI UNTUK MODE KASIR ───
+  // --- TERAPKAN BATASAN UI UNTUK MODE KASIR ---
   function applyKasirRestrictions() {
     const isKasir = localStorage.getItem('k_kasir_mode') === 'true';
     if (!isKasir) return;
@@ -18240,7 +18239,7 @@ ${t.bayar ? `
       headerEl.innerHTML = (storeName ? storeName + ' · ' : '') + '<span style="color:#a78bfa;font-size:11px;">👤 ' + kasirNama + '</span>';
     }
 
-    // ── Tampilkan info kasir di sidebar header (mobile & desktop) ──
+    // -- Tampilkan info kasir di sidebar header (mobile & desktop) --
     const kasirInfoMobile = document.getElementById('sidebar-kasir-info');
     const kasirNamaDisplayMobile = document.getElementById('sidebar-kasir-nama-display');
     if (kasirInfoMobile && kasirNamaDisplayMobile) {
@@ -18277,7 +18276,7 @@ ${t.bayar ? `
     if (_poinWrap) _poinWrap.style.display = 'none';
   }
 
-  // ─── CEK ABSENSI KASIR HARI INI ───
+  // --- CEK ABSENSI KASIR HARI INI ---
   // Tampilkan SweetAlert jika kasir belum absensi, hilang otomatis setelah absensi
   async function _cekAbsensiKasirHariIni() {
     const isKasir = localStorage.getItem('k_kasir_mode') === 'true';
@@ -18310,10 +18309,10 @@ ${t.bayar ? `
 
     if (sudahAbsensi) {
       localStorage.setItem(localKey, 'true');
-      return; // Sudah absensi — tidak perlu notif
+      return; // Sudah absensi - tidak perlu notif
     }
 
-    // Belum absensi — tampilkan SweetAlert mencolok
+    // Belum absensi - tampilkan SweetAlert mencolok
     const S = _getMySwal() || Swal;
     const result = await S.fire({
       title: '⏰ Belum Absensi!',
@@ -18342,12 +18341,12 @@ ${t.bayar ? `
       if (typeof openSidebarMenu === 'function') openSidebarMenu('absensi-kasir');
       else if (typeof openAbsensiKasirModal === 'function') openAbsensiKasirModal();
     } else {
-      // Kasir pilih "Nanti" — tampilkan banner peringatan kecil yang persistent
+      // Kasir pilih "Nanti" - tampilkan banner peringatan kecil yang persistent
       _tampilBannerAbsensi(kasirNama, localKey);
     }
   }
 
-  // ─── BANNER ABSENSI PERSISTENT (muncul jika kasir belum absensi) ───
+  // --- BANNER ABSENSI PERSISTENT (muncul jika kasir belum absensi) ---
   function _tampilBannerAbsensi(kasirNama, localKey) {
     // Jangan buat duplikat
     if (document.getElementById('kasir-absensi-banner')) return;
@@ -18374,7 +18373,7 @@ ${t.bayar ? `
 
     banner.innerHTML = `
       <i class="fas fa-user-clock" style="font-size:16px;flex-shrink:0;"></i>
-      <p style="font-size:11px;font-weight:800;flex:1;margin:0;">⚠️ <b>${kasirNama}</b> belum absensi hari ini — Tap untuk absensi sekarang!</p>
+      <p style="font-size:11px;font-weight:800;flex:1;margin:0;">⚠️ <b>${kasirNama}</b> belum absensi hari ini - Tap untuk absensi sekarang!</p>
       <button id="kasir-banner-close" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:900;color:white;cursor:pointer;flex-shrink:0;">✕</button>
     `;
 
@@ -18398,7 +18397,7 @@ ${t.bayar ? `
       if (typeof openSidebarMenu === 'function') openSidebarMenu('absensi-kasir');
     });
 
-    // Monitor jika kasir sudah absensi — hilangkan banner
+    // Monitor jika kasir sudah absensi - hilangkan banner
     const today = new Date().toISOString().split('T')[0];
     const interval = setInterval(async () => {
       const ownerUid = localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid');
@@ -18434,11 +18433,11 @@ ${t.bayar ? `
     }, 8000); // Cek setiap 8 detik
   }
 
-  // ─── EXPOSE ke window agar bisa dipanggil dari luar ───
+  // --- EXPOSE ke window agar bisa dipanggil dari luar ---
   window._cekAbsensiKasirHariIni = _cekAbsensiKasirHariIni;
   window._tampilBannerAbsensi = _tampilBannerAbsensi;
 
-  // ─── HOOK: Tambahkan "Kelola Kasir" di openSidebarMenu ───
+  // --- HOOK: Tambahkan "Kelola Kasir" di openSidebarMenu ---
   // Extend fungsi openSidebarMenu yang sudah ada agar bisa handle 'kelola-kasir'
   const _origOpenSidebarMenu = typeof openSidebarMenu === 'function' ? openSidebarMenu : null;
   window.openSidebarMenu = function(menu) {
@@ -18448,7 +18447,7 @@ ${t.bayar ? `
         (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengelola kasir.', 'warning');
         return;
       }
-      // ── FEATURE GATE: minimal PRO ──
+      // -- FEATURE GATE: minimal PRO --
       { const _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
         if (_r < 2) { showUpgradeModal('kelola_kasir','pro'); return; } }
       closeSidebar();
@@ -18461,7 +18460,7 @@ ${t.bayar ? `
         (_getMySwal()||Swal).fire('Akses Ditolak', 'Hanya pemilik toko yang bisa mengatur sistem poin.', 'warning');
         return;
       }
-      // ── FEATURE GATE: minimal PRO ──
+      // -- FEATURE GATE: minimal PRO --
       { const _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
         if (_r < 2) { showUpgradeModal('poin_pelanggan','pro'); return; } }
       closeSidebar && closeSidebar();
@@ -18475,7 +18474,7 @@ ${t.bayar ? `
     if (_origOpenSidebarMenu) _origOpenSidebarMenu(menu);
   };
 
-  // ─── PATCH switchAuthTab untuk support tab 'kasir' ───
+  // --- PATCH switchAuthTab untuk support tab 'kasir' ---
   const _origSwitchAuthTab = typeof switchAuthTab === 'function' ? switchAuthTab : null;
   window.switchAuthTab = function(tab) {
     hideLoginError();
@@ -18508,7 +18507,7 @@ ${t.bayar ? `
     if (_origSwitchAuthTab) _origSwitchAuthTab(tab);
   };
 
-  // ─── PATCH LOGOUT untuk bersihkan session kasir ───
+  // --- PATCH LOGOUT untuk bersihkan session kasir ---
   const _origLogout = typeof logout === 'function' ? logout : null;
   window.logout = function() {
     (_getMySwal()||Swal).fire({
@@ -18519,7 +18518,7 @@ ${t.bayar ? `
       cancelButtonText: 'Batal'
     }).then(async res => {
       if (res.isConfirmed) {
-        // ── Hapus sesi kasir dari Firestore ──
+        // -- Hapus sesi kasir dari Firestore --
         const sessionDocId = localStorage.getItem('k_session_doc_id');
         if (sessionDocId && window._fbFirestore) {
           try {
@@ -18527,7 +18526,7 @@ ${t.bayar ? `
           } catch(e) { console.warn('[Logout] Gagal hapus sesi Firestore:', e.message); }
         }
         if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
-        // [FIX] Bersihkan HANYA data sesi kasir — jangan hapus konterku_db_ (data toko owner)
+        // [FIX] Bersihkan HANYA data sesi kasir - jangan hapus konterku_db_ (data toko owner)
         // karena kasir hanya memakai data milik owner, bukan data sendiri
         const _kKeys = [
           'k_logged','k_token','k_sid','k_email',
@@ -18538,7 +18537,7 @@ ${t.bayar ? `
           'k_kasir_anon_uid','k_struk_alamat','k_struk_tagline','k_struk_logo'
         ];
         _kKeys.forEach(k => localStorage.removeItem(k));
-        // [FIX] Tidak hapus konterku_db_* — data tersebut milik owner toko
+        // [FIX] Tidak hapus konterku_db_* - data tersebut milik owner toko
         // dan sudah ter-sync ke Firestore. Hapus hanya ktg_ (kategori sementara)
         Object.keys(localStorage).forEach(k => {
           if (k.startsWith('ktg_')) localStorage.removeItem(k);
@@ -18548,7 +18547,7 @@ ${t.bayar ? `
     });
   };
 
-  // ─── AUTO-APPLY batasan kasir saat reload ───
+  // --- AUTO-APPLY batasan kasir saat reload ---
   document.addEventListener('DOMContentLoaded', function() {
     if (localStorage.getItem('k_logged') === 'true' && localStorage.getItem('k_kasir_mode') === 'true') {
       // Sudah login sebagai kasir sebelumnya, terapkan batasan setelah app load
@@ -18558,7 +18557,7 @@ ${t.bayar ? `
         if (typeof _cekAbsensiKasirHariIni === 'function') _cekAbsensiKasirHariIni();
       }, 3000);
     } else if (localStorage.getItem('k_logged') === 'true') {
-      // Bukan kasir — tampilkan menu Poin Pelanggan untuk owner/admin
+      // Bukan kasir - tampilkan menu Poin Pelanggan untuk owner/admin
       setTimeout(function() {
         const _poinMenuMobile = document.getElementById('sidebar-poin-pelanggan-menu');
         const _poinMenuDesktop = document.getElementById('dsn-poin-pelanggan');
@@ -18568,7 +18567,7 @@ ${t.bayar ? `
     }
   });
 
-  // ─── AUTO-DETECT SESI KASIR DARI FIRESTORE (lintas device) ───
+  // --- AUTO-DETECT SESI KASIR DARI FIRESTORE (lintas device) ---
   // Jika device ini belum login tapi punya device_id yang masih aktif di Firestore,
   // restore sesi otomatis tanpa perlu login ulang.
   (function() {
@@ -18603,7 +18602,7 @@ ${t.bayar ? `
         const loginAt = sess.login_at && sess.login_at.toDate ? sess.login_at.toDate() : new Date(sess.login_at);
         const ageHours = (Date.now() - loginAt.getTime()) / 3600000;
         if (ageHours > 24) {
-          // Sesi expired — hapus dari Firestore
+          // Sesi expired - hapus dari Firestore
           await window._fbFirestore.collection('kasir_sessions').doc(deviceId).delete().catch(()=>{});
           return;
         }
@@ -18652,7 +18651,7 @@ ${t.bayar ? `
         window._fbFirestore.collection('kasir_sessions').doc(deviceId)
           .update({ last_seen: new Date() }).catch(()=>{});
 
-        // ── Re-sign-in anonymous agar request.auth.uid ada kembali setelah reload ──
+        // -- Re-sign-in anonymous agar request.auth.uid ada kembali setelah reload --
         let restoredAnonUid = sess.anon_uid || '';
         try {
           if (window._fbAuth) {
@@ -18693,7 +18692,7 @@ ${t.bayar ? `
           customClass: { popup: 'swal2-ku' }
         });
 
-        initApp(false, true);
+        (window.initApp || initApp)(false, true);
         setTimeout(applyKasirRestrictions, 1200);
 
       } catch(e) {
@@ -18709,7 +18708,7 @@ ${t.bayar ? `
     }
   })();
 
-  // ─── HOOK: Tambahkan handle 'absensi-kasir' di openSidebarMenu ───
+  // --- HOOK: Tambahkan handle 'absensi-kasir' di openSidebarMenu ---
   // (ditambah setelah patch kelola-kasir)
 
   console.log('[KasirStaff] Modul kasir staff v1 dimuat.');
@@ -18731,7 +18730,7 @@ ${t.bayar ? `
     setTimeout(_checkOvertimeShifts, 1500);
   }
 
-  // ─── CEK SHIFT YANG SUDAH > 12 JAM (reminder) ───
+  // --- CEK SHIFT YANG SUDAH > 12 JAM (reminder) ---
   async function _checkOvertimeShifts() {
     try {
       const uid = localStorage.getItem('k_kasir_mode') === 'true'
@@ -18749,7 +18748,7 @@ ${t.bayar ? `
         if (diffH >= 12) overtime.push({ nama: s.nama, jam: Math.floor(diffH) });
       });
       if (overtime.length > 0) {
-        const listHtml = overtime.map(o => `<li style="margin-bottom:4px;"><b>${o.nama}</b> — sudah <b style="color:#ef4444;">${o.jam} jam</b></li>`).join('');
+        const listHtml = overtime.map(o => `<li style="margin-bottom:4px;"><b>${o.nama}</b> - sudah <b style="color:#ef4444;">${o.jam} jam</b></li>`).join('');
         (_getMySwal()||Swal).fire({
           icon: 'warning',
           title: `⏰ ${overtime.length} Shift Belum Ditutup!`,
@@ -18764,7 +18763,7 @@ ${t.bayar ? `
     } catch(e) {}
   }
 
-  // ─── JALANKAN JAM REALTIME ───
+  // --- JALANKAN JAM REALTIME ---
   function _startAbsensiClock() {
     if (_absensiClockInterval) clearInterval(_absensiClockInterval);
     const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -18784,7 +18783,7 @@ ${t.bayar ? `
     _absensiClockInterval = setInterval(updateClock, 1000);
   }
 
-  // ─── PRE-FILL FORM BUKA SHIFT ───
+  // --- PRE-FILL FORM BUKA SHIFT ---
   function _prefillAbsensiBuka() {
     const now = new Date();
     const tglEl  = document.getElementById('absensi-buka-tgl');
@@ -18805,7 +18804,7 @@ ${t.bayar ? `
     setTimeout(_refreshSaldoBuka, 300);
   }
 
-  // ─── HELPER: Baca saldo kas & bank dari db.dompet ───
+  // --- HELPER: Baca saldo kas & bank dari db.dompet ---
   function _getSaldoDompet() {
     const dompet = (typeof db !== 'undefined' && db.dompet) ? db.dompet : [];
     const kasList   = dompet.filter(w => w.tipe === 'kas');
@@ -18817,7 +18816,7 @@ ${t.bayar ? `
     return { totalKas, totalBank, kasDetail, bankDetail };
   }
 
-  // ─── REFRESH TAMPILAN SALDO BUKA SHIFT ───
+  // --- REFRESH TAMPILAN SALDO BUKA SHIFT ---
   function _refreshSaldoBuka() {
     const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
     const { totalKas, totalBank, kasDetail, bankDetail } = _getSaldoDompet();
@@ -18835,7 +18834,7 @@ ${t.bayar ? `
     if (bankValEl) bankValEl.value = totalBank;
   }
 
-  // ─── REFRESH TAMPILAN SALDO TUTUP SHIFT ───
+  // --- REFRESH TAMPILAN SALDO TUTUP SHIFT ---
   function _refreshSaldoTutup() {
     const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
     const { totalKas, totalBank, kasDetail, bankDetail } = _getSaldoDompet();
@@ -18854,7 +18853,7 @@ ${t.bayar ? `
     hitungSelisihShift();
   }
 
-  // ─── SWITCH TAB ABSENSI ───
+  // --- SWITCH TAB ABSENSI ---
   function setAbsensiTab(tab) {
     ['buka','tutup','laporan'].forEach(t => {
       const panel = document.getElementById('absensi-panel-'+t);
@@ -18874,7 +18873,7 @@ ${t.bayar ? `
     if (tab === 'laporan') loadAbsensiLaporan();
   }
 
-  // ─── PRE-FILL FORM TUTUP SHIFT ───
+  // --- PRE-FILL FORM TUTUP SHIFT ---
   function _prefillAbsensiTutup() {
     const now = new Date();
     const tglEl = document.getElementById('absensi-tutup-tgl');
@@ -18889,7 +18888,7 @@ ${t.bayar ? `
     setTimeout(_refreshSaldoTutup, 300);
   }
 
-  // ─── LOAD SHIFT AKTIF UNTUK DROPDOWN TUTUP ───
+  // --- LOAD SHIFT AKTIF UNTUK DROPDOWN TUTUP ---
   async function _loadShiftAktifUntukTutup() {
     // Ambil uid yang benar:
     // - Jika mode kasir → pakai k_owner_uid (uid pemilik toko)
@@ -18943,7 +18942,7 @@ ${t.bayar ? `
       } else {
         sel.innerHTML = '<option value="">-- Pilih shift aktif --</option>' +
           _absensiActiveShifts.map(s =>
-            `<option value="${s.id}">${s.nama} — ${s.buka_tgl} ${s.buka_jam||''}</option>`
+            `<option value="${s.id}">${s.nama} - ${s.buka_tgl} ${s.buka_jam||''}</option>`
           ).join('');
       }
     } catch(e) {
@@ -18955,7 +18954,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── SAAT PILIH SHIFT UNTUK DITUTUP ───
+  // --- SAAT PILIH SHIFT UNTUK DITUTUP ---
   let _absensiShiftDurasiInterval = null;
   function onSelectShiftTutup() {
     const shiftId = document.getElementById('absensi-tutup-shift-id')?.value;
@@ -18969,11 +18968,11 @@ ${t.bayar ? `
     infoContent.innerHTML = `
       <div class="flex justify-between items-center py-1 border-b border-amber-100">
         <span style="font-size:9px;font-weight:700;color:#92400e;">Nama Kasir</span>
-        <span style="font-size:10px;font-weight:900;color:#451a03;">${s.nama||'—'}</span>
+        <span style="font-size:10px;font-weight:900;color:#451a03;">${s.nama||'-'}</span>
       </div>
       <div class="flex justify-between items-center py-1 border-b border-amber-100">
         <span style="font-size:9px;font-weight:700;color:#92400e;">Mulai Shift</span>
-        <span style="font-size:10px;font-weight:900;color:#451a03;">${s.buka_tgl||'—'} ${s.buka_jam||'—'}</span>
+        <span style="font-size:10px;font-weight:900;color:#451a03;">${s.buka_tgl||'-'} ${s.buka_jam||'-'}</span>
       </div>
       <div class="flex justify-between items-center py-1 border-b border-amber-100">
         <span style="font-size:9px;font-weight:700;color:#92400e;"><i class="fas fa-coins mr-1"></i>Saldo Awal Kas</span>
@@ -18985,7 +18984,7 @@ ${t.bayar ? `
       </div>
     `;
     infoBox.classList.remove('hidden');
-    // ── Real-time durasi shift ──
+    // -- Real-time durasi shift --
     const bukaAt = s.buka_at?.toDate ? s.buka_at.toDate() : new Date((s.buka_tgl||'') + 'T' + (s.buka_jam||'00:00'));
     function updateDurasi() {
       const now = new Date();
@@ -19006,7 +19005,7 @@ ${t.bayar ? `
     hitungSelisihShift();
   }
 
-  // ─── HITUNG SELISIH SALDO ───
+  // --- HITUNG SELISIH SALDO ---
   function hitungSelisihShift() {
     const shiftId = document.getElementById('absensi-tutup-shift-id')?.value;
     const saldoAkhirKasEl  = document.getElementById('absensi-tutup-saldo');
@@ -19033,7 +19032,7 @@ ${t.bayar ? `
     selisihRow.classList.remove('hidden');
   }
 
-  // ─── PROSES BUKA SHIFT ───
+  // --- PROSES BUKA SHIFT ---
   async function prosesAbsensiBuka() {
     const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
     const uid = isKasirMode
@@ -19051,7 +19050,7 @@ ${t.bayar ? `
     if (!jam)  return (_getMySwal()||Swal).fire('Perhatian', 'Jam mulai shift harus diisi!', 'warning');
     try {
       await waitMTFirebase(6000);
-      // ── VALIDASI: cek apakah kasir ini sudah punya shift aktif ──
+      // -- VALIDASI: cek apakah kasir ini sudah punya shift aktif --
       const dupSnap = await window._fbFirestore.collection('absensi_kasir')
         .where('owner_uid','==', uid)
         .where('nama','==', nama)
@@ -19103,7 +19102,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── PROSES TUTUP SHIFT ───
+  // --- PROSES TUTUP SHIFT ---
   async function prosesAbsensiTutup() {
     const shiftId       = document.getElementById('absensi-tutup-shift-id')?.value || '';
     const tglTutup      = document.getElementById('absensi-tutup-tgl')?.value || '';
@@ -19117,7 +19116,7 @@ ${t.bayar ? `
     const s = _absensiActiveShifts.find(x => x.id === shiftId);
     if (!s) return (_getMySwal()||Swal).fire('Error', 'Data shift tidak ditemukan.', 'error');
 
-    // ── KEAMANAN: Kasir hanya boleh menutup shift miliknya sendiri ──
+    // -- KEAMANAN: Kasir hanya boleh menutup shift miliknya sendiri --
     const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
     if (isKasirMode) {
       const kasirNama = localStorage.getItem('k_kasir_nama') || '';
@@ -19203,7 +19202,7 @@ ${t.bayar ? `
       if (_absensiShiftDurasiInterval) { clearInterval(_absensiShiftDurasiInterval); _absensiShiftDurasiInterval = null; }
       (_getMySwal()||Swal).fire({
         title: '✅ Shift Ditutup!',
-        html: `<b>${s.nama}</b> — ${durasiJam}j ${durasiMenit}m<br>
+        html: `<b>${s.nama}</b> - ${durasiJam}j ${durasiMenit}m<br>
           <small style="color:#64748b;">Kas: <b>Rp ${saldoAwalKas.toLocaleString('id-ID')}</b> → <b>Rp ${saldoAkhirKas.toLocaleString('id-ID')}</b></small><br>
           <small style="color:#64748b;">Bank: <b>Rp ${saldoAwalBank.toLocaleString('id-ID')}</b> → <b>Rp ${saldoAkhirBank.toLocaleString('id-ID')}</b></small>`,
         icon: 'success', timer: 4000, showConfirmButton: false, customClass:{popup:'swal2-ku'}
@@ -19214,8 +19213,8 @@ ${t.bayar ? `
     }
   }
 
-  // ─── LOAD LAPORAN ABSENSI ───
-  // ─── CACHE DATA ABSENSI (untuk export & filter lokal) ───
+  // --- LOAD LAPORAN ABSENSI ---
+  // --- CACHE DATA ABSENSI (untuk export & filter lokal) ---
   let _absensiDataCache = [];
 
   async function loadAbsensiLaporan() {
@@ -19249,7 +19248,7 @@ ${t.bayar ? `
         return tb - ta;
       });
       _absensiDataCache = data;
-      // ── Kasir mode: filter hanya tampilkan shift miliknya ──
+      // -- Kasir mode: filter hanya tampilkan shift miliknya --
       if (isKasirMode && kasirNama) {
         data = data.filter(d => (d.nama||'').toLowerCase() === kasirNama.toLowerCase());
       }
@@ -19261,7 +19260,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── RENDER LIST dengan filter status + tanggal ───
+  // --- RENDER LIST dengan filter status + tanggal ---
   function _renderAbsensiList(rawData) {
     const listEl = document.getElementById('absensi-laporan-list');
     if (!listEl) return;
@@ -19349,7 +19348,7 @@ ${t.bayar ? `
               <i class="fas fa-${isAktif ? 'door-open' : 'door-closed'} text-white" style="font-size:11px;"></i>
             </div>
             <div>
-              <p style="font-size:12px;font-weight:900;color:#0f172a;"><i class="fas fa-user-tie mr-1" style="font-size:9px;color:#94a3b8;"></i>${s.nama||'—'}</p>
+              <p style="font-size:12px;font-weight:900;color:#0f172a;"><i class="fas fa-user-tie mr-1" style="font-size:9px;color:#94a3b8;"></i>${s.nama||'-'}</p>
               <span style="font-size:8px;font-weight:900;padding:1px 8px;border-radius:100px;${isAktif ? 'background:rgba(16,185,129,0.15);color:#059669;' : 'background:rgba(100,116,139,0.1);color:#64748b;'}">${isAktif ? '● AKTIF' : '✓ SELESAI'}</span>
             </div>
           </div>
@@ -19363,17 +19362,17 @@ ${t.bayar ? `
           <div class="grid grid-cols-3 gap-2">
             <div class="rounded-xl p-2.5" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;">
               <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;"><i class="fas fa-sign-in-alt mr-1 text-emerald-500"></i>Jam Masuk</p>
-              <p style="font-size:12px;font-weight:900;color:#065f46;">${s.buka_jam||'—'}</p>
-              <p style="font-size:8px;font-weight:700;color:#6b7280;">${s.buka_tgl||'—'}</p>
+              <p style="font-size:12px;font-weight:900;color:#065f46;">${s.buka_jam||'-'}</p>
+              <p style="font-size:8px;font-weight:700;color:#6b7280;">${s.buka_tgl||'-'}</p>
             </div>
             <div class="rounded-xl p-2.5" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1px solid #ddd6fe;">
               <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;"><i class="fas fa-sign-out-alt mr-1 text-violet-500"></i>Jam Keluar</p>
-              <p style="font-size:12px;font-weight:900;color:#4c1d95;">${isAktif ? '—' : (s.tutup_jam||'—')}</p>
-              <p style="font-size:8px;font-weight:700;color:#6b7280;">${isAktif ? 'Belum tutup' : (s.tutup_tgl||'—')}</p>
+              <p style="font-size:12px;font-weight:900;color:#4c1d95;">${isAktif ? '-' : (s.tutup_jam||'-')}</p>
+              <p style="font-size:8px;font-weight:700;color:#6b7280;">${isAktif ? 'Belum tutup' : (s.tutup_tgl||'-')}</p>
             </div>
             <div class="rounded-xl p-2.5" style="background:#f8fafc;border:1px solid #e2e8f0;">
               <p style="font-size:7px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px;">⏱ Total Kerja</p>
-              <p style="font-size:12px;font-weight:900;color:#1e293b;">${isAktif ? '—' : ((s.durasi_jam||0)+'j '+(s.durasi_menit||0)+'m')}</p>
+              <p style="font-size:12px;font-weight:900;color:#1e293b;">${isAktif ? '-' : ((s.durasi_jam||0)+'j '+(s.durasi_menit||0)+'m')}</p>
               <p style="font-size:8px;font-weight:700;color:#6b7280;">${isAktif ? 'Berjalan' : 'Durasi'}</p>
             </div>
           </div>
@@ -19432,14 +19431,14 @@ ${t.bayar ? `
           ${s._edited_at ? `
           <div class="rounded-xl px-3 py-2 flex items-center gap-2" style="background:#fef9c3;border:1px solid #fde047;">
             <i class="fas fa-pen-to-square" style="font-size:9px;color:#ca8a04;"></i>
-            <p style="font-size:8px;font-weight:800;color:#92400e;">Pernah diedit oleh <b>${s._edited_by||'—'}</b> · ${s._edit_count||1}x edit</p>
+            <p style="font-size:8px;font-weight:800;color:#92400e;">Pernah diedit oleh <b>${s._edited_by||'-'}</b> · ${s._edit_count||1}x edit</p>
           </div>` : ''}
         </div>
       </div>`;
     }).join('');
   }
 
-  // ─── INIT OPSI TAHUN DINAMIS ───
+  // --- INIT OPSI TAHUN DINAMIS ---
   function _initAbsensiTahunOptions() {
     const sel = document.getElementById('abl-filter-tahun');
     if (!sel || sel.options.length > 1) return;
@@ -19451,19 +19450,19 @@ ${t.bayar ? `
     }
   }
 
-  // ─── APPLY FILTER TANGGAL ───
+  // --- APPLY FILTER TANGGAL ---
   function applyAbsensiDateFilter() {
     _renderAbsensiList(_absensiDataCache);
   }
 
-  // ─── RESET FILTER TANGGAL ───
+  // --- RESET FILTER TANGGAL ---
   function resetAbsensiDateFilter() {
     const ids = ['abl-filter-bulan','abl-filter-tahun','abl-filter-tgl-dari','abl-filter-tgl-sampai'];
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     _renderAbsensiList(_absensiDataCache);
   }
 
-  // ─── EXPORT CSV ───
+  // --- EXPORT CSV ---
   function exportAbsensiCSV() {
     const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
     if (isKasirMode) {
@@ -19530,7 +19529,7 @@ ${t.bayar ? `
     (_getMySwal()||Swal).fire({ icon:'success', title:'Export Berhasil!', text:`${data.length} data absensi telah diexport ke file CSV.`, timer:2200, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
   }
 
-  // ─── EXPORT PDF ───
+  // --- EXPORT PDF ---
   function exportAbsensiPDF() {
     const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
     if (isKasirMode) {
@@ -19563,7 +19562,7 @@ ${t.bayar ? `
     const storeName   = localStorage.getItem('k_store_name') || 'Toko';
     const tglCetak    = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
     const periodeLabel = (bulan||tahun) ? `${bulan ? ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'][parseInt(bulan)]||'' : ''} ${tahun||''}`.trim()
-                         : (dari||sampai) ? `${dari||'—'} s/d ${sampai||'—'}` : 'Semua Periode';
+                         : (dari||sampai) ? `${dari||'-'} s/d ${sampai||'-'}` : 'Semua Periode';
     const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
     const fmtS  = (v, pos='#059669', neg='#ef4444') => `<span style="color:${v>=0?pos:neg}">${v>=0?'+':'-'}Rp ${Math.abs(v).toLocaleString('id-ID')}</span>`;
     const selesai = data.filter(d => d.status === 'selesai');
@@ -19574,16 +19573,16 @@ ${t.bayar ? `
       const saldoAkhirKas  = s.saldo_akhir_kas !== undefined ? (s.saldo_akhir_kas||0) : (s.saldo_akhir||0);
       const selisihKas     = s.selisih_kas  !== undefined ? s.selisih_kas  : 0;
       const isAktif = s.status === 'aktif';
-      const editInfo = s._edited_at ? `<br><span style="font-size:8px;color:#f59e0b;">✏️ Edit: ${s._edited_by||'—'}</span>` : '';
+      const editInfo = s._edited_at ? `<br><span style="font-size:8px;color:#f59e0b;">✏️ Edit: ${s._edited_by||'-'}</span>` : '';
       return `<tr style="background:${i%2===0?'#ffffff':'#f8fafc'}">
-        <td style="padding:6px 8px;font-size:10px;font-weight:700;color:#1e293b;border-bottom:1px solid #f1f5f9;">${s.nama||'—'}${editInfo}</td>
-        <td style="padding:6px 8px;font-size:9px;color:#475569;border-bottom:1px solid #f1f5f9;white-space:nowrap;">${s.buka_tgl||'—'}<br>${s.buka_jam||'—'}</td>
-        <td style="padding:6px 8px;font-size:9px;color:#475569;border-bottom:1px solid #f1f5f9;white-space:nowrap;">${isAktif?'<span style="color:#059669;font-weight:900;">● AKTIF</span>':(s.tutup_tgl||'—')+'<br>'+(s.tutup_jam||'—')}</td>
-        <td style="padding:6px 8px;font-size:10px;font-weight:900;color:#1e293b;border-bottom:1px solid #f1f5f9;text-align:center;">${isAktif?'—':(s.durasi_jam||0)+'j '+(s.durasi_menit||0)+'m'}</td>
+        <td style="padding:6px 8px;font-size:10px;font-weight:700;color:#1e293b;border-bottom:1px solid #f1f5f9;">${s.nama||'-'}${editInfo}</td>
+        <td style="padding:6px 8px;font-size:9px;color:#475569;border-bottom:1px solid #f1f5f9;white-space:nowrap;">${s.buka_tgl||'-'}<br>${s.buka_jam||'-'}</td>
+        <td style="padding:6px 8px;font-size:9px;color:#475569;border-bottom:1px solid #f1f5f9;white-space:nowrap;">${isAktif?'<span style="color:#059669;font-weight:900;">● AKTIF</span>':(s.tutup_tgl||'-')+'<br>'+(s.tutup_jam||'-')}</td>
+        <td style="padding:6px 8px;font-size:10px;font-weight:900;color:#1e293b;border-bottom:1px solid #f1f5f9;text-align:center;">${isAktif?'-':(s.durasi_jam||0)+'j '+(s.durasi_menit||0)+'m'}</td>
         <td style="padding:6px 8px;font-size:9px;border-bottom:1px solid #f1f5f9;text-align:right;">${fmtRp(saldoAwalKas)}</td>
-        <td style="padding:6px 8px;font-size:9px;border-bottom:1px solid #f1f5f9;text-align:right;">${isAktif?'—':fmtRp(saldoAkhirKas)}</td>
-        <td style="padding:6px 8px;font-size:9px;border-bottom:1px solid #f1f5f9;text-align:right;">${isAktif?'—':fmtS(selisihKas)}</td>
-        <td style="padding:6px 8px;font-size:9px;border-bottom:1px solid #f1f5f9;text-align:center;">${s.keterangan_buka||s.keterangan_tutup||'—'}</td>
+        <td style="padding:6px 8px;font-size:9px;border-bottom:1px solid #f1f5f9;text-align:right;">${isAktif?'-':fmtRp(saldoAkhirKas)}</td>
+        <td style="padding:6px 8px;font-size:9px;border-bottom:1px solid #f1f5f9;text-align:right;">${isAktif?'-':fmtS(selisihKas)}</td>
+        <td style="padding:6px 8px;font-size:9px;border-bottom:1px solid #f1f5f9;text-align:center;">${s.keterangan_buka||s.keterangan_tutup||'-'}</td>
       </tr>`;
     }).join('');
     const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
@@ -19636,7 +19635,7 @@ ${t.bayar ? `
     (_getMySwal()||Swal).fire({ icon:'success', title:'PDF Siap!', text:'Jendela cetak telah dibuka. Pilih "Save as PDF" di dialog print.', timer:3000, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
   }
 
-  // ─── REKAP JAM KERJA & GAJI PER KASIR ───
+  // --- REKAP JAM KERJA & GAJI PER KASIR ---
   function showRekapKasir() {
     const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
     if (isKasirMode) {
@@ -19688,7 +19687,7 @@ ${t.bayar ? `
       </tr>`;
     }).join('');
     const periodeLabel = (bulan||tahun) ? `${bulan?['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'][parseInt(bulan)]||'':''} ${tahun||''}`.trim()
-                         : (dari||sampai) ? `${dari||'—'} s/d ${sampai||'—'}` : 'Semua Periode';
+                         : (dari||sampai) ? `${dari||'-'} s/d ${sampai||'-'}` : 'Semua Periode';
     (_getMySwal()||Swal).fire({
       title: 'Rekap Jam Kerja & Gaji',
       width: '680px',
@@ -19736,7 +19735,7 @@ ${t.bayar ? `
     });
   }
 
-  // ─── FILTER LAPORAN ───
+  // --- FILTER LAPORAN ---
   function setAbsensiLaporanFilter(f) {
     _absensiFilter = f;
     ['semua','aktif','selesai'].forEach(k => {
@@ -19751,7 +19750,7 @@ ${t.bayar ? `
     _renderAbsensiList(_absensiDataCache);
   }
 
-  // ─── EDIT RECORD ABSENSI (hanya pemilik) ───
+  // --- EDIT RECORD ABSENSI (hanya pemilik) ---
   async function editAbsensi(id) {
     const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
     if (isKasirMode) {
@@ -19803,7 +19802,7 @@ ${t.bayar ? `
       updateData.durasi_jam   = Math.floor(diffMin / 60);
       updateData.durasi_menit = diffMin % 60;
     }
-    // ── Audit trail ──
+    // -- Audit trail --
     const editorUid  = (window._fbAuth?.currentUser?.uid) || localStorage.getItem('k_sid') || '';
     const editorNama = localStorage.getItem('k_kasir_nama') || localStorage.getItem('k_store_name') || editorUid;
     const prevEdit   = item._edit_history || [];
@@ -19825,7 +19824,7 @@ ${t.bayar ? `
     }
   }
 
-  // ─── HAPUS RECORD ABSENSI (hanya pemilik) ───
+  // --- HAPUS RECORD ABSENSI (hanya pemilik) ---
   async function deleteAbsensi(id) {
     const isKasirMode = localStorage.getItem('k_kasir_mode') === 'true';
     if (isKasirMode) {
@@ -19849,12 +19848,12 @@ ${t.bayar ? `
     }
   }
 
-  // ─── HOOK openSidebarMenu untuk handle 'absensi-kasir' ───
+  // --- HOOK openSidebarMenu untuk handle 'absensi-kasir' ---
   (function() {
     const _prev = typeof openSidebarMenu === 'function' ? openSidebarMenu : null;
     window.openSidebarMenu = function(menu) {
       if (menu === 'absensi-kasir') {
-        // ── FEATURE GATE: minimal paket PRO ──
+        // -- FEATURE GATE: minimal paket PRO --
         const plan = localStorage.getItem('k_plan') || 'trial';
         const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
         const rank = PLAN_RANK[plan] ?? 0;
@@ -19870,7 +19869,7 @@ ${t.bayar ? `
     };
   })();
 
-  // ─── STOP CLOCK saat modal ditutup ───
+  // --- STOP CLOCK saat modal ditutup ---
   (function() {
     const origClose = typeof closeModal === 'function' ? closeModal : null;
     if (origClose) {
@@ -20077,12 +20076,12 @@ ${t.bayar ? `
           : recentTrx.map(t => `
             <div class="flex items-center justify-between px-3 py-2 border-b" style="border-color:rgba(255,255,255,0.05);">
               <div class="flex-1 min-w-0">
-                <p class="text-[10px] font-black text-white truncate">${t.produk||'—'}</p>
-                <p class="text-[8px] text-slate-500 font-bold">${t.tgl||'—'} · ${t.pelanggan||'Umum'}</p>
+                <p class="text-[10px] font-black text-white truncate">${t.produk||'-'}</p>
+                <p class="text-[8px] text-slate-500 font-bold">${t.tgl||'-'} · ${t.pelanggan||'Umum'}</p>
               </div>
               <div class="text-right flex-shrink-0 ml-2">
                 <p class="text-[10px] font-black" style="color:#34d399;">+${fmtRp(t.jual||0)}</p>
-                <p class="text-[8px] font-bold px-1.5 py-0.5 rounded-md inline-block" style="${t.status==='Lunas' ? 'background:rgba(16,185,129,0.15);color:#34d399;' : 'background:rgba(245,158,11,0.15);color:#fbbf24;'}">${t.status||'—'}</p>
+                <p class="text-[8px] font-bold px-1.5 py-0.5 rounded-md inline-block" style="${t.status==='Lunas' ? 'background:rgba(16,185,129,0.15);color:#34d399;' : 'background:rgba(245,158,11,0.15);color:#fbbf24;'}">${t.status||'-'}</p>
               </div>
             </div>`).join('')
         }
@@ -20105,7 +20104,7 @@ ${t.bayar ? `
     if (noteEl && typeof db !== 'undefined' && db.notes) {
       noteEl.textContent = db.notes.length + ' catatan';
     }
-    // Cabang count — refresh setiap kali dashboard render
+    // Cabang count - refresh setiap kali dashboard render
     const cabangEl = document.getElementById('cabang-count-label');
     if (cabangEl) {
       const uid = localStorage.getItem('k_sid');
@@ -20121,7 +20120,7 @@ ${t.bayar ? `
           }).catch(() => {});
         }
       } else if (localStorage.getItem('k_kasir_mode') === 'true') {
-        // Kasir tidak perlu lihat cabang — sembunyikan tombol
+        // Kasir tidak perlu lihat cabang - sembunyikan tombol
         const cabangBtn = document.getElementById('shortcut-cabang');
         if (cabangBtn) cabangBtn.style.display = 'none';
         // Tampilkan card Absensi sebagai pengganti card Cabang untuk kasir
@@ -20131,7 +20130,7 @@ ${t.bayar ? `
     }
   }
 
-  // Hook ke renderAll — patch agar ikut diupdate
+  // Hook ke renderAll - patch agar ikut diupdate
   const _origRenderAll = typeof renderAll === 'function' ? renderAll : null;
   if (_origRenderAll) {
     window.renderAll = function() {
@@ -20147,7 +20146,7 @@ ${t.bayar ? `
 
   console.log('[MonitorCabang] Modul monitor cabang v1 dimuat.');
 
-  // ─── AUTO-REFRESH MONITOR CABANG (5 detik) ───────────────────────
+  // --- AUTO-REFRESH MONITOR CABANG (5 detik) -----------------------
   let _monitorRefreshTimer  = null;
   let _monitorCountdownTimer = null;
   let _monitorCountdown     = 5;
@@ -20234,7 +20233,7 @@ ${t.bayar ? `
       _stopMonitorAutoRefresh();
     }
   };
-  // ─────────────────────────────────────────────────────────────────
+  // ------------------------------------------
   </script>
 
   <!-- ==================== MODAL PANDUAN PENGGUNAAN ==================== -->
@@ -21938,7 +21937,7 @@ ${t.bayar ? `
   <script>
   // ==================== SISTEM KATEGORI ====================
   (function() {
-    // Default kategori — dipisah antara digital dan fisik
+    // Default kategori - dipisah antara digital dan fisik
     const DEFAULT_DIGITAL = ['Pulsa', 'Paket Data', 'Token PLN', 'Voucher Game', 'BPJS', 'TV Kabel', 'E-Money', 'Tagihan', 'Lainnya'];
     const DEFAULT_FISIK   = ['Aksesoris HP', 'Casing & Cover', 'Charger & Kabel', 'Earphone', 'Memory Card', 'Baterai', 'Tempered Glass', 'Spare Part', 'Lainnya'];
 
@@ -21998,7 +21997,7 @@ ${t.bayar ? `
       return KAT_STYLE[nama] || { emoji:'🏷️', color:'#6366f1', bg:'rgba(99,102,241,0.12)' };
     }
 
-    // ── State bottom sheet ──
+    // -- State bottom sheet --
     let _katSheetMode  = 'digital'; // 'digital' | 'fisik' | 'stok'
     let _katSheetItems = [];        // [{val, nama, count}]
     let _katSheetSel   = '';        // value yg sedang aktif
@@ -22134,7 +22133,7 @@ ${t.bayar ? `
         const activeBadge  = document.getElementById('stok-kat-active-badge-'  + _suffix);
         const triggerBtn   = document.getElementById('stok-kat-trigger-'       + _suffix);
         if (triggerLabel) triggerLabel.textContent = val === '' ? 'Semua Kategori' : (val === '__tanpa__' ? 'Tanpa Kategori' : nama);
-        if (triggerSub)   triggerSub.textContent   = val ? '1 filter aktif — tap untuk ubah' : ('Tap untuk filter ' + _suffix);
+        if (triggerSub)   triggerSub.textContent   = val ? '1 filter aktif - tap untuk ubah' : ('Tap untuk filter ' + _suffix);
         if (activeBadge) {
           activeBadge.style.display = val ? 'inline-block' : 'none';
           activeBadge.textContent   = val === '__tanpa__' ? 'Tanpa Kategori' : nama;
@@ -22465,7 +22464,7 @@ ${t.bayar ? `
           const backCam = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[devices.length - 1];
           const deviceId = backCam ? backCam.deviceId : undefined;
 
-          setBarcodeStatus('Kamera aktif — arahkan ke barcode', false);
+          setBarcodeStatus('Kamera aktif - arahkan ke barcode', false);
           _scanning = true;
 
           _codeReader.decodeFromVideoDevice(deviceId, 'barcode-video', (result, err) => {
@@ -22485,10 +22484,10 @@ ${t.bayar ? `
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         video.srcObject = stream;
         video.play();
-        setBarcodeStatus('Kamera aktif — ketik barcode di bawah jika scan tidak tersedia', false);
+        setBarcodeStatus('Kamera aktif - ketik barcode di bawah jika scan tidak tersedia', false);
         _scanning = true;
       } catch(e) {
-        setBarcodeStatus('Kamera tidak bisa diakses — gunakan input manual', false);
+        setBarcodeStatus('Kamera tidak bisa diakses - gunakan input manual', false);
       }
     }
 
@@ -22760,7 +22759,7 @@ ${t.bayar ? `
 
     const pesan =
 `🏪 *PERMINTAAN PERPANJANG / BELI AKUN*
-━━━━━━━━━━━━━━━━━━━━━
+---------------------
 📋 *Data Penyewa*
 • Nama Toko  : ${nama}
 • ID Toko    : ${idToko}
@@ -22776,7 +22775,7 @@ ${t.bayar ? `
 🕐 *Waktu Pengiriman*
 • ${tgl}, ${jam} WIB
 
-${catatan ? '📝 *Catatan*\n• ' + catatan + '\n\n' : ''}${hasBukti ? '📸 *Bukti Pembayaran*\n• [Screenshot terlampir — dikirim terpisah setelah chat ini]\n\n' : '⚠️ *Bukti Pembayaran*\n• Belum dilampirkan — akan dikirim menyusul\n\n'}━━━━━━━━━━━━━━━━━━━━━
+${catatan ? '📝 *Catatan*\n• ' + catatan + '\n\n' : ''}${hasBukti ? '📸 *Bukti Pembayaran*\n• [Screenshot terlampir - dikirim terpisah setelah chat ini]\n\n' : '⚠️ *Bukti Pembayaran*\n• Belum dilampirkan - akan dikirim menyusul\n\n'}---------------------
 Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 
     const encoded = encodeURIComponent(pesan);
@@ -22846,7 +22845,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     const isOwner     = () => !isKasirMode();
     const getSwal     = () => window.MySwal || window.Swal;
 
-    // ── Custom Toast — posisi dikendalikan sendiri, bebas dari SweetAlert2 ──
+    // -- Custom Toast - posisi dikendalikan sendiri, bebas dari SweetAlert2 --
     function getToast() {
       return {
         fire: function(opts) {
@@ -22908,7 +22907,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       toast.addEventListener('click', dismiss);
     }
 
-    // ─── Cooldown — hindari spam notifikasi ─────────────────
+    // --- Cooldown - hindari spam notifikasi -----------------
     const _notifShown = {};
     const COOLDOWN_MS = {
       saldo_warning  : 5  * 60 * 1000,
@@ -22923,7 +22922,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     function _markShown(key) { _notifShown[key] = Date.now(); }
 
     // ============================================================
-    // 1. ⚠️  PERINGATAN SALDO — Owner & Kasir
+    // 1. ⚠️  PERINGATAN SALDO - Owner & Kasir
     // ============================================================
     window.checkSaldoWarning = function(skipCooldown) {
       if (!_shouldShow('saldo_warning') && !skipCooldown) return;
@@ -22958,7 +22957,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     }
 
     // ============================================================
-    // 2. 📦  STOK MENIPIS — Owner & Kasir (enhanced)
+    // 2. 📦  STOK MENIPIS - Owner & Kasir (enhanced)
     // ============================================================
     const _origCheckLowStock = window.checkLowStockNotif;
     window.checkLowStockNotif = function() {
@@ -22995,7 +22994,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     }
 
     // ============================================================
-    // 3. 💸  HUTANG JATUH TEMPO — Owner SAJA
+    // 3. 💸  HUTANG JATUH TEMPO - Owner SAJA
     // ============================================================
     window.checkHutangJatuhTempo = function() {
       if (isKasirMode()) return;
@@ -23030,7 +23029,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     };
 
     // ============================================================
-    // 4. 📊  RINGKASAN SHIFT — Owner & Kasir (popup setelah tutup)
+    // 4. 📊  RINGKASAN SHIFT - Owner & Kasir (popup setelah tutup)
     // ============================================================
     window.showRingkasanShift = function(d) {
       const S = getSwal();
@@ -23042,7 +23041,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       const totalAkhir = (d.saldo_akhir_kas||0) + (d.saldo_akhir_bank||0);
 
       S.fire({
-        title: `📊 Ringkasan Shift — ${d.nama||'Kasir'}`,
+        title: `📊 Ringkasan Shift - ${d.nama||'Kasir'}`,
         html: `
           <div style="font-family:'Plus Jakarta Sans',sans-serif;text-align:left;">
             <div style="background:#f8fafc;border-radius:14px;padding:10px 14px;margin-bottom:12px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">
@@ -23100,7 +23099,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       });
     };
 
-    // ─── HOOK tutupShiftSubmit → auto ringkasan ──────────────
+    // --- HOOK tutupShiftSubmit → auto ringkasan --------------
     (function _hookTutupShift() {
       const _orig = window.tutupShiftSubmit;
       if (typeof _orig !== 'function') { setTimeout(_hookTutupShift, 2000); return; }
@@ -23135,7 +23134,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       };
     })();
 
-    // ─── HOOK renderAll → jalankan semua cek notif ───────────
+    // --- HOOK renderAll → jalankan semua cek notif -----------
     const _iv = setInterval(() => {
       if (typeof window.renderAll !== 'function') return;
       clearInterval(_iv);
@@ -23152,7 +23151,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       console.log('[KonterKU Notif] Hooks aktif ✓');
     }, 500);
 
-    // ─── Debug helper ────────────────────────────────────────
+    // --- Debug helper ----------------------------------------
     window.KonterKUNotif = {
       checkSaldo   : () => window.checkSaldoWarning(true),
       checkStok    : () => { delete _notifShown['stok_menipis']; window.checkStokMenipisEnhanced(); },
@@ -23324,9 +23323,9 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 (function KonterKUBisnisLanjutan() {
   'use strict';
 
-  // ─────────────────────────────────────────────────
+  // ------------------------------------------
   // HELPER: tunggu app ready (db & sync tersedia)
-  // ─────────────────────────────────────────────────
+  // ------------------------------------------
   function waitApp(cb) {
     if (typeof window.db !== 'undefined' && typeof window.sync === 'function') { cb(); return; }
     setTimeout(() => waitApp(cb), 300);
@@ -23336,9 +23335,9 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   const _S   = () => window.MySwal || window._getMySwal?.() || window.Swal;
   const _now = () => { const d = new Date(); return d.toISOString().split('T')[0]; };
 
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
   // ①  DATABASE PELANGGAN + RIWAYAT BELI
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
 
   // Buka profil + riwayat beli pelanggan
   window.bukaProfilPelanggan = function(nama) {
@@ -23351,7 +23350,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 
     const totalBeli = trxPlg.reduce((s, t) => s + Number(t.jual || 0), 0);
     const totalTrx  = trxPlg.length;
-    const lastBeli  = trxPlg[0]?.tgl || '—';
+    const lastBeli  = trxPlg[0]?.tgl || '-';
 
     // Hitung level
     const level = totalBeli >= 5000000 ? { label: 'PLATINUM', color: '#8b5cf6', icon: '💎' }
@@ -23367,7 +23366,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
             </div>
             <div style="flex:1;min-width:0;">
               <p style="font-size:11px;font-weight:800;color:var(--sb-text-title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${(t.produk||'').replace(/^(DIG|FIS|EWL|ADJ):\s*/i,'')}</p>
-              <p style="font-size:9px;font-weight:700;color:var(--sb-text-sub);">${t.tgl||'—'} · ${t.status||'—'}</p>
+              <p style="font-size:9px;font-weight:700;color:var(--sb-text-sub);">${t.tgl||'-'} · ${t.status||'-'}</p>
             </div>
             <div style="text-align:right;flex-shrink:0;">
               <p style="font-size:12px;font-weight:900;color:#0061C2;">Rp ${_fmt(t.jual)}</p>
@@ -23386,7 +23385,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
             ${(plg.nama||'?').charAt(0).toUpperCase()}
           </div>
           <div style="flex:1;">
-            <p style="font-size:16px;font-weight:900;color:white;">${plg.nama||'—'}</p>
+            <p style="font-size:16px;font-weight:900;color:white;">${plg.nama||'-'}</p>
             <p style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);">${plg.telp||'No. HP belum diisi'}</p>
           </div>
           <span style="padding:5px 12px;border-radius:100px;font-size:8px;font-weight:900;background:rgba(255,255,255,0.15);color:white;letter-spacing:0.06em;">${level.icon} ${level.label}</span>
@@ -23436,9 +23435,9 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (target) observer.observe(target, { childList: true, subtree: true });
   }
 
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
   // ②  SISTEM DISKON & VOUCHER PROMO
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
 
   function getVouchers() {
     try { return JSON.parse(localStorage.getItem('kku_vouchers') || '[]'); } catch { return []; }
@@ -23541,7 +23540,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     });
   };
 
-  // Fungsi pakai voucher — dipanggil dari kasir
+  // Fungsi pakai voucher - dipanggil dari kasir
   window.pakaiVoucher = function(kode, hargaJual) {
     const vcs = getVouchers();
     const vc  = vcs.find(v => v.kode === (kode||'').trim().toUpperCase());
@@ -23578,7 +23577,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     openModal('modal-voucher');
   };
 
-  // ── Inject strip diskon ke form kasir digital & fisik ──
+  // -- Inject strip diskon ke form kasir digital & fisik --
   function injectDiskonStrip() {
     ['kd-submit-area', 'kf-submit-area'].forEach(areaId => {
       if (document.getElementById('kasir-diskon-strip-' + areaId)) return;
@@ -23628,9 +23627,9 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (inp) inp.value = '';
   };
 
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
   // ④  PUSH NOTIFIKASI PWA
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
 
   window.bukaNotifPWA = function() {
     var _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
@@ -23768,9 +23767,9 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     };
   }
 
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
   // ⑤  INJECT TOMBOL DI SIDEBAR & UI LAINNYA
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
 
   function injectSidebarMenu() {
     // Tunggu sidebar menu list ada
@@ -23800,12 +23799,12 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 
   // Tombol di dashboard / shortcut cepat
   function injectDashboardShortcuts() {
-    // Rekonsiliasi dihapus — tidak ada shortcut yang diinject
+    // Rekonsiliasi dihapus - tidak ada shortcut yang diinject
   }
 
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
   // BOOT: Jalankan semua modul setelah app siap
-  // ═══════════════════════════════════════════════════
+  // ------------------------------------------
   waitApp(() => {
     patchSidebarPelanggan();
     hookKirimNotifKeTranx();
@@ -23859,7 +23858,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     deleteNote:        { label: 'Hapus Catatan',               icon: 'fa-note-sticky',         color: '#7c3aed' },
   };
 
-  /* ── tunggu app siap ── */
+  /* -- tunggu app siap -- */
   function waitApp(cb) {
     const check = () => {
       if (window.db && window._fbFirestore && window._fbAuth) { cb(); }
@@ -23876,7 +23875,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     return window._getMySwal ? window._getMySwal() : window.Swal;
   }
 
-  /* ── Dialog PIN ── */
+  /* -- Dialog PIN -- */
   async function askPin(actionKey) {
     const info = PROTECTED_ACTIONS[actionKey] || { label: actionKey, icon: 'fa-lock', color: '#64748b' };
     const S = _getSwal();
@@ -23947,7 +23946,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     return result.isConfirmed;
   }
 
-  /* ── Audit Log ── */
+  /* -- Audit Log -- */
   function writeAuditLog(actionKey, detail) {
     detail = detail || {};
     try {
@@ -23988,7 +23987,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     }
   }
 
-  /* ── Guard helper ── */
+  /* -- Guard helper -- */
   function guardAsync(fnName, actionKey, getFnArgs) {
     var origFn = window[fnName];
     if (typeof origFn !== 'function') {
@@ -24009,7 +24008,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     console.log('[' + MODULE + '] Guard aktif: ' + fnName);
   }
 
-  /* ── Pasang semua guard ── */
+  /* -- Pasang semua guard -- */
   function patchAll() {
     guardAsync('deleteTr', 'deleteTr', function(id) {
       var t = ((window.db && window.db.transaksi) || []).find(function(x){ return x.id === id; }) || {};
@@ -24132,7 +24131,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     });
   }
 
-  /* ── Render UI Audit Log ── */
+  /* -- Render UI Audit Log -- */
   function renderAuditUI() {
     var logs = [];
     try { logs = JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]'); } catch (_) { logs = []; }
@@ -24237,7 +24236,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
       clearBtn + '</div>';
   }
 
-  /* ── Buka modal Audit Trail ── */
+  /* -- Buka modal Audit Trail -- */
   window.bukaAuditLog = function () {
     var _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
     if (_r < 2) {
@@ -24269,7 +24268,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     overlay.classList.add('active');
   };
 
-  /* ── Clear logs ── */
+  /* -- Clear logs -- */
   window._clearAuditLogs = async function () {
     var S = _getSwal();
     if (!S) return;
@@ -24289,7 +24288,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     window.bukaAuditLog();
   };
 
-  /* ── Ubah PIN ── */
+  /* -- Ubah PIN -- */
   window.bukaUbahPin = async function () {
     var S = _getSwal();
     if (!S) return;
@@ -24337,7 +24336,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     }
   };
 
-  /* ── Inject sidebar menu ── */
+  /* -- Inject sidebar menu -- */
   function injectSidebarMenu() {
     var target = document.querySelector('.sidebar-panel .flex-1.py-2');
     if (!target) { setTimeout(injectSidebarMenu, 600); return; }
@@ -24361,7 +24360,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     console.log('[' + MODULE + '] Menu sidebar disuntik ✓');
   }
 
-  /* ── BOOT ── */
+  /* -- BOOT -- */
   waitApp(function() {
     patchAll();
     injectSidebarMenu();
@@ -24384,12 +24383,12 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 ================================================================ -->
 <script>
 /* ================================================================
-   SETTING SISTEM POIN — UI & Logic (revamp: manual per jenis trx)
+   SETTING SISTEM POIN - UI & Logic (revamp: manual per jenis trx)
 ================================================================ */
 (function() {
   'use strict';
 
-  // Default config — tanpa rasio otomatis, hanya jenis transaksi manual
+  // Default config - tanpa rasio otomatis, hanya jenis transaksi manual
   const DEFAULT_POIN_CFG = {
     aktif: false,
     nilaiTukar: 1000,           // 100 poin = Rp 1.000
@@ -24408,7 +24407,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     ]
   };
 
-  /* ── Ambil & simpan config ── */
+  /* -- Ambil & simpan config -- */
   function getPoinCfg() {
     try {
       const raw = window.db && window.db.poinConfig;
@@ -24423,16 +24422,16 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (window.sync) window.sync();
   }
 
-  /* ── Toggle body ── */
+  /* -- Toggle body -- */
   window.togglePoinSettingBody = function() {
-    // Body poin sudah dipindah ke modal-poin-pelanggan — fungsi ini dibiarkan kosong agar tidak error
+    // Body poin sudah dipindah ke modal-poin-pelanggan - fungsi ini dibiarkan kosong agar tidak error
     if (typeof openModal === 'function') openModal('modal-poin-pelanggan');
     setTimeout(function() {
       if (typeof window.loadPoinSettingForm === 'function') window.loadPoinSettingForm();
     }, 200);
   };
 
-  /* ── Render form dari config ── */
+  /* -- Render form dari config -- */
   window.loadPoinSettingForm = function loadPoinSettingForm() {
     const cfg = getPoinCfg();
     const nilaiTk = document.getElementById('poin-nilai-tukar');
@@ -24468,7 +24467,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (window.refreshKasirPoinSection) refreshKasirPoinSection();
   }
 
-  /* ── Ambil semua kategori unik dari db.inventory + kategori kasir E-Wallet ── */
+  /* -- Ambil semua kategori unik dari db.inventory + kategori kasir E-Wallet -- */
   function getKategoriList() {
     if (!window.db || !window.db.inventory) return [];
     const cats = new Set();
@@ -24484,13 +24483,13 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     const wrap = document.getElementById('poin-per-trx-list');
     if (!wrap) return;
     const kategoriList = getKategoriList();
-    const katOptions = ['<option value="">— Tidak diikat —</option>',
+    const katOptions = ['<option value="">- Tidak diikat -</option>',
       ...kategoriList.map(k => `<option value="${k}">${k}</option>`)
     ].join('');
 
     wrap.innerHTML = list.map((item, i) => {
       const selectedKat = item.kategori || '';
-      const katOptsRendered = ['<option value="">— Tidak diikat —</option>',
+      const katOptsRendered = ['<option value="">- Tidak diikat -</option>',
         ...kategoriList.map(k => `<option value="${k}"${k===selectedKat?' selected':''}>${k}</option>`)
       ].join('');
       return `
@@ -24521,7 +24520,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
             ${katOptsRendered}
           </select>
         </div>
-        ${selectedKat ? `<p style="font-size:8px;color:#a78bfa;font-weight:700;margin:5px 0 0;"><i class="fas fa-circle-check" style="margin-right:3px;"></i>Produk kategori "<b>${selectedKat}</b>" otomatis dapat <b>${item.poin||1} poin</b></p>` : `<p style="font-size:8px;color:var(--poin-text-muted);font-weight:700;margin:5px 0 0;"><i class="fas fa-circle-info" style="margin-right:3px;"></i>Tidak diikat — kasir pilih manual</p>`}
+        ${selectedKat ? `<p style="font-size:8px;color:#a78bfa;font-weight:700;margin:5px 0 0;"><i class="fas fa-circle-check" style="margin-right:3px;"></i>Produk kategori "<b>${selectedKat}</b>" otomatis dapat <b>${item.poin||1} poin</b></p>` : `<p style="font-size:8px;color:var(--poin-text-muted);font-weight:700;margin:5px 0 0;"><i class="fas fa-circle-info" style="margin-right:3px;"></i>Tidak diikat - kasir pilih manual</p>`}
       </div>`;
     }).join('');
   }
@@ -24547,7 +24546,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     renderBonusTrxList(cfg.bonusTrx);
   };
 
-  /* ── Daftar Hadiah ── */
+  /* -- Daftar Hadiah -- */
   function renderHadiahList(list) {
     const wrap = document.getElementById('poin-hadiah-list');
     if (!wrap) return;
@@ -24599,7 +24598,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     renderHadiahList(cfg.daftarHadiah);
   };
 
-  /* ── Simpan setting dari form ── */
+  /* -- Simpan setting dari form -- */
   window.simpanSettingPoin = function(showToast) {
     const nilaiTk = document.getElementById('poin-nilai-tukar');
     const cfg = getPoinCfg();
@@ -24613,7 +24612,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     }
   };
 
-  /* ── Section poin di kasir ── */
+  /* -- Section poin di kasir -- */
   window.refreshKasirPoinSection = function(autoKategori) {
     const cfg     = getPoinCfg();
     const section = document.getElementById('kasir-poin-section');
@@ -24686,7 +24685,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     }
   };
 
-  /* ── Init ── */
+  /* -- Init -- */
   function waitApp(cb) {
     if (window.db) cb();
     else setTimeout(() => waitApp(cb), 300);
@@ -24697,7 +24696,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     window.refreshKasirPoinSection();
   });
 
-  /* ── Ekspor ── */
+  /* -- Ekspor -- */
   window.getPoinConfig = getPoinCfg;
 
 })();
@@ -24705,7 +24704,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 
 <script>
 /* ================================================================
-   SETTING NOTIFIKASI — UI & Logic
+   SETTING NOTIFIKASI - UI & Logic
 ================================================================ */
 (function() {
   'use strict';
@@ -24783,24 +24782,24 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   'use strict';
   const MOD = 'KonterKU Pelanggan';
 
-  /* ── Tunggu app siap ── */
+  /* -- Tunggu app siap -- */
   function waitApp(cb) {
     if (window.db && window._fbFirestore && window._fbAuth) cb();
     else setTimeout(() => waitApp(cb), 300);
   }
 
-  /* ── Helpers ── */
+  /* -- Helpers -- */
   function _fmt(n) { return Number(n||0).toLocaleString('id-ID'); }
   function _S() { return window._getMySwal ? window._getMySwal() : window.Swal; }
 
-  /* ── Tier config ── */
+  /* -- Tier config -- */
   function getTier(poin) {
     if (poin >= 5000) return { label:'GOLD',   icon:'fa-crown',  color:'#f59e0b', bg:'rgba(245,158,11,0.12)',  diskon: 5  };
     if (poin >= 1000) return { label:'SILVER', icon:'fa-medal',  color:'#64748b', bg:'rgba(100,116,139,0.12)', diskon: 3  };
     return               { label:'BRONZE', icon:'fa-certificate', color:'#b45309', bg:'rgba(180,83,9,0.12)',    diskon: 1  };
   }
 
-  /* ── Poin dari transaksi (menggunakan config yang bisa diatur owner) ── */
+  /* -- Poin dari transaksi (menggunakan config yang bisa diatur owner) -- */
   function hitungPoinDariTrx(nama) {
     // Cek apakah sistem poin aktif
     const cfg = window.getPoinConfig ? window.getPoinConfig() : null;
@@ -24813,7 +24812,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     return Math.floor(total / perRupiah);
   }
 
-  /* ── Sinkronisasi poin semua pelanggan (jalankan setelah sync) ── */
+  /* -- Sinkronisasi poin semua pelanggan (jalankan setelah sync) -- */
   function syncSemuaPoin() {
     if (!window.db || !window.db.pelanggan) return;
     let changed = false;
@@ -24824,7 +24823,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     if (changed && window.sync) window.sync();
   }
 
-  /* ── PROFIL PELANGGAN ── */
+  /* -- PROFIL PELANGGAN -- */
   window.bukaProfilPelangganKu = function(id) {
     const c = (window.db.pelanggan||[]).find(x => x.id === id);
     if (!c) return;
@@ -24976,7 +24975,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     overlay.classList.add('active');
   };
 
-  /* ── Tambah poin manual ── */
+  /* -- Tambah poin manual -- */
   window._tambahPoinManual = async function(id) {
     const c = (window.db.pelanggan||[]).find(x=>x.id===id);
     if (!c) return;
@@ -25007,7 +25006,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     window.bukaProfilPelangganKu(id);
   };
 
-  /* ── Tukar poin jadi diskon ── */
+  /* -- Tukar poin jadi diskon -- */
   window._tukarPoin = async function(id) {
     const c = (window.db.pelanggan||[]).find(x=>x.id===id);
     if (!c) return;
@@ -25043,7 +25042,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     window.bukaProfilPelangganKu(id);
   };
 
-  /* ── Birthday reminder saat app dibuka ── */
+  /* -- Birthday reminder saat app dibuka -- */
   function cekBirthday() {
     if (!window.db || !window.db.pelanggan) return;
     const today = new Date();
@@ -25079,7 +25078,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     });
   }
 
-  /* ── Inject poin otomatis ke transaksi kasir ── */
+  /* -- Inject poin otomatis ke transaksi kasir -- */
   function hookPoinKeTrx() {
     const origSync = window.sync;
     if (typeof origSync !== 'function') { setTimeout(hookPoinKeTrx, 800); return; }
@@ -25091,7 +25090,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     console.log('[' + MOD + '] Hook poin ke sync ✓');
   }
 
-  /* ── Upgrade renderSidebarCustomers dengan poin & tier ── */
+  /* -- Upgrade renderSidebarCustomers dengan poin & tier -- */
   function upgradeRenderSidebarCustomers() {
     const orig = window.renderSidebarCustomers || function(){};
     // Tambah info tier di sidebar juga
@@ -25099,7 +25098,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     // Tidak override, biarkan as-is. Tombol profil sudah ada di renderCustomers utama.
   }
 
-  /* ── BOOT ── */
+  /* -- BOOT -- */
   waitApp(function() {
     hookPoinKeTrx();
     upgradeRenderSidebarCustomers();
@@ -25167,7 +25166,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 </div>
 
 <script>
-// ── Posisikan panel fixed tepat di bawah trigger ──
+// -- Posisikan panel fixed tepat di bawah trigger --
 function _positionRwPanel(triggerId, panelId, alignRight) {
   const trigger = document.getElementById(triggerId);
   const panel   = document.getElementById(panelId);
@@ -25676,9 +25675,9 @@ window.addEventListener('resize', function() {
      JAVASCRIPT: SUPPLIER & RESTOK MODULE
 ================================================================ -->
 <script>
-// ══════════════════════════════════════════════════════
+// ------------------------------------------
 // SUPPLIER & RESTOK DATA MODULE
-// ══════════════════════════════════════════════════════
+// ------------------------------------------
 
 // Extend db dengan supplier & riwayat_restok
 (function initSupplierDb() {
@@ -25689,12 +25688,12 @@ window.addEventListener('resize', function() {
 // Panggil setiap kali db dimuat ulang
 const _origLoadDb = typeof loadDataFromCloud !== 'undefined' ? loadDataFromCloud : null;
 
-// ─── HELPER FORMAT ───
+// --- HELPER FORMAT ---
 function fmtRp(n) {
   return 'Rp ' + (parseInt(n)||0).toLocaleString('id-ID');
 }
 
-// ─── OPEN SIDEBAR SUPPLIER ───
+// --- OPEN SIDEBAR SUPPLIER ---
 function openSidebarMenuSupplier() {
   const _r = ({trial:0,basic:1,pro:2,unlimited:3})[localStorage.getItem('k_plan')||'trial']??0;
   if (_r < 1) {
@@ -25707,7 +25706,7 @@ function openSidebarMenuSupplier() {
   populateSupplierDropdowns();
 }
 
-// ─── SET TAB ───
+// --- SET TAB ---
 function setSupplierTab(tab) {
   ['daftar','riwayat','hutang'].forEach(t => {
     const panel = document.getElementById('sup-panel-'+t);
@@ -25728,7 +25727,7 @@ function setSupplierTab(tab) {
   if (tab === 'hutang')   { renderHutangSupplier(); }
 }
 
-// ─── RENDER DAFTAR SUPPLIER ───
+// --- RENDER DAFTAR SUPPLIER ---
 function renderSupplierList() {
   const list   = document.getElementById('supplier-list');
   const search = (document.getElementById('sup-search')?.value || '').toLowerCase();
@@ -25741,7 +25740,7 @@ function renderSupplierList() {
     return (s.nama||'').toLowerCase().includes(search) || (s.hp||'').includes(search);
   });
 
-  // Update summary — hanya dari riwayat restok (hutang toko terpisah)
+  // Update summary - hanya dari riwayat restok (hutang toko terpisah)
   const totalHutang = (db.riwayat_restok ? db.riwayat_restok.filter(r => r.status_bayar === 'hutang' && r.sisa_hutang > 0).reduce((a,r) => a + (r.sisa_hutang||0), 0) : 0);
   const el = document.getElementById('sup-total-count');
   const el2 = document.getElementById('sup-total-hutang');
@@ -25769,7 +25768,7 @@ function renderSupplierList() {
           <i class="fas fa-truck" style="color:white;font-size:16px;"></i>
         </div>
         <div style="flex:1;min-width:0;">
-          <p style="font-size:13px;font-weight:900;color:#1e293b;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.nama||'—'}</p>
+          <p style="font-size:13px;font-weight:900;color:#1e293b;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.nama||'-'}</p>
           <p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">${s.hp ? '📱 '+s.hp : ''}${s.kategori ? ' · '+s.kategori : ''}</p>
           <div style="display:flex;gap:8px;margin-top:5px;">
             <span style="font-size:8px;font-weight:900;padding:2px 7px;border-radius:6px;background:rgba(0,97,194,0.08);color:#0061C2;">Total beli: ${fmtRp(totalBeli)}</span>
@@ -25785,7 +25784,7 @@ function renderSupplierList() {
   }).join('');
 }
 
-// ─── RENDER RIWAYAT BELI ───
+// --- RENDER RIWAYAT BELI ---
 function populateRiwayatFilter() {
   const sel = document.getElementById('sup-riwayat-filter');
   if (!sel) return;
@@ -25819,8 +25818,8 @@ function renderRiwayatBeli() {
     return `<div style="background:white;border-radius:14px;padding:12px 14px;border:1.5px solid #fed7aa;box-shadow:0 2px 6px rgba(234,88,12,0.05);">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
         <div style="flex:1;min-width:0;">
-          <p style="font-size:12px;font-weight:900;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.produk_nama||'—'}</p>
-          <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">${sup ? '🏭 '+sup.nama : 'Supplier tidak diset'} · ${r.tgl||'—'}</p>
+          <p style="font-size:12px;font-weight:900;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.produk_nama||'-'}</p>
+          <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">${sup ? '🏭 '+sup.nama : 'Supplier tidak diset'} · ${r.tgl||'-'}</p>
           ${r.faktur ? `<p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">Faktur: ${r.faktur}</p>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0;">
@@ -25837,14 +25836,14 @@ function renderRiwayatBeli() {
   }).join('');
 }
 
-// ─── RENDER HUTANG SUPPLIER ───
+// --- RENDER HUTANG SUPPLIER ---
 
 function renderHutangSupplier() {
   const list    = document.getElementById('hutang-supplier-list');
   const totalEl = document.getElementById('hutang-sup-total');
   if (!list) return;
 
-  // Hanya dari riwayat restok — Hutang Toko terpisah (tidak ditautkan)
+  // Hanya dari riwayat restok - Hutang Toko terpisah (tidak ditautkan)
   const restokHutang = (db.riwayat_restok||[])
     .filter(r => r.status_bayar === 'hutang' && (r.sisa_hutang||0) > 0)
     .sort((a,b) => new Date(a.tgl||0) - new Date(b.tgl||0));
@@ -25868,8 +25867,8 @@ function renderHutangSupplier() {
       + '<div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#dc2626,#ef4444);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(220,38,38,0.3);">'
       + '<i class="fas fa-file-invoice-dollar" style="color:white;font-size:13px;"></i></div>'
       + '<div style="flex:1;min-width:0;">'
-      + '<p style="font-size:12px;font-weight:900;color:#1e293b;margin:0;">' + (r.produk_nama||'—') + '</p>'
-      + '<p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">' + (sup ? '🏭 '+sup.nama : '—') + ' · ' + (r.tgl||'—') + '</p>'
+      + '<p style="font-size:12px;font-weight:900;color:#1e293b;margin:0;">' + (r.produk_nama||'-') + '</p>'
+      + '<p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">' + (sup ? '🏭 '+sup.nama : '-') + ' · ' + (r.tgl||'-') + '</p>'
       + fakturHtml
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">'
       + '<span style="font-size:10px;font-weight:700;color:#94a3b8;">Total: ' + fmtRp(r.total_beli||0) + '</span>'
@@ -25885,7 +25884,7 @@ function renderHutangSupplier() {
   }).join('');
 }
 
-// ─── TAMBAH / EDIT SUPPLIER ───
+// --- TAMBAH / EDIT SUPPLIER ---
 function openTambahSupplierForm() {
   document.getElementById('form-sup-id').value = '';
   document.getElementById('form-sup-nama').value = '';
@@ -25984,7 +25983,7 @@ function hapusSupplier() {
   });
 }
 
-// ─── POPULATE DROPDOWNS SUPPLIER ───
+// --- POPULATE DROPDOWNS SUPPLIER ---
 function populateSupplierDropdowns() {
   const sel = document.getElementById('restok-supplier-id');
   if (!sel) return;
@@ -26001,7 +26000,7 @@ function updateSupplierCountLabel() {
   if (el) el.textContent = (db.supplier||[]).length + ' supplier';
 }
 
-// ─── MODAL CATAT RESTOK ───
+// --- MODAL CATAT RESTOK ---
 function openRestokModal() {
   // Isi tanggal hari ini
   const tglEl = document.getElementById('restok-tgl');
@@ -26203,7 +26202,7 @@ function simpanCatatanRestok() {
   });
 }
 
-// ─── BAYAR HUTANG SUPPLIER ───
+// --- BAYAR HUTANG SUPPLIER ---
 function openBayarHutangSupplier(restokId) {
   const r = (db.riwayat_restok||[]).find(x => x.id === restokId);
   if (!r) return;
@@ -26275,7 +26274,7 @@ function prosesBayarHutangSupplier() {
   });
 }
 
-// ─── EXPOSE semua fungsi supplier ke window agar onclick di HTML bisa menemukannya ───
+// --- EXPOSE semua fungsi supplier ke window agar onclick di HTML bisa menemukannya ---
 window.setSupplierTab            = setSupplierTab;
 window.openSidebarMenuSupplier   = openSidebarMenuSupplier;
 window.populateRiwayatFilter     = populateRiwayatFilter;
@@ -26298,7 +26297,7 @@ window.openBayarHutangSupplier   = openBayarHutangSupplier;
 window.prosesBayarHutangSupplier = prosesBayarHutangSupplier;
 window.fmtRp                     = window.fmtRp || fmtRp;
 
-// ─── HOOK openModal untuk modal-catat-restok ───
+// --- HOOK openModal untuk modal-catat-restok ---
 // (menu 'supplier' sudah ditangani langsung di openSidebarMenu di atas)
 window.addEventListener('load', function() {
   if (typeof window.openModal === 'function' && !window._restokModalHooked) {
@@ -26311,7 +26310,7 @@ window.addEventListener('load', function() {
   }
 });
 
-// ─── INIT SAAT APP SIAP ───
+// --- INIT SAAT APP SIAP ---
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(function() {
     if (!db.supplier) db.supplier = [];
@@ -26336,10 +26335,10 @@ window.addEventListener('load', function() {
 ================================================================ -->
 <script>
 window.addEventListener('load', function() {
-  // ─── Tunggu semua fungsi utama siap ───
+  // --- Tunggu semua fungsi utama siap ---
   setTimeout(function() {
 
-    // ── 1. Patch setManualHutangType ──
+    // -- 1. Patch setManualHutangType --
     // Saat tipe = 'toko', isi dropdown dengan data supplier
     if (typeof window.setManualHutangType === 'function') {
       const _origSetType = window.setManualHutangType;
@@ -26349,7 +26348,7 @@ window.addEventListener('load', function() {
       };
     }
 
-    // ── 2. Patch openModalManualHutang ──
+    // -- 2. Patch openModalManualHutang --
     // Pastikan dropdown sudah ter-refresh saat modal dibuka
     if (typeof window.openModalManualHutang === 'function') {
       const _origOpen = window.openModalManualHutang;
@@ -26366,7 +26365,7 @@ window.addEventListener('load', function() {
   }, 800);
 });
 
-// ─── Helper: isi dropdown sesuai tipe ───
+// --- Helper: isi dropdown sesuai tipe ---
 function _refreshHutangCustomerSelect(type) {
   const sel = document.getElementById('m-h-customer-select');
   const man = document.getElementById('m-h-nama-manual');
@@ -26397,7 +26396,7 @@ function _refreshHutangCustomerSelect(type) {
     if (labelEl) labelEl.textContent = 'Nama Kreditur';
 
   } else {
-    // Tipe pelanggan — kembalikan ke daftar pelanggan
+    // Tipe pelanggan - kembalikan ke daftar pelanggan
     sel.style.display = '';
     if (man) { man.classList.add('hidden'); man.value = ''; }
     const pelanggan = db.pelanggan || [];
@@ -26545,7 +26544,7 @@ window.addEventListener("load", function() {
       }
     }
 
-    // Patch checkSaldoWarning — tambah notif OS + update banner
+    // Patch checkSaldoWarning - tambah notif OS + update banner
     if (typeof window.checkSaldoWarning === "function") {
       var _origSaldo = window.checkSaldoWarning;
       window.checkSaldoWarning = function(skipCooldown) {
@@ -26845,13 +26844,13 @@ window.addEventListener('load', function() {
 (function() {
 'use strict';
 
-/* ── State ── */
+/* -- State -- */
 let _activeTriggerId  = null;
 let _activeCb         = null;
 let _activeItems      = [];
 let _activeValue      = null;
 
-/* ── Buka/Tutup ── */
+/* -- Buka/Tutup -- */
 window._kuDdClose = function() {
   const panel   = document.getElementById('ku-dd-panel');
   const backdrop= document.getElementById('ku-dd-backdrop');
@@ -26866,7 +26865,7 @@ window._kuDdClose = function() {
   _activeCb        = null;
 };
 
-/* ── Posisikan panel ── */
+/* -- Posisikan panel -- */
 function _position(triggerId) {
   const trigger = document.getElementById(triggerId);
   const panel   = document.getElementById('ku-dd-panel');
@@ -26899,7 +26898,7 @@ function _position(triggerId) {
   }
 }
 
-/* ── Render items ke panel ── */
+/* -- Render items ke panel -- */
 function _renderItems(items, currentVal, cb, triggerId) {
   const container = document.getElementById('ku-dd-items');
   if (!container) return;
@@ -26926,7 +26925,7 @@ function _renderItems(items, currentVal, cb, triggerId) {
   }).join('');
 }
 
-/* ── Ketika item dipilih ── */
+/* -- Ketika item dipilih -- */
 window._kuDdSelect = function(triggerId, value, idx) {
   const item = _activeItems[idx];
   if (!item) return;
@@ -26953,7 +26952,7 @@ window._kuDdSelect = function(triggerId, value, idx) {
   _kuDdClose();
 };
 
-/* ── Fungsi publik: toggle dropdown ── */
+/* -- Fungsi publik: toggle dropdown -- */
 window.kuDdToggle = function(triggerId) {
   const panel = document.getElementById('ku-dd-panel');
   if (!panel) return;
@@ -26990,7 +26989,7 @@ window.kuDdToggle = function(triggerId) {
   if (ch) ch.style.transform = 'rotate(180deg)';
 };
 
-/* ── Reposisi saat scroll/resize ── */
+/* -- Reposisi saat scroll/resize -- */
 window.addEventListener('scroll', function() {
   if (_activeTriggerId) _position(_activeTriggerId);
 }, true);
@@ -26998,13 +26997,13 @@ window.addEventListener('resize', function() {
   if (_activeTriggerId) _position(_activeTriggerId);
 });
 
-/* ── Helper: build items dari dompet ── */
+/* -- Helper: build items dari dompet -- */
 window._kuDdWalletItems = function(opts) {
   opts = opts || {};
   const wallets = (window.db && window.db.dompet) ? window.db.dompet : [];
   const items   = [];
   if (opts.allowEmpty !== false) {
-    items.push({ value: '', label: '— Pilih Dompet —', icon: 'fa-wallet', color: 'rgba(255,255,255,0.3)', sub: null });
+    items.push({ value: '', label: '- Pilih Dompet -', icon: 'fa-wallet', color: 'rgba(255,255,255,0.3)', sub: null });
   }
   wallets.forEach(function(w) {
     const isKas = w.tipe === 'kas';
@@ -27019,12 +27018,12 @@ window._kuDdWalletItems = function(opts) {
   return items;
 };
 
-/* ══ CONFIG FUNCTIONS per dropdown ID ══
+/* -- CONFIG FUNCTIONS per dropdown ID --
    Setiap trigger punya data-config-fn="nama_fungsi"
    Fungsi itu return { items, value, onSelect }
 */
 
-// ── Dompet Modal Keluar (kasir digital) ──
+// -- Dompet Modal Keluar (kasir digital) --
 window._kuCfg_kd_w_modal = function() {
   const sel = document.getElementById('kd-w-modal');
   return {
@@ -27036,7 +27035,7 @@ window._kuCfg_kd_w_modal = function() {
     }
   };
 };
-// ── Dana Masuk Ke (kasir digital) ──
+// -- Dana Masuk Ke (kasir digital) --
 window._kuCfg_kd_w_penerima = function() {
   const sel = document.getElementById('kd-w-penerima');
   return {
@@ -27048,7 +27047,7 @@ window._kuCfg_kd_w_penerima = function() {
     }
   };
 };
-// ── Dana Masuk Ke (kasir fisik) ──
+// -- Dana Masuk Ke (kasir fisik) --
 window._kuCfg_kf_w_penerima = function() {
   const sel = document.getElementById('kf-w-penerima');
   return {
@@ -27060,7 +27059,7 @@ window._kuCfg_kf_w_penerima = function() {
     }
   };
 };
-// ── Dompet Hutang Pelanggan/Toko ──
+// -- Dompet Hutang Pelanggan/Toko --
 window._kuCfg_m_h_wallet = function() {
   const sel = document.getElementById('m-h-wallet');
   return {
@@ -27072,7 +27071,7 @@ window._kuCfg_m_h_wallet = function() {
     }
   };
 };
-// ── Sumber Dana Bayar Hutang ──
+// -- Sumber Dana Bayar Hutang --
 window._kuCfg_pay_h_wallet = function() {
   const sel = document.getElementById('pay-h-wallet');
   return {
@@ -27084,7 +27083,7 @@ window._kuCfg_pay_h_wallet = function() {
     }
   };
 };
-// ── Transfer: Dari Dompet ──
+// -- Transfer: Dari Dompet --
 window._kuCfg_tr_from = function() {
   const sel = document.getElementById('tr-from');
   return {
@@ -27096,7 +27095,7 @@ window._kuCfg_tr_from = function() {
     }
   };
 };
-// ── Transfer: Ke Dompet ──
+// -- Transfer: Ke Dompet --
 window._kuCfg_tr_to = function() {
   const sel = document.getElementById('tr-to');
   return {
@@ -27108,7 +27107,7 @@ window._kuCfg_tr_to = function() {
     }
   };
 };
-// ── Adj: Pilih Dompet ──
+// -- Adj: Pilih Dompet --
 window._kuCfg_adj_wallet = function() {
   const sel = document.getElementById('adj-wallet');
   return {
@@ -27120,7 +27119,7 @@ window._kuCfg_adj_wallet = function() {
     }
   };
 };
-// ── Bayar Hutang Supplier ──
+// -- Bayar Hutang Supplier --
 window._kuCfg_bhs_dompet = function() {
   const sel = document.getElementById('bhs-dompet');
   return {
@@ -27133,7 +27132,7 @@ window._kuCfg_bhs_dompet = function() {
   };
 };
 
-/* ── Sinkronisasi: saat updateSelects() jalan, refresh label trigger yg terbuka ── */
+/* -- Sinkronisasi: saat updateSelects() jalan, refresh label trigger yg terbuka -- */
 function _refreshKuTriggers() {
   [
     ['ku-tr-kd-w-modal','kd-w-modal'],
@@ -27152,7 +27151,7 @@ function _refreshKuTriggers() {
     const labelEl = trigger.querySelector('.ku-dd-label');
     const val = sel.value;
     if (!val) {
-      if (labelEl) { labelEl.textContent = '— Pilih Dompet —'; labelEl.classList.remove('selected'); }
+      if (labelEl) { labelEl.textContent = '- Pilih Dompet -'; labelEl.classList.remove('selected'); }
       trigger.classList.remove('has-value');
     } else {
       const w = window.db && window.db.dompet ? window.db.dompet.find(function(x){ return x.id === val; }) : null;
@@ -27162,7 +27161,7 @@ function _refreshKuTriggers() {
   });
 }
 
-/* ── Hook ke updateSelects ── */
+/* -- Hook ke updateSelects -- */
 window.addEventListener('load', function() {
   var _tryHook = 0;
   var _hookIv  = setInterval(function() {
@@ -27197,15 +27196,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /* Daftar select yang diganti: [selectId, triggerId, cfgFn, placeholder, icon] */
   var replaceList = [
-    ['kd-w-modal',    'ku-tr-kd-w-modal',    '_kuCfg_kd_w_modal',    '— Pilih Dompet —', 'fa-wallet'],
-    ['kd-w-penerima', 'ku-tr-kd-w-penerima', '_kuCfg_kd_w_penerima', '— Dana Masuk ke —','fa-money-bill-wave'],
-    ['kf-w-penerima', 'ku-tr-kf-w-penerima', '_kuCfg_kf_w_penerima', '— Dana Masuk ke —','fa-money-bill-wave'],
-    ['m-h-wallet',    'ku-tr-m-h-wallet',    '_kuCfg_m_h_wallet',    '— Pilih Dompet —', 'fa-wallet'],
-    ['pay-h-wallet',  'ku-tr-pay-h-wallet',  '_kuCfg_pay_h_wallet',  '— Sumber Dana —',  'fa-coins'],
-    ['tr-from',       'ku-tr-tr-from',       '_kuCfg_tr_from',       '— Dari Dompet —',  'fa-arrow-right-from-bracket'],
-    ['tr-to',         'ku-tr-tr-to',         '_kuCfg_tr_to',         '— Ke Dompet —',    'fa-arrow-right-to-bracket'],
-    ['adj-wallet',    'ku-tr-adj-wallet',     '_kuCfg_adj_wallet',    '— Pilih Dompet —', 'fa-wallet'],
-    ['bhs-dompet',    'ku-tr-bhs-dompet',    '_kuCfg_bhs_dompet',    '— Pilih Dompet —', 'fa-coins'],
+    ['kd-w-modal',    'ku-tr-kd-w-modal',    '_kuCfg_kd_w_modal',    '- Pilih Dompet -', 'fa-wallet'],
+    ['kd-w-penerima', 'ku-tr-kd-w-penerima', '_kuCfg_kd_w_penerima', '- Dana Masuk ke -','fa-money-bill-wave'],
+    ['kf-w-penerima', 'ku-tr-kf-w-penerima', '_kuCfg_kf_w_penerima', '- Dana Masuk ke -','fa-money-bill-wave'],
+    ['m-h-wallet',    'ku-tr-m-h-wallet',    '_kuCfg_m_h_wallet',    '- Pilih Dompet -', 'fa-wallet'],
+    ['pay-h-wallet',  'ku-tr-pay-h-wallet',  '_kuCfg_pay_h_wallet',  '- Sumber Dana -',  'fa-coins'],
+    ['tr-from',       'ku-tr-tr-from',       '_kuCfg_tr_from',       '- Dari Dompet -',  'fa-arrow-right-from-bracket'],
+    ['tr-to',         'ku-tr-tr-to',         '_kuCfg_tr_to',         '- Ke Dompet -',    'fa-arrow-right-to-bracket'],
+    ['adj-wallet',    'ku-tr-adj-wallet',     '_kuCfg_adj_wallet',    '- Pilih Dompet -', 'fa-wallet'],
+    ['bhs-dompet',    'ku-tr-bhs-dompet',    '_kuCfg_bhs_dompet',    '- Pilih Dompet -', 'fa-coins'],
   ];
 
   replaceList.forEach(function(item) {
@@ -27223,23 +27222,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- ===== QR CODE ===== -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script>
-/* ================================================================
-
-</script>
 
 <!-- ===== QR KASIR: Barcode per kasir + Scan login ===== -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
-/* ──────────────────────────────────────────
+/* ------------------------------------------
    QR PER KASIR (tampil di kelola kasir)
-────────────────────────────────────────── */
+------------------------------------------ */
 let _kasirQRData = null; // {kasirId, nama, username, kodeToko}
 let _kasirQRCanvas = null;
 
-/* ──────────────────────────────────────────
+/* ------------------------------------------
    SCAN QR KASIR DI LOGIN (kamera + galeri)
-────────────────────────────────────────── */
+------------------------------------------ */
 let _kasirScanStream = null;
 let _kasirScanInterval = null;
 
@@ -27346,12 +27341,11 @@ function _applyKasirQRData(raw) {
 </script>
 
 <!-- ===== QR KARTU MEMBER ===== -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
-/* ──────────────────────────────────────────
-   QR KARTU MEMBER — tampil dari menu Pelanggan
+/* ------------------------------------------
+   QR KARTU MEMBER - tampil dari menu Pelanggan
    Payload: storeId::memberId  (sama dengan cek-poin.html)
-────────────────────────────────────────── */
+------------------------------------------ */
 let _mqrData = null; // { id, nama, phone, poin, storeId }
 let _mqrCanvas = null;
 
@@ -27380,7 +27374,7 @@ function showMemberQR(elOrId, _unused, _unused2) {
   // Update UI
   const av = document.getElementById('mqr-avatar');
   if (av) av.textContent = (nama||'?').trim().charAt(0).toUpperCase();
-  const nm = document.getElementById('mqr-nama'); if (nm) nm.textContent = nama||'—';
+  const nm = document.getElementById('mqr-nama'); if (nm) nm.textContent = nama||'-';
   const ph = document.getElementById('mqr-phone'); if (ph) ph.textContent = phone||'Tanpa nomor';
   const mid = document.getElementById('mqr-member-id'); if (mid) mid.textContent = 'Member ID: ' + custId;
   const pp = document.getElementById('mqr-poin'); if (pp) pp.textContent = poin;
@@ -27497,13 +27491,13 @@ function kirimWAMember() {
   const nama = _mqrData.nama || 'Pelanggan';
   const phone = (_mqrData.phone||'').replace(/\D/g,'').replace(/^0/,'62');
 
-  const pesan = `🎉 Halo, ${nama}!\n\nSelamat datang sebagai *Member* toko kami! 🏪✨\n\n━━━━━━━━━━━━━━\n🪴 *Member ID Kamu:*\n${custId}\n━━━━━━━━━━━━━━\n\n📱 *Cara cek poin:*\n1. Buka: ${link}\n2. Scan QR kartu member atau masuk pakai Member ID\n\n⭐ Kumpulkan poin setiap transaksi!\n🎁 Tukar poin dengan hadiah menarik!\n\n📌 Simpan Member ID ini ya! 😊`;
+  const pesan = `🎉 Halo, ${nama}!\n\nSelamat datang sebagai *Member* toko kami! 🏪✨\n\n--------------\n🪴 *Member ID Kamu:*\n${custId}\n--------------\n\n📱 *Cara cek poin:*\n1. Buka: ${link}\n2. Scan QR kartu member atau masuk pakai Member ID\n\n⭐ Kumpulkan poin setiap transaksi!\n🎁 Tukar poin dengan hadiah menarik!\n\n📌 Simpan Member ID ini ya! 😊`;
 
   const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesan);
   window.open(waUrl, '_blank');
 }
 
-/* ═══════════════════ ID CARD FUNCTIONS ═══════════════════ */
+/* ------------------- ID CARD FUNCTIONS ------------------- */
 let _idCardData = null;
 let _idCardCanvasCache = null; // Cache pre-render untuk unduh instan
 
@@ -27521,14 +27515,14 @@ function _populateIdCard(c) {
   const el = (id) => document.getElementById(id);
   if (el('card-store-nm')) el('card-store-nm').textContent = tokoNm;
   if (el('card-avatar'))   el('card-avatar').textContent = inisial;
-  if (el('card-nama'))     el('card-nama').textContent = c.nama || '—';
-  if (el('card-phone'))    el('card-phone').textContent = c.phone || '—';
+  if (el('card-nama'))     el('card-nama').textContent = c.nama || '-';
+  if (el('card-phone'))    el('card-phone').textContent = c.phone || '-';
   if (el('card-member-id')) el('card-member-id').textContent = c.id;
   if (el('card-poin'))     el('card-poin').textContent = poin;
   const tb = el('card-tier-badge');
   if (tb) { tb.textContent = tier; tb.style.background = tc.bg; tb.style.border = '1px solid ' + tc.border; tb.style.color = tc.text; }
 
-  // Render mini QR — payload = storeId::memberId (sama dengan cek-poin.html)
+  // Render mini QR - payload = storeId::memberId (sama dengan cek-poin.html)
   const miniWrap = el('card-qr-mini-wrap');
   if (miniWrap) {
     const payload  = storeId + '::' + c.id;
@@ -27558,7 +27552,7 @@ function _preRenderIdCard() {
   if (typeof html2canvas === 'undefined') return;
   const card = document.getElementById('cust-id-card');
   if (!card) return;
-  // Jalankan di background — tidak blocking UI
+  // Jalankan di background - tidak blocking UI
   requestAnimationFrame(() => {
     html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null, logging: false })
       .then(canvas => { _idCardCanvasCache = canvas; })
@@ -27644,7 +27638,7 @@ function kirimWAIdCard() {
   const phone   = (_idCardData.phone||'').replace(/\D/g,'').replace(/^0/,'62');
   const poin    = _idCardData.poin || 0;
 
-  const pesan = `🎉 Halo, *${nama}*!\n\nIni *Kartu Member* kamu di *${_idCardData.tokoNm||'toko kami'}* 🏪✨\n\n━━━━━━━━━━━━━━\n🪴 *Member ID:* ${custId}\n⭐ *Poin Saat Ini:* ${poin}\n━━━━━━━━━━━━━━\n\n📱 *Cek poin kapan saja:*\n👉 ${link}\n\nScan QR kartu member kamu atau masuk pakai Member ID di atas.\n\n🎁 Kumpulkan poin & tukar dengan hadiah menarik!\n📌 Simpan pesan ini ya! 😊`;
+  const pesan = `🎉 Halo, *${nama}*!\n\nIni *Kartu Member* kamu di *${_idCardData.tokoNm||'toko kami'}* 🏪✨\n\n--------------\n🪴 *Member ID:* ${custId}\n⭐ *Poin Saat Ini:* ${poin}\n--------------\n\n📱 *Cek poin kapan saja:*\n👉 ${link}\n\nScan QR kartu member kamu atau masuk pakai Member ID di atas.\n\n🎁 Kumpulkan poin & tukar dengan hadiah menarik!\n📌 Simpan pesan ini ya! 😊`;
 
   const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesan);
   window.open(waUrl, '_blank');
@@ -27655,7 +27649,7 @@ function showMemberQRFromCard() {
   showMemberQR(_idCardData.id, _idCardData.nama, _idCardData.phone);
 }
 
-/* ═══════════════════ CETAK STRUK 58mm ═══════════════════ */
+/* ------------------- CETAK STRUK 58mm ------------------- */
 function cetakStrukIdCard() {
   if (!_idCardData) return;
   const d   = _idCardData;
@@ -27673,15 +27667,15 @@ function cetakStrukIdCard() {
   const s = (id) => document.getElementById(id);
   if (s('struk-toko-nm'))   s('struk-toko-nm').textContent   = tokoNm.toUpperCase();
   if (s('struk-toko-sub'))  s('struk-toko-sub').textContent  = 'Portal Member KonterKU';
-  if (s('struk-nama'))      s('struk-nama').textContent      = (d.nama||'—').toUpperCase();
-  if (s('struk-phone'))     s('struk-phone').textContent     = d.phone || '—';
+  if (s('struk-nama'))      s('struk-nama').textContent      = (d.nama||'-').toUpperCase();
+  if (s('struk-phone'))     s('struk-phone').textContent     = d.phone || '-';
   if (s('struk-member-id')) s('struk-member-id').textContent = d.id;
   if (s('struk-poin'))      s('struk-poin').textContent      = poin;
   if (s('struk-tier'))      { s('struk-tier').textContent = tier; s('struk-tier').style.color = tierColors[tier]; }
   if (s('struk-tgl'))       s('struk-tgl').textContent       = 'Bergabung: ' + tglNow;
   if (s('struk-portal-url')) s('struk-portal-url').textContent = link.replace('https://','');
 
-  // Render QR di struk — payload = URL langsung ke cek-poin.html
+  // Render QR di struk - payload = URL langsung ke cek-poin.html
   const struqWrap = s('struk-qr-wrap');
   if (struqWrap) {
     struqWrap.innerHTML = '';
@@ -27863,8 +27857,8 @@ function cetakStrukPOS() {
 
   <div class="section">
     <div class="member-card">
-      <div class="mc-nama">${(d.nama||'—').toUpperCase()}</div>
-      <div class="mc-phone">${d.phone || '—'}</div>
+      <div class="mc-nama">${(d.nama||'-').toUpperCase()}</div>
+      <div class="mc-phone">${d.phone || '-'}</div>
       <div class="mc-id-lbl">Member ID</div>
       <div class="mc-id-val">${d.id}</div>
     </div>
@@ -27892,7 +27886,7 @@ function cetakStrukPOS() {
   <div class="footer">
     <div class="f-promo">🎁 Kumpulkan poin, tukar hadiah!</div>
     <div class="f-url">${link.replace('https://','')}</div>
-    <div class="f-copy">© ${tokoNm} — Powered by KonterKU</div>
+    <div class="f-copy">© ${tokoNm} - Powered by KonterKU</div>
   </div>
 </div>
 </body></html>`;
@@ -27936,14 +27930,20 @@ async function cetakStrukIdCardThermal() {
     const baseClr = isShare ? '#ffffff' : '#1e293b';
     const baseBdr = isShare ? '#764ba2' : '#e2e8f0';
     const hoverBg = isShare ? 'linear-gradient(135deg,#5a6fd6 0%,#6b3fa0 100%)' : '#eff6ff';
+    const onOver  = isShare
+      ? `this.style.background='${hoverBg}';this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(102,126,234,0.45)'`
+      : `this.style.background='${hoverBg}'`;
+    const onOut   = isShare
+      ? `this.style.background='${baseBg}';this.style.transform='translateY(0)';this.style.boxShadow='0 4px 15px rgba(102,126,234,0.35)'`
+      : `this.style.background='${baseBg}'`;
     return `<button data-key="${m.key}" style="
       display:flex;align-items:center;gap:10px;width:100%;padding:${isShare?'13px 14px':'11px 14px'};
       margin-bottom:8px;border:1.5px solid ${baseBdr};border-radius:${isShare?'14px':'12px'};
       background:${baseBg};font-size:13px;font-weight:${isShare?'700':'600'};color:${baseClr};
       cursor:pointer;text-align:left;transition:all .18s;
       ${isShare?'box-shadow:0 4px 15px rgba(102,126,234,0.35);':''}"
-      onmouseover="this.style.background='${hoverBg}';${isShare?'this.style.transform=\\'translateY(-1px)\\';this.style.boxShadow=\\'0 6px 20px rgba(102,126,234,0.45)\\'':''}"
-      onmouseout="this.style.background='${baseBg}';${isShare?'this.style.transform=\\'translateY(0)\\';this.style.boxShadow=\\'0 4px 15px rgba(102,126,234,0.35)\\'':''}">
+      onmouseover="${onOver}"
+      onmouseout="${onOut}">
       <span style="font-size:${isShare?'22px':'20px'};">${m.icon}</span>
       <span style="${isShare?'font-size:13.5px;letter-spacing:0.2px;':''}">${m.label}</span>
       ${isShare?'<span style="margin-left:auto;font-size:10px;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.5px;">PREMIUM</span>':''}
@@ -27989,7 +27989,7 @@ async function cetakStrukIdCardThermal() {
 
   if (!chosen) return;
 
-  // ── Bangun data ESC/POS kartu member ──────────────────────────────
+  // -- Bangun data ESC/POS kartu member ------------------------------
   const ESC = 0x1B, GS = 0x1D, LF = 0x0A;
   const enc = (str) => {
     const bytes = [];
@@ -28047,7 +28047,7 @@ async function cetakStrukIdCardThermal() {
 
   const escData = new Uint8Array(lines);
 
-  // ── Eksekusi sesuai metode ────────────────────────────────────────
+  // -- Eksekusi sesuai metode ----------------------------------------
   if (chosen === 'browser') {
     cetakStrukPOS(); // fallback ke struk POS HTML
     return;
