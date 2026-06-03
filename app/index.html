@@ -9538,6 +9538,18 @@
           <div><label>Nama Pelanggan</label><input type="text" id="edit-tr-pelanggan" class="input-premium" placeholder="Nama Pelanggan"></div>
           <div><label>Harga Modal (Rp)</label><input type="number" id="edit-tr-modal" class="input-premium" placeholder="0"></div>
           <div><label>Harga Jual (Rp)</label><input type="number" id="edit-tr-jual" class="input-premium" placeholder="0"></div>
+          <div id="edit-tr-wallet-modal-wrap">
+            <label>Modal Dompet <span style="font-size:11px;color:#94a3b8;font-weight:400;">(dompet sumber modal)</span></label>
+            <select id="edit-tr-wallet-modal" class="input-premium">
+              <option value="">— Tidak Ada / Tunai —</option>
+            </select>
+          </div>
+          <div>
+            <label>Metode Pembayaran <span style="font-size:11px;color:#94a3b8;font-weight:400;">(dompet penerima hasil jual)</span></label>
+            <select id="edit-tr-wallet-jual" class="input-premium">
+              <option value="">— Tunai / Tidak Ada —</option>
+            </select>
+          </div>
           <button onclick="saveEditTr()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100 cursor-pointer border-0">SIMPAN PERUBAHAN</button>
         </div>
       </div>
@@ -12092,6 +12104,25 @@
       document.getElementById('edit-tr-pelanggan').value = t.pelanggan||'';
       document.getElementById('edit-tr-modal').value = t.modal||0;
       document.getElementById('edit-tr-jual').value = t.jual||0;
+
+      // Isi dropdown dompet modal & metode bayar
+      const wallets = db.dompet || [];
+      const walletOpts = wallets.map(w =>
+        `<option value="${w.id}">${w.nama} (Rp ${fmt(w.saldo||0)})</option>`
+      ).join('');
+      const emptyModal = '<option value=>— Tidak Ada / Tunai —</option>';
+      const emptyJual  = '<option value=>— Tunai / Tidak Ada —</option>';
+      document.getElementById('edit-tr-wallet-modal').innerHTML = emptyModal + walletOpts;
+      document.getElementById('edit-tr-wallet-jual').innerHTML  = emptyJual  + walletOpts;
+
+      // Set nilai sesuai transaksi
+      document.getElementById('edit-tr-wallet-modal').value = t.walletModal || '';
+      document.getElementById('edit-tr-wallet-jual').value  = t.walletJual  || '';
+
+      // Sembunyikan field modal dompet jika tipe fisik (tidak relevan)
+      const wrapModal = document.getElementById('edit-tr-wallet-modal-wrap');
+      if (wrapModal) wrapModal.style.display = (t.tipe === 'fisik') ? 'none' : '';
+
       openModal('modal-edit-tr');
     }
 
@@ -12101,28 +12132,69 @@
       const pelanggan = document.getElementById('edit-tr-pelanggan').value.trim();
       const modal = Number(document.getElementById('edit-tr-modal').value);
       const jual = Number(document.getElementById('edit-tr-jual').value);
+      const newWalletModal = document.getElementById('edit-tr-wallet-modal').value || null;
+      const newWalletJual  = document.getElementById('edit-tr-wallet-jual').value  || null;
       const idx = db.transaksi.findIndex(x => x.id === id);
       if (idx === -1) return;
       const oldTr = db.transaksi[idx];
-      if (oldTr.tipe === 'digital' && oldTr.walletModal) {
+
+      // === Koreksi saldo modal dompet ===
+      // Lepas dari wallet modal lama jika berbeda
+      if (oldTr.walletModal && oldTr.walletModal !== newWalletModal) {
+        const wmOldIdx = db.dompet.findIndex(w => w.id === oldTr.walletModal);
+        if (wmOldIdx !== -1) {
+          db.dompet[wmOldIdx].saldo += Number(oldTr.modal||0);
+          addMutasi(oldTr.walletModal, oldTr.modal, 'in', 'BATALKAN MODAL: '+oldTr.produk);
+        }
+      }
+      // Kurangi saldo wallet modal baru jika berbeda dari lama
+      if (newWalletModal && newWalletModal !== oldTr.walletModal) {
+        const wmNewIdx = db.dompet.findIndex(w => w.id === newWalletModal);
+        if (wmNewIdx !== -1) {
+          db.dompet[wmNewIdx].saldo -= modal;
+          addMutasi(newWalletModal, modal, 'out', 'MODAL EDIT: '+oldTr.produk);
+        }
+      } else if (newWalletModal && newWalletModal === oldTr.walletModal) {
+        // Wallet sama, hanya koreksi selisih nominal
         const diffModal = modal - Number(oldTr.modal||0);
         if (diffModal !== 0) {
           const wmIdx = db.dompet.findIndex(w => w.id === oldTr.walletModal);
           if (wmIdx !== -1) { db.dompet[wmIdx].saldo -= diffModal; addMutasi(oldTr.walletModal, Math.abs(diffModal), diffModal>0?'out':'in', 'KOREKSI MODAL: '+oldTr.produk); }
         }
       }
-      if (oldTr.status === 'Lunas' && oldTr.walletJual) {
-        const diffJual = jual - Number(oldTr.jual||0);
-        if (diffJual !== 0) {
-          const wpIdx = db.dompet.findIndex(w => w.id === oldTr.walletJual);
-          if (wpIdx !== -1) { db.dompet[wpIdx].saldo += diffJual; addMutasi(oldTr.walletJual, Math.abs(diffJual), diffJual>0?'in':'out', 'KOREKSI JUAL: '+oldTr.produk); }
+
+      // === Koreksi saldo dompet penerima jual ===
+      if (oldTr.status === 'Lunas') {
+        // Kembalikan ke wallet jual lama jika berbeda
+        if (oldTr.walletJual && oldTr.walletJual !== newWalletJual) {
+          const wpOldIdx = db.dompet.findIndex(w => w.id === oldTr.walletJual);
+          if (wpOldIdx !== -1) {
+            db.dompet[wpOldIdx].saldo -= Number(oldTr.jual||0);
+            addMutasi(oldTr.walletJual, oldTr.jual, 'out', 'BATALKAN JUAL: '+oldTr.produk);
+          }
+        }
+        // Tambahkan ke wallet jual baru jika berbeda dari lama
+        if (newWalletJual && newWalletJual !== oldTr.walletJual) {
+          const wpNewIdx = db.dompet.findIndex(w => w.id === newWalletJual);
+          if (wpNewIdx !== -1) {
+            db.dompet[wpNewIdx].saldo += jual;
+            addMutasi(newWalletJual, jual, 'in', 'JUAL EDIT: '+oldTr.produk);
+          }
+        } else if (newWalletJual && newWalletJual === oldTr.walletJual) {
+          // Wallet sama, hanya koreksi selisih nominal
+          const diffJual = jual - Number(oldTr.jual||0);
+          if (diffJual !== 0) {
+            const wpIdx = db.dompet.findIndex(w => w.id === oldTr.walletJual);
+            if (wpIdx !== -1) { db.dompet[wpIdx].saldo += diffJual; addMutasi(oldTr.walletJual, Math.abs(diffJual), diffJual>0?'in':'out', 'KOREKSI JUAL: '+oldTr.produk); }
+          }
         }
       }
+
       if (oldTr.status === 'Hutang') {
         const hIdx = db.hutang.findIndex(h => h.nama === oldTr.pelanggan && Number(h.jumlah) === Number(oldTr.jual) && h.tgl === oldTr.tgl);
         if (hIdx !== -1) { db.hutang[hIdx].jumlah = jual; db.hutang[hIdx].nama = pelanggan; db.hutang[hIdx].tgl = tgl; }
       }
-      db.transaksi[idx] = { ...db.transaksi[idx], tgl, pelanggan, modal, jual };
+      db.transaksi[idx] = { ...db.transaksi[idx], tgl, pelanggan, modal, jual, walletModal: newWalletModal, walletJual: newWalletJual };
       closeModal('modal-edit-tr');
       await sync();
       (_getMySwal()||Swal).fire('Sukses', 'Perubahan transaksi berhasil disimpan!', 'success');
