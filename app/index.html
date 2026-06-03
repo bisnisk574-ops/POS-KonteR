@@ -9114,7 +9114,7 @@
               </button>
             </div>
             <button onclick="kirimWAIdCard()" style="width:100%;margin-top:8px;padding:10px 0;border-radius:12px;border:1.5px solid rgba(37,211,102,0.35);background:rgba(37,211,102,0.08);color:#16a34a;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-              <i class="fab fa-whatsapp"></i> Kirim via WhatsApp
+              <i class="fab fa-whatsapp"></i> Kirim Gambar Kartu via WhatsApp
             </button>
 
             <button onclick="cetakStrukIdCardThermal()" style="width:100%;margin-top:8px;padding:9px 0;border-radius:12px;border:1.5px solid rgba(29,78,216,0.3);background:rgba(29,78,216,0.07);color:#1d4ed8;font-size:11px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
@@ -15186,13 +15186,213 @@ ${t.bayar ? `
         } catch(e) { /* skip */ }
       }
 
-      // Deteksi Android
-      const isAndroid = /android/i.test(navigator.userAgent);
-      const hasUSB     = !!navigator.usb;
-      const hasBT      = !!navigator.bluetooth;
+      // =====================================================
+      // PREVIEW STRUK SEBELUM CETAK
+      // =====================================================
+      const _rp = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
+      const _namaProduk = (t.produk||'-').replace(/^(DIG:|FIS:|EWL:)\s*/i,'');
+      const _tglRaw = t.tgl || '';
+      const _bulanArr = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      let _waktuDisp = _tglRaw;
+      if (_tglRaw && _tglRaw.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [_y,_mo,_d] = _tglRaw.split('-');
+        _waktuDisp = `${_d} ${_bulanArr[parseInt(_mo,10)-1]} ${_y}`;
+      }
+      let _jamTrx = '';
+      try {
+        const _tsM2 = (t.id||'').match(/TR-(\d{13,})/);
+        if (_tsM2) {
+          const _dt2 = new Date(parseInt(_tsM2[1],10));
+          _jamTrx = String(_dt2.getHours()).padStart(2,'0')+':'+String(_dt2.getMinutes()).padStart(2,'0');
+        }
+      } catch(_e2){}
+      const _metodeBayarDisp = (() => {
+        if (t.status !== 'Lunas') return 'QRIS';
+        const _wId2 = t.walletJual || t.walletBayar || '';
+        if (!_wId2) return 'Tunai';
+        if (typeof db !== 'undefined' && db.dompet) {
+          const _w2 = db.dompet.find(dw => dw.id === _wId2);
+          if (_w2) return _w2.nama;
+        }
+        return 'Tunai';
+      })();
+      const _isLunasDisp = t.status === 'Lunas';
+      const _noNota = t.id ? t.id.replace(/^TR-/,'').slice(-8).toUpperCase() : '-';
+      const _kasirDisp = opts.kasirName || 'kasir';
+      const _tglJamDisp = _waktuDisp + (_jamTrx ? ', ' + _jamTrx : '');
+      const _phone = localStorage.getItem('k_struk_phone') || localStorage.getItem('k_phone') || '';
 
-      // Bangun pilihan metode
-      const methods = [];
+      // Render harga detail sesuai tipe
+      let _hargaDetailHTML = '';
+      if (t.tipe === 'ewallet') {
+        _hargaDetailHTML = `
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:3px;">
+            <span>Nominal</span><span>${_rp(t.nominal)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:3px;">
+            <span>Admin Bank</span><span>${_rp(t.adminBank)}</span>
+          </div>`;
+      } else if (t.tipe === 'fisik') {
+        const _hDasar = Number(t.jual)+(Number(t.diskon)||0)-(Number(t.biayaTambahan)||0);
+        _hargaDetailHTML = `
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:3px;">
+            <span>Harga Dasar</span><span>${_rp(_hDasar)}</span>
+          </div>`;
+        if (t.diskon) _hargaDetailHTML += `<div style="display:flex;justify-content:space-between;font-size:12px;color:#ef4444;margin-bottom:3px;"><span>Diskon</span><span>- ${_rp(t.diskon)}</span></div>`;
+      }
+
+      const _previewHTML = `
+        <div id="struk-preview-wrap" style="
+          background:#fff;
+          border-radius:20px;
+          padding:24px 20px 20px;
+          max-width:340px;
+          margin:0 auto;
+          box-shadow:0 8px 32px rgba(0,0,0,0.12);
+          font-family:'Plus Jakarta Sans',sans-serif;
+          position:relative;
+        ">
+          <!-- Gigi atas -->
+          <div style="position:absolute;top:-10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 8px;">
+            ${Array.from({length:14},()=>'<div style="width:18px;height:18px;background:#f8fafc;border-radius:50%;"></div>').join('')}
+          </div>
+
+          <!-- Header toko -->
+          <div style="text-align:center;margin-bottom:12px;padding-top:4px;">
+            <div style="font-size:19px;font-weight:900;color:#1e293b;letter-spacing:0.5px;">${opts.storeName}</div>
+            ${_phone ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Hub: ${_phone}</div>` : ''}
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${_tglJamDisp}</div>
+          </div>
+
+          <div style="border-top:1.5px dashed #e2e8f0;margin:8px 0;"></div>
+
+          <!-- Info transaksi -->
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="color:#94a3b8;">No Nota:</span>
+              <span style="font-weight:800;color:#1e293b;">${_noNota}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="color:#94a3b8;">Kasir:</span>
+              <span style="font-weight:700;color:#1e293b;">${_kasirDisp}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;">
+              <span style="color:#94a3b8;">Konsumen:</span>
+              <span style="font-weight:800;color:#0061C2;">${t.pelanggan||'Umum'}</span>
+            </div>
+          </div>
+
+          <div style="border-top:1.5px dashed #e2e8f0;margin:8px 0;"></div>
+
+          <!-- Rincian layanan -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:9.5px;font-weight:900;color:#0061C2;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">RINCIAN LAYANAN:</div>
+            <div style="font-size:12.5px;color:#1e293b;font-weight:600;">${_namaProduk}${t.qty && t.qty>1 ? ' ('+t.qty+'x)':' (1x)'}</div>
+          </div>
+
+          <div style="border-top:1.5px dashed #e2e8f0;margin:8px 0;"></div>
+
+          <!-- Harga detail -->
+          ${_hargaDetailHTML}
+          ${t.bayar ? `
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:3px;">
+            <span>Uang Dibayar:</span><span>${_rp(t.bayar)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:3px;">
+            <span>Kembalian:</span><span>${_rp(t.kembalian||0)}</span>
+          </div>` : ''}
+
+          <!-- Total -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+            <span style="font-size:14px;font-weight:900;color:#1e293b;">TOTAL BILL:</span>
+            <span style="font-size:18px;font-weight:900;color:#1e293b;">${_rp(t.jual)}</span>
+          </div>
+
+          <div style="border-top:1.5px dashed #e2e8f0;margin:10px 0 8px;"></div>
+
+          <!-- Metode & status -->
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span style="color:#94a3b8;">Metode:</span>
+            <span style="font-weight:800;color:#1e293b;">${_metodeBayarDisp}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;">
+            <span style="color:#94a3b8;">Status Bayar:</span>
+            <span style="font-weight:900;color:${_isLunasDisp?'#059669':'#ef4444'};">${_isLunasDisp?'Lunas':'Belum Bayar'}</span>
+          </div>
+
+          <div style="border-top:1.5px dashed #e2e8f0;margin:10px 0 8px;"></div>
+
+          <!-- Footer tagline -->
+          <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:4px;">— ${opts.tagline || 'Terima Kasih'} —</div>
+
+          <!-- Gigi bawah -->
+          <div style="position:absolute;bottom:-10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 8px;">
+            ${Array.from({length:14},()=>'<div style="width:18px;height:18px;background:#f8fafc;border-radius:50%;"></div>').join('')}
+          </div>
+        </div>`;
+
+      // Tombol aksi preview
+      const _previewActionsHTML = `
+        <div style="max-width:340px;margin:16px auto 0;display:flex;flex-direction:column;gap:10px;">
+          <button id="btn-preview-cetak" style="
+            width:100%;padding:14px;border-radius:16px;border:none;
+            background:linear-gradient(135deg,#0061C2,#0ea5e9);
+            color:#fff;font-size:14px;font-weight:900;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+            box-shadow:0 4px 16px rgba(0,97,194,0.35);">
+            <span style="font-size:16px;">🖨️</span> Print Bluetooth Thermal
+          </button>
+          <button id="btn-preview-wa" style="
+            width:100%;padding:14px;border-radius:16px;border:none;
+            background:linear-gradient(135deg,#25d366,#128c7e);
+            color:#fff;font-size:14px;font-weight:900;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+            box-shadow:0 4px 16px rgba(37,211,102,0.35);">
+            <span style="font-size:16px;">💬</span> Kirim Gambar Struk via WA
+          </button>
+          <button id="btn-preview-tutup" style="
+            width:100%;padding:13px;border-radius:16px;
+            border:1.5px solid #e2e8f0;background:#f8fafc;
+            color:#64748b;font-size:13px;font-weight:700;
+            cursor:pointer;">
+            Tutup Pratinjau
+          </button>
+        </div>`;
+
+      // Tampilkan modal preview
+      const _previewResult = await Swal2.fire({
+        title: '📄 Pratinjau Struk',
+        html: `<div style="padding:4px 0 8px;">${_previewHTML}${_previewActionsHTML}</div>`,
+        showConfirmButton: false,
+        showCancelButton: false,
+        customClass: { popup: 'swal2-ku' },
+        didOpen: (popup) => {
+          // Tombol cetak bluetooth → lanjut ke dialog pilih metode
+          popup.querySelector('#btn-preview-cetak')?.addEventListener('click', () => {
+            Swal2.close({ isConfirmed: true, value: 'print' });
+          });
+          // Tombol kirim WA
+          popup.querySelector('#btn-preview-wa')?.addEventListener('click', () => {
+            Swal2.close({ isConfirmed: true, value: 'wa' });
+          });
+          // Tombol tutup
+          popup.querySelector('#btn-preview-tutup')?.addEventListener('click', () => {
+            Swal2.close({ isDenied: true });
+          });
+        }
+      });
+
+      // Handle pilihan dari preview
+      if (!_previewResult.isConfirmed) return; // tutup / dibatalkan
+
+      if (_previewResult.value === 'wa') {
+        // Kirim nota via WhatsApp dengan GAMBAR struk (Web Share API)
+        await ThermalPrinter.shareReceiptImage(t, opts);
+        return;
+      }
+
+      // Lanjut ke pilih metode cetak thermal
+      // Deteksi Android
       methods.push({ key:'browser',  icon:'🌐', label:'Print Browser (window.print)' });
       if (isAndroid) {
         methods.push({ key:'rawbt',    icon:'📱', label:'RawBT App (Android)' });
@@ -28205,21 +28405,88 @@ function bagikanIdCard() {
   }
 }
 
-function kirimWAIdCard() {
+async function kirimWAIdCard() {
   if (!_idCardData) return;
-  const storeId = _idCardData.storeId;
+
+  const Swal2loc = (_getMySwal && _getMySwal()) || Swal;
+  const nama    = _idCardData.nama || 'Pelanggan';
   const custId  = _idCardData.id;
+  const poin    = _idCardData.poin || 0;
+  const phone   = (_idCardData.phone||'').replace(/\D/g,'').replace(/^0/,'62');
+  const storeId = _idCardData.storeId;
   const origin  = window.location.origin;
   const base    = window.location.pathname.replace(/\/[^\/]*$/, '');
   const link    = origin + base + '/cek-poin.html?toko=' + encodeURIComponent(storeId);
-  const nama    = _idCardData.nama || 'Pelanggan';
-  const phone   = (_idCardData.phone||'').replace(/\D/g,'').replace(/^0/,'62');
-  const poin    = _idCardData.poin || 0;
+  const pesanTeks = `🎉 Halo, *${nama}*!\n\nIni *Kartu Member* kamu di *${_idCardData.tokoNm||'toko kami'}* 🏪✨\n\n--------------\n🪴 *Member ID:* ${custId}\n⭐ *Poin Saat Ini:* ${poin}\n--------------\n\n📱 *Cek poin kapan saja:*\n👉 ${link}\n\nScan QR kartu member kamu atau masuk pakai Member ID di atas.\n\n🎁 Kumpulkan poin & tukar dengan hadiah menarik!\n📌 Simpan pesan ini ya! 😊`;
 
-  const pesan = `🎉 Halo, *${nama}*!\n\nIni *Kartu Member* kamu di *${_idCardData.tokoNm||'toko kami'}* 🏪✨\n\n--------------\n🪴 *Member ID:* ${custId}\n⭐ *Poin Saat Ini:* ${poin}\n--------------\n\n📱 *Cek poin kapan saja:*\n👉 ${link}\n\nScan QR kartu member kamu atau masuk pakai Member ID di atas.\n\n🎁 Kumpulkan poin & tukar dengan hadiah menarik!\n📌 Simpan pesan ini ya! 😊`;
+  // Coba kirim dengan gambar ID card via Web Share API
+  const card = document.getElementById('cust-id-card');
+  if (card && typeof html2canvas !== 'undefined') {
+    // Tampilkan loading
+    Swal2loc.fire({
+      title: '⏳ Menyiapkan gambar...',
+      text: 'Sedang membuat gambar kartu member.',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      customClass: { popup: 'swal2-ku' },
+      didOpen: () => Swal2loc.showLoading()
+    });
 
-  const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesan);
-  window.open(waUrl, '_blank');
+    try {
+      // Gunakan cache kalau sudah ada
+      const canvas = _idCardCanvasCache || await html2canvas(card, {
+        scale: 3, useCORS: true, backgroundColor: null, logging: false
+      });
+      if (!_idCardCanvasCache) _idCardCanvasCache = canvas;
+
+      const pngBlob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      const fileName = 'kartu-member-' + (nama||'member').replace(/\s+/g,'-').toLowerCase() + '.png';
+      const file = new File([pngBlob], fileName, { type: 'image/png' });
+
+      Swal2loc.close();
+
+      // Web Share API dengan file gambar
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Kartu Member - ' + nama,
+          text: pesanTeks,
+          files: [file]
+        });
+      } else {
+        // Fallback: tampilkan gambar untuk disimpan/bagikan manual
+        const imgUrl = URL.createObjectURL(pngBlob);
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        if (isMobile) {
+          await Swal2loc.fire({
+            title: '📇 Kartu Member Siap',
+            html: `<div style="text-align:center;">
+              <img src="${imgUrl}" style="max-width:100%;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:10px;">
+              <p style="font-size:12px;color:#64748b;margin:0;">📌 Tekan &amp; tahan gambar → <b>Bagikan ke WhatsApp</b></p>
+            </div>`,
+            confirmButtonText: 'Tutup',
+            customClass: { popup: 'swal2-ku' }
+          });
+        } else {
+          // Desktop: download gambar + buka WA teks
+          const a = document.createElement('a');
+          a.href = imgUrl; a.download = fileName; a.click();
+          setTimeout(() => {
+            const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesanTeks);
+            window.open(waUrl, '_blank');
+          }, 800);
+        }
+      }
+    } catch(err) {
+      Swal2loc.close();
+      // Fallback ke teks saja jika gagal render gambar
+      const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesanTeks);
+      window.open(waUrl, '_blank');
+    }
+  } else {
+    // html2canvas tidak tersedia: fallback teks
+    const waUrl = 'https://wa.me/' + (phone||'') + '?text=' + encodeURIComponent(pesanTeks);
+    window.open(waUrl, '_blank');
+  }
 }
 
 function showMemberQRFromCard() {
