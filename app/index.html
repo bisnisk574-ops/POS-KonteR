@@ -7779,6 +7779,29 @@
           </div>
           <select id="kd-kategori-filter" style="display:none;" onchange="filterKasirByKategori('digital')"><option value="">Semua Produk</option></select>
 
+          <!-- Info Poin Pelanggan (muncul jika sistem poin aktif & pelanggan dipilih) -->
+          <div id="kd-poin-info-card" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(139,92,246,0.05));border:1.5px solid rgba(124,58,237,0.2);border-radius:16px;padding:12px 14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <div style="width:28px;height:28px;border-radius:10px;background:rgba(124,58,237,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-star" style="font-size:11px;color:#7c3aed;"></i>
+                </div>
+                <div>
+                  <p style="font-size:9px;font-weight:900;color:#7c3aed;text-transform:uppercase;letter-spacing:0.07em;margin:0;">Poin Pelanggan</p>
+                  <p id="kd-poin-info-nama" style="font-size:10px;font-weight:800;color:#1e293b;margin:1px 0 0;"></p>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-size:9px;font-weight:700;color:#94a3b8;margin:0;">Saldo Poin</p>
+                <p id="kd-poin-info-saldo" style="font-size:15px;font-weight:900;color:#7c3aed;margin:1px 0 0;line-height:1;">0</p>
+              </div>
+            </div>
+            <div id="kd-poin-info-estimasi" style="display:none;background:rgba(124,58,237,0.1);border-radius:10px;padding:7px 11px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
+              <span id="kd-poin-info-estimasi-val" style="font-size:12px;font-weight:900;color:#7c3aed;">+0 poin</span>
+            </div>
+          </div>
+
           <!-- Produk & Harga -->
           <div class="kasir-field-card">
             <!-- Produk -->
@@ -7825,7 +7848,7 @@
                 <p class="kasir-field-label" style="color:#92400e;">JUAL</p>
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] font-black text-amber-600">Rp</span>
-                  <input type="number" id="kd-jual" class="kasir-field-input text-amber-800" style="background:transparent;" placeholder="0" oninput="updateKasirLaba('digital')">
+                  <input type="number" id="kd-jual" class="kasir-field-input text-amber-800" style="background:transparent;" placeholder="0" oninput="updateKasirLaba('digital');refreshKdPoinInfo();">
                 </div>
               </div>
             </div>
@@ -7859,7 +7882,7 @@
               </div>
               <div class="flex-1">
                 <p class="kasir-field-label">Pelanggan</p>
-                <select id="kd-customer" class="kasir-field-input"></select>
+                <select id="kd-customer" class="kasir-field-input" onchange="refreshKdPoinInfo();if(window.refreshKasirPoinSection)refreshKasirPoinSection();"></select>
               </div>
             </div>
             <!-- Dompet Modal -->
@@ -12979,6 +13002,52 @@
     }
 
     // ---- UPDATE SELECTS ----
+    // ---- INFO POIN DI KASIR DIGITAL ----
+    function refreshKdPoinInfo() {
+      const card     = document.getElementById('kd-poin-info-card');
+      if (!card) return;
+      const cfg = (window.getPoinConfig && window.getPoinConfig()) || (window.getPoinCfg && window.getPoinCfg());
+      if (!cfg || !cfg.aktif) { card.style.display = 'none'; return; }
+
+      const custSel  = document.getElementById('kd-customer');
+      const custName = custSel ? custSel.value : '';
+      if (!custName || custName === 'Umum') { card.style.display = 'none'; return; }
+
+      const cust = (db.customers || []).find(c => c.nama === custName);
+      if (!cust) { card.style.display = 'none'; return; }
+
+      card.style.display = 'block';
+
+      const namaEl   = document.getElementById('kd-poin-info-nama');
+      const saldoEl  = document.getElementById('kd-poin-info-saldo');
+      const estWrap  = document.getElementById('kd-poin-info-estimasi');
+      const estVal   = document.getElementById('kd-poin-info-estimasi-val');
+
+      if (namaEl) namaEl.textContent = cust.nama;
+      if (saldoEl) saldoEl.textContent = (cust.poin || 0).toLocaleString('id-ID');
+
+      // Estimasi poin dari jenis trx yang sudah dipilih di kasir-poin-jenis-trx
+      const jenisSel = document.getElementById('kasir-poin-jenis-trx');
+      const idx = jenisSel ? parseInt(jenisSel.value) : NaN;
+      const bonusTrx = cfg.bonusTrx || [];
+      if (!isNaN(idx) && bonusTrx[idx]) {
+        if (estWrap) estWrap.style.display = 'flex';
+        if (estVal) estVal.textContent = '+' + bonusTrx[idx].poin + ' poin';
+      } else {
+        // Hitung estimasi dari harga jual jika ada aturan per nominal
+        const jual = Number(document.getElementById('kd-jual')?.value) || 0;
+        const poinPerNominal = cfg.poinPerNominal || 0;
+        const kelipatan = cfg.kelipatanNominal || 1;
+        if (poinPerNominal > 0 && kelipatan > 0 && jual > 0) {
+          const est = Math.floor(jual / kelipatan) * poinPerNominal;
+          if (estWrap) estWrap.style.display = 'flex';
+          if (estVal) estVal.textContent = '+' + est.toLocaleString('id-ID') + ' poin';
+        } else {
+          if (estWrap) estWrap.style.display = 'none';
+        }
+      }
+    }
+
     // ---- LAST USED MODAL WALLET ----
     const LAST_MODAL_WALLET_KEY = 'ku_last_modal_wallet';
     function setLastModalWallet(id) {
@@ -13049,6 +13118,7 @@
         const el = document.getElementById(id);
         if (el) el.innerHTML = '<option value="Umum">Umum</option>' + cOpts;
       });
+      refreshKdPoinInfo();
     }
 
     // ---- AUTO FILL HARGA ----
