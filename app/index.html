@@ -27356,7 +27356,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- ===== QR CODE ===== -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 
 <!-- ===== QR KASIR: Barcode per kasir + Scan login ===== -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -27525,28 +27525,59 @@ function scanQRFromGaleri() {
 function processQRImageFile(input) {
   const file = input.files && input.files[0];
   if (!file) return;
+
+  if (typeof jsQR === 'undefined') {
+    alert('Library QR belum dimuat, coba beberapa saat lagi.');
+    input.value = '';
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
     img.onload = function() {
-      const cvs = document.createElement('canvas');
-      cvs.width = img.width; cvs.height = img.height;
-      const ctx = cvs.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const imgData = ctx.getImageData(0, 0, cvs.width, cvs.height);
-      if (typeof jsQR !== 'undefined') {
-        const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' });
-        if (code && code.data) {
-          _applyKasirQRData(code.data);
-        } else {
-          alert('QR tidak terbaca. Pastikan gambar jelas dan merupakan QR kasir yang valid.');
-        }
-      } else {
-        alert('Library QR belum dimuat, coba beberapa saat lagi.');
+      // Coba berbagai ukuran scale agar QR terbaca (gambar besar sering gagal di jsQR)
+      // jsQR optimal di sekitar 600-1200px; gambar HD/screenshot perlu di-resize dulu
+      const scales = [1200, 800, 600, 400, img.width]; // coba dari kecil ke besar
+      const uniqueScales = [...new Set(scales.map(s => Math.min(s, Math.max(img.width, img.height))))];
+
+      let code = null;
+      for (const maxSize of uniqueScales) {
+        const ratio = Math.min(maxSize / img.width, maxSize / img.height, 1);
+        const w = Math.round(img.width * ratio);
+        const h = Math.round(img.height * ratio);
+
+        const cvs = document.createElement('canvas');
+        cvs.width = w; cvs.height = h;
+        const ctx = cvs.getContext('2d');
+        // Tingkatkan kontras sedikit agar QR lebih tegas
+        ctx.filter = 'contrast(1.2) brightness(1.05)';
+        ctx.drawImage(img, 0, 0, w, h);
+        const imgData = ctx.getImageData(0, 0, w, h);
+
+        code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' });
+        if (code && code.data) break;
+
+        // Coba juga tanpa filter (kadang filter justru ganggu)
+        ctx.filter = 'none';
+        ctx.drawImage(img, 0, 0, w, h);
+        const imgData2 = ctx.getImageData(0, 0, w, h);
+        code = jsQR(imgData2.data, imgData2.width, imgData2.height, { inversionAttempts: 'attemptBoth' });
+        if (code && code.data) break;
       }
+
+      if (code && code.data) {
+        _applyKasirQRData(code.data);
+      } else {
+        alert('QR tidak terbaca. Pastikan:\n• Gambar tidak blur/gelap\n• QR kasir terlihat jelas dan tidak terpotong\n• Coba screenshot ulang ID Card kasir');
+      }
+      input.value = '';
+    };
+    img.onerror = function() {
+      alert('Gagal membaca file gambar.');
+      input.value = '';
     };
     img.src = e.target.result;
-    input.value = '';
   };
   reader.readAsDataURL(file);
 }
