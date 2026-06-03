@@ -7753,6 +7753,20 @@
           </div>
         </div>
 
+        <!-- Banner Notif Poin Aktif (muncul jika admin aktifkan sistem poin) -->
+        <div id="kasir-poin-banner" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(139,92,246,0.07));border:1.5px solid rgba(124,58,237,0.25);border-radius:16px;padding:11px 14px;display:none;align-items:center;gap:10px;margin-bottom:4px;">
+          <div style="width:32px;height:32px;border-radius:11px;background:rgba(124,58,237,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-star" style="font-size:13px;color:#7c3aed;"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <p style="font-size:10px;font-weight:900;color:#7c3aed;margin:0;letter-spacing:0.02em;">Sistem Poin Pelanggan Aktif</p>
+            <p style="font-size:9px;font-weight:600;color:#64748b;margin:2px 0 0;line-height:1.4;">Pilih nama pelanggan agar poin tercatat — jangan pakai <strong style="color:#ef4444;">Umum</strong></p>
+          </div>
+          <div style="flex-shrink:0;">
+            <i class="fas fa-user-tag" style="font-size:16px;color:rgba(124,58,237,0.3);"></i>
+          </div>
+        </div>
+
         <!-- ===== FORM DIGITAL ===== -->
         <div id="form-k-digital" class="space-y-3">
 
@@ -10301,6 +10315,8 @@
       if (isEwl) populateEwalletWallets();
       // Refresh filter kategori saat tab berganti
       if ((isDig || isFis) && typeof refreshKategoriFilters === 'function') refreshKategoriFilters();
+      // Refresh info poin pelanggan & banner saat tab digital aktif
+      if (isDig) setTimeout(function(){ refreshKdPoinInfo(); refreshKasirPoinBanner(); }, 50);
     }
 
     function updateKasirLaba(tipe) {
@@ -11079,6 +11095,7 @@
 
       // Refresh section poin
       if (window.refreshKasirPoinSection) window.refreshKasirPoinSection();
+      if (typeof refreshKdPoinInfo === 'function') refreshKdPoinInfo();
 
       let totalBayar = 0, totalLaba = 0;
       items.forEach(it => {
@@ -13004,47 +13021,62 @@
     // ---- UPDATE SELECTS ----
     // ---- INFO POIN DI KASIR DIGITAL ----
     function refreshKdPoinInfo() {
-      const card     = document.getElementById('kd-poin-info-card');
+      const card = document.getElementById('kd-poin-info-card');
       if (!card) return;
-      const cfg = (window.getPoinConfig && window.getPoinConfig()) || (window.getPoinCfg && window.getPoinCfg());
+
+      // Ambil config poin — tersedia sebagai window.getPoinConfig setelah modul poin load
+      const cfg = window.getPoinConfig ? window.getPoinConfig() : null;
       if (!cfg || !cfg.aktif) { card.style.display = 'none'; return; }
 
       const custSel  = document.getElementById('kd-customer');
       const custName = custSel ? custSel.value : '';
       if (!custName || custName === 'Umum') { card.style.display = 'none'; return; }
 
-      const cust = (db.customers || []).find(c => c.nama === custName);
+      // Cari di db.pelanggan (field poin tersimpan di sana via db.customers yg sama referensi)
+      const allCust = (db.customers || db.pelanggan || []);
+      const cust = allCust.find(c => c.nama === custName);
       if (!cust) { card.style.display = 'none'; return; }
 
       card.style.display = 'block';
 
-      const namaEl   = document.getElementById('kd-poin-info-nama');
-      const saldoEl  = document.getElementById('kd-poin-info-saldo');
-      const estWrap  = document.getElementById('kd-poin-info-estimasi');
-      const estVal   = document.getElementById('kd-poin-info-estimasi-val');
+      const namaEl  = document.getElementById('kd-poin-info-nama');
+      const saldoEl = document.getElementById('kd-poin-info-saldo');
+      const estWrap = document.getElementById('kd-poin-info-estimasi');
+      const estVal  = document.getElementById('kd-poin-info-estimasi-val');
 
-      if (namaEl) namaEl.textContent = cust.nama;
-      if (saldoEl) saldoEl.textContent = (cust.poin || 0).toLocaleString('id-ID');
+      if (namaEl)  namaEl.textContent  = cust.nama;
+      if (saldoEl) saldoEl.textContent = (cust.poin || 0).toLocaleString('id-ID') + ' poin';
 
-      // Estimasi poin dari jenis trx yang sudah dipilih di kasir-poin-jenis-trx
+      // Estimasi poin: ambil dari jenis trx yg dipilih di keranjang, atau hitung per nominal
       const jenisSel = document.getElementById('kasir-poin-jenis-trx');
-      const idx = jenisSel ? parseInt(jenisSel.value) : NaN;
+      const idx      = jenisSel ? parseInt(jenisSel.value) : NaN;
       const bonusTrx = cfg.bonusTrx || [];
       if (!isNaN(idx) && bonusTrx[idx]) {
         if (estWrap) estWrap.style.display = 'flex';
-        if (estVal) estVal.textContent = '+' + bonusTrx[idx].poin + ' poin';
+        if (estVal)  estVal.textContent = '+' + bonusTrx[idx].poin + ' poin';
       } else {
-        // Hitung estimasi dari harga jual jika ada aturan per nominal
-        const jual = Number(document.getElementById('kd-jual')?.value) || 0;
-        const poinPerNominal = cfg.poinPerNominal || 0;
-        const kelipatan = cfg.kelipatanNominal || 1;
-        if (poinPerNominal > 0 && kelipatan > 0 && jual > 0) {
-          const est = Math.floor(jual / kelipatan) * poinPerNominal;
+        const jual        = Number(document.getElementById('kd-jual')?.value) || 0;
+        const poinPer     = cfg.poinPerNominal || 0;
+        const kelipatan   = cfg.kelipatanNominal || 1;
+        if (poinPer > 0 && jual > 0) {
+          const est = Math.floor(jual / kelipatan) * poinPer;
           if (estWrap) estWrap.style.display = 'flex';
-          if (estVal) estVal.textContent = '+' + est.toLocaleString('id-ID') + ' poin';
+          if (estVal)  estVal.textContent = '+' + est.toLocaleString('id-ID') + ' poin';
         } else {
           if (estWrap) estWrap.style.display = 'none';
         }
+      }
+    }
+
+    // ---- BANNER POIN AKTIF DI KASIR ----
+    function refreshKasirPoinBanner() {
+      const banner = document.getElementById('kasir-poin-banner');
+      if (!banner) return;
+      const cfg = window.getPoinConfig ? window.getPoinConfig() : null;
+      if (cfg && cfg.aktif) {
+        banner.style.display = 'flex';
+      } else {
+        banner.style.display = 'none';
       }
     }
 
@@ -13119,6 +13151,7 @@
         if (el) el.innerHTML = '<option value="Umum">Umum</option>' + cOpts;
       });
       refreshKdPoinInfo();
+      refreshKasirPoinBanner();
     }
 
     // ---- AUTO FILL HARGA ----
@@ -24793,6 +24826,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   window.togglePoinAktif = function() {
     _poinAktifState = !_poinAktifState;
     updateToggleUI(_poinAktifState);
+    setTimeout(function(){ if (typeof refreshKasirPoinBanner === 'function') refreshKasirPoinBanner(); }, 300);
     const cfg = getPoinCfg();
     cfg.aktif = _poinAktifState;
     savePoinCfg(cfg);
@@ -24998,6 +25032,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
           const prev = document.getElementById('kasir-poin-preview');
           if (prev) prev.style.display = 'none';
         }
+        if (typeof refreshKdPoinInfo === 'function') refreshKdPoinInfo();
       };
     }
 
@@ -25039,6 +25074,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   waitApp(function() {
     window.loadPoinSettingForm();
     window.refreshKasirPoinSection();
+    if (typeof refreshKasirPoinBanner === 'function') refreshKasirPoinBanner();
   });
 
   /* -- Ekspor -- */
