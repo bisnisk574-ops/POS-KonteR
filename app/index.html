@@ -27414,7 +27414,7 @@ function _renderKasirIdCardQR(payload) {
     } else {
       // Fallback img
       const enc = encodeURIComponent(payload);
-      wrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=2&data=' + enc + '" style="border-radius:10px;width:200px;height:200px;" onerror="this.src='https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + enc + ''">';
+      wrap.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=2&data=' + enc + '" style="border-radius:10px;width:200px;height:200px;" onerror="this.src=\'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + enc + '\'">';
     }
   }
 
