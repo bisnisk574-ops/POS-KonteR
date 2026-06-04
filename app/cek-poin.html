@@ -673,9 +673,12 @@ async function ensureAuth(){
 
 /* ── Helper ekstrak data ── */
 function _extractPelanggan(d){
-  // index.html simpan di root: d.pelanggan[]
-  // fallback: d.data.pelanggan (user_stores baru) atau d.db.pelanggan (lama)
-  return (d.pelanggan)||(d.data&&d.data.pelanggan)||(d.db&&d.db.pelanggan)||[];
+  // user_stores (index.html): data tersimpan nested di d.data.pelanggan
+  // stores (lama): langsung d.pelanggan
+  // fallback: d.db.pelanggan
+  return (d.data&&d.data.pelanggan&&d.data.pelanggan.length ? d.data.pelanggan : null)
+      || (d.pelanggan&&d.pelanggan.length ? d.pelanggan : null)
+      || (d.db&&d.db.pelanggan) || [];
 }
 function _normPelanggan(arr){
   return arr.map((c,i)=>({id:c.id||c.hp||String(i),...c}));
@@ -781,12 +784,18 @@ async function getTokoDoc(kode){
 
 async function getPelangganList(){
   const db=window._db;
-  // Utama: collection 'stores' (struktur index.html), doc ID = storeId (Firebase Auth UID)
-  let doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists)return _normPelanggan(_extractPelanggan(doc.data()));
-  // Fallback: user_stores (kasir/multi-toko)
-  doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists)return _normPelanggan(_extractPelanggan(doc.data()));
+  // Prioritas: user_stores (format index.html — pelanggan ada di .data.pelanggan)
+  let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){
+    const list=_normPelanggan(_extractPelanggan(doc.data()));
+    if(list.length) return list;
+  }
+  // Fallback: stores (format lama — pelanggan langsung di root)
+  doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  if(doc&&doc.exists){
+    const list=_normPelanggan(_extractPelanggan(doc.data()));
+    if(list.length) return list;
+  }
   return[];
 }
 
@@ -996,8 +1005,74 @@ async function handleHomeScanResult(text){
   if(!text)return;
   stopHomeScan();
 
-  // ── Deteksi QR Toko: URL cek-poin.html?toko=storeId ──
+  // ── Deteksi QR Member: URL cek-poin.html?toko=storeId&id=memberId ──
   const urlTokoMatch=text.match(/[?&]toko=([^&\s#]+)/);
+  const urlIdMatch=text.match(/[?&]id=([^&\s#]+)/);
+  if(urlTokoMatch && urlIdMatch){
+    const qrStoreId=decodeURIComponent(urlTokoMatch[1]).trim();
+    const qrMemberId=decodeURIComponent(urlIdMatch[1]).trim();
+
+    Swal.fire({title:'Memuat data...',allowOutsideClick:false,showConfirmButton:false,
+      customClass:{popup:'swal2-ku'},didOpen:()=>Swal.showLoading()});
+    await ensureAuth();
+    const db=window._db;
+
+    // Cari dokumen toko (prioritas user_stores)
+    let tokoFound=null, resolvedStoreId=qrStoreId;
+    let tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
+    if(tokoDoc&&tokoDoc.exists) tokoFound=tokoDoc.data();
+    if(!tokoFound){
+      tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
+      if(tokoDoc&&tokoDoc.exists) tokoFound=tokoDoc.data();
+    }
+    if(!tokoFound){
+      const result=await getTokoDoc(qrStoreId).catch(()=>null);
+      if(result){tokoFound=result.data;resolvedStoreId=result.id;}
+    }
+    if(!tokoFound){
+      Swal.close();
+      swalErr('Toko tidak ditemukan. Coba Login Manual.');
+      return;
+    }
+
+    storeId=resolvedStoreId; tokoData=tokoFound;
+    sessionStorage.setItem('ku_store_id',storeId);
+    await loadPoinCfg();
+
+    let allList=await getPelangganList().catch(()=>[]);
+    if(!allList.length) allList=_normPelanggan(_extractPelanggan(tokoFound));
+
+    const _norm=s=>(s||'').replace(/\s/g,'').toLowerCase();
+    const _normP=s=>(s||'').replace(/\D/g,'');
+    const found=allList.find(p=>
+      _norm(p.id)===_norm(qrMemberId)||
+      _norm(p.hp)===_norm(qrMemberId)||
+      _norm(p.phone)===_norm(qrMemberId)||
+      _normP(p.hp)===_normP(qrMemberId)||
+      _normP(p.phone)===_normP(qrMemberId)
+    );
+    Swal.close();
+    if(!found){swalErr('Member tidak ditemukan di toko ini.');return;}
+
+    // Cek PIN
+    if(found.pin){
+      const res=await Swal.fire({
+        title:'Masukkan PIN',input:'password',
+        inputAttributes:{inputmode:'numeric',maxlength:'4',autocomplete:'off'},
+        inputPlaceholder:'4 digit PIN',confirmButtonText:'Masuk',
+        showCancelButton:true,cancelButtonText:'Batal',
+        customClass:{popup:'swal2-ku'},
+        inputValidator:v=>{if(!v||v.length<4)return 'PIN harus 4 digit';}
+      });
+      if(!res.isConfirmed)return;
+      if(String(res.value)!==String(found.pin)){swalErr('PIN salah. Hubungi kasir jika lupa.');return;}
+    }
+    pelanggan=found;
+    showDashboardPelanggan();
+    return;
+  }
+
+  // ── Deteksi QR Toko saja: URL cek-poin.html?toko=storeId ──
   if(urlTokoMatch){
     const kode=decodeURIComponent(urlTokoMatch[1]).trim();
     document.getElementById('inp-kode-toko').value=kode;
@@ -1006,7 +1081,7 @@ async function handleHomeScanResult(text){
     return;
   }
 
-  // ── Format QR Member: storeId::memberId ──
+  // ── Format lama: storeId::memberId ──
   const parts=text.trim().split('::');
   if(parts.length<2){
     Swal.fire({
@@ -1026,23 +1101,27 @@ async function handleHomeScanResult(text){
   await ensureAuth();
   const db=window._db;
 
-  // Cari dokumen toko — coba direct doc ID dulu, lalu fallback getTokoDoc (query by field)
+  // Cari dokumen toko — prioritas: user_stores (format index.html), lalu stores, lalu query
   let tokoFound=null, resolvedStoreId=qrStoreId;
-  let tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
-  if(tokoDoc&&tokoDoc.exists){tokoFound=tokoDoc.data();}
+
+  // 1. Coba user_stores dulu (format index.html simpan di sini)
+  let tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
+  if(tokoDoc&&tokoDoc.exists){ tokoFound=tokoDoc.data(); }
+
+  // 2. Coba stores (format lama)
   if(!tokoFound){
-    tokoDoc=await db.collection('user_stores').doc(qrStoreId).get().catch(()=>null);
-    if(tokoDoc&&tokoDoc.exists)tokoFound=tokoDoc.data();
+    tokoDoc=await db.collection('stores').doc(qrStoreId).get().catch(()=>null);
+    if(tokoDoc&&tokoDoc.exists){ tokoFound=tokoDoc.data(); }
   }
-  // Fallback: query by store_id field atau kode_toko field
+  // 3. Fallback: query by store_id field / kode_toko field
   if(!tokoFound){
     const result=await getTokoDoc(qrStoreId).catch(()=>null);
-    if(result){tokoFound=result.data;resolvedStoreId=result.id;}
+    if(result){ tokoFound=result.data; resolvedStoreId=result.id; }
   }
-  // Fallback: query stores where store_id == qrStoreId
+  // 4. Fallback: query stores where store_id == qrStoreId
   if(!tokoFound){
     const s=await db.collection('stores').where('store_id','==',qrStoreId).limit(1).get().catch(()=>null);
-    if(s&&!s.empty){tokoFound=s.docs[0].data();resolvedStoreId=s.docs[0].id;}
+    if(s&&!s.empty){ tokoFound=s.docs[0].data(); resolvedStoreId=s.docs[0].id; }
   }
   if(!tokoFound){
     Swal.close();
@@ -1783,8 +1862,18 @@ async function init(){
   await waitDB();
   const urlParams=new URLSearchParams(window.location.search);
   const paramToko=(urlParams.get('toko')||'').trim();
+  const paramId=(urlParams.get('id')||'').trim();
   // Cek apakah URL punya hash #daftar → langsung ke form pendaftaran member
   if(window.location.hash==='#daftar') _autoOpenDaftar=true;
+
+  // ── QR Kartu Member: ?toko=storeId&id=memberId → auto-login langsung ──
+  if(paramToko && paramId){
+    showPage('home');
+    // Buat URL palsu yang bisa diparsing handleHomeScanResult
+    await handleHomeScanResult('https://x.x/cek-poin.html?toko='+paramToko+'&id='+paramId);
+    return;
+  }
+
   if(paramToko){
     document.getElementById('inp-kode-toko').value=paramToko;
     // Jika ada #daftar, langsung coba login admin dengan storeId ini

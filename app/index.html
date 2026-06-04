@@ -28366,12 +28366,15 @@ function _populateIdCard(c) {
   const tb = el('card-tier-badge');
   if (tb) { tb.textContent = tier; tb.style.background = tc.bg; tb.style.border = '1px solid ' + tc.border; tb.style.color = tc.text; }
 
-  // Render mini QR - payload = storeId::memberId (sama dengan cek-poin.html)
+  // Render mini QR - payload = URL langsung ke cek-poin.html?toko=storeId&id=memberId
+  // Format ini sama dengan struk cetak dan bisa langsung login di device manapun
   const miniWrap = el('card-qr-mini-wrap');
   if (miniWrap) {
-    const payload  = storeId + '::' + c.id;
+    const _origin = window.location.origin;
+    const _base   = window.location.pathname.replace(/\/[^\/]*$/, '');
+    const payload  = _origin + _base + '/cek-poin.html?toko=' + encodeURIComponent(storeId) + '&id=' + encodeURIComponent((c.id||'').trim());
     miniWrap.innerHTML = '';
-    _idCardCanvasCache = null; // Reset cache saat kartu baru dibuka
+    _idCardCanvasCache = null;
     if (typeof QRCode !== 'undefined') {
       const miniCanvas = document.createElement('canvas');
       miniWrap.appendChild(miniCanvas);
