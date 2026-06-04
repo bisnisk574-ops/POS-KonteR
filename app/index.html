@@ -14428,8 +14428,8 @@
           const SANS   = 'system-ui, -apple-system, sans-serif';
 
           function drawStrukCanvas(t2, opts2, logoImg) {
-            const rp2     = n => 'Rp.' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
-            const sName   = (opts2.storeName || 'KONTERKU');
+            const rp2     = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
+            const sName   = (opts2.storeName || 'KONTERKU').toUpperCase();
             const aLines  = (opts2.alamat || '').split('\n').filter(Boolean);
             const tLine   = opts2.tagline || 'Terima kasih atas kepercayaan Anda';
             const kName   = opts2.kasirName || '';
@@ -14438,232 +14438,296 @@
                           : t2.tipe === 'digital'  ? 'Digital' : 'Fisik';
             const nProduk = (t2.produk || '-').replace(/^(DIG:|FIS:|EWL:)\s*/i, '');
             const jual    = Number(t2.jual || t2.hargaJual || t2.total || 0);
-            const now2    = new Date();
-            const wib2    = new Date(now2.getTime() + now2.getTimezoneOffset()*60000 + 3600000*7);
-            const p2      = x => String(x).padStart(2,'0');
             const bulan   = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-            // Gunakan tanggal transaksi asli
             const tglRaw2 = t2.tgl || '';
             let tglStr = tglRaw2;
             if (tglRaw2 && tglRaw2.match(/^\d{4}-\d{2}-\d{2}$/)) {
               const [ty, tmo, td] = tglRaw2.split('-');
               tglStr = `${td} ${bulan[parseInt(tmo,10)-1]} ${ty}`;
             }
-            // Metode bayar = nama dompet penerima
+            let jamTrx2 = '';
+            try {
+              const _tsM3 = (t2.id||'').match(/TR-(\d{13,})/);
+              if (_tsM3) {
+                const _dt3 = new Date(parseInt(_tsM3[1],10));
+                jamTrx2 = String(_dt3.getHours()).padStart(2,'0')+':'+String(_dt3.getMinutes()).padStart(2,'0');
+              }
+            } catch(_e3){}
             const metodeBayar2 = (() => {
               if (t2.status !== 'Lunas') return 'Belum Lunas';
               const wId = t2.walletJual || t2.walletBayar || '';
-              if (!wId) return 'Tunai';
+              if (!wId) return 'Kas';
               if (typeof db !== 'undefined' && db.dompet) {
                 const w = db.dompet.find(d => d.id === wId);
                 if (w) return w.nama;
               }
-              return 'Tunai';
+              return 'Kas';
             })();
 
-            // -- Kalkulasi tinggi --
-            let H = PAD;
-            if (logoImg) H += 64 + 12;
-            H += 26;                           // store name
-            aLines.forEach(() => H += 16);
-            H += 14;                           // gap
-            H += 1 + 10;                       // divider + gap
-            H += 18;                           // tanggal
-            if (kName) H += 18;
-            if (t2.pelanggan) H += 18;
-            H += 10 + 1 + 10;
-            H += 20 + 10;                      // header item + gap
-            H += 24;                           // nama produk
-            H += 16;                           // qty
-            if (t2.nomor)   H += 16;
-            if (t2.nominal) H += 16;
-            if (Number(t2.adminBank||0) > 0) H += 16;
-            if (Number(t2.adminAgen||0) > 0) H += 16;
-            H += 10 + 1 + 16;                  // gap + divider + gap
-            H += 34 + 18;                      // total box + status
-            H += 10 + 1 + 10;
-            H += 18 + 18;                      // metode, jumlah bayar
-            // note/keterangan inline setelah produk
-            if (t2.note && t2.note.trim()) {
-              const estNoteLines = Math.ceil(t2.note.trim().length / 28) || 1;
-              H += estNoteLines * 16;
-            }
-            H += 10 + 1 + 14;                  // gap + divider + tagline
-            if (!t2.note || !t2.note.trim()) {} // no extra
-            H += 16;                            // tagline line height
-            if (!opts2.isPro) H += 16;          // watermark line
-            H += PAD;
+            // ── Dimensi & warna ──────────────────────────────────────
+            const CW      = W;           // canvas width
+            const HDR_H   = logoImg ? 160 : 120; // header gelap
+            const BODY_PAD = 20;
+            const LINE_H  = 22;
+            const COL_DARK = '#0f1923';
+            const COL_ACCENT = '#4caf76';
+            const COL_TEXT  = '#1a1a2e';
+            const COL_SUB   = '#64748b';
+            const COL_BORDER = '#e8edf2';
+            const SANS2   = SANS;
+
+            // Hitung jumlah baris body untuk kalkulasi H
+            let bodyRows = 0;
+            bodyRows += 4; // tanggal, kasir, pelanggan, spacer
+            bodyRows += 2; // nama produk + qty
+            if (t2.nominal)                 bodyRows++;
+            if (Number(t2.adminBank||0)>0)  bodyRows++;
+            if (Number(t2.adminAgen||0)>0)  bodyRows++;
+            if (t2.note && t2.note.trim())  bodyRows += Math.ceil(t2.note.trim().length/32)||1;
+            bodyRows += 1; // spacer sebelum total
+            const TOTAL_H = 52;
+            const STATUS_H = 32;
+            const PAY_ROWS = 2 + (t2.bayar ? 2 : 0);
+            const FOOTER_H = 50;
+            const TEAR_H   = 20;
+
+            const H = HDR_H + TEAR_H + BODY_PAD + bodyRows * LINE_H + BODY_PAD
+                    + TOTAL_H + STATUS_H + BODY_PAD
+                    + PAY_ROWS * LINE_H + BODY_PAD
+                    + 1 + FOOTER_H;
 
             const cv  = document.createElement('canvas');
-            cv.width  = W * scale;
+            cv.width  = CW * scale;
             cv.height = H * scale;
             const cx  = cv.getContext('2d');
             cx.scale(scale, scale);
+
+            // ── Background putih ──────────────────────────────────────
+            cx.fillStyle = '#f5f4f0';
+            cx.fillRect(0, 0, CW, H);
+
+            // ── Kartu putih tengah ────────────────────────────────────
+            const CARD_MARGIN = 0;
             cx.fillStyle = '#ffffff';
-            cx.fillRect(0, 0, W, H);
+            cx.beginPath();
+            cx.roundRect(CARD_MARGIN, 0, CW - CARD_MARGIN*2, H, 0);
+            cx.fill();
 
-            let y = PAD;
+            // ── HEADER GELAP ──────────────────────────────────────────
+            cx.fillStyle = COL_DARK;
+            cx.beginPath();
+            cx.roundRect(0, 0, CW, HDR_H, [16, 16, 0, 0]);
+            cx.fill();
 
-            const drawDiv = () => {
-              cx.strokeStyle = '#e2e8f0';
-              cx.lineWidth = 1;
+            // Ornamen lingkaran dekoratif
+            cx.fillStyle = 'rgba(255,255,255,0.04)';
+            cx.beginPath(); cx.arc(CW - 30, 20, 60, 0, Math.PI*2); cx.fill();
+            cx.beginPath(); cx.arc(20, HDR_H - 10, 40, 0, Math.PI*2); cx.fill();
+
+            let hy = 24;
+
+            // Logo
+            if (logoImg) {
+              const lSize = 80;
+              cx.save();
+              cx.fillStyle = 'rgba(255,255,255,0.10)';
+              cx.beginPath();
+              cx.roundRect((CW-lSize)/2, hy, lSize, lSize, 14);
+              cx.fill();
+              cx.beginPath();
+              cx.roundRect((CW-lSize)/2, hy, lSize, lSize, 14);
+              cx.clip();
+              cx.drawImage(logoImg, (CW-lSize)/2, hy, lSize, lSize);
+              cx.restore();
+              hy += lSize + 10;
+            }
+
+            // Nama toko
+            cx.font = `700 15px ${SANS2}`;
+            cx.fillStyle = '#f0ece4';
+            cx.textAlign = 'center';
+            cx.fillText(sName, CW/2, hy + 15);
+            hy += 20;
+
+            // Alamat
+            cx.font = `400 10px ${SANS2}`;
+            cx.fillStyle = '#7a8694';
+            aLines.forEach(l => { cx.fillText(l, CW/2, hy + 11); hy += 14; });
+
+            // Badge LUNAS / BELUM LUNAS di header
+            const badgeW = isL ? 64 : 100;
+            const badgeBg = isL ? 'rgba(76,175,118,0.18)' : 'rgba(239,68,68,0.18)';
+            const badgeFg = isL ? '#4caf76' : '#ef4444';
+            const badgeTxt = isL ? '✓  LUNAS' : '⚠  BELUM LUNAS';
+            cx.fillStyle = badgeBg;
+            cx.beginPath();
+            cx.roundRect((CW-badgeW)/2, hy + 6, badgeW, 20, 10);
+            cx.fill();
+            cx.font = `700 9px ${SANS2}`;
+            cx.fillStyle = badgeFg;
+            cx.textAlign = 'center';
+            cx.fillText(badgeTxt, CW/2, hy + 19);
+            hy += 30;
+
+            // ── TEARLINE (gigi-gigi putus) ────────────────────────────
+            const tearY = HDR_H;
+            // Lingkaran kiri kanan
+            cx.fillStyle = '#f5f4f0';
+            cx.beginPath(); cx.arc(-1, tearY + TEAR_H/2, TEAR_H/2, 0, Math.PI*2); cx.fill();
+            cx.beginPath(); cx.arc(CW+1, tearY + TEAR_H/2, TEAR_H/2, 0, Math.PI*2); cx.fill();
+            // Garis putus-putus
+            cx.strokeStyle = '#d4d8de';
+            cx.lineWidth = 1.5;
+            cx.setLineDash([6, 5]);
+            cx.beginPath();
+            cx.moveTo(TEAR_H, tearY + TEAR_H/2);
+            cx.lineTo(CW - TEAR_H, tearY + TEAR_H/2);
+            cx.stroke();
+            cx.setLineDash([]);
+
+            // ── BODY ──────────────────────────────────────────────────
+            let y = HDR_H + TEAR_H + BODY_PAD;
+
+            const drawRowPremium = (lbl, val, bold = false, valCol = COL_TEXT) => {
+              cx.font = `400 11px ${SANS2}`;
+              cx.fillStyle = COL_SUB;
+              cx.textAlign = 'left';
+              cx.fillText(lbl, BODY_PAD, y + 13);
+              cx.font = `${bold?'600':'500'} 11px ${SANS2}`;
+              cx.fillStyle = valCol;
+              cx.textAlign = 'right';
+              cx.fillText(val, CW - BODY_PAD, y + 13);
+              y += LINE_H;
+            };
+
+            const drawThinDiv = () => {
+              cx.strokeStyle = COL_BORDER;
+              cx.lineWidth = 0.8;
               cx.setLineDash([]);
               cx.beginPath();
-              cx.moveTo(PAD, y);
-              cx.lineTo(W - PAD, y);
+              cx.moveTo(BODY_PAD, y);
+              cx.lineTo(CW - BODY_PAD, y);
               cx.stroke();
               y += 1;
             };
 
-            const drawRow = (lbl, val, boldVal = false, valColor = '#0f172a') => {
-              cx.font = `400 11px ${SANS}`;
-              cx.fillStyle = '#64748b';
-              cx.textAlign = 'left';
-              cx.fillText(lbl, PAD, y + 13);
-              cx.font = `${boldVal ? '700' : '500'} 11px ${SANS}`;
-              cx.fillStyle = valColor;
-              cx.textAlign = 'right';
-              cx.fillText(val, W - PAD, y + 13);
-              y += 18;
-            };
+            // Info transaksi
+            drawRowPremium('Tanggal', tglStr + (jamTrx2 ? '  ' + jamTrx2 : ''));
+            if (kName) drawRowPremium('Kasir', kName);
+            drawRowPremium('Pelanggan', t2.pelanggan || 'Umum');
+            y += 6; drawThinDiv(); y += 10;
 
-            // Logo
-            if (logoImg) {
-              const lSize = 56;
-              cx.save();
-              cx.beginPath();
-              cx.roundRect((W-lSize)/2, y, lSize, lSize, 10);
-              cx.clip();
-              cx.drawImage(logoImg, (W-lSize)/2, y, lSize, lSize);
-              cx.restore();
-              y += lSize + 12;
-            }
-
-            // Nama toko
-            cx.font = `700 11px ${SANS}`;
-            cx.fillStyle = '#0f172a';
-            cx.textAlign = 'center';
-            cx.fillText(sName, W/2, y + 14);
-            y += 20;
-
-            // Alamat
-            cx.font = `400 11px ${SANS}`;
-            cx.fillStyle = '#64748b';
-            aLines.forEach(l => { cx.fillText(l, W/2, y + 12); y += 16; });
-            y += 14;
-
-            // Divider
-            drawDiv(); y += 10;
-
-            // Info
-            drawRow('Tanggal', tglStr);
-            if (kName) drawRow('Kasir', kName);
-            if (t2.pelanggan) drawRow('Pelanggan', t2.pelanggan);
-            y += 10; drawDiv(); y += 10;
-
-            // Header item
-            cx.font = `700 11px ${SANS}`;
-            cx.fillStyle = '#475569';
-            cx.textAlign = 'left';
-            cx.fillText('ITEM PEMBELIAN', PAD, y + 14);
-            y += 20; y += 10;
-
-            // Nama produk di tengah + badge tipe
-            cx.font = `600 13px ${SANS}`;
-            cx.fillStyle = '#0f172a';
-            cx.textAlign = 'center';
-            cx.fillText(nProduk, W/2, y + 16);
-            cx.font = `600 9px ${SANS}`;
-            const bw2 = cx.measureText(tLabel).width + 14;
-            cx.fillStyle = '#eff6ff';
-            cx.beginPath();
-            cx.roundRect(W - PAD - bw2, y + 4, bw2, 14, 4);
-            cx.fill();
-            cx.fillStyle = '#2563eb';
-            cx.textAlign = 'right';
-            cx.fillText(tLabel, W - PAD - 7, y + 14);
-            y += 24;
-
-            // Qty
-            const qtyVal = t2.qty || 1;
-            cx.font = `400 10px ${SANS}`;
+            // Label ITEM PEMBELIAN
+            cx.font = `600 9px ${SANS2}`;
             cx.fillStyle = '#94a3b8';
-            cx.textAlign = 'center';
-            cx.fillText(`Qty: ${qtyVal} pcs`, W/2, y + 12);
-            y += 16;
-
-            if (t2.nominal) { cx.font=`400 10px ${SANS}`; cx.fillStyle='#94a3b8'; cx.textAlign='left'; cx.fillText('Nominal: '+rp2(t2.nominal), PAD, y+12); y+=16; }
-            if (Number(t2.adminBank||0) > 0) { cx.font=`400 10px ${SANS}`; cx.fillStyle='#94a3b8'; cx.textAlign='left'; cx.fillText('Admin Bank: '+rp2(t2.adminBank), PAD, y+12); y+=16; }
-            if (Number(t2.adminAgen||0) > 0) { cx.font=`400 10px ${SANS}`; cx.fillStyle='#94a3b8'; cx.textAlign='left'; cx.fillText('Admin Agen: '+rp2(t2.adminAgen), PAD, y+12); y+=16; }
-
-            // Keterangan / nomor HP / SN langsung di bawah produk
-            if (t2.note && t2.note.trim()) {
-              cx.font = `400 10px ${SANS}`;
-              cx.fillStyle = '#475569';
-              cx.textAlign = 'left';
-              const nwWords = t2.note.trim().split(' ');
-              let nwLine = '';
-              nwWords.forEach(word => {
-                const test = nwLine ? nwLine + ' ' + word : word;
-                if (cx.measureText(test).width > W - PAD*2 - 50) {
-                  cx.fillText('Ket: ' + nwLine, PAD, y + 12);
-                  y += 16; nwLine = word;
-                } else { nwLine = test; }
-              });
-              if (nwLine) { cx.fillText('Ket: ' + nwLine, PAD, y + 12); y += 16; }
-            }
-
-            y += 10; drawDiv(); y += 16;
-
-            // Total box
-            cx.fillStyle = '#0f172a';
-            cx.beginPath();
-            cx.roundRect(PAD, y, W - PAD*2, 34, 10);
-            cx.fill();
-            cx.font = `700 11px ${SANS}`;
-            cx.fillStyle = 'rgba(255,255,255,0.55)';
             cx.textAlign = 'left';
-            cx.fillText('TOTAL', PAD + 14, y + 22);
-            cx.font = `700 15px ${SANS}`;
-            cx.fillStyle = '#ffffff';
-            cx.textAlign = 'right';
-            cx.fillText(rp2(jual), W - PAD - 14, y + 22);
-            y += 34;
-
-            // Status
-            const stxt = isL ? '✓  LUNAS' : '⚠  BELUM LUNAS';
-            cx.font = `700 10px ${SANS}`;
-            cx.fillStyle = isL ? '#15803d' : '#c2410c';
-            cx.textAlign = 'center';
-            cx.fillText(stxt, W/2, y + 14);
+            cx.fillText('ITEM PEMBELIAN', BODY_PAD, y + 10);
             y += 18;
 
-            y += 10; drawDiv(); y += 10;
+            // Badge tipe produk
+            const bw3 = cx.measureText(tLabel).width + 16;
+            cx.font = `600 9px ${SANS2}`;
+            cx.fillStyle = '#dbeafe';
+            cx.beginPath(); cx.roundRect(BODY_PAD, y + 2, bw3, 16, 5); cx.fill();
+            cx.fillStyle = '#1d4ed8';
+            cx.textAlign = 'left';
+            cx.fillText(tLabel, BODY_PAD + 8, y + 13);
+            y += 22;
 
-            // Pembayaran
-            drawRow('Metode Bayar', metodeBayar2);
-            drawRow('Jumlah Bayar', rp2(jual), true);
-            if (t2.bayar) {
-              drawRow('Uang Bayar', rp2(t2.bayar));
-              const kemVal2 = t2.kembalian || 0;
-              drawRow('Kembalian', (kemVal2 < 0 ? '− ' : '') + rp2(Math.abs(kemVal2)), true, kemVal2 >= 0 ? '#15803d' : '#dc2626');
+            // Nama produk — tengah, besar
+            cx.font = `700 14px ${SANS2}`;
+            cx.fillStyle = COL_TEXT;
+            cx.textAlign = 'center';
+            cx.fillText(nProduk, CW/2, y + 16);
+            y += 22;
+
+            // Qty
+            cx.font = `400 10px ${SANS2}`;
+            cx.fillStyle = COL_SUB;
+            cx.textAlign = 'center';
+            cx.fillText(`Qty: ${t2.qty||1} pcs`, CW/2, y + 12);
+            y += LINE_H;
+
+            // Detail harga
+            if (t2.nominal) drawRowPremium('Nominal', rp2(t2.nominal));
+            if (Number(t2.adminBank||0)>0) drawRowPremium('Admin Bank', rp2(t2.adminBank));
+            if (Number(t2.adminAgen||0)>0) drawRowPremium('Admin Agen', rp2(t2.adminAgen));
+
+            // Keterangan
+            if (t2.note && t2.note.trim()) {
+              const words = t2.note.trim().split(' ');
+              let line = '';
+              let first = true;
+              cx.font = `400 10px ${SANS2}`;
+              cx.fillStyle = '#64748b';
+              cx.textAlign = 'left';
+              words.forEach(w => {
+                const test = line ? line + ' ' + w : w;
+                if (cx.measureText(test).width > CW - BODY_PAD*2 - 40) {
+                  cx.fillText((first ? 'Ket: ' : '      ') + line, BODY_PAD, y + 12);
+                  y += LINE_H; line = w; first = false;
+                } else { line = test; }
+              });
+              if (line) { cx.fillText((first ? 'Ket: ' : '      ') + line, BODY_PAD, y + 12); y += LINE_H; }
             }
 
-            y += 10; drawDiv(); y += 14;
+            y += 10; drawThinDiv(); y += 14;
 
-            // Tagline
-            cx.font = `400 10px ${SANS}`;
+            // ── TOTAL BOX ────────────────────────────────────────────
+            cx.fillStyle = COL_DARK;
+            cx.beginPath();
+            cx.roundRect(BODY_PAD, y, CW - BODY_PAD*2, TOTAL_H - 8, 12);
+            cx.fill();
+            cx.font = `500 10px ${SANS2}`;
+            cx.fillStyle = 'rgba(255,255,255,0.45)';
+            cx.textAlign = 'left';
+            cx.fillText('TOTAL', BODY_PAD + 16, y + 20);
+            cx.font = `700 18px ${SANS2}`;
+            cx.fillStyle = '#ffffff';
+            cx.textAlign = 'right';
+            cx.fillText(rp2(jual), CW - BODY_PAD - 16, y + 28);
+            y += TOTAL_H - 8 + 10;
+
+            // ── STATUS ────────────────────────────────────────────────
+            cx.font = `600 10px ${SANS2}`;
+            cx.fillStyle = isL ? COL_ACCENT : '#ef4444';
+            cx.textAlign = 'center';
+            cx.fillText(isL ? '✓  Pembayaran Diterima' : '⚠  Pembayaran Belum Lunas', CW/2, y + 14);
+            y += STATUS_H;
+
+            drawThinDiv(); y += 10;
+
+            // ── INFO PEMBAYARAN ───────────────────────────────────────
+            drawRowPremium('Metode Bayar', metodeBayar2);
+            drawRowPremium('Jumlah Bayar', rp2(jual), true);
+            if (t2.bayar) {
+              drawRowPremium('Uang Bayar', rp2(t2.bayar));
+              const kemVal2 = t2.kembalian || 0;
+              drawRowPremium('Kembalian', rp2(Math.abs(kemVal2)), true, kemVal2 >= 0 ? '#15803d' : '#dc2626');
+            }
+
+            y += 8; drawThinDiv(); y += 14;
+
+            // ── FOOTER ────────────────────────────────────────────────
+            cx.font = `400 10px ${SANS2}`;
             cx.fillStyle = '#94a3b8';
             cx.textAlign = 'center';
-            cx.fillText(tLine, W/2, y + 10);
-            y += 16;
+            // word-wrap tagline
+            const twWords = tLine.split(' ');
+            let twLine = '';
+            twWords.forEach(w => {
+              const test = twLine ? twLine + ' ' + w : w;
+              if (cx.measureText(test).width > CW - BODY_PAD*2) {
+                cx.fillText(twLine, CW/2, y + 12); y += 14; twLine = w;
+              } else { twLine = test; }
+            });
+            if (twLine) { cx.fillText(twLine, CW/2, y + 12); y += 14; }
 
-            // Watermark (hanya untuk non-Pro)
             if (!opts2.isPro) {
-              cx.font = `400 9px ${SANS}`;
-              cx.fillStyle = '#cbd5e1';
+              cx.font = `400 9px ${SANS2}`;
+              cx.fillStyle = '#d1d5db';
               cx.textAlign = 'center';
-              cx.fillText('powered by KonterPro', W/2, y + 10);
+              cx.fillText('powered by KonterPro', CW/2, y + 10);
             }
 
             return cv;
@@ -15313,7 +15377,7 @@ ${t.bayar ? `
 
           <!-- Header toko -->
           <div style="text-align:center;margin-bottom:12px;padding-top:4px;">
-            ${(() => { const lg = localStorage.getItem('k_struk_logo')||''; return lg ? `<img src="${lg}" style="width:52px;height:52px;object-fit:cover;border-radius:10px;margin:0 auto 6px;display:block;">` : ''; })()}
+            ${(() => { const lg = localStorage.getItem('k_struk_logo')||''; return lg ? `<img src="${lg}" style="width:100px;height:100px;object-fit:cover;border-radius:14px;margin:0 auto 8px;display:block;">` : ''; })()}
             <div style="font-size:19px;font-weight:900;color:#1e293b;letter-spacing:0.5px;">${opts.storeName}</div>
             ${_phone ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Hub: ${_phone}</div>` : ''}
             <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${_tglJamDisp}</div>
