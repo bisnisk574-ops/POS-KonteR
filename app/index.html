@@ -9822,16 +9822,11 @@
 
     // Tutup modal jika klik tepat di overlay (bukan di dalam konten)
     document.addEventListener('click', function(e) {
+      // Tutup modal hanya jika klik TEPAT di overlay (backdrop), bukan di dalam konten
       if (e.target.classList.contains('modal-overlay')) {
         e.target.classList.remove('active');
       }
     });
-    // Cegah klik di dalam modal-content bubble ke overlay (fix: tombol edit member menutup sendiri)
-    document.addEventListener('click', function(e) {
-      if (e.target.closest && e.target.closest('.modal-content')) {
-        e.stopPropagation();
-      }
-    }, true);
 
     // ---- SYNC PILL (legacy stub - digantikan sync engine v3) ----
     function showSync(s) { /* digantikan showSyncToast */ }
@@ -13291,7 +13286,7 @@
 
     function editCustomer(id) {
       const c = db.pelanggan.find(i => i.id === id);
-      if (!c) return;
+      if (!c) { console.warn('[editCustomer] Pelanggan tidak ditemukan:', id); return; }
       document.getElementById('cust-modal-title').innerText = "Edit Pelanggan";
       document.getElementById('c-id').value = c.id;
       document.getElementById('c-nama').value = c.nama||'';
@@ -13303,8 +13298,9 @@
       // Tampilkan ID card
       const cardWrap = document.getElementById('cust-id-card-wrap');
       if (cardWrap) {
+        cardWrap.style.display = '';
         cardWrap.classList.remove('hidden');
-        _populateIdCard(c);
+        try { _populateIdCard(c); } catch(err) { console.warn('[editCustomer] _populateIdCard error:', err); }
       }
       openModal('modal-pelanggan');
     }
@@ -27974,7 +27970,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ------------------------------------------
    SHOW KASIR ID CARD (QR Login)
 ------------------------------------------ */
-let _kasirIdCardActive = null; // {id, nama, username, kodeToko, tokoNama}
+var _kasirIdCardActive = null; // {id, nama, username, kodeToko, tokoNama}
 
 function showKasirIdCard(kasirId, nama, username) {
   const kodeToko = (document.getElementById('kasir-kode-toko')?.textContent || '').trim() || getKodeToko(localStorage.getItem('k_sid') || '');
@@ -28076,14 +28072,14 @@ function shareKasirIdCard() {
 /* ------------------------------------------
    QR PER KASIR (tampil di kelola kasir)
 ------------------------------------------ */
-let _kasirQRData = null; // {kasirId, nama, username, kodeToko}
-let _kasirQRCanvas = null;
+var _kasirQRData = null; // {kasirId, nama, username, kodeToko}
+var _kasirQRCanvas = null;
 
 /* ------------------------------------------
    SCAN QR KASIR DI LOGIN (kamera + galeri)
 ------------------------------------------ */
-let _kasirScanStream = null;
-let _kasirScanInterval = null;
+var _kasirScanStream = null;
+var _kasirScanInterval = null;
 
 function startScanQRKasir() {
   const area = document.getElementById('kasir-qr-scan-area');
@@ -28224,8 +28220,8 @@ function _applyKasirQRData(raw) {
    QR KARTU MEMBER - tampil dari menu Pelanggan
    Payload: storeId::memberId  (sama dengan cek-poin.html)
 ------------------------------------------ */
-let _mqrData = null; // { id, nama, phone, poin, storeId }
-let _mqrCanvas = null;
+var _mqrData = null; // { id, nama, phone, poin, storeId }
+var _mqrCanvas = null;
 
 function showMemberQR(elOrId, _unused, _unused2) {
   // Support dipanggil dengan element (data-attribute) atau langsung string id
@@ -28376,8 +28372,8 @@ function kirimWAMember() {
 }
 
 /* ------------------- ID CARD FUNCTIONS ------------------- */
-let _idCardData = null;
-let _idCardCanvasCache = null; // Cache pre-render untuk unduh instan
+var _idCardData = null;
+var _idCardCanvasCache = null; // Cache pre-render untuk unduh instan
 
 function _populateIdCard(c) {
   const storeId = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
@@ -28429,7 +28425,7 @@ function _populateIdCard(c) {
   }
 }
 
-let _preRenderTimer = null;
+var _preRenderTimer = null;
 function _preRenderIdCard() {
   if (typeof html2canvas === 'undefined') return;
   // Batalkan jadwal pre-render sebelumnya jika ada
