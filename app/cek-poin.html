@@ -823,51 +823,68 @@ async function savePelangganList(list){
   allMembers=list;
 }
 
-async function loadPoinCfg(){
+/* ═══ POIN CFG HELPERS (global) ═══ */
+function _isObj(x){ return x !== null && typeof x === 'object' && !Array.isArray(x); }
+function _extractPoinCfgFrom(d){
+  if(!d) return null;
+  if(_isObj(d.data) && _isObj(d.data.poinConfig)) return d.data.poinConfig;
+  if(_isObj(d.poinConfig)) return d.poinConfig;
+  if(_isObj(d.db) && _isObj(d.db.poinConfig)) return d.db.poinConfig;
+  if(_isObj(d.settingPoin)) return d.settingPoin;
+  if(_isObj(d.data) && _isObj(d.data.settingPoin)) return d.data.settingPoin;
+  if(_isObj(d.db) && _isObj(d.db.settingPoin)) return d.db.settingPoin;
+  const h = (_isObj(d.data)&&Array.isArray(d.data.daftarHadiah)&&d.data.daftarHadiah)
+         || (Array.isArray(d.daftarHadiah)&&d.daftarHadiah)
+         || (_isObj(d.db)&&Array.isArray(d.db.daftarHadiah)&&d.db.daftarHadiah);
+  if(h) return {daftarHadiah: h};
+  return null;
+}
+
+async function loadPoinCfg(inlineData){
   const db=window._db;
-  // Ekstrak poinConfig dari berbagai kemungkinan struktur data Firestore
-  // index.html menyimpan poinConfig di: user_stores/{id}.data.poinConfig
-  // Format lama menyimpan di: stores/{id}.poinConfig atau root field lainnya
-  function _extractPoinCfg(d){
-    if(!d) return {};
-    // Format index.html (user_stores): data.poinConfig
-    if(d.data && d.data.poinConfig && typeof d.data.poinConfig === 'object') return d.data.poinConfig;
-    // Root poinConfig (format lama / stores collection)
-    if(d.poinConfig && typeof d.poinConfig === 'object') return d.poinConfig;
-    // db.poinConfig
-    if(d.db && d.db.poinConfig && typeof d.db.poinConfig === 'object') return d.db.poinConfig;
-    // settingPoin variants
-    if(d.settingPoin && typeof d.settingPoin === 'object') return d.settingPoin;
-    if(d.data && d.data.settingPoin && typeof d.data.settingPoin === 'object') return d.data.settingPoin;
-    if(d.db && d.db.settingPoin && typeof d.db.settingPoin === 'object') return d.db.settingPoin;
-    // Coba ambil daftarHadiah langsung dari berbagai path
-    const hadiah = (d.data&&d.data.daftarHadiah) || (d.daftarHadiah) || (d.db&&d.db.daftarHadiah);
-    if(hadiah && Array.isArray(hadiah)) return {daftarHadiah: hadiah};
-    return {};
+  // Jika ada data inline (dari tokoFound), coba dulu sebelum fetch Firestore
+  if(inlineData){
+    const r=_extractPoinCfgFrom(inlineData);
+    if(r && Array.isArray(r.daftarHadiah) && r.daftarHadiah.length>0){
+      poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);
+      console.log('[loadPoinCfg] OK dari inlineData, hadiah:',r.daftarHadiah.length);
+      return;
+    }
   }
-  // Helper: cek apakah config punya daftarHadiah yang valid
-  function _hasHadiah(cfg){ return cfg && Array.isArray(cfg.daftarHadiah) && cfg.daftarHadiah.length > 0; }
 
-  let bestCfg = {};
+  function _isObj(x){ return x !== null && typeof x === 'object' && !Array.isArray(x); }
+  function _extractPoinCfg(d){ return _extractPoinCfgFrom(d); }
+  function _hasHadiah(cfg){
+    return _isObj(cfg) && Array.isArray(cfg.daftarHadiah) && cfg.daftarHadiah.length > 0;
+  }
 
-  // 1. Cek user_stores dulu (format index.html — poinConfig ada di .data.poinConfig)
-  let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  const DEFAULT = {nilaiTukar:1000, daftarHadiah:[]};
+  let bestCfg = null;
+
+  // Cek user_stores (format index.html)
+  let doc = await db.collection('user_stores').doc(storeId).get().catch(()=>null);
   if(doc && doc.exists){
-    const r=_extractPoinCfg(doc.data());
-    if(_hasHadiah(r)){ poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r); return; }
-    if(Object.keys(r).length) bestCfg=r;
+    const raw = doc.data();
+    console.log('[loadPoinCfg] user_stores raw keys:', Object.keys(raw||{}));
+    console.log('[loadPoinCfg] data.poinConfig:', raw&&raw.data&&raw.data.poinConfig);
+    const r = _extractPoinCfg(raw);
+    console.log('[loadPoinCfg] extracted:', r);
+    if(_hasHadiah(r)){ poinCfg=Object.assign({},DEFAULT,r); console.log('[loadPoinCfg] OK dari user_stores, hadiah:',r.daftarHadiah.length); return; }
+    if(_isObj(r)) bestCfg=r;
   }
 
-  // 2. Cek stores (format lama)
-  doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  // Cek stores (format lama)
+  doc = await db.collection('stores').doc(storeId).get().catch(()=>null);
   if(doc && doc.exists){
-    const r=_extractPoinCfg(doc.data());
-    if(_hasHadiah(r)){ poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r); return; }
-    if(Object.keys(r).length && !Object.keys(bestCfg).length) bestCfg=r;
+    const raw = doc.data();
+    console.log('[loadPoinCfg] stores raw keys:', Object.keys(raw||{}));
+    const r = _extractPoinCfg(raw);
+    if(_hasHadiah(r)){ poinCfg=Object.assign({},DEFAULT,r); console.log('[loadPoinCfg] OK dari stores, hadiah:',r.daftarHadiah.length); return; }
+    if(_isObj(r) && !bestCfg) bestCfg=r;
   }
 
-  // Gunakan config terbaik yang ditemukan (meski tanpa hadiah)
-  poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},bestCfg);
+  poinCfg = Object.assign({}, DEFAULT, bestCfg||{});
+  console.log('[loadPoinCfg] final poinCfg:', JSON.stringify(poinCfg));
 }
 
 /* ═══════════════════ FLOW: PELANGGAN ═══════════════════ */
@@ -1071,7 +1088,7 @@ async function handleHomeScanResult(text){
 
     storeId=resolvedStoreId; tokoData=tokoFound;
     sessionStorage.setItem('ku_store_id',storeId);
-    await loadPoinCfg();
+    await loadPoinCfg(tokoData);
 
     let allList=await getPelangganList().catch(()=>[]);
     if(!allList.length) allList=_normPelanggan(_extractPelanggan(tokoFound));
@@ -1170,7 +1187,7 @@ async function handleHomeScanResult(text){
   storeId=resolvedStoreId;
   tokoData=tokoFound;
   sessionStorage.setItem('ku_store_id',storeId);
-  await loadPoinCfg();
+  await loadPoinCfg(tokoData);
 
   // Selalu fetch fresh dari Firestore agar data terbaru (inline doc bisa outdated)
   let allList = await getPelangganList().catch(()=>[]);
@@ -1263,7 +1280,7 @@ async function loginDenganMemberId(){
     }
   }
   pelanggan=found;
-  await loadPoinCfg();
+  await loadPoinCfg(tokoData);
   showDashboardPelanggan();
 }
 
@@ -1299,7 +1316,7 @@ async function loginPelanggan(){
     }
   }
   pelanggan=found;
-  await loadPoinCfg();
+  await loadPoinCfg(tokoData);
   showDashboardPelanggan();
 }
 
@@ -1329,20 +1346,28 @@ function showDashboardPelanggan(){
   document.getElementById('d-diskon-nilai').textContent=poin>=100?`Nilai diskon: Rp ${fmt(nilaiDiskon)}`:'Poin belum cukup (min. 100)';
   const btnDiskon=document.getElementById('btn-req-diskon');
   if(poin<100){btnDiskon.className='btn-sm off';btnDiskon.onclick=null;}
-  // Hadiah
-  const hadiah=(poinCfg.daftarHadiah||[]).filter(h=>h.nama&&h.poin>0);
-  document.getElementById('d-hadiah-wrap').style.display='block';
-  if(hadiah.length){
-    document.getElementById('d-hadiah-list').innerHTML=hadiah.map((h,i)=>{
-      const bisa=poin>=h.poin;
-      return`<div class="hadiah-card ${bisa?'bisa':''}">
-        <div class="hadiah-ico">🎁</div>
-        <div style="flex:1"><div class="hadiah-nm">${h.nama}</div><div class="hadiah-pt">${fmt(h.poin)} poin</div>${!bisa?`<div class="hadiah-less">Kurang ${fmt(h.poin-poin)} poin</div>`:''}</div>
-        <button class="btn-sm ${bisa?'on':'off'}" ${bisa?`onclick="requestTukar('hadiah',${i})"`:' disabled'}>Request</button>
-      </div>`;
-    }).join('');
-  } else {
-    document.getElementById('d-hadiah-list').innerHTML='<div class="empty-state"><div class="ico">🎁</div><p>Belum ada hadiah yang tersedia.<br>Kasir bisa menambahkannya di Pengaturan Poin.</p></div>';
+  // Hadiah - render function (bisa dipanggil ulang)
+  function _renderHadiah(){
+    const hadiah=(poinCfg.daftarHadiah||[]).filter(h=>h.nama&&h.poin>0);
+    console.log('[renderHadiah] poinCfg.daftarHadiah:', poinCfg.daftarHadiah, 'filtered:', hadiah.length);
+    document.getElementById('d-hadiah-wrap').style.display='block';
+    if(hadiah.length){
+      document.getElementById('d-hadiah-list').innerHTML=hadiah.map((h,i)=>{
+        const bisa=poin>=h.poin;
+        return`<div class="hadiah-card ${bisa?'bisa':''}">
+          <div class="hadiah-ico">🎁</div>
+          <div style="flex:1"><div class="hadiah-nm">${h.nama}</div><div class="hadiah-pt">${fmt(h.poin)} poin</div>${!bisa?`<div class="hadiah-less">Kurang ${fmt(h.poin-poin)} poin</div>`:''}</div>
+          <button class="btn-sm ${bisa?'on':'off'}" ${bisa?`onclick="requestTukar('hadiah',${i})"`:' disabled'}>Request</button>
+        </div>`;
+      }).join('');
+    } else {
+      document.getElementById('d-hadiah-list').innerHTML='<div class="empty-state"><div class="ico">🎁</div><p>Belum ada hadiah yang tersedia.<br>Kasir bisa menambahkannya di Pengaturan Poin.</p></div>';
+    }
+  }
+  _renderHadiah();
+  // Jika hadiah masih kosong, coba reload poinCfg sekali lagi (async race condition)
+  if(!(poinCfg.daftarHadiah||[]).filter(h=>h.nama&&h.poin>0).length){
+    loadPoinCfg(tokoData).then(()=>{ _renderHadiah(); });
   }
   // Riwayat
   const rw=(pelanggan.riwayatPoin||pelanggan.poinHistory||[]).slice(-20).reverse();
@@ -1525,7 +1550,7 @@ async function loginAdmin(){
     setBtnBack(btn,'<i class="fas fa-shield-alt"></i> Masuk sebagai Admin');
     if(!tokoData){swalErr('Data toko tidak ditemukan di database.');return;}
     adminData=tokoData;
-    await loadPoinCfg();
+    await loadPoinCfg(tokoData);
     await _masukDashboardAdmin();
   }catch(e){
     setBtnBack(btn,'<i class="fas fa-shield-alt"></i> Masuk sebagai Admin');
@@ -1594,7 +1619,7 @@ async function loginKasir(){
 
     adminData={...kasir,isKasir:true,anonUid};
     setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');
-    await loadPoinCfg();
+    await loadPoinCfg(tokoData);
     await _masukDashboardAdmin();
   }catch(e){
     setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');
