@@ -9820,12 +9820,18 @@
       if (overlay) overlay.classList.remove('active');
     }
 
-    // Tutup modal jika klik di luar konten
+    // Tutup modal jika klik tepat di overlay (bukan di dalam konten)
     document.addEventListener('click', function(e) {
       if (e.target.classList.contains('modal-overlay')) {
         e.target.classList.remove('active');
       }
     });
+    // Cegah klik di dalam modal-content bubble ke overlay (fix: tombol edit member menutup sendiri)
+    document.addEventListener('click', function(e) {
+      if (e.target.closest && e.target.closest('.modal-content')) {
+        e.stopPropagation();
+      }
+    }, true);
 
     // ---- SYNC PILL (legacy stub - digantikan sync engine v3) ----
     function showSync(s) { /* digantikan showSyncToast */ }
@@ -16599,9 +16605,8 @@ ${t.bayar ? `
 
     function editCustomerFromSidebar(id, evt) {
       if (evt) { evt.stopPropagation(); evt.preventDefault(); }
-      // Tutup sidebar dulu, lalu buka modal edit dengan sedikit jeda
       closeModal('modal-sidebar-pelanggan');
-      setTimeout(() => editCustomer(id), 150);
+      setTimeout(() => editCustomer(id), 200);
     }
 
 
@@ -29084,6 +29089,7 @@ function kirimWAStruk(btn) {
       }, 2000);
     }
   }, 50);
+}
 
 /* ═══════════════════════════════════════════════════════
    NOTIFIKASI REAL-TIME: TUKAR POIN PELANGGAN
