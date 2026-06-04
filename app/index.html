@@ -14477,6 +14477,8 @@
             H += 16;                           // qty
             if (t2.nomor)   H += 16;
             if (t2.nominal) H += 16;
+            if (Number(t2.adminBank||0) > 0) H += 16;
+            if (Number(t2.adminAgen||0) > 0) H += 16;
             H += 10 + 1 + 16;                  // gap + divider + gap
             H += 34 + 18;                      // total box + status
             H += 10 + 1 + 10;
@@ -14591,6 +14593,8 @@
             y += 16;
 
             if (t2.nominal) { cx.font=`400 10px ${SANS}`; cx.fillStyle='#94a3b8'; cx.textAlign='left'; cx.fillText('Nominal: '+rp2(t2.nominal), PAD, y+12); y+=16; }
+            if (Number(t2.adminBank||0) > 0) { cx.font=`400 10px ${SANS}`; cx.fillStyle='#94a3b8'; cx.textAlign='left'; cx.fillText('Admin Bank: '+rp2(t2.adminBank), PAD, y+12); y+=16; }
+            if (Number(t2.adminAgen||0) > 0) { cx.font=`400 10px ${SANS}`; cx.fillStyle='#94a3b8'; cx.textAlign='left'; cx.fillText('Admin Agen: '+rp2(t2.adminAgen), PAD, y+12); y+=16; }
 
             // Keterangan / nomor HP / SN langsung di bawah produk
             if (t2.note && t2.note.trim()) {
@@ -15183,6 +15187,7 @@ ${t.bayar ? `
       const isPro     = _isPlanPro();
 
       const opts = { storeName, kasirName, alamat, tagline, autoCut, openDrawer, isPro };
+      opts.logo = localStorage.getItem('k_struk_logo') || '';
 
       // -- Konversi logo base64 → ESC/POS raster bitmap ------------
       const logoB64Raw = localStorage.getItem('k_struk_logo') || '';
@@ -15279,7 +15284,8 @@ ${t.bayar ? `
           </div>
           <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:3px;">
             <span>Admin Bank</span><span>${_rp(t.adminBank)}</span>
-          </div>`;
+          </div>
+          ${Number(t.adminAgen||0) > 0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:3px;"><span>Admin Agen</span><span>${_rp(t.adminAgen)}</span></div>` : ''}`;
       } else if (t.tipe === 'fisik') {
         const _hDasar = Number(t.jual)+(Number(t.diskon)||0)-(Number(t.biayaTambahan)||0);
         _hargaDetailHTML = `
@@ -15307,6 +15313,7 @@ ${t.bayar ? `
 
           <!-- Header toko -->
           <div style="text-align:center;margin-bottom:12px;padding-top:4px;">
+            ${(() => { const lg = localStorage.getItem('k_struk_logo')||''; return lg ? `<img src="${lg}" style="width:52px;height:52px;object-fit:cover;border-radius:10px;margin:0 auto 6px;display:block;">` : ''; })()}
             <div style="font-size:19px;font-weight:900;color:#1e293b;letter-spacing:0.5px;">${opts.storeName}</div>
             ${_phone ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Hub: ${_phone}</div>` : ''}
             <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${_tglJamDisp}</div>
@@ -15440,7 +15447,10 @@ ${t.bayar ? `
       }
 
       // Lanjut ke pilih metode cetak thermal
-      // Deteksi Android
+      const isAndroid = /android/i.test(navigator.userAgent);
+      const hasBT     = !!navigator.bluetooth;
+      const hasUSB    = !!navigator.usb;
+      const methods   = [];
       methods.push({ key:'browser',  icon:'🌐', label:'Print Browser (window.print)' });
       if (isAndroid) {
         methods.push({ key:'rawbt',    icon:'📱', label:'RawBT App (Android)' });
