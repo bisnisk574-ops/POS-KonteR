@@ -7603,7 +7603,7 @@
             <div class="shortcut-arrow" style="color:#34d399;"><i class="fas fa-arrow-right" style="font-size:9px;"></i></div>
           </button>
           <!-- Supplier -->
-          <button onclick="openSidebarMenu('supplier')"
+          <button id="shortcut-supplier-btn" onclick="openSidebarMenu('supplier')"
             class="shortcut-card active:scale-95 transition-all cursor-pointer text-left w-full border-0"
             style="border-color:rgba(234,88,12,0.25)!important;grid-column:span 2;">
             <div class="shortcut-card-before-orange" style="position:absolute;top:0;left:0;right:0;height:1.5px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,#f97316,transparent);opacity:0.6;"></div>
@@ -12021,6 +12021,13 @@
 
     // ---- DASHBOARD ----
     function renderDashboard() {
+      // Sembunyikan Supplier & Restok untuk kasir
+      const _isKasir = localStorage.getItem('k_kasir_mode') === 'true';
+      const _supBtn  = document.getElementById('shortcut-supplier-btn');
+      const _dsnSup  = document.getElementById('dsn-supplier');
+      if (_supBtn) _supBtn.style.display = _isKasir ? 'none' : '';
+      if (_dsnSup) _dsnSup.style.display = _isKasir ? 'none' : '';
+
       const list = document.getElementById('recent-list');
       const filtered = getFilteredTransaksi();
       const totalItems = filtered.length;
