@@ -1059,17 +1059,21 @@ async function handleHomeScanResult(text){
   sessionStorage.setItem('ku_store_id',storeId);
   await loadPoinCfg();
 
-  // Cari member di daftar pelanggan toko
-  // Pertama coba dari data inline dokumen
-  let allList=_normPelanggan(_extractPelanggan(tokoFound));
-  // Jika kosong, fetch fresh dari Firestore (data pelanggan bisa di-store terpisah)
-  if(!allList.length){
-    allList = await getPelangganList().catch(()=>[]);
-  }
-  let found=allList.find(p=>
-    (p.id||'').trim()===qrMemberId ||
-    (p.hp||'').replace(/\D/g,'')===qrMemberId.replace(/\D/g,'') ||
-    (p.phone||'').replace(/\D/g,'')===qrMemberId.replace(/\D/g,'')
+  // Selalu fetch fresh dari Firestore agar data terbaru (inline doc bisa outdated)
+  let allList = await getPelangganList().catch(()=>[]);
+  // Fallback ke data inline jika fetch gagal / kosong
+  if(!allList.length) allList = _normPelanggan(_extractPelanggan(tokoFound));
+
+  // Normalisasi qrMemberId: hapus spasi & lowercase untuk perbandingan
+  const _norm = s => (s||'').replace(/\s/g,'').toLowerCase();
+  const _normPhone = s => (s||'').replace(/\D/g,'');
+
+  const found = allList.find(p =>
+    _norm(p.id)    === _norm(qrMemberId) ||
+    _norm(p.hp)    === _norm(qrMemberId) ||
+    _norm(p.phone) === _norm(qrMemberId) ||
+    _normPhone(p.hp)    === _normPhone(qrMemberId) ||
+    _normPhone(p.phone) === _normPhone(qrMemberId)
   );
   Swal.close();
 
@@ -1123,11 +1127,16 @@ async function loginDenganMemberId(){
   if(!list||!list.length){swalErr('Data pelanggan toko tidak ditemukan. Hubungi kasir.');return;}
 
   const mid=scannedMemberId;
+  const _norm2 = s => (s||'').replace(/\s/g,'').toLowerCase();
+  const _normP2 = s => (s||'').replace(/\D/g,'');
   const found=list.find(p=>
-    (p.id||'').trim()===mid ||
-    (p.phone||'').replace(/\D/g,'')===mid.replace(/\D/g,'') ||
-    (p.hp||'').replace(/\D/g,'')===mid.replace(/\D/g,'') ||
-    (p.noHp||'').replace(/\D/g,'')===mid.replace(/\D/g,'')
+    _norm2(p.id)    === _norm2(mid) ||
+    _norm2(p.hp)    === _norm2(mid) ||
+    _norm2(p.phone) === _norm2(mid) ||
+    _norm2(p.noHp)  === _norm2(mid) ||
+    _normP2(p.hp)    === _normP2(mid) ||
+    _normP2(p.phone) === _normP2(mid) ||
+    _normP2(p.noHp)  === _normP2(mid)
   );
   if(!found){
     Swal.fire({icon:'warning',title:'Member Tidak Ditemukan',html:'QR Code tidak dikenali.<br><span style="font-size:12px;color:#94a3b8">Pastikan kartu member dari toko yang benar.</span>',customClass:{popup:'swal2-ku'}});
