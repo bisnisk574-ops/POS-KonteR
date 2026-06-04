@@ -9157,7 +9157,7 @@
           </div>
           <!-- END KARTU MEMBER -->
 
-          <div id="cust-edit-actions" class="hidden grid grid-cols-2 gap-3">
+          <div id="cust-edit-actions" style="display:none;grid-template-columns:1fr 1fr;gap:12px;">
             <button onclick="deleteCustomer()" class="py-4 bg-red-50 text-red-600 rounded-2xl font-black cursor-pointer border-0">HAPUS</button>
             <button onclick="saveCustomer()" class="py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">UPDATE</button>
           </div>
@@ -13278,8 +13278,8 @@
       document.getElementById('c-phone').value = "";
       const bd = document.getElementById('c-birthday'); if (bd) bd.value = "";
       const cp = document.getElementById('c-pin'); if (cp) cp.value = "";
-      document.getElementById('cust-edit-actions').classList.add('hidden');
-      document.getElementById('cust-save-btn').classList.remove('hidden');
+      document.getElementById('cust-edit-actions').style.display = 'none';
+      document.getElementById('cust-save-btn').style.display = '';
       openModal('modal-pelanggan');
     }
 
@@ -13292,8 +13292,8 @@
       document.getElementById('c-phone').value = c.phone||'';
       const bd = document.getElementById('c-birthday'); if (bd) bd.value = c.birthday||'';
       const cp = document.getElementById('c-pin'); if (cp) cp.value = c.pin||'';
-      document.getElementById('cust-edit-actions').classList.remove('hidden');
-      document.getElementById('cust-save-btn').classList.add('hidden');
+      document.getElementById('cust-edit-actions').style.display = 'grid';
+      document.getElementById('cust-save-btn').style.display = 'none';
       // Tampilkan ID card
       const cardWrap = document.getElementById('cust-id-card-wrap');
       if (cardWrap) {
@@ -13312,8 +13312,8 @@
       document.getElementById('c-phone').value = "";
       const bd = document.getElementById('c-birthday'); if (bd) bd.value = "";
       const cp = document.getElementById('c-pin'); if (cp) cp.value = "";
-      document.getElementById('cust-edit-actions').classList.add('hidden');
-      document.getElementById('cust-save-btn').classList.remove('hidden');
+      document.getElementById('cust-edit-actions').style.display = 'none';
+      document.getElementById('cust-save-btn').style.display = '';
       const cardWrap = document.getElementById('cust-id-card-wrap');
       if (cardWrap) cardWrap.classList.add('hidden');
       openModal('modal-pelanggan');
@@ -16599,10 +16599,9 @@ ${t.bayar ? `
 
     function editCustomerFromSidebar(id, evt) {
       if (evt) { evt.stopPropagation(); evt.preventDefault(); }
-      // Langsung buka edit tanpa tunggu animasi close → tidak ada lag
-      editCustomer(id);
-      // Tutup sidebar di background setelah edit modal terbuka
-      requestAnimationFrame(() => closeModal('modal-sidebar-pelanggan'));
+      // Tutup sidebar dulu, lalu buka modal edit dengan sedikit jeda
+      closeModal('modal-sidebar-pelanggan');
+      setTimeout(() => editCustomer(id), 150);
     }
 
 
