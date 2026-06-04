@@ -840,6 +840,9 @@ async function loadPoinCfg(){
     if(d.settingPoin && typeof d.settingPoin === 'object') return d.settingPoin;
     if(d.data && d.data.settingPoin && typeof d.data.settingPoin === 'object') return d.data.settingPoin;
     if(d.db && d.db.settingPoin && typeof d.db.settingPoin === 'object') return d.db.settingPoin;
+    // Coba ambil daftarHadiah langsung dari berbagai path
+    const hadiah = (d.data&&d.data.daftarHadiah) || (d.daftarHadiah) || (d.db&&d.db.daftarHadiah);
+    if(hadiah && Array.isArray(hadiah)) return {daftarHadiah: hadiah};
     return {};
   }
   // Helper: cek apakah config punya daftarHadiah yang valid
@@ -1328,7 +1331,7 @@ function showDashboardPelanggan(){
   if(poin<100){btnDiskon.className='btn-sm off';btnDiskon.onclick=null;}
   // Hadiah
   const hadiah=(poinCfg.daftarHadiah||[]).filter(h=>h.nama&&h.poin>0);
-  document.getElementById('d-hadiah-wrap').style.display='';
+  document.getElementById('d-hadiah-wrap').style.display='block';
   if(hadiah.length){
     document.getElementById('d-hadiah-list').innerHTML=hadiah.map((h,i)=>{
       const bisa=poin>=h.poin;
