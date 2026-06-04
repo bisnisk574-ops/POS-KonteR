@@ -4878,7 +4878,7 @@
               <p class="text-[12px] font-black text-slate-800">Kelola Kasir</p>
               <p class="text-[9px] text-slate-400 font-bold">Tambah & atur akun kasir</p>
             </div>
-            <span id="kelola-kasir-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(5,150,105,0.25);display:none;">PRO ⭐</span>
+            <span id="kelola-kasir-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(5,150,105,0.25);display:none;cursor:pointer;" onclick="event.stopPropagation();showUpgradeModal('kelola_kasir','pro')">PRO ⭐</span>
             <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
           </button>
 
@@ -4891,7 +4891,7 @@
               <p class="text-[12px] font-black text-slate-800">Absensi Kasir</p>
               <p class="text-[9px] text-slate-400 font-bold">Laporan shift & saldo kas</p>
             </div>
-            <span id="absensi-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(5,150,105,0.25);display:none;">PRO ⭐</span>
+            <span id="absensi-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(5,150,105,0.25);display:none;cursor:pointer;" onclick="event.stopPropagation();showUpgradeModal('absensi','pro')">PRO ⭐</span>
             <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
           </button>
 
@@ -4916,7 +4916,7 @@
               <p class="text-[12px] font-black text-slate-800">Poin Pelanggan</p>
               <p class="text-[9px] text-slate-400 font-bold">Konfigurasi reward & sistem poin</p>
             </div>
-            <span id="poin-pelanggan-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(5,150,105,0.25);display:none;">PRO ⭐</span>
+            <span id="poin-pelanggan-plan-badge" class="px-1.5 py-0.5 rounded-md font-black mr-1" style="font-size:7px;background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(5,150,105,0.25);display:none;cursor:pointer;" onclick="event.stopPropagation();showUpgradeModal('poin_pelanggan','pro')">PRO ⭐</span>
             <i class="fas fa-chevron-right text-slate-300 text-[9px]"></i>
           </button>
 
@@ -8673,7 +8673,7 @@
               <div>
                 <p class="font-black text-white flex items-center gap-1.5" style="font-size:11px;">
                   Pantau Stok Realtime
-                  <span id="pantau-lock-badge" class="px-1.5 py-0.5 rounded-md font-black" style="font-size:7px;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25);display:none;">PRO</span>
+                  <span id="pantau-lock-badge" class="px-1.5 py-0.5 rounded-md font-black" style="font-size:7px;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25);display:none;cursor:pointer;" onclick="event.stopPropagation();showUpgradeModal('pantau_stok','pro')">PRO</span>
                 </p>
                 <p class="text-amber-400/70 font-bold" style="font-size:9px;" id="pantau-status-txt">Tap untuk lihat status stok</p>
               </div>
@@ -9098,9 +9098,13 @@
                     <p style="font-size:8px;font-weight:900;color:#fff;letter-spacing:0.02em;word-break:break-all;margin:1px 0 0;line-height:1.2;" id="card-member-id">—</p>
                   </div>
                 </div>
-                <!-- Kolom kanan: QR — bingkai elegan -->
-                <div id="card-qr-mini-wrap" style="width:112px;height:112px;background:#fff;border-radius:14px;padding:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center;box-shadow:0 4px 20px rgba(0,0,0,0.25),0 0 0 1px rgba(255,255,255,0.18);">
-                  <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:14px;"></i>
+                <!-- Kolom kanan: QR + label SCAN -->
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;">
+                  <div style="font-size:5px;font-weight:900;color:rgba(255,255,255,0.5);letter-spacing:0.12em;text-transform:uppercase;">▼ SCAN</div>
+                  <div id="card-qr-mini-wrap" style="width:80px;height:80px;background:#fff;border-radius:12px;padding:4px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 14px rgba(0,0,0,0.22),0 0 0 1.5px rgba(255,255,255,0.25);position:relative;">
+                    <i class="fas fa-spinner fa-spin" style="color:#7c3aed;font-size:12px;"></i>
+                  </div>
+                  <div style="font-size:5px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:0.05em;">Member QR</div>
                 </div>
               </div>
             </div>
@@ -10060,6 +10064,7 @@
       cloud_sync:           'Multi-Device Cloud Sync',
       monitor_cabang:       'Monitor Cabang Real-Time',
       notif_pwa:            'Notifikasi PWA',
+      multi_toko:           'Tambah Toko / Cabang',
     };
 
     function showUpgradeModal(featureKey, minPlan, onUnlock) {
@@ -16557,8 +16562,10 @@ ${t.bayar ? `
 
     function editCustomerFromSidebar(id, evt) {
       if (evt) { evt.stopPropagation(); evt.preventDefault(); }
-      closeModal('modal-sidebar-pelanggan');
-      setTimeout(() => editCustomer(id), 200);
+      // Langsung buka edit tanpa tunggu animasi close → tidak ada lag
+      editCustomer(id);
+      // Tutup sidebar di background setelah edit modal terbuka
+      requestAnimationFrame(() => closeModal('modal-sidebar-pelanggan'));
     }
 
 
@@ -17406,8 +17413,9 @@ ${t.bayar ? `
           if (!lockDot) {
             lockDot = document.createElement('span');
             lockDot.className = 'plan-lock-dot';
-            lockDot.style.cssText = 'position:absolute;top:2px;right:4px;width:12px;height:12px;background:#ef4444;border-radius:50%;border:1.5px solid white;display:flex;align-items:center;justify-content:center;z-index:5;';
+            lockDot.style.cssText = 'position:absolute;top:2px;right:4px;width:12px;height:12px;background:#ef4444;border-radius:50%;border:1.5px solid white;display:flex;align-items:center;justify-content:center;z-index:5;cursor:pointer;';
             lockDot.innerHTML = '<i class="fas fa-lock" style="font-size:5px;color:white;"></i>';
+            lockDot.onclick = function(e) { e.stopPropagation(); showUpgradeModal('hutang','basic'); };
             navHutang.style.position = 'relative';
             navHutang.appendChild(lockDot);
           }
@@ -17428,6 +17436,7 @@ ${t.bayar ? `
             lockLayer.className = 'pdf-lock-layer';
             lockLayer.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;cursor:pointer;';
             lockLayer.innerHTML = '<i class="fas fa-lock" style="color:white;font-size:12px;"></i><span style="color:white;font-size:10px;font-weight:900;">Perlu Paket PRO ⭐</span>';
+            lockLayer.onclick = function(e) { e.stopPropagation(); showUpgradeModal('ekspor_pdf','pro'); };
             btnPdf.appendChild(lockLayer);
           }
         } else {
@@ -17790,8 +17799,12 @@ ${t.bayar ? `
         const next = (plan === 'trial' || plan === 'basic') ? 'pro' : 'unlimited';
         hintEl.textContent = '🔒 Upgrade ke ' + next.toUpperCase() + ' untuk ' + PLAN_STORE_LIMIT[next] + ' toko';
         hintEl.style.color = '#f59e0b';
+        hintEl.style.cursor = 'pointer';
+        hintEl.onclick = function() { showUpgradeModal('multi_toko', next); };
       } else {
         hintEl.textContent = '';
+        hintEl.style.cursor = '';
+        hintEl.onclick = null;
       }
     }
 
@@ -18879,12 +18892,35 @@ ${t.bayar ? `
     const isKasir = localStorage.getItem('k_kasir_mode') === 'true';
     if (!isKasir) return;
 
+    // Cek plan dulu — jika fitur absensi terkunci (butuh Pro), jangan tampilkan notif
+    try {
+      const _planRankNow = await _getPlanRankLive();
+      if (_planRankNow < 2) return; // Plan tidak support absensi, skip notif
+    } catch(_pe) { /* jika gagal cek plan, lanjutkan saja */ }
+
     const kasirNama = localStorage.getItem('k_kasir_nama') || 'Kasir';
     const ownerUid  = localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid');
     const today     = new Date().toISOString().split('T')[0];
 
+    // Bersihkan flag absensi dari hari-hari lama agar tidak memblokir hari baru
+    try {
+      const _keysToDelete = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const _k = localStorage.key(i);
+        if (_k && _k.startsWith('k_absen_today_')) {
+          const _keyDate = _k.slice(-10);
+          if (_keyDate.match(/^\d{4}-\d{2}-\d{2}$/) && _keyDate !== today) {
+            _keysToDelete.push(_k);
+          }
+        }
+      }
+      _keysToDelete.forEach(_k => localStorage.removeItem(_k));
+    } catch(_e) { /* skip */ }
+
     // Cek flag lokal dulu (lebih cepat)
-    const localKey = 'k_absen_today_' + (localStorage.getItem('k_kasir_id') || '') + '_' + today;
+    // Gunakan kasirNama sebagai fallback jika kasir_id kosong
+    const _kasirIdKey = localStorage.getItem('k_kasir_id') || kasirNama || '';
+    const localKey = 'k_absen_today_' + _kasirIdKey + '_' + today;
     if (localStorage.getItem(localKey) === 'true') return; // sudah absensi hari ini
 
     // Cek ke Firestore
@@ -18944,7 +18980,12 @@ ${t.bayar ? `
   }
 
   // --- BANNER ABSENSI PERSISTENT (muncul jika kasir belum absensi) ---
-  function _tampilBannerAbsensi(kasirNama, localKey) {
+  async function _tampilBannerAbsensi(kasirNama, localKey) {
+    // Cek plan dulu — jika absensi terkunci, jangan tampilkan banner
+    try {
+      const _pr = await _getPlanRankLive();
+      if (_pr < 2) return;
+    } catch(_pe) { /* lanjutkan */ }
     // Jangan buat duplikat
     if (document.getElementById('kasir-absensi-banner')) return;
 
@@ -19180,9 +19221,11 @@ ${t.bayar ? `
       // Sudah login sebagai kasir sebelumnya, terapkan batasan setelah app load
       setTimeout(applyKasirRestrictions, 1500);
       // Cek absensi hari ini setelah app siap
+      // Delay 5 detik agar Firebase & data sudah siap, dan tidak bentrok dengan Swal lain
       setTimeout(function() {
-        if (typeof _cekAbsensiKasirHariIni === 'function') _cekAbsensiKasirHariIni();
-      }, 3000);
+        const _fn = window._cekAbsensiKasirHariIni || (typeof _cekAbsensiKasirHariIni === 'function' ? _cekAbsensiKasirHariIni : null);
+        if (_fn) _fn();
+      }, 5000);
     } else if (localStorage.getItem('k_logged') === 'true') {
       // Bukan kasir - tampilkan menu Poin Pelanggan untuk owner/admin
       setTimeout(function() {
@@ -19719,6 +19762,22 @@ ${t.bayar ? `
       });
       document.getElementById('absensi-buka-ket').value = '';
       const fmtRp = v => 'Rp ' + (v||0).toLocaleString('id-ID');
+
+      // Set flag lokal agar notif/banner absensi hilang
+      try {
+        const _absenNamaKey = localStorage.getItem('k_kasir_id') || localStorage.getItem('k_kasir_nama') || nama || '';
+        const _absenLocalKey = 'k_absen_today_' + _absenNamaKey + '_' + tgl;
+        localStorage.setItem(_absenLocalKey, 'true');
+        // Hilangkan banner jika ada
+        const _banner = document.getElementById('kasir-absensi-banner');
+        if (_banner) {
+          _banner.style.transition = 'all 0.4s ease';
+          _banner.style.transform = 'translateY(-100%)';
+          _banner.style.opacity = '0';
+          setTimeout(() => _banner.remove(), 400);
+        }
+      } catch(_e) { /* skip */ }
+
       (_getMySwal()||Swal).fire({
         title: '✅ Shift Dibuka!',
         html: `<b>${nama}</b> mulai shift<br><small style="color:#94a3b8;">${tgl} pukul ${jam}</small><br><small style="color:#059669;">Kas: <b>${fmtRp(saldoKas)}</b> · Bank: <b>${fmtRp(saldoBank)}</b></small>`,
@@ -28309,7 +28368,7 @@ function _populateIdCard(c) {
     if (typeof QRCode !== 'undefined') {
       const miniCanvas = document.createElement('canvas');
       miniWrap.appendChild(miniCanvas);
-      QRCode.toCanvas(miniCanvas, payload, { width: 148, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {
+      QRCode.toCanvas(miniCanvas, payload, { width: 100, margin: 1, color: { dark: '#1e293b', light: '#ffffff' } }, () => {
         // QR selesai → langsung pre-render kartu ke canvas di background
         _preRenderIdCard();
       });
@@ -28318,10 +28377,10 @@ function _populateIdCard(c) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => { _preRenderIdCard(); };
-      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=148x148&margin=1&data=' + enc;
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=100x100&margin=1&data=' + enc;
       miniWrap.innerHTML = '';
       miniWrap.appendChild(img);
-      img.style.cssText = 'width:148px;height:148px;border-radius:8px;';
+      img.style.cssText = 'width:100px;height:100px;border-radius:8px;';
     }
   }
 }
