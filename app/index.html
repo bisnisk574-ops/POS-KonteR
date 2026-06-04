@@ -9818,6 +9818,10 @@
     function closeModal(id) {
       const overlay = document.getElementById(id);
       if (overlay) overlay.classList.remove('active');
+      // Batalkan background rendering saat modal pelanggan ditutup
+      if (id === 'modal-pelanggan' && typeof _cancelPreRender === 'function') {
+        _cancelPreRender();
+      }
     }
 
     // Tutup modal jika klik tepat di overlay (bukan di dalam konten)
@@ -28426,25 +28430,16 @@ function _populateIdCard(c) {
 }
 
 var _preRenderTimer = null;
+var _idleHandle = null;
 function _preRenderIdCard() {
-  if (typeof html2canvas === 'undefined') return;
-  // Batalkan jadwal pre-render sebelumnya jika ada
+  // Pre-render dinonaktifkan — terlalu berat untuk background rendering
+  // Render dilakukan on-demand saat tombol Unduh diklik
+  return;
+}
+function _cancelPreRender() {
   if (_preRenderTimer) { clearTimeout(_preRenderTimer); _preRenderTimer = null; }
-  // Tunda 5 detik agar UI modal tidak terbebani saat pertama dibuka
-  _preRenderTimer = setTimeout(() => {
-    const card = document.getElementById('cust-id-card');
-    if (!card) return;
-    const run = () => {
-      html2canvas(card, { scale: 2, useCORS: true, backgroundColor: null, logging: false })
-        .then(canvas => { _idCardCanvasCache = canvas; })
-        .catch(() => {});
-    };
-    if (typeof requestIdleCallback !== 'undefined') {
-      requestIdleCallback(run, { timeout: 10000 });
-    } else {
-      run();
-    }
-  }, 5000);
+  if (_idleHandle && typeof cancelIdleCallback !== 'undefined') { cancelIdleCallback(_idleHandle); _idleHandle = null; }
+  _idCardCanvasCache = null; // reset cache agar render ulang saat unduh
 }
 
 function unduhIdCard() {
