@@ -28385,16 +28385,26 @@ function _populateIdCard(c) {
   }
 }
 
+let _preRenderTimer = null;
 function _preRenderIdCard() {
   if (typeof html2canvas === 'undefined') return;
-  const card = document.getElementById('cust-id-card');
-  if (!card) return;
-  // Jalankan di background - tidak blocking UI
-  requestAnimationFrame(() => {
-    html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null, logging: false })
-      .then(canvas => { _idCardCanvasCache = canvas; })
-      .catch(() => {});
-  });
+  // Batalkan jadwal pre-render sebelumnya jika ada
+  if (_preRenderTimer) { clearTimeout(_preRenderTimer); _preRenderTimer = null; }
+  // Tunda 5 detik agar UI modal tidak terbebani saat pertama dibuka
+  _preRenderTimer = setTimeout(() => {
+    const card = document.getElementById('cust-id-card');
+    if (!card) return;
+    const run = () => {
+      html2canvas(card, { scale: 2, useCORS: true, backgroundColor: null, logging: false })
+        .then(canvas => { _idCardCanvasCache = canvas; })
+        .catch(() => {});
+    };
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(run, { timeout: 10000 });
+    } else {
+      run();
+    }
+  }, 5000);
 }
 
 function unduhIdCard() {
@@ -28419,7 +28429,7 @@ function unduhIdCard() {
   if (typeof html2canvas !== 'undefined') {
     const btn = document.querySelector('[onclick="unduhIdCard()"]');
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; }
-    html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null, logging: false }).then(canvas => {
+    html2canvas(card, { scale: 2, useCORS: true, backgroundColor: null, logging: false }).then(canvas => {
       _idCardCanvasCache = canvas;
       doDownload(canvas);
       if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Unduh Kartu'; }
