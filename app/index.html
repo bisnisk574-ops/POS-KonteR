@@ -7392,6 +7392,21 @@
       <!-- ===== VIEW: DASHBOARD ===== -->
       <section id="view-dashboard" class="view-section active space-y-6">
 
+        <!-- ===== BANNER NOTIF TUKAR POIN ===== -->
+        <div id="banner-notif-poin" style="display:none;border-radius:16px;overflow:hidden;cursor:pointer;" onclick="showNotifPoinPanel()">
+          <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:12px 14px;display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;">
+              <span style="font-size:18px;">🎁</span>
+              <span id="notif-poin-count-badge" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:900;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #6d28d9;">0</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <p style="font-size:11px;font-weight:900;color:#fff;margin:0;letter-spacing:0.02em;" id="notif-poin-title">Ada penukaran poin baru!</p>
+              <p style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);margin:2px 0 0;" id="notif-poin-sub">Tap untuk lihat detail</p>
+            </div>
+            <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.5);font-size:12px;flex-shrink:0;"></i>
+          </div>
+        </div>
+
         <!-- STAT CARDS ROW -->
         <div class="flex flex-col gap-3">
 
@@ -7750,6 +7765,21 @@
                 <i class="fas fa-mobile-screen-button mr-1.5"></i>E-WALLET
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Banner Notif Tukar Poin (duplikat untuk view kasir) -->
+        <div id="banner-notif-poin-kasir" style="display:none;border-radius:16px;overflow:hidden;cursor:pointer;margin-bottom:8px;" onclick="showNotifPoinPanel()">
+          <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:12px 14px;display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;">
+              <span style="font-size:18px;">🎁</span>
+              <span id="notif-poin-count-badge-kasir" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:900;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #6d28d9;">0</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <p style="font-size:11px;font-weight:900;color:#fff;margin:0;" id="notif-poin-title-kasir">Ada penukaran poin baru!</p>
+              <p style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);margin:2px 0 0;" id="notif-poin-sub-kasir">Tap untuk lihat detail</p>
+            </div>
+            <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.5);font-size:12px;flex-shrink:0;"></i>
           </div>
         </div>
 
@@ -29055,8 +29085,178 @@ function kirimWAStruk(btn) {
       }, 2000);
     }
   }, 50);
-}
-</script>
 
+/* ═══════════════════════════════════════════════════════
+   NOTIFIKASI REAL-TIME: TUKAR POIN PELANGGAN
+   Mendengarkan koleksi notif_kasir di Firestore
+   dan menampilkan banner + panel detail di index.html
+═══════════════════════════════════════════════════════ */
+(function initNotifPoin() {
+
+  let _notifListener   = null;   // unsubscribe Firestore
+  let _notifList       = [];     // cache notif belum dibaca
+  let _storeIdCache    = null;
+  let _initDone        = false;
+
+  // ── Tunggu Firestore & storeId siap ──
+  function _waitReady(cb, tries) {
+    tries = tries || 0;
+    const sid = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid');
+    if (window._fbFirestore && sid && sid !== 'DEMO' && sid !== 'undefined') { cb(sid); return; }
+    if (tries > 60) return; // max 30 detik
+    setTimeout(() => _waitReady(cb, tries + 1), 500);
+  }
+
+  // ── Mulai listener ──
+  window.startNotifPoinListener = function() {
+    _waitReady(function(sid) {
+      if (_initDone && _storeIdCache === sid) return; // sudah jalan
+      if (_notifListener) { _notifListener(); _notifListener = null; }
+      _storeIdCache = sid;
+      _initDone = true;
+
+      const db = window._fbFirestore;
+      // Ambil notif yang belum dibaca untuk toko ini, 24 jam terakhir
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      _notifListener = db.collection('notif_kasir')
+        .where('storeId', '==', sid)
+        .where('dibaca', '==', false)
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(function(snap) {
+          _notifList = [];
+          if (snap && !snap.empty) {
+            snap.forEach(function(doc) { _notifList.push({ id: doc.id, ...doc.data() }); });
+          }
+          _updateBanner();
+        }, function(err) {
+          // Fallback: Firestore rules mungkin butuh index — coba tanpa orderBy
+          _notifListener = db.collection('notif_kasir')
+            .where('storeId', '==', sid)
+            .where('dibaca', '==', false)
+            .onSnapshot(function(snap2) {
+              _notifList = [];
+              if (snap2 && !snap2.empty) {
+                snap2.forEach(function(doc) { _notifList.push({ id: doc.id, ...doc.data() }); });
+              }
+              _updateBanner();
+            }, function() {});
+        });
+    });
+  };
+
+  // ── Update semua banner ──
+  function _updateBanner() {
+    const n = _notifList.length;
+    const bannerD  = document.getElementById('banner-notif-poin');
+    const bannerK  = document.getElementById('banner-notif-poin-kasir');
+    const badgeD   = document.getElementById('notif-poin-count-badge');
+    const badgeK   = document.getElementById('notif-poin-count-badge-kasir');
+    const titleD   = document.getElementById('notif-poin-title');
+    const titleK   = document.getElementById('notif-poin-title-kasir');
+    const subD     = document.getElementById('notif-poin-sub');
+    const subK     = document.getElementById('notif-poin-sub-kasir');
+
+    if (!bannerD) return;
+
+    if (n > 0) {
+      const latest  = _notifList[0];
+      const titleTx = n === 1
+        ? `🎁 ${latest.pelangganNama || 'Pelanggan'} menukar poin`
+        : `🎁 ${n} penukaran poin baru`;
+      const subTx   = n === 1
+        ? `${latest.label} • ${latest.tgl || ''} ${latest.jam || ''}`
+        : `Tap untuk lihat semua detail`;
+
+      [bannerD, bannerK].forEach(function(b) { if(b) b.style.display = 'block'; });
+      [badgeD, badgeK].forEach(function(b)  { if(b) b.textContent = n > 9 ? '9+' : n; });
+      [titleD, titleK].forEach(function(t)  { if(t) t.textContent = titleTx; });
+      [subD, subK].forEach(function(s)      { if(s) s.textContent = subTx; });
+
+      // Goyangkan icon bell di sidebar jika ada
+      const bellEl = document.getElementById('sidebar-notif-bell');
+      if (bellEl) bellEl.style.animation = 'pulse 1s infinite';
+    } else {
+      [bannerD, bannerK].forEach(function(b) { if(b) b.style.display = 'none'; });
+    }
+  }
+
+  // ── Tampilkan panel detail ──
+  window.showNotifPoinPanel = function() {
+    if (!_notifList.length) return;
+    const fmt = function(n) { return new Intl.NumberFormat('id-ID').format(Number(n) || 0); };
+
+    const rows = _notifList.map(function(n) {
+      const icon = n.tipe === 'diskon' ? '💸' : '🎁';
+      return `
+        <div style="background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:14px;padding:13px 14px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:20px;">${icon}</span>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:900;color:#1e293b;">${n.pelangganNama || '—'}</div>
+              <div style="font-size:10px;color:#64748b;font-weight:600;">${n.pelangganHp || ''} &bull; ${n.tgl || ''} ${n.jam || ''}</div>
+            </div>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:#7c3aed;margin-bottom:4px;">${n.label || (n.tipe==='diskon'?'Tukar Diskon':'Tukar Hadiah')}</div>
+          <div style="display:flex;gap:16px;">
+            <div style="font-size:10px;color:#ef4444;font-weight:700;">−${fmt(n.poinDipakai)} poin</div>
+            <div style="font-size:10px;color:#64748b;font-weight:600;">Sisa: ${fmt(n.poinSisa)} poin</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: '<span style="font-size:16px;font-weight:900;">🎁 Penukaran Poin</span>',
+        html: `
+          <div style="font-size:11px;color:#64748b;margin-bottom:14px;font-weight:600;">
+            Poin sudah otomatis dikurangi. Berikan hadiah/diskon ke pelanggan berikut:
+          </div>
+          <div style="max-height:60vh;overflow-y:auto;text-align:left;">
+            ${rows}
+          </div>`,
+        showConfirmButton: true,
+        confirmButtonText: '✅ Tandai Semua Sudah Diberikan',
+        showCancelButton: true,
+        cancelButtonText: 'Tutup',
+        confirmButtonColor: '#7c3aed',
+        customClass: { popup: 'swal2-ku' }
+      }).then(function(res) {
+        if (res.isConfirmed) _markAllRead();
+      });
+    }
+  };
+
+  // ── Tandai semua notif sebagai dibaca ──
+  function _markAllRead() {
+    const db = window._fbFirestore;
+    if (!db || !_notifList.length) return;
+    const batch = db.batch();
+    _notifList.forEach(function(n) {
+      batch.update(db.collection('notif_kasir').doc(n.id), { dibaca: true });
+    });
+    batch.commit().catch(function() {
+      // Fallback: update satu-satu
+      _notifList.forEach(function(n) {
+        db.collection('notif_kasir').doc(n.id).update({ dibaca: true }).catch(function() {});
+      });
+    });
+    _notifList = [];
+    _updateBanner();
+  }
+
+  // ── Auto-start setelah login ──
+  // Hook ke renderAll agar listener dimulai setelah user login
+  const _origRenderAll = window.renderAll;
+  window.renderAll = function() {
+    if (_origRenderAll) _origRenderAll.apply(this, arguments);
+    window.startNotifPoinListener();
+  };
+
+  // Coba langsung juga (kalau halaman sudah dalam keadaan login)
+  setTimeout(window.startNotifPoinListener, 2000);
+
+})();
+
+</script>
 </body>
 </html>

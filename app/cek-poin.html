@@ -825,15 +825,46 @@ async function savePelangganList(list){
 
 async function loadPoinCfg(){
   const db=window._db;
+  // Ekstrak poinConfig dari berbagai kemungkinan struktur data Firestore
+  // index.html menyimpan poinConfig di: user_stores/{id}.data.poinConfig
+  // Format lama menyimpan di: stores/{id}.poinConfig atau root field lainnya
   function _extractPoinCfg(d){
-    return d.poinConfig||(d.data&&d.data.poinConfig)||(d.db&&d.db.poinConfig)||d.settingPoin||(d.data&&d.data.settingPoin)||(d.db&&d.db.settingPoin)||{};
+    if(!d) return {};
+    // Format index.html (user_stores): data.poinConfig
+    if(d.data && d.data.poinConfig && typeof d.data.poinConfig === 'object') return d.data.poinConfig;
+    // Root poinConfig (format lama / stores collection)
+    if(d.poinConfig && typeof d.poinConfig === 'object') return d.poinConfig;
+    // db.poinConfig
+    if(d.db && d.db.poinConfig && typeof d.db.poinConfig === 'object') return d.db.poinConfig;
+    // settingPoin variants
+    if(d.settingPoin && typeof d.settingPoin === 'object') return d.settingPoin;
+    if(d.data && d.data.settingPoin && typeof d.data.settingPoin === 'object') return d.data.settingPoin;
+    if(d.db && d.db.settingPoin && typeof d.db.settingPoin === 'object') return d.db.settingPoin;
+    return {};
   }
-  // Utama: stores (index.html)
-  let doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){const r=_extractPoinCfg(doc.data());poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);return;}
-  // Fallback: user_stores
-  doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
-  if(doc&&doc.exists){const r=_extractPoinCfg(doc.data());poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r);}
+  // Helper: cek apakah config punya daftarHadiah yang valid
+  function _hasHadiah(cfg){ return cfg && Array.isArray(cfg.daftarHadiah) && cfg.daftarHadiah.length > 0; }
+
+  let bestCfg = {};
+
+  // 1. Cek user_stores dulu (format index.html — poinConfig ada di .data.poinConfig)
+  let doc=await db.collection('user_stores').doc(storeId).get().catch(()=>null);
+  if(doc && doc.exists){
+    const r=_extractPoinCfg(doc.data());
+    if(_hasHadiah(r)){ poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r); return; }
+    if(Object.keys(r).length) bestCfg=r;
+  }
+
+  // 2. Cek stores (format lama)
+  doc=await db.collection('stores').doc(storeId).get().catch(()=>null);
+  if(doc && doc.exists){
+    const r=_extractPoinCfg(doc.data());
+    if(_hasHadiah(r)){ poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},r); return; }
+    if(Object.keys(r).length && !Object.keys(bestCfg).length) bestCfg=r;
+  }
+
+  // Gunakan config terbaik yang ditemukan (meski tanpa hadiah)
+  poinCfg=Object.assign({nilaiTukar:1000,daftarHadiah:[]},bestCfg);
 }
 
 /* ═══════════════════ FLOW: PELANGGAN ═══════════════════ */
@@ -1324,38 +1355,117 @@ function showDashboardPelanggan(){
 }
 
 async function requestTukar(tipe,hadiahIdx){
-  const poin=Number(pelanggan.poin||pelanggan.point||0);const db=window._db;
-  const existing=await db.collection('poin_requests').where('storeId','==',storeId).where('pelangganId','==',pelanggan.id||pelanggan.hp).where('status','==','pending').limit(1).get().catch(()=>null);
-  if(existing&&!existing.empty){Swal.fire({icon:'info',title:'Ada Request Pending',text:'Masih ada request yang belum dikonfirmasi kasir.',customClass:{popup:'swal2-ku'}});return;}
-  let label,payload;
-  if(tipe==='diskon'){const nd=Math.floor(poin/100)*(poinCfg.nilaiTukar||1000);label='Diskon Rp '+fmt(nd);payload={tipe:'diskon',nilaiDiskon:nd,poinDipakai:poin};}
-  else{const h=(poinCfg.daftarHadiah||[])[hadiahIdx];if(!h)return;label=h.nama;payload={tipe:'hadiah',hadiah:h.nama,poinDipakai:h.poin};}
-  const ok=await Swal.fire({icon:'question',title:'Konfirmasi Request',html:`Kamu akan request:<br><b style="color:#38BDF8">${label}</b><br><span style="font-size:12px;color:#94a3b8">Kasir akan mengkonfirmasi.</span>`,showCancelButton:true,confirmButtonText:'Ya, Request!',cancelButtonText:'Batal',customClass:{popup:'swal2-ku'}});
+  const poin=Number(pelanggan.poin||pelanggan.point||0);
+  const db=window._db;
+  let label,payload,poinDipakai;
+
+  if(tipe==='diskon'){
+    if(poin<100){swalErr('Poin belum cukup (min. 100 poin).');return;}
+    const nd=Math.floor(poin/100)*(poinCfg.nilaiTukar||1000);
+    label='Diskon Rp '+fmt(nd);
+    poinDipakai=poin;
+    payload={tipe:'diskon',nilaiDiskon:nd,poinDipakai:poin};
+  } else {
+    const h=(poinCfg.daftarHadiah||[])[hadiahIdx];
+    if(!h)return;
+    if(poin<h.poin){swalErr(`Poin tidak cukup. Butuh ${fmt(h.poin)} poin.`);return;}
+    label=h.nama;
+    poinDipakai=h.poin;
+    payload={tipe:'hadiah',hadiah:h.nama,poinDipakai:h.poin};
+  }
+
+  // Konfirmasi ke member
+  const ok=await Swal.fire({
+    icon:'question',
+    title:'Tukar Poin',
+    html:`Tukarkan <b style="color:#38BDF8">${fmt(poinDipakai)} poin</b> untuk:<br>
+          <b style="color:#fff;font-size:15px">${label}</b><br><br>
+          <span style="font-size:11px;color:#94a3b8">Poin akan langsung dikurangi & kasir mendapat notifikasi.</span>`,
+    showCancelButton:true,
+    confirmButtonText:'✅ Ya, Tukar!',
+    cancelButtonText:'Batal',
+    customClass:{popup:'swal2-ku'}
+  });
   if(!ok.isConfirmed)return;
-  await db.collection('poin_requests').add({storeId,pelangganId:pelanggan.id||pelanggan.hp,pelangganNama:pelanggan.nama||'—',pelangganHp:pelanggan.hp||'—',poinSaatIni:poin,tgl:tglNow(),jam:jamNow(),createdAt:firebase.firestore.FieldValue.serverTimestamp(),status:'pending',...payload});
-  document.getElementById('d-badge-req').style.display='';
-  swalOk('Request Terkirim! ✅',`Request <b>${label}</b> dikirim ke kasir.`);
+
+  // Loading
+  Swal.fire({title:'Memproses...',allowOutsideClick:false,showConfirmButton:false,customClass:{popup:'swal2-ku'},didOpen:()=>Swal.showLoading()});
+
+  try{
+    // 1. Kurangi poin langsung di Firestore (user_stores dan stores)
+    const poinBaru=Math.max(0, poin - poinDipakai);
+    const entri={tanggal:tglNow(),jam:jamNow(),aktivitas:label,poin:-poinDipakai,tipe:'keluar'};
+    const riwayatBaru=[...(pelanggan.riwayatPoin||pelanggan.poinHistory||[]),entri];
+    const pelangganBaru={...pelanggan,poin:poinBaru,point:poinBaru,riwayatPoin:riwayatBaru};
+
+    // Ambil list terkini lalu update member yang bersangkutan
+    let list=await getPelangganList().catch(()=>[]);
+    const pid=pelanggan.id||pelanggan.hp;
+    const idx=list.findIndex(m=>(m.id||m.hp||'')===(pid));
+    if(idx>=0){
+      list[idx]=pelangganBaru;
+      await savePelangganList(list).catch(e=>{throw new Error('Gagal simpan poin: '+e.message);});
+    }
+
+    // Update state lokal
+    pelanggan=pelangganBaru;
+
+    // 2. Simpan log penukaran ke poin_requests (status: approved — langsung selesai)
+    await db.collection('poin_requests').add({
+      storeId,
+      pelangganId:pid,
+      pelangganNama:pelanggan.nama||pelanggan.name||'—',
+      pelangganHp:pelanggan.hp||pelanggan.phone||'—',
+      poinSebelum:poin,
+      poinSesudah:poinBaru,
+      tgl:tglNow(),jam:jamNow(),
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      status:'approved',      // langsung approved, tidak perlu konfirmasi manual
+      autoApproved:true,
+      ...payload
+    }).catch(()=>{}); // log gagal tidak halangi flow utama
+
+    // 3. Kirim notif ke kasir via koleksi notif_kasir
+    await db.collection('notif_kasir').add({
+      storeId,
+      tipe:'tukar_poin',
+      pelangganNama:pelanggan.nama||pelanggan.name||'—',
+      pelangganHp:pelanggan.hp||pelanggan.phone||'—',
+      label,
+      poinDipakai,
+      poinSisa:poinBaru,
+      tgl:tglNow(),jam:jamNow(),
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      dibaca:false
+    }).catch(()=>{});
+
+    Swal.close();
+
+    // 4. Refresh tampilan dashboard member
+    document.getElementById('d-poin').textContent=fmt(poinBaru);
+    document.getElementById('d-badge-req').style.display='none';
+
+    // Refresh tab hadiah & riwayat dengan data terbaru
+    showDashboardPelanggan();
+
+    swalOk('Penukaran Berhasil! 🎉',
+      `<b style="color:#38BDF8">${label}</b> berhasil ditukar.<br>
+       Poin tersisa: <b style="color:#F59E0B">${fmt(poinBaru)} poin</b><br>
+       <span style="font-size:11px;color:#94a3b8">Tunjukkan ke kasir untuk klaim hadiah/diskon.</span>`);
+
+  } catch(e){
+    Swal.close();
+    swalErr('Penukaran gagal: '+e.message+'. Coba lagi atau hubungi kasir.');
+  }
 }
 
 function listenRequest(){
-  if(reqListener)reqListener();
-  reqListener=window._db.collection('poin_requests').where('storeId','==',storeId).where('pelangganId','==',pelanggan.id||pelanggan.hp).where('status','==','pending').onSnapshot(snap=>{
-    const badge=document.getElementById('d-badge-req');
-    if(snap&&!snap.empty)badge.style.display='';
-    else{badge.style.display='none';reloadPoin();}
-  },()=>{});
+  // Tidak perlu listener pending karena poin sudah auto-kurang
+  const badge=document.getElementById('d-badge-req');
+  if(badge)badge.style.display='none';
 }
 
-async function reloadPoin(){
-  const list=await getPelangganList();if(!list)return;
-  const pid=pelanggan.id||pelanggan.hp;
-  const found=list.find(p=>p.id===pid||p.hp===pid);
-  if(!found)return;
-  pelanggan=found;
-  const poin=Number(found.poin||found.point||0);
-  document.getElementById('d-poin').textContent=fmt(poin);
-  swalOk('Poin Diperbarui!',`Poin kamu: ${fmt(poin)} poin`);
-}
+
 
 function logoutPelanggan(){
   pelanggan=null;
