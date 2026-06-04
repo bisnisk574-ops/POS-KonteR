@@ -14429,21 +14429,17 @@
 
           function drawStrukCanvas(t2, opts2, logoImg) {
             const rp2     = n => 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n)||0);
-            const sName   = (opts2.storeName || 'KONTERKU').toUpperCase();
-            const aLines  = (opts2.alamat || '').split('\n').filter(Boolean);
-            const tLine   = opts2.tagline || 'Terima kasih telah bertransaksi';
-            const kName   = opts2.kasirName || '';
+            const sName   = opts2.storeName || 'KONTERKU';
+            const tLine   = opts2.tagline || 'Terima kasih atas kepercayaan Anda';
             const isL     = t2.status === 'Lunas';
-            const tLabel  = (t2.tipe === 'ewallet' ? 'E-WALLET / TRANSFER'
-                          : t2.tipe === 'digital'   ? 'DIGITAL' : 'FISIK').toUpperCase();
             const nProduk = (t2.produk || '-').replace(/^(DIG:|FIS:|EWL:)\s*/i, '');
             const jual    = Number(t2.jual || t2.hargaJual || t2.total || 0);
             const bulan   = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
             const tglRaw2 = t2.tgl || '';
             let tglStr = tglRaw2;
             if (tglRaw2 && tglRaw2.match(/^\d{4}-\d{2}-\d{2}$/)) {
-              const [ty, tmo, td] = tglRaw2.split('-');
-              tglStr = `${td} ${bulan[parseInt(tmo,10)-1]} ${ty}`;
+              const [ty2, tmo, td] = tglRaw2.split('-');
+              tglStr = `${td} ${bulan[parseInt(tmo,10)-1]} ${ty2}`;
             }
             let jamTrx2 = '';
             try {
@@ -14453,6 +14449,9 @@
                 jamTrx2 = String(_dt3.getHours()).padStart(2,'0')+':'+String(_dt3.getMinutes()).padStart(2,'0');
               }
             } catch(_e3){}
+            const tglJamDisp = tglStr ? (tglStr + (jamTrx2 ? ', ' + jamTrx2 : '')) : '';
+            const noNota     = (t2.id||'').replace(/^TR-/,'').replace(/[^0-9]/g,'').slice(-8) || '—';
+            const kasirDisp  = opts2.kasirName || t2.kasir || 'admin';
             const metodeBayar2 = (() => {
               if (t2.status !== 'Lunas') return 'Belum Lunas';
               const wId = t2.walletJual || t2.walletBayar || '';
@@ -14464,39 +14463,56 @@
               return 'Kas';
             })();
 
-            // ── Konstanta layout ──────────────────────────────────────
-            const CW       = W;
-            const S        = SANS;
-            const BP       = 20;          // body padding kiri-kanan
-            const LH       = 20;          // line height normal
-            const DARK     = '#0f1923';
-            const GREY_BG  = '#f7f6f3';   // background kartu item
-            const TXT      = '#1e293b';
-            const SUB      = '#94a3b8';
-            const BORDER   = '#e8edf2';
-            const GREEN    = '#2e9e58';
-            const RED      = '#dc2626';
+            // ── Layout constants ──────────────────────────────────────
+            const CW   = W;              // 360px
+            const S    = SANS;
+            const PL   = 24;             // padding left/right
+            const PR   = CW - PL;
+            const LH   = 22;
+            const TXT  = '#1e293b';
+            const SUB  = '#94a3b8';
+            const BLUE = '#0061C2';
+            const GREEN= '#059669';
+            const RED  = '#ef4444';
+            const DASH_COLOR = '#e2e8f0';
+            const TOOTH_R = 9;           // radius gigi
+            const TOOTH_N = 15;          // jumlah gigi
+            const TOOTH_Y_PAD = TOOTH_R; // tinggi area gigi
 
-            // ── Hitung tinggi dinamis ─────────────────────────────────
-            const HDR_H  = logoImg ? 170 : 118;
-            const TEAR_H = 20;
-            const META_H = 16 + 28 + 28 + 16;             // label+2 row grid + gap
-            const ITEM_CARD_H = 14 + 18 + 16              // padding + badge + nama produk
-              + (t2.nominal ? LH : 0)
-              + (Number(t2.adminBank||0)>0 ? LH : 0)
-              + (Number(t2.adminAgen||0)>0 ? LH : 0)
-              + LH                                          // qty
-              + (t2.note && t2.note.trim() ? (Math.ceil(t2.note.trim().length/34)||1)*LH : 0)
-              + 14;
-            const TOTAL_BLOCK = 52;
-            const PAY_H  = 12 + 28 + 28 + (t2.bayar ? 28 : 0) + 12;  // grid pembayaran
-            const FOOT_H = 40;
+            // Hitung baris harga detail
+            let detailRows = 0;
+            if (t2.tipe === 'ewallet') {
+              if (t2.nominal)                detailRows++;
+              if (Number(t2.adminBank||0)>0) detailRows++;
+              if (Number(t2.adminAgen||0)>0) detailRows++;
+            } else {
+              detailRows++; // Harga Dasar
+              if (t2.diskon) detailRows++;
+            }
+            const hasBayar = !!t2.bayar;
 
-            const H = HDR_H + TEAR_H + BP
-                    + META_H + BP
-                    + ITEM_CARD_H + BP
-                    + TOTAL_BLOCK + 28   // total + status
-                    + PAY_H + FOOT_H;
+            // Section heights
+            const LOGO_H   = logoImg ? 80 : 0;
+            const HDR_H    = TOOTH_Y_PAD + 10              // gigi atas + padding atas
+                           + (logoImg ? LOGO_H + 10 : 0)
+                           + 24                             // nama toko
+                           + 16                             // tanggal
+                           + 16;                            // padding bawah header
+            const SEC1_H   = 16 + LH*3 + 8;               // no nota + kasir + konsumen
+            const SEC2_H   = 16 + LH + 8;                  // rincian layanan + produk
+            const SEC3_H   = 16 + LH * detailRows
+                           + (hasBayar ? LH*2 : 0)
+                           + LH + 8;                       // total
+            const SEC4_H   = 16 + LH*2 + 8;               // metode + status
+            const FOOT_H   = 24 + TOOTH_Y_PAD;
+            const DASH_H   = 12;                            // tiap garis dashed
+
+            const H = HDR_H
+                    + DASH_H + SEC1_H
+                    + DASH_H + SEC2_H
+                    + DASH_H + SEC3_H
+                    + DASH_H + SEC4_H
+                    + DASH_H + FOOT_H;
 
             const cv  = document.createElement('canvas');
             cv.width  = CW * scale;
@@ -14504,228 +14520,152 @@
             const cx  = cv.getContext('2d');
             cx.scale(scale, scale);
 
-            // ── Background putih bersih ───────────────────────────────
-            cx.fillStyle = '#ffffff';
+            // ── Background & outer card ───────────────────────────────
+            cx.fillStyle = '#f8fafc';
             cx.fillRect(0, 0, CW, H);
 
-            // ════════════════════════════════════════════════════════
-            // HEADER GELAP
-            // ════════════════════════════════════════════════════════
-            cx.fillStyle = DARK;
-            cx.fillRect(0, 0, CW, HDR_H);
-
-            // ornamen lingkaran
-            cx.fillStyle = 'rgba(255,255,255,0.035)';
-            cx.beginPath(); cx.arc(CW-20, -10, 80, 0, Math.PI*2); cx.fill();
-            cx.beginPath(); cx.arc(-10, HDR_H+10, 60, 0, Math.PI*2); cx.fill();
-
-            let hy = 22;
-
-            // Logo
-            if (logoImg) {
-              const lS = 80;
-              cx.save();
-              cx.fillStyle = 'rgba(255,255,255,0.08)';
-              cx.beginPath(); cx.roundRect((CW-lS)/2, hy, lS, lS, 14); cx.fill();
-              cx.beginPath(); cx.roundRect((CW-lS)/2, hy, lS, lS, 14); cx.clip();
-              cx.drawImage(logoImg, (CW-lS)/2, hy, lS, lS);
-              cx.restore();
-              hy += lS + 12;
-            }
-
-            // Nama toko
-            cx.font = `700 16px ${S}`;
-            cx.fillStyle = '#f0ece4';
-            cx.textAlign = 'center';
-            cx.fillText(sName, CW/2, hy + 16);
-            hy += 22;
-
-            // Alamat
-            if (aLines.length) {
-              cx.font = `400 10px ${S}`;
-              cx.fillStyle = '#6b7a8d';
-              aLines.forEach(l => { cx.fillText(l, CW/2, hy + 11); hy += 14; });
-            } else {
-              hy += 4;
-            }
-
-            // Badge status
-            const bTxt  = isL ? '● LUNAS' : '● BELUM LUNAS';
-            const bFg   = isL ? '#4caf76' : '#f87171';
-            const bBg   = isL ? 'rgba(76,175,118,0.15)' : 'rgba(248,113,113,0.15)';
-            const bW    = 84;
-            cx.fillStyle = bBg;
-            cx.beginPath(); cx.roundRect((CW-bW)/2, hy+6, bW, 20, 10); cx.fill();
-            cx.font = `700 9px ${S}`;
-            cx.fillStyle = bFg;
-            cx.textAlign = 'center';
-            cx.fillText(bTxt, CW/2, hy+19);
-
-            // ── TEARLINE ─────────────────────────────────────────────
-            const ty = HDR_H;
+            // Card putih
             cx.fillStyle = '#ffffff';
-            cx.beginPath(); cx.arc(-1, ty+TEAR_H/2, TEAR_H/2, 0, Math.PI*2); cx.fill();
-            cx.beginPath(); cx.arc(CW+1, ty+TEAR_H/2, TEAR_H/2, 0, Math.PI*2); cx.fill();
-            cx.strokeStyle = 'rgba(0,0,0,0.12)';
-            cx.lineWidth = 1.2;
-            cx.setLineDash([5,5]);
-            cx.beginPath(); cx.moveTo(TEAR_H, ty+TEAR_H/2); cx.lineTo(CW-TEAR_H, ty+TEAR_H/2); cx.stroke();
-            cx.setLineDash([]);
+            cx.shadowColor = 'rgba(0,0,0,0.08)';
+            cx.shadowBlur  = 16;
+            cx.beginPath();
+            cx.roundRect(0, TOOTH_Y_PAD, CW, H - TOOTH_Y_PAD*2, 0);
+            cx.fill();
+            cx.shadowBlur = 0;
 
-            // ════════════════════════════════════════════════════════
-            // BODY
-            // ════════════════════════════════════════════════════════
-            let y = HDR_H + TEAR_H + BP;
+            // ── Helper: dashed line ───────────────────────────────────
+            const dashed = (yy) => {
+              cx.strokeStyle = DASH_COLOR;
+              cx.lineWidth   = 1.2;
+              cx.setLineDash([5, 4]);
+              cx.beginPath();
+              cx.moveTo(PL, yy);
+              cx.lineTo(PR, yy);
+              cx.stroke();
+              cx.setLineDash([]);
+            };
 
-            // helper: label kecil abu di atas
-            const drawLabel = (txt, lx) => {
-              cx.font = `600 8.5px ${S}`;
+            // ── Helper: row label + value ─────────────────────────────
+            const row = (lbl, val, yy, valColor = TXT, bold = false) => {
+              cx.font      = `400 11.5px ${S}`;
               cx.fillStyle = SUB;
               cx.textAlign = 'left';
-              cx.fillText(txt.toUpperCase(), lx, y + 10);
-            };
-            // helper: nilai besar
-            const drawVal = (txt, lx, anchor = 'left', color = TXT, bold = false) => {
-              cx.font = `${bold?'600':'500'} 12px ${S}`;
-              cx.fillStyle = color;
-              cx.textAlign = anchor;
-              cx.fillText(txt, lx, y + 24);
+              cx.fillText(lbl, PL, yy);
+              cx.font      = bold ? `700 11.5px ${S}` : `600 11.5px ${S}`;
+              cx.fillStyle = valColor;
+              cx.textAlign = 'right';
+              cx.fillText(val, PR, yy);
             };
 
-            // ── Grid 2-kolom: Tanggal / Kasir ────────────────────────
-            drawLabel('Tanggal', BP);
-            drawLabel('Kasir', CW/2 + 4);
-            y += 14;
-            drawVal(tglStr, BP);
-            drawVal(kName || 'admin', CW/2 + 4);
-            y += 28;
+            // ── Gigi atas ─────────────────────────────────────────────
+            const toothXs = Array.from({length: TOOTH_N}, (_,i) => PL + (i/(TOOTH_N-1))*(CW-PL*2));
+            cx.fillStyle = '#f8fafc';
+            toothXs.forEach(tx => {
+              cx.beginPath();
+              cx.arc(tx, TOOTH_Y_PAD, TOOTH_R, 0, Math.PI*2);
+              cx.fill();
+            });
 
-            // ── Grid 2-kolom: Pelanggan / Waktu ─────────────────────
-            drawLabel('Pelanggan', BP);
-            if (jamTrx2) drawLabel('Waktu', CW/2 + 4);
-            y += 14;
-            drawVal(t2.pelanggan || 'Umum', BP);
-            if (jamTrx2) drawVal(jamTrx2, CW/2 + 4);
-            y += 28;
+            // ── HEADER ────────────────────────────────────────────────
+            let y = TOOTH_Y_PAD + 14;
 
-            // garis tipis
-            const divLine = (extra = 0) => {
-              cx.strokeStyle = BORDER;
-              cx.lineWidth = 0.7;
-              cx.beginPath(); cx.moveTo(BP, y+extra); cx.lineTo(CW-BP, y+extra); cx.stroke();
-            };
-            divLine(); y += BP;
+            if (logoImg) {
+              const lS = 72;
+              cx.save();
+              cx.beginPath();
+              cx.roundRect((CW-lS)/2, y, lS, lS, 12);
+              cx.clip();
+              cx.drawImage(logoImg, (CW-lS)/2, y, lS, lS);
+              cx.restore();
+              y += lS + 10;
+            }
 
-            // ── ITEM CARD ────────────────────────────────────────────
-            cx.fillStyle = GREY_BG;
-            cx.beginPath(); cx.roundRect(BP, y, CW-BP*2, ITEM_CARD_H, 10); cx.fill();
+            cx.font      = `800 17px ${S}`;
+            cx.fillStyle = TXT;
+            cx.textAlign = 'center';
+            cx.fillText(sName, CW/2, y + 17);
+            y += 22;
 
-            const cLeft = BP + 14;
-            const cRight = CW - BP - 14;
-            let cy = y + 14;
+            if (tglJamDisp) {
+              cx.font      = `400 10.5px ${S}`;
+              cx.fillStyle = SUB;
+              cx.fillText(tglJamDisp, CW/2, y + 13);
+              y += 16;
+            }
+            y += 4;
 
-            // Badge tipe
-            cx.font = `700 8px ${S}`;
-            const bw4 = cx.measureText(tLabel).width + 14;
-            cx.fillStyle = '#dbeafe';
-            cx.beginPath(); cx.roundRect(cLeft, cy, bw4, 15, 4); cx.fill();
-            cx.fillStyle = '#1d4ed8';
+            // ── SEKSI: No Nota / Kasir / Konsumen ────────────────────
+            dashed(y); y += DASH_H + 4;
+
+            row('No Nota:',   noNota,            y + 12);  y += LH;
+            row('Kasir:',     kasirDisp,          y + 12);  y += LH;
+            row('Konsumen:',  t2.pelanggan||'Umum', y + 12, BLUE, true); y += LH + 8;
+
+            // ── SEKSI: Rincian Layanan ────────────────────────────────
+            dashed(y); y += DASH_H + 4;
+
+            cx.font      = `700 9px ${S}`;
+            cx.fillStyle = BLUE;
             cx.textAlign = 'left';
-            cx.fillText(tLabel, cLeft + 7, cy + 10.5);
-            cy += 22;
+            cx.fillText('RINCIAN LAYANAN:', PL, y + 10);
+            y += 14;
 
-            // Nama produk
-            cx.font = `700 13px ${S}`;
+            cx.font      = `600 12px ${S}`;
             cx.fillStyle = TXT;
             cx.textAlign = 'left';
-            cx.fillText(nProduk, cLeft, cy + 13);
-            cy += 20;
+            const qty = t2.qty && t2.qty > 1 ? ` (${t2.qty}x)` : ' (1x)';
+            cx.fillText(nProduk + qty, PL, y + 13);
+            y += LH + 8;
 
-            // detail rows di dalam card
-            const cardRow = (lbl, val, valCol = '#475569') => {
-              cx.font = `400 10.5px ${S}`;
-              cx.fillStyle = '#64748b';
-              cx.textAlign = 'left';
-              cx.fillText(lbl, cLeft, cy + 12);
-              cx.font = `500 10.5px ${S}`;
-              cx.fillStyle = valCol;
-              cx.textAlign = 'right';
-              cx.fillText(val, cRight, cy + 12);
-              cy += LH;
-            };
+            // ── SEKSI: Harga detail ───────────────────────────────────
+            dashed(y); y += DASH_H + 4;
 
-            if (t2.nominal)                cardRow('Nominal',    rp2(t2.nominal));
-            if (Number(t2.adminBank||0)>0) cardRow('Admin Bank', rp2(t2.adminBank));
-            if (Number(t2.adminAgen||0)>0) cardRow('Admin Agen', rp2(t2.adminAgen));
-            cardRow('Qty', (t2.qty||1) + ' pcs');
-
-            if (t2.note && t2.note.trim()) {
-              cx.font = `400 10px ${S}`;
-              cx.fillStyle = '#64748b';
-              cx.textAlign = 'left';
-              let nLine = '', nFirst = true;
-              t2.note.trim().split(' ').forEach(w => {
-                const tst = nLine ? nLine+' '+w : w;
-                if (cx.measureText(tst).width > cRight - cLeft - 50) {
-                  cx.fillText((nFirst?'Ket: ':' ')+nLine, cLeft, cy+11); cy+=LH; nLine=w; nFirst=false;
-                } else nLine=tst;
-              });
-              if (nLine) { cx.fillText((nFirst?'Ket: ':' ')+nLine, cLeft, cy+11); cy+=LH; }
+            if (t2.tipe === 'ewallet') {
+              if (t2.nominal)                { row('Nominal',    rp2(t2.nominal),    y+12); y+=LH; }
+              if (Number(t2.adminBank||0)>0) { row('Admin Bank', rp2(t2.adminBank),  y+12); y+=LH; }
+              if (Number(t2.adminAgen||0)>0) { row('Admin Agen', rp2(t2.adminAgen),  y+12); y+=LH; }
+            } else {
+              const hDasar = Number(t2.jual||0) + (Number(t2.diskon)||0) - (Number(t2.biayaTambahan)||0);
+              row('Harga Dasar', rp2(hDasar), y+12); y+=LH;
+              if (t2.diskon) { row('Diskon', '- '+rp2(t2.diskon), y+12, RED); y+=LH; }
+            }
+            if (hasBayar) {
+              row('Uang Dibayar:', rp2(t2.bayar),         y+12); y+=LH;
+              row('Kembalian:',    rp2(t2.kembalian||0),  y+12); y+=LH;
             }
 
-            y += ITEM_CARD_H + BP;
-
-            // ── TOTAL BLOCK ──────────────────────────────────────────
-            cx.fillStyle = DARK;
-            cx.beginPath(); cx.roundRect(BP, y, CW-BP*2, TOTAL_BLOCK, 12); cx.fill();
-            cx.font = `500 9px ${S}`;
-            cx.fillStyle = 'rgba(255,255,255,0.4)';
+            // Total
+            cx.font      = `700 13px ${S}`;
+            cx.fillStyle = TXT;
             cx.textAlign = 'left';
-            cx.fillText('TOTAL', BP+16, y+20);
-            cx.font = `700 19px ${S}`;
-            cx.fillStyle = '#ffffff';
+            cx.fillText('TOTAL BILL:', PL, y+13);
+            cx.font      = `800 17px ${S}`;
             cx.textAlign = 'right';
-            cx.fillText(rp2(jual), CW-BP-16, y+33);
-            y += TOTAL_BLOCK + 10;
+            cx.fillText(rp2(jual), PR, y+13);
+            y += LH + 8;
 
-            // Status
-            cx.font = `600 10px ${S}`;
-            cx.fillStyle = isL ? GREEN : RED;
+            // ── SEKSI: Metode & Status ────────────────────────────────
+            dashed(y); y += DASH_H + 4;
+
+            row('Metode:',       metodeBayar2,                    y+12, TXT, true); y += LH;
+            row('Status Bayar:', isL ? 'Lunas' : 'Belum Bayar',  y+12, isL ? GREEN : RED, true); y += LH + 8;
+
+            // ── FOOTER ───────────────────────────────────────────────
+            dashed(y); y += DASH_H;
+
+            cx.font      = `400 10px ${S}`;
+            cx.fillStyle = SUB;
             cx.textAlign = 'center';
-            cx.fillText(isL ? '✓  Pembayaran Diterima' : '⚠  Pembayaran Belum Lunas', CW/2, y+12);
-            y += 28;
+            cx.fillText('— ' + tLine + ' —', CW/2, y + 14);
+            y += 18;
 
-            divLine(); y += 12;
-
-            // ── GRID PEMBAYARAN 2-kolom ───────────────────────────────
-            const drawPayGrid = (l1, v1, l2, v2, v2col = TXT) => {
-              drawLabel(l1, BP);
-              if (l2) drawLabel(l2, CW/2+4);
-              y += 14;
-              drawVal(v1, BP, 'left', TXT, false);
-              if (v2) drawVal(v2, CW/2+4, 'left', v2col, true);
-              y += 26;
-            };
-
-            drawPayGrid('Metode Bayar', metodeBayar2, 'Jumlah Bayar', rp2(jual));
-            if (t2.bayar) {
-              const kemVal2 = t2.kembalian || 0;
-              drawPayGrid('Uang Bayar', rp2(t2.bayar), 'Kembalian', rp2(Math.abs(kemVal2)), kemVal2>=0?GREEN:RED);
-            }
-
-            y += 4;
-            divLine(); y += 12;
-
-            // ── FOOTER ────────────────────────────────────────────────
-            cx.font = `400 10px ${S}`;
-            cx.fillStyle = '#b0b8c4';
-            cx.textAlign = 'center';
-            cx.fillText(tLine + '  ·  ' + sName, CW/2, y+12);
-            if (!opts2.isPro) {
-              cx.font = `400 8.5px ${S}`;
-              cx.fillStyle = '#d1d5db';
-              cx.fillText('powered by KonterPro', CW/2, y+26);
-            }
+            // ── Gigi bawah ────────────────────────────────────────────
+            cx.fillStyle = '#f8fafc';
+            toothXs.forEach(tx => {
+              cx.beginPath();
+              cx.arc(tx, y + TOOTH_Y_PAD, TOOTH_R, 0, Math.PI*2);
+              cx.fill();
+            });
 
             return cv;
           }
