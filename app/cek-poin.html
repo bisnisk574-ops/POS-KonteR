@@ -10,8 +10,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
+<!-- jsQR: decode QR dari pixel canvas (paling reliable untuk scan galeri) -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script>
   const firebaseConfig = {
@@ -1058,10 +1060,16 @@ async function handleHomeScanResult(text){
   await loadPoinCfg();
 
   // Cari member di daftar pelanggan toko
-  const allList=_normPelanggan(_extractPelanggan(tokoFound));
-  const found=allList.find(p=>
+  // Pertama coba dari data inline dokumen
+  let allList=_normPelanggan(_extractPelanggan(tokoFound));
+  // Jika kosong, fetch fresh dari Firestore (data pelanggan bisa di-store terpisah)
+  if(!allList.length){
+    allList = await getPelangganList().catch(()=>[]);
+  }
+  let found=allList.find(p=>
     (p.id||'').trim()===qrMemberId ||
-    (p.hp||'').replace(/\D/g,'')===qrMemberId.replace(/\D/g,'')
+    (p.hp||'').replace(/\D/g,'')===qrMemberId.replace(/\D/g,'') ||
+    (p.phone||'').replace(/\D/g,'')===qrMemberId.replace(/\D/g,'')
   );
   Swal.close();
 
@@ -1666,41 +1674,72 @@ function _decodeQRFromImage(file, onResult, onError){
   fileReader.onload = async function(e){
     const imgSrc = e.target.result;
 
-    // Coba ZXing (sudah di-load di head)
+    // ── Helper: decode satu canvas dengan jsQR ──
+    function _tryJsQR(canvas){
+      if(typeof jsQR === 'undefined') return null;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const result = jsQR(imgData.data, imgData.width, imgData.height, {
+        inversionAttempts: 'dontInvert'
+      });
+      return result ? result.data : null;
+    }
+
+    // ── Helper: load image ke canvas dengan ukuran tertentu ──
+    function _loadToCanvas(src, maxSide){
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = function(){
+          let w = img.naturalWidth, h = img.naturalHeight;
+          if(maxSide && (w > maxSide || h > maxSide)){
+            const ratio = Math.min(maxSide/w, maxSide/h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(c);
+        };
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    // ── Coba jsQR dengan berbagai skala (gambar besar, medium, kecil) ──
+    if(typeof jsQR !== 'undefined'){
+      try{
+        for(const maxSide of [0, 1200, 800, 400]){
+          const canvas = await _loadToCanvas(imgSrc, maxSide || null);
+          const res = _tryJsQR(canvas);
+          if(res) return onResult(res);
+        }
+      }catch(e2){ /* lanjut ke fallback */ }
+    }
+
+    // ── Fallback: ZXing decodeFromImageUrl ──
     if(typeof ZXing !== 'undefined'){
       try{
         const hints = new Map();
         hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
         const reader = new ZXing.BrowserQRCodeReader(hints);
         const result = await reader.decodeFromImageUrl(imgSrc);
         if(result && result.getText()) return onResult(result.getText());
-      }catch(e2){/* fallthrough */}
+      }catch(e3){ /* fallthrough */ }
     }
 
-    // Coba BarcodeDetector
+    // ── Fallback: BarcodeDetector (native browser API) ──
     if('BarcodeDetector' in window){
-      const img = new Image();
-      img.onload = async function(){
-        try{
-          const det = new BarcodeDetector({formats:['qr_code']});
-          const res = await det.detect(img);
-          if(res && res.length > 0) return onResult(res[0].rawValue);
-        }catch(e3){}
-        onError('QR Code tidak terdeteksi. Pastikan gambar cukup jelas dan berisi QR kartu member.');
-      };
-      img.src = imgSrc;
-      return;
+      try{
+        const canvas = await _loadToCanvas(imgSrc, null);
+        const det = new BarcodeDetector({formats:['qr_code']});
+        const res = await det.detect(canvas);
+        if(res && res.length > 0) return onResult(res[0].rawValue);
+      }catch(e4){}
     }
 
-    // Fallback: canvas + ZXing decode pixel
-    const img = new Image();
-    img.onload = function(){
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width; canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      onError('QR Code tidak terdeteksi. Coba foto yang lebih jelas atau gunakan scan kamera.');
-    };
-    img.src = imgSrc;
+    onError('QR Code tidak terdeteksi. Pastikan QR terlihat jelas dan tidak terpotong.');
   };
   fileReader.readAsDataURL(file);
 }
