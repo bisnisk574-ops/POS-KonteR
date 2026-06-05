@@ -13466,6 +13466,8 @@
           document.getElementById('kd-jual').value = item.jual;
           // Auto-detect kategori produk → refresh section poin
           if (window.refreshKasirPoinSection) window.refreshKasirPoinSection(item.kategori || null);
+          // Refresh estimasi poin di card poin setelah harga terisi
+          if (typeof refreshKdPoinInfo === 'function') refreshKdPoinInfo();
         }
         updateKasirLaba('digital');
       } else {
@@ -13476,6 +13478,8 @@
           document.getElementById('kf-jual').value = item.jual;
           // Auto-detect kategori produk → refresh section poin
           if (window.refreshKasirPoinSection) window.refreshKasirPoinSection(item.kategori || null);
+          // Refresh estimasi poin di card poin setelah harga terisi
+          if (typeof refreshKfPoinInfo === 'function') refreshKfPoinInfo();
         }
         updateKasirLaba('fisik');
       }
@@ -17327,39 +17331,62 @@ ${t.bayar ? `
         const fmtDate = d => d.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
         const fmtRp   = n => 'Rp ' + (n||0).toLocaleString('id-ID');
 
-        // Filter transaksi sesuai periode
-        const allTrx = (typeof transactions !== 'undefined' ? transactions : (JSON.parse(localStorage.getItem('k_trx')||'[]')));
+        // Filter transaksi sesuai periode — ambil dari window.db.transaksi (sumber utama)
+        const allTrx = (window.db && window.db.transaksi) ? window.db.transaksi
+                     : (typeof transactions !== 'undefined' ? transactions
+                     : (JSON.parse(localStorage.getItem('k_trx')||'[]')));
+
+        // Helper: parse tgl string "YYYY-MM-DD" atau ISO date ke Date object
+        const parseTgl = tStr => {
+          if (!tStr) return new Date(0);
+          // Format YYYY-MM-DD (dari getWIBDate)
+          if (/^\d{4}-\d{2}-\d{2}$/.test(tStr)) {
+            const [y,m,d] = tStr.split('-');
+            return new Date(Number(y), Number(m)-1, Number(d));
+          }
+          return new Date(tStr);
+        };
+
+        const startDay = new Date(start); startDay.setHours(0,0,0,0);
+        const endDay   = new Date(end);   endDay.setHours(23,59,59,999);
+
         const filtered = allTrx.filter(t => {
-          const d = new Date(t.date || t.createdAt || t.timestamp || 0);
-          return d >= start && d <= end;
+          const d = parseTgl(t.tgl || t.date || t.createdAt || t.timestamp || '');
+          return d >= startDay && d <= endDay;
         });
 
-        let omset = 0, laba = 0, piutang = 0, hutang = 0, trxDigital = 0, trxFisik = 0;
+        let omset = 0, laba = 0, trxDigital = 0, trxFisik = 0;
         filtered.forEach(t => {
-          const harga  = Number(t.harga || t.price || 0);
+          const harga  = Number(t.jual  || t.harga || t.price || 0);
           const modal  = Number(t.modal || t.cost  || 0);
-          const qty    = Number(t.qty   || t.quantity || 1);
-          omset += harga * qty;
-          laba  += (harga - modal) * qty;
-          if (t.status === 'hutang' || t.paymentStatus === 'hutang') hutang += harga * qty;
-          if (t.type === 'digital' || t.kasirMode === 'digital') trxDigital++; else trxFisik++;
+          omset += harga;
+          laba  += harga - modal;
+          if (t.tipe === 'digital' || t.type === 'digital' || t.kasirMode === 'digital') trxDigital++; else trxFisik++;
         });
+
+        // Ambil piutang & hutang dari db.hutang (sama seperti laporan utama)
+        const piutang = window.db ? (window.db.hutang||[]).filter(h=>h.tipe==='pelanggan').reduce((a,b)=>a+Number(b.jumlah||0),0) : 0;
+        const hutang  = window.db ? (window.db.hutang||[]).filter(h=>h.tipe==='toko').reduce((a,b)=>a+Number(b.jumlah||0),0) : 0;
 
         const labelPeriode = { harian:'Harian', mingguan:'Mingguan', bulanan:'Bulanan', tahunan:'Tahunan' }[_pdfPeriode];
 
         // Buat HTML laporan
         const rows = filtered.slice(0, 50).map((t, i) => {
-          const tgl   = new Date(t.date || t.createdAt || t.timestamp || 0);
-          const nama  = t.nama || t.product || t.productName || t.name || '-';
-          const harga = Number(t.harga || t.price || 0);
+          const tglStr = t.tgl || t.date || t.createdAt || '';
+          const tglObj = parseTgl(tglStr);
+          const tglDisplay = tglStr.match(/^\d{4}-\d{2}-\d{2}$/)
+            ? tglObj.toLocaleDateString('id-ID', {day:'2-digit',month:'2-digit',year:'numeric'})
+            : tglObj.toLocaleDateString('id-ID');
+          const nama  = t.produk || t.nama || t.product || t.productName || t.name || '-';
+          const harga = Number(t.jual  || t.harga || t.price || 0);
           const qty   = Number(t.qty   || t.quantity || 1);
-          const mode  = t.type === 'digital' || t.kasirMode === 'digital' ? '📱 Digital' : '📦 Fisik';
+          const mode  = t.tipe === 'digital' || t.type === 'digital' || t.kasirMode === 'digital' ? '📱 Digital' : (t.tipe === 'ewallet' ? '💳 E-Wallet' : '📦 Fisik');
           const stat  = t.status === 'hutang' || t.paymentStatus === 'hutang' ? '<span style="color:#ef4444;font-weight:900;">Hutang</span>' : '<span style="color:#10b981;font-weight:900;">Lunas</span>';
           return `<tr style="border-bottom:1px solid #f1f5f9;${i%2===0?'background:#fafafa':''}">
-            <td style="padding:6px 8px;font-size:9px;color:#64748b;">${tgl.toLocaleDateString('id-ID')}</td>
+            <td style="padding:6px 8px;font-size:9px;color:#64748b;">${tglDisplay}</td>
             <td style="padding:6px 8px;font-size:9px;font-weight:700;color:#1e293b;">${nama}</td>
             <td style="padding:6px 8px;font-size:9px;text-align:center;color:#64748b;">${qty}x</td>
-            <td style="padding:6px 8px;font-size:9px;text-align:right;color:#0061C2;font-weight:700;">${fmtRp(harga*qty)}</td>
+            <td style="padding:6px 8px;font-size:9px;text-align:right;color:#0061C2;font-weight:700;">${fmtRp(harga)}</td>
             <td style="padding:6px 8px;font-size:9px;text-align:center;">${mode}</td>
             <td style="padding:6px 8px;font-size:9px;text-align:center;">${stat}</td>
           </tr>`;
@@ -25581,6 +25608,8 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
           const span = label ? label.querySelector('span') : null;
           if (span) span.textContent = t.nama + ' (+' + t.poin + ' poin)';
           window.updateKasirPoinPreview();
+          // Refresh estimasi poin di card poin Digital/Fisik/E-Wallet
+          if (typeof refreshAllPoinInfo === 'function') refreshAllPoinInfo();
         }
       }
 
