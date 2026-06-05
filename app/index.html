@@ -829,9 +829,9 @@
     .tab-btn.inactive { background: transparent; color: #94A3B8; }
     .tab-btn.active:hover { background: #004a94; }
     label { font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; margin-bottom: 4px; display: block; margin-left: 4px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: flex-end; justify-content: center; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: flex-end; justify-content: center; overscroll-behavior: contain; touch-action: none; }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 32px 32px 0 0; padding: 24px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 90vh; overflow-y: auto; }
+    .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 32px 32px 0 0; padding: 24px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
     .modal-overlay.active .modal-content { transform: translateY(0); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .filter-chip { padding: 6px 14px; border-radius: 100px; font-size: 10px; font-weight: 800; transition: 0.2s; border: 1.5px solid #F1F5F9; color: #94A3B8; cursor: pointer; white-space: nowrap; background: white; }
@@ -6091,7 +6091,7 @@
         </div>
 
         <!-- ── SCROLLABLE BODY ── -->
-        <div style="overflow-y:auto;flex:1;padding:16px 16px 24px;" id="lap-body">
+        <div style="overflow-y:auto;flex:1;padding:16px 16px 24px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;" id="lap-body">
 
           <!-- KPI Cards -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
