@@ -6301,33 +6301,37 @@
 
     <!-- ===== MODAL SIDEBAR: PELANGGAN ===== -->
     <div id="modal-sidebar-pelanggan" class="modal-overlay">
-      <div class="modal-content" style="max-height:90vh">
-        <div class="flex justify-between items-center mb-4">
-          <div>
-            <h4 class="text-lg font-black">Pelanggan</h4>
-            <p class="text-[9px] text-slate-400 font-bold" id="sidebar-cust-count-label">0 pelanggan terdaftar</p>
+      <div class="modal-content" style="max-height:90vh;overflow:hidden;display:flex;flex-direction:column;padding-bottom:0;">
+        <!-- Header tetap, tidak ikut scroll -->
+        <div style="flex-shrink:0;padding-bottom:12px;">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h4 class="text-lg font-black">Pelanggan</h4>
+              <p class="text-[9px] text-slate-400 font-bold" id="sidebar-cust-count-label">0 pelanggan terdaftar</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="closeModal('modal-sidebar-pelanggan')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+            </div>
           </div>
-          <div class="flex gap-2">
-            <button onclick="closeModal('modal-sidebar-pelanggan')" class="text-slate-400 text-xl cursor-pointer border-0 bg-transparent"><i class="fas fa-times"></i></button>
+          <!-- Banner Daftar Member -->
+          <button onclick="openAddCustomerFromSidebar()" style="width:100%;margin-bottom:12px;padding:11px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left;">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-id-card" style="color:#fff;font-size:14px;"></i>
+            </div>
+            <div style="flex:1;">
+              <p style="font-size:11px;font-weight:900;color:#fff;margin:0;">Daftarkan Member Baru</p>
+              <p style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.65);margin:2px 0 0;">Buka portal member &amp; cetak kartu</p>
+            </div>
+            <i class="fas fa-arrow-right" style="color:rgba(255,255,255,0.5);font-size:10px;flex-shrink:0;"></i>
+          </button>
+          <!-- Search -->
+          <div class="relative">
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[11px]"></i>
+            <input type="text" id="sidebar-cust-search" oninput="renderSidebarCustomers()" class="input-premium pl-9 !py-2.5 text-[12px]" placeholder="Cari nama atau nomor HP...">
           </div>
         </div>
-        <!-- Banner Daftar Member -->
-        <button onclick="openAddCustomerFromSidebar()" style="width:100%;margin-bottom:12px;padding:11px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left;">
-          <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="fas fa-id-card" style="color:#fff;font-size:14px;"></i>
-          </div>
-          <div style="flex:1;">
-            <p style="font-size:11px;font-weight:900;color:#fff;margin:0;">Daftarkan Member Baru</p>
-            <p style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.65);margin:2px 0 0;">Buka portal member & cetak kartu</p>
-          </div>
-          <i class="fas fa-arrow-right" style="color:rgba(255,255,255,0.5);font-size:10px;flex-shrink:0;"></i>
-        </button>
-        <!-- Search -->
-        <div class="relative mb-4">
-          <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[11px]"></i>
-          <input type="text" id="sidebar-cust-search" oninput="renderSidebarCustomers()" class="input-premium pl-9 !py-2.5 text-[12px]" placeholder="Cari nama atau nomor HP...">
-        </div>
-        <div id="sidebar-cust-list" class="space-y-3 overflow-y-auto" style="max-height:50vh"></div>
+        <!-- List: satu-satunya yang scroll -->
+        <div id="sidebar-cust-list" class="space-y-3" style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;"></div>
       </div>
     </div>
 
@@ -13374,13 +13378,13 @@
                   <div class="w-px h-3 bg-slate-200"></div>
                   <span style="background:${tier.bg};color:${tier.c};border-radius:6px;padding:1px 6px;font-size:8px;font-weight:900;">${tier.l} · ${poin} ⭐</span>
                   ${bisaTukar ? '<span style="background:rgba(124,58,237,0.12);color:#7c3aed;border-radius:6px;padding:1px 6px;font-size:8px;font-weight:900;animation:pulse 2s infinite;">💰 BISA TUKAR</span>' : ''}
+                  ${!_pAktif && poin > 0 ? `<span style="background:rgba(124,58,237,0.08);color:#7c3aed;border-radius:6px;padding:1px 6px;font-size:8px;font-weight:900;">⭐ ${poin} poin</span>` : ''}
                 </div>
               </div>
               <div class="flex flex-col gap-1.5 flex-shrink-0">
-                ${_pAktif ? `
-                <button onclick="(function(){var p=document.getElementById('${poinPanelId}');if(p){var open=p.style.display==='none'||p.style.display==='';p.style.display=open?'block':'none';}})()" class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all ${bisaTukar ? 'text-white' : 'bg-violet-50 text-violet-500'}" style="${bisaTukar ? 'background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 2px 8px rgba(124,58,237,0.3);' : ''}" title="Detail Poin">
+                <button onclick="${_pAktif ? `(function(){var p=document.getElementById('${poinPanelId}');if(p){var open=p.style.display==='none'||p.style.display==='';p.style.display=open?'block':'none';}})()` : `bukaProfilPelangganKu('${c.id}')`}" class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all ${bisaTukar ? 'text-white' : 'bg-violet-50 text-violet-500'}" style="${bisaTukar ? 'background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 2px 8px rgba(124,58,237,0.3);' : ''}" title="Detail Poin">
                   <i class="fas fa-star text-[11px]"></i>
-                </button>` : ''}
+                </button>
                 <button onclick="bukaProfilPelangganKu('${c.id}')" class="w-9 h-9 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Profil">
                   <i class="fas fa-user-circle text-[11px]"></i>
                 </button>
