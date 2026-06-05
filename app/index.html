@@ -11373,7 +11373,7 @@
           const jualSat = it.jualSatuan || it.jual;
           const modalSat = it.modalSatuan || it.modal;
           detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Modal: <b style="color:#64748b;">Rp ${fmt(modalSat)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Jual: <b style="color:#0061C2;">Rp ${fmt(jualSat)}${qty>1?' × '+qty+' = <b style='color:#0061C2;font-size:10px;'>Rp '+fmt(jualSat*qty)+'</b>':''}</b></span>
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Jual: <b style="color:#0061C2;">Rp ${fmt(jualSat)}${qty>1?' × '+qty+' = <b style="color:#0061C2;font-size:10px;">Rp '+fmt(jualSat*qty)+'</b>':''}</b></span>
                     <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Laba: <b style="color:#10b981;">Rp ${fmt((jualSat - modalSat)*qty)}</b></span>`;
         }
 
