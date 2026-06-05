@@ -1389,10 +1389,11 @@ async function requestTukar(tipe,hadiahIdx){
 
   if(tipe==='diskon'){
     if(poin<100){swalErr('Poin belum cukup (min. 100 poin).');return;}
-    const nd=Math.floor(poin/100)*(poinCfg.nilaiTukar||1000);
+    const kelipatan=Math.floor(poin/100);
+    const nd=kelipatan*(poinCfg.nilaiTukar||1000);
+    poinDipakai=kelipatan*100; // hanya poin kelipatan 100 yg dipakai, sisa poin tidak hangus
     label='Diskon Rp '+fmt(nd);
-    poinDipakai=poin;
-    payload={tipe:'diskon',nilaiDiskon:nd,poinDipakai:poin};
+    payload={tipe:'diskon',nilaiDiskon:nd,poinDipakai};
   } else {
     const h=(poinCfg.daftarHadiah||[])[hadiahIdx];
     if(!h)return;
