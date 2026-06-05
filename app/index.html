@@ -7880,7 +7880,7 @@
                 <p class="kasir-field-label" style="color:#0369a1;">MODAL</p>
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] font-black text-slate-400">Rp</span>
-                  <input type="number" id="kd-modal" class="kasir-field-input text-sky-700" placeholder="0" oninput="updateKasirLaba('digital')">
+                  <input type="number" id="kd-modal" class="kasir-field-input text-sky-700" placeholder="0" min="0" oninput="updateKasirLaba('digital')">
                 </div>
               </div>
             </div>
@@ -8400,7 +8400,7 @@
                 <p class="kasir-field-label">Nominal Transaksi</p>
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] font-black text-slate-400">Rp</span>
-                  <input type="number" id="ke-nominal" class="kasir-field-input" placeholder="0"
+                  <input type="number" id="ke-nominal" class="kasir-field-input" placeholder="0" min="0"
                     oninput="updateEwalletCalc();if(typeof renderQuickBayarBtns==='function')renderQuickBayarBtns('ke');if(typeof hitungKembalian==='function')hitungKembalian('ke');refreshKePoinInfo();">
                 </div>
               </div>
@@ -9008,7 +9008,7 @@
             <select id="m-h-customer-select" class="input-premium" onchange="toggleManualDebtName()"></select>
             <input type="text" id="m-h-nama-manual" class="input-premium mt-2 hidden" placeholder="Ketik nama kreditur di sini...">
           </div>
-          <div><label>Jumlah Hutang</label><input type="number" id="m-h-jumlah" class="input-premium" placeholder="0"></div>
+          <div><label>Jumlah Hutang</label><input type="number" id="m-h-jumlah" class="input-premium" placeholder="0" min="0"></div>
           <div id="container-h-wallet">
             <label id="label-h-wallet">Pilih Dompet</label>
             <select id="m-h-wallet" class="input-premium"></select>
@@ -9036,7 +9036,7 @@
         <div class="space-y-4">
           <input type="hidden" id="pay-h-id">
           <div><label>Sisa Hutang</label><p id="pay-h-total" class="text-xl font-black text-red-600">Rp 0</p></div>
-          <div><label>Jumlah Pembayaran</label><input type="number" id="pay-h-amount" class="input-premium" placeholder="0"></div>
+          <div><label>Jumlah Pembayaran</label><input type="number" id="pay-h-amount" class="input-premium" placeholder="0" min="0"></div>
           <div><label>Sumber / Tujuan Dana</label><select id="pay-h-wallet" class="input-premium"></select></div>
           <button onclick="processPayHutang()" class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black cursor-pointer border-0">PROSES PEMBAYARAN</button>
         </div>
@@ -9053,7 +9053,7 @@
         <div class="space-y-4">
           <input type="hidden" id="edit-h-id">
           <div><label>Nama</label><input type="text" id="edit-h-nama" class="input-premium"></div>
-          <div><label>Jumlah</label><input type="number" id="edit-h-jumlah" class="input-premium"></div>
+          <div><label>Jumlah</label><input type="number" id="edit-h-jumlah" class="input-premium" min="0"></div>
           <div><label>Keterangan</label><input type="text" id="edit-h-ket" class="input-premium"></div>
           <div>
             <label style="display:flex;align-items:center;gap:6px;">
@@ -9539,8 +9539,8 @@
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <div><label>Harga Modal</label><input type="number" id="p-modal" class="input-premium" value="0"></div>
-            <div><label>Harga Jual</label><input type="number" id="p-jual" class="input-premium" value="0"></div>
+            <div><label>Harga Modal</label><input type="number" id="p-modal" class="input-premium" value="0" min="0"></div>
+            <div><label>Harga Jual</label><input type="number" id="p-jual" class="input-premium" value="0" min="0"></div>
           </div>
 
           <!-- Stok (hanya tampil jika fisik) -->
@@ -9597,7 +9597,7 @@
         <div class="space-y-4">
           <div><label>Nama Dompet</label><input type="text" id="w-nama" class="input-premium" placeholder="Contoh: Kas Utama, BRI, GoPay"></div>
           <div><label>Tipe</label><select id="w-tipe" class="input-premium"><option value="kas">Kas Tunai</option><option value="digital">Digital/Bank</option></select></div>
-          <div><label>Saldo Awal</label><input type="number" id="w-saldo" class="input-premium" value="0"></div>
+          <div><label>Saldo Awal</label><input type="number" id="w-saldo" class="input-premium" value="0" min="0"></div>
           <button onclick="saveWallet()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">SIMPAN</button>
         </div>
       </div>
@@ -9613,7 +9613,7 @@
         <div class="space-y-4">
           <div><label>Dari Dompet</label><select id="tr-from" class="input-premium" onchange="setLastModalWallet(this.value)"></select></div>
           <div><label>Ke Dompet</label><select id="tr-to" class="input-premium"></select></div>
-          <div><label>Jumlah Transfer</label><input type="number" id="tr-amount" class="input-premium" placeholder="0"></div>
+          <div><label>Jumlah Transfer</label><input type="number" id="tr-amount" class="input-premium" placeholder="0" min="0"></div>
           <button onclick="processTransfer()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-black cursor-pointer border-0">TRANSFER</button>
         </div>
       </div>
@@ -9635,7 +9635,7 @@
               <option value="kurang">Kurangi Saldo (-)</option>
             </select>
           </div>
-          <div><label>Jumlah Nominal Perubahan</label><input type="number" id="adj-amount" class="input-premium" placeholder="0"></div>
+          <div><label>Jumlah Nominal Perubahan</label><input type="number" id="adj-amount" class="input-premium" placeholder="0" min="0"></div>
           <div><label>Alasan / Keterangan</label><input type="text" id="adj-reason" class="input-premium" placeholder="Contoh: Koreksi selisih, Bonus harian"></div>
           <button onclick="processAdjustment()" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-black shadow-lg shadow-amber-200 cursor-pointer border-0">SINKRONKAN SALDO</button>
         </div>
@@ -9653,8 +9653,8 @@
           <input type="hidden" id="edit-tr-id">
           <div><label>Tanggal Transaksi</label><input type="date" id="edit-tr-tgl" class="input-premium"></div>
           <div><label>Nama Pelanggan</label><input type="text" id="edit-tr-pelanggan" class="input-premium" placeholder="Nama Pelanggan"></div>
-          <div><label>Harga Modal (Rp)</label><input type="number" id="edit-tr-modal" class="input-premium" placeholder="0"></div>
-          <div><label>Harga Jual (Rp)</label><input type="number" id="edit-tr-jual" class="input-premium" placeholder="0"></div>
+          <div><label>Harga Modal (Rp)</label><input type="number" id="edit-tr-modal" class="input-premium" placeholder="0" min="0"></div>
+          <div><label>Harga Jual (Rp)</label><input type="number" id="edit-tr-jual" class="input-premium" placeholder="0" min="0"></div>
           <div id="edit-tr-wallet-modal-wrap">
             <label>Modal Dompet <span style="font-size:11px;color:#94a3b8;font-weight:400;">(dompet sumber modal)</span></label>
             <select id="edit-tr-wallet-modal" class="input-premium">
@@ -9805,6 +9805,9 @@
 
     // ---- MODAL OPEN / CLOSE ----
     // FIX: Semua modal kini dibuka/tutup dengan fungsi terpusat, tanpa event onclick di overlay
+    // ── Modal stack untuk handle tombol back HP ──
+    const _modalStack = [];
+
     function openModal(id) {
       const overlay = document.getElementById(id);
       if (!overlay) return;
@@ -9812,7 +9815,17 @@
       if (['modal-tr-wallet','modal-adj-wallet','modal-wallet','modal-pay-hutang','modal-add-hutang'].includes(id)) {
         updateSelects();
       }
+      // Scroll modal ke atas setiap kali dibuka (Bug #6 fix)
+      const content = overlay.querySelector('.modal-content');
+      if (content) content.scrollTop = 0;
+
       overlay.classList.add('active');
+
+      // Bug #1 fix: push history state agar tombol back HP menutup modal
+      if (!_modalStack.includes(id)) {
+        _modalStack.push(id);
+        history.pushState({ modalId: id }, '', location.href);
+      }
     }
 
     function closeModal(id) {
@@ -9822,15 +9835,130 @@
       if (id === 'modal-pelanggan' && typeof _cancelPreRender === 'function') {
         _cancelPreRender();
       }
+      // Hapus dari stack
+      const idx = _modalStack.indexOf(id);
+      if (idx !== -1) _modalStack.splice(idx, 1);
+    }
+
+    function _closeTopModal() {
+      // Tutup modal paling atas di stack
+      const activeModals = Array.from(document.querySelectorAll('.modal-overlay.active'));
+      if (activeModals.length === 0) return false;
+      // Ambil yang z-index tertinggi
+      const top = activeModals.reduce((a, b) => {
+        const zA = parseInt(a.style.zIndex || getComputedStyle(a).zIndex) || 2000;
+        const zB = parseInt(b.style.zIndex || getComputedStyle(b).zIndex) || 2000;
+        return zB > zA ? b : a;
+      });
+      top.classList.remove('active');
+      const id = top.id;
+      if (id === 'modal-pelanggan' && typeof _cancelPreRender === 'function') _cancelPreRender();
+      const idx = _modalStack.indexOf(id);
+      if (idx !== -1) _modalStack.splice(idx, 1);
+      return true;
+    }
+
+    // Bug #1: Tombol back Android menutup modal, bukan keluar app
+    window.addEventListener('popstate', function(e) {
+      if (_closeTopModal()) {
+        // Ada modal yang ditutup — jangan navigasi ke belakang
+        // Push ulang agar stack browser tetap ada jika masih ada modal
+        if (_modalStack.length > 0) {
+          history.pushState({ modalId: _modalStack[_modalStack.length-1] }, '', location.href);
+        }
+      }
+    });
+
+    // Bug #2: Escape key menutup modal teratas
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') _closeTopModal();
+    });
+
+    // Form dirty check — cek apakah form punya data yang belum disimpan
+    const _DIRTY_FORMS = {
+      'modal-produk':    () => { const n=document.getElementById('p-nama'); return n && n.value.trim().length > 0; },
+      'modal-pelanggan': () => { const n=document.getElementById('c-nama'); return n && n.value.trim().length > 0; },
+      'modal-wallet':    () => { const n=document.getElementById('w-nama'); return n && n.value.trim().length > 0; },
+      'modal-add-hutang':() => { const n=document.getElementById('m-h-nama'); return n && n.value.trim().length > 0; },
+      'modal-form-supplier': () => { const n=document.getElementById('form-sup-nama'); return n && n.value.trim().length > 0; },
+    };
+    async function _maybeCloseModal(id) {
+      const isDirty = _DIRTY_FORMS[id] && _DIRTY_FORMS[id]();
+      if (isDirty) {
+        const r = await Swal.fire({
+          icon: 'warning', title: 'Tutup form?',
+          text: 'Data yang sudah diisi akan hilang.',
+          showCancelButton: true,
+          confirmButtonText: 'Ya, tutup', cancelButtonText: 'Lanjut isi',
+          confirmButtonColor: '#dc2626',
+          customClass: { popup: 'swal2-ku' }
+        });
+        if (!r.isConfirmed) return;
+      }
+      const overlay = document.getElementById(id);
+      if (overlay) overlay.classList.remove('active');
+      if (id === 'modal-pelanggan' && typeof _cancelPreRender === 'function') _cancelPreRender();
+      const idx = _modalStack.indexOf(id);
+      if (idx !== -1) _modalStack.splice(idx, 1);
     }
 
     // Tutup modal jika klik tepat di overlay (bukan di dalam konten)
     document.addEventListener('click', function(e) {
-      // Tutup modal hanya jika klik TEPAT di overlay (backdrop), bukan di dalam konten
       if (e.target.classList.contains('modal-overlay')) {
-        e.target.classList.remove('active');
+        const id = e.target.id;
+        if (_DIRTY_FORMS[id]) {
+          _maybeCloseModal(id);
+        } else {
+          e.target.classList.remove('active');
+          if (id === 'modal-pelanggan' && typeof _cancelPreRender === 'function') _cancelPreRender();
+          const idx = _modalStack.indexOf(id);
+          if (idx !== -1) _modalStack.splice(idx, 1);
+        }
       }
     });
+
+    // Bug #5: Swipe down untuk tutup modal
+    (function() {
+      let startY = 0, startScrollTop = 0, isDragging = false;
+      document.addEventListener('touchstart', function(e) {
+        const content = e.target.closest('.modal-content');
+        if (!content) return;
+        startY = e.touches[0].clientY;
+        startScrollTop = content.scrollTop;
+        isDragging = true;
+      }, { passive: true });
+      document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        const content = e.target.closest('.modal-content');
+        if (!content) return;
+        const dy = e.touches[0].clientY - startY;
+        // Hanya swipe down saat sudah di atas scroll
+        if (dy > 0 && startScrollTop <= 0) {
+          content.style.transform = 'translateY(' + Math.min(dy * 0.4, 80) + 'px)';
+          content.style.transition = 'none';
+        }
+      }, { passive: true });
+      document.addEventListener('touchend', function(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        const content = e.target.closest('.modal-content');
+        if (!content) return;
+        const dy = e.changedTouches[0].clientY - startY;
+        content.style.transform = '';
+        content.style.transition = '';
+        if (dy > 90 && startScrollTop <= 0) {
+          // Swipe down cukup jauh → tutup modal
+          const overlay = content.closest('.modal-overlay');
+          if (overlay) {
+            overlay.classList.remove('active');
+            const id = overlay.id;
+            if (id === 'modal-pelanggan' && typeof _cancelPreRender === 'function') _cancelPreRender();
+            const idx = _modalStack.indexOf(id);
+            if (idx !== -1) _modalStack.splice(idx, 1);
+          }
+        }
+      }, { passive: true });
+    })();
 
     // ---- SYNC PILL (legacy stub - digantikan sync engine v3) ----
     function showSync(s) { /* digantikan showSyncToast */ }
@@ -11081,7 +11209,8 @@
           produkNama: db.inventory[pIdx].nama,
           modal: db.inventory[pIdx].modal, jual: jualFinal,
           produkId: pid,
-          diskon, biayaTambahan
+          diskon, biayaTambahan,
+          qty: 1, jualSatuan: jualFinal, modalSatuan: db.inventory[pIdx].modal
         };
 
         document.getElementById('kf-jual').value = '';
@@ -11146,6 +11275,29 @@
       lbl.textContent = opt && opt.value ? opt.text : '- Pilih Dompet Penerima -';
     }
 
+    function ubahQtyKeranjang(itemId, newQty) {
+      const cart = window._kasirCart.all;
+      const idx  = cart.findIndex(i => i.id === itemId);
+      if (idx === -1) return;
+      if (newQty <= 0) { hapusItemKeranjangAll(itemId); return; }
+      const it = cart[idx];
+      it.qty   = newQty;
+      // Update jual & modal total berdasarkan qty
+      if (it.tipe === 'fisik') {
+        const jualSat  = it.jualSatuan  || (it.jual  / (it.qty  || 1));
+        const modalSat = it.modalSatuan || (it.modal / (it.qty  || 1));
+        it.jualSatuan  = jualSat;
+        it.modalSatuan = modalSat;
+        it.jual  = jualSat  * newQty;
+        it.modal = modalSat * newQty;
+      } else if (it.tipe === 'ewallet') {
+        // ewallet qty: multiply adminAgen (keuntungan per item)
+        it.qty = newQty;
+      }
+      renderKeranjangAll();
+      if (window.updateKasirPoinPreview) window.updateKasirPoinPreview();
+    }
+
     function hapusItemKeranjangAll(itemId) {
       window._kasirCart.all = window._kasirCart.all.filter(i => i.id !== itemId);
       renderKeranjangAll();
@@ -11179,14 +11331,23 @@
       populateCartWallet();
       if (countEl) countEl.textContent = items.length + ' item';
 
-      // Refresh section poin
+      // Refresh section poin + preview total poin keranjang
       if (window.refreshKasirPoinSection) window.refreshKasirPoinSection();
       if (typeof refreshAllPoinInfo === 'function') refreshAllPoinInfo();
+      if (window.updateKasirPoinPreview) setTimeout(window.updateKasirPoinPreview, 20);
 
       let totalBayar = 0, totalLaba = 0;
       items.forEach(it => {
-        totalBayar += it.jual;
-        totalLaba  += it.tipe === 'ewallet' ? it.ewlData.adminAgen : (it.jual - it.modal);
+        const qty = it.qty || 1;
+        if (it.tipe === 'ewallet') {
+          totalBayar += it.ewlData.totalBayar * qty;
+          totalLaba  += it.ewlData.adminAgen  * qty;
+        } else {
+          const jualSat  = it.jualSatuan  || it.jual;
+          const modalSat = it.modalSatuan || it.modal;
+          totalBayar += jualSat  * qty;
+          totalLaba  += (jualSat - modalSat) * qty;
+        }
       });
       if (totalBayarEl) totalBayarEl.textContent = 'Rp ' + fmt(totalBayar);
       if (totalLabaEl)  totalLabaEl.textContent  = 'Rp ' + fmt(totalLaba);
@@ -11198,18 +11359,41 @@
       };
 
       listEl.innerHTML = items.map((it, idx) => {
-        const m  = tipeMeta[it.tipe] || tipeMeta.digital;
-        const laba = it.tipe === 'ewallet' ? it.ewlData.adminAgen : (it.jual - it.modal);
+        const m    = tipeMeta[it.tipe] || tipeMeta.digital;
+        const qty  = it.qty || 1;
+        const laba = it.tipe === 'ewallet' ? it.ewlData.adminAgen * qty : (it.jual - it.modal);
+        const hasQty = it.tipe === 'fisik' || it.tipe === 'ewallet';
+
         let detail = '';
         if (it.tipe === 'ewallet') {
           detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Nominal: <b style="color:#7c3aed;">Rp ${fmt(it.ewlData.nominal)}</b></span>
                     <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Admin bank: <b style="color:#f97316;">Rp ${fmt(it.ewlData.adminBank)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Untung: <b style="color:#10b981;">Rp ${fmt(it.ewlData.adminAgen)}</b></span>`;
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Untung: <b style="color:#10b981;">Rp ${fmt(it.ewlData.adminAgen * qty)}</b></span>`;
         } else {
-          detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Modal: <b style="color:#64748b;">Rp ${fmt(it.modal)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Jual: <b style="color:#0061C2;">Rp ${fmt(it.jual)}</b></span>
-                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Laba: <b style="color:#10b981;">Rp ${fmt(laba)}</b></span>`;
+          const jualSat = it.jualSatuan || it.jual;
+          const modalSat = it.modalSatuan || it.modal;
+          detail = `<span style="font-size:9px;font-weight:700;color:#94a3b8;">Modal: <b style="color:#64748b;">Rp ${fmt(modalSat)}</b></span>
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Jual: <b style="color:#0061C2;">Rp ${fmt(jualSat)}${qty>1?' × '+qty+' = <b style='color:#0061C2;font-size:10px;'>Rp '+fmt(jualSat*qty)+'</b>':''}</b></span>
+                    <span style="font-size:9px;font-weight:700;color:#94a3b8;margin-left:8px;">Laba: <b style="color:#10b981;">Rp ${fmt((jualSat - modalSat)*qty)}</b></span>`;
         }
+
+        // Pill qty control (fisik & ewallet only)
+        const pillHtml = hasQty ? `
+          <div style="display:flex;align-items:center;gap:0;border:1.5px solid #e2e8f0;border-radius:100px;overflow:hidden;background:#f8fafc;flex-shrink:0;">
+            <button onclick="${qty===1 ? "hapusItemKeranjangAll('" + it.id + "')" : "ubahQtyKeranjang('" + it.id + "'," + (qty-1) + ")" }"
+              style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:${qty===1?'#ef4444':'#64748b'};font-size:${qty===1?'11px':'16px'};font-weight:900;">
+              ${qty===1 ? '<i class="fas fa-trash"></i>' : '−'}
+            </button>
+            <span style="min-width:24px;text-align:center;font-size:13px;font-weight:900;color:#1e293b;">${qty}</span>
+            <button onclick="ubahQtyKeranjang('${it.id}', ${qty+1})"
+              style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0061C2;font-size:18px;font-weight:900;">+</button>
+          </div>` : `
+          <button onclick="hapusItemKeranjangAll('${it.id}')"
+            style="width:26px;height:26px;border-radius:8px;background:#fee2e2;border:none;cursor:pointer;
+                   display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-trash" style="color:#ef4444;font-size:9px;"></i>
+          </button>`;
+
         return `
         <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #f1f5f9;background:white;">
           <div style="width:28px;height:28px;border-radius:9px;background:${m.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:900;color:${m.color};">${idx+1}</div>
@@ -11222,11 +11406,7 @@
             </div>
             <div>${detail}</div>
           </div>
-          <button onclick="hapusItemKeranjangAll('${it.id}')"
-            style="width:26px;height:26px;border-radius:8px;background:#fee2e2;border:none;cursor:pointer;
-                   display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="fas fa-trash" style="color:#ef4444;font-size:9px;"></i>
-          </button>
+          ${pillHtml}
         </div>`;
       }).join('');
     }
@@ -11250,8 +11430,14 @@
       const activeStatus = document.getElementById('kd-status')?.value || 'Lunas';
       const activeCust   = document.getElementById('kd-customer')?.value || document.getElementById('kf-customer')?.value || document.getElementById('ke-customer')?.value || 'Umum';
 
-      const totalBayar = items.reduce((a,b) => a + b.jual, 0);
-      const totalLaba  = items.reduce((a,b) => a + (b.tipe==='ewallet' ? b.ewlData.adminAgen : b.jual - b.modal), 0);
+      const totalBayar = items.reduce((a,b) => {
+        const qty = b.qty || 1;
+        return a + (b.tipe==='ewallet' ? b.ewlData.totalBayar*qty : (b.jualSatuan||b.jual)*qty);
+      }, 0);
+      const totalLaba = items.reduce((a,b) => {
+        const qty = b.qty || 1;
+        return a + (b.tipe==='ewallet' ? b.ewlData.adminAgen*qty : ((b.jualSatuan||b.jual)-(b.modalSatuan||b.modal))*qty);
+      }, 0);
 
       const konfirm = await (_getMySwal()||Swal).fire({
         title: 'Proses Semua?',
@@ -11289,28 +11475,34 @@
           db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'DIG: '+it.produkNama, modal:it.modal, jual:it.jual, pelanggan:cust, status, walletModal:it.wModalId, walletJual:wPenerimaId, pRef:it.produkId, tipe:'digital', kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
 
         } else if (it.tipe === 'fisik') {
+          const qty = it.qty || 1;
+          const jualSat  = it.jualSatuan  || it.jual;
+          const modalSat = it.modalSatuan || it.modal;
+          const jualTotal  = jualSat  * qty;
+          const modalTotal = modalSat * qty;
           const pIdx = db.inventory.findIndex(p => p.id === it.produkId);
-          if (pIdx !== -1 && db.inventory[pIdx].stok > 0) db.inventory[pIdx].stok -= 1;
+          if (pIdx !== -1) db.inventory[pIdx].stok = Math.max(0, (db.inventory[pIdx].stok || 0) - qty);
           if (status === 'Lunas') {
             const wpIdx = db.dompet.findIndex(w => w.id === wPenerimaId);
-            if (wpIdx !== -1) { db.dompet[wpIdx].saldo += it.jual; addMutasi(wPenerimaId, it.jual, 'in', 'TRX LUNAS: '+it.produkNama); }
+            if (wpIdx !== -1) { db.dompet[wpIdx].saldo += jualTotal; addMutasi(wPenerimaId, jualTotal, 'in', 'TRX LUNAS: '+it.produkNama+(qty>1?' x'+qty:'')); }
           } else {
-            db.hutang.push({ id:'H-'+Date.now()+'-'+berhasil, tipe:'pelanggan', nama:cust, jumlah:it.jual, tgl, ket:'FIS: '+it.produkNama });
+            db.hutang.push({ id:'H-'+Date.now()+'-'+berhasil, tipe:'pelanggan', nama:cust, jumlah:jualTotal, tgl, ket:'FIS: '+it.produkNama+(qty>1?' x'+qty:'') });
           }
-          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'FIS: '+it.produkNama, modal:it.modal, jual:it.jual, pelanggan:cust, status, walletModal:null, walletJual:wPenerimaId, pRef:it.produkId, tipe:'fisik', kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
+          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'FIS: '+it.produkNama+(qty>1?' x'+qty:''), modal:modalTotal, jual:jualTotal, qty, pelanggan:cust, status, walletModal:null, walletJual:wPenerimaId, pRef:it.produkId, tipe:'fisik', kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
 
         } else if (it.tipe === 'ewallet') {
+          const qty = it.qty || 1;
           const { jenis, nominal, adminBank, adminAgen, totalBayar: tb, wModalId, note } = it.ewlData;
           const pName = it.produkNama;
           const wMIdx = db.dompet.findIndex(w => w.id === wModalId);
-          if (wMIdx !== -1) { db.dompet[wMIdx].saldo -= (nominal + adminBank); addMutasi(wModalId, nominal+adminBank, 'out', 'EWL OUT: '+pName); }
+          if (wMIdx !== -1) { db.dompet[wMIdx].saldo -= (nominal + adminBank)*qty; addMutasi(wModalId, (nominal+adminBank)*qty, 'out', 'EWL OUT: '+pName+(qty>1?' x'+qty:'')); }
           if (status === 'Lunas') {
             const wBIdx = db.dompet.findIndex(w => w.id === wPenerimaId);
-            if (wBIdx !== -1) { db.dompet[wBIdx].saldo += tb; addMutasi(wPenerimaId, tb, 'in', 'EWL IN: '+pName); }
+            if (wBIdx !== -1) { db.dompet[wBIdx].saldo += tb*qty; addMutasi(wPenerimaId, tb*qty, 'in', 'EWL IN: '+pName+(qty>1?' x'+qty:'')); }
           } else {
-            db.hutang.push({ id:'H-'+Date.now()+'-'+berhasil, tipe:'pelanggan', nama:cust, jumlah:tb, tgl, ket:'EWL: '+pName });
+            db.hutang.push({ id:'H-'+Date.now()+'-'+berhasil, tipe:'pelanggan', nama:cust, jumlah:tb*qty, tgl, ket:'EWL: '+pName+(qty>1?' x'+qty:'') });
           }
-          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'EWL: '+pName, modal:nominal+adminBank, jual:tb, pelanggan:cust, status, walletModal:wModalId, walletJual:wPenerimaId, tipe:'ewallet', adminBank, adminAgen, nominal, kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
+          db.transaksi.push({ id:'TR-'+Date.now()+'-'+berhasil, tgl, produk:'EWL: '+pName+(qty>1?' x'+qty:''), modal:(nominal+adminBank)*qty, jual:tb*qty, qty, pelanggan:cust, status, walletModal:wModalId, walletJual:wPenerimaId, tipe:'ewallet', adminBank:adminBank*qty, adminAgen:adminAgen*qty, nominal:nominal*qty, kasir_nama: localStorage.getItem('k_kasir_nama') || undefined });
         }
 
         berhasil++;
@@ -11327,8 +11519,22 @@
         const _poinSelIdx = parseInt(document.getElementById('kasir-poin-jenis-trx')?.value);
         const _bonusTrx   = _poinCfg.bonusTrx || [];
         if (!isNaN(_poinSelIdx) && _bonusTrx[_poinSelIdx]) {
-          const _poinDapat = _bonusTrx[_poinSelIdx].poin;
-          const _poinJenis = _bonusTrx[_poinSelIdx].nama;
+          const _poinPerItem = _bonusTrx[_poinSelIdx].poin;
+          const _poinJenis   = _bonusTrx[_poinSelIdx].nama;
+          const _selectedKat = _bonusTrx[_poinSelIdx].kategori || '';
+
+          // Hitung poin berdasarkan jumlah item di keranjang:
+          // - Jika bonusTrx punya kategori → hanya item yang kategorinya cocok yang dihitung
+          // - Jika tidak ada kategori (pilih manual) → semua item di keranjang × poinPerItem
+          let _jumlahItem = 0;
+          if (_selectedKat) {
+            _jumlahItem = items.filter(it => (it.kategori || it.produkKategori || '') === _selectedKat).length;
+            if (_jumlahItem === 0) _jumlahItem = items.length; // fallback: semua item jika tidak ada yang cocok
+          } else {
+            _jumlahItem = items.length;
+          }
+          const _poinDapat = _poinPerItem * _jumlahItem;
+
           // Tambah poin ke data pelanggan
           if (window.db && window.db.customers) {
             const _cIdx = window.db.customers.findIndex(c => c.nama === activeCust);
@@ -11337,7 +11543,7 @@
               if (!window.db.customers[_cIdx].poinLog) window.db.customers[_cIdx].poinLog = [];
               window.db.customers[_cIdx].poinLog.push({
                 tgl: new Date().toISOString().split('T')[0],
-                jenis: _poinJenis,
+                jenis: _poinJenis + (_jumlahItem > 1 ? ' (x' + _jumlahItem + ')' : ''),
                 poin: _poinDapat
               });
             }
@@ -22308,7 +22514,7 @@ ${t.bayar ? `
                 <li>Tap ikon <strong>✏️ (pensil)</strong> di kartu supplier untuk edit nama, HP, atau alamat</li>
                 <li>Tap ikon <strong>🗑️ (tempat sampah)</strong> untuk hapus supplier</li>
               </ul>
-              <div class="panduan-warning">⚠️ Menghapus supplier tidak menghapus riwayat restok &amp; hutang yang sudah tercatat. Data historis tetap aman.</div>
+              <div class="panduan-warning">⚠️ Supplier yang masih punya hutang tidak bisa dihapus — lunasi dulu. Setelah dihapus, riwayat pembelian tetap tersimpan untuk laporan keuangan.</div>
             </div>
           </div>
 
@@ -25413,11 +25619,23 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     const sel  = document.getElementById('kasir-poin-jenis-trx');
     const prev = document.getElementById('kasir-poin-preview');
     const val  = document.getElementById('kasir-poin-preview-val');
+    const lbl  = document.getElementById('kasir-poin-preview-lbl');
     if (!sel || !prev) return;
     const idx = parseInt(sel.value);
     if (!isNaN(idx) && cfg.bonusTrx && cfg.bonusTrx[idx]) {
+      const poinPerItem  = cfg.bonusTrx[idx].poin;
+      const selectedKat  = cfg.bonusTrx[idx].kategori || '';
+      const cartItems    = (window._kasirCart && window._kasirCart.all) || [];
+      let jumlahItem = 0;
+      if (selectedKat && cartItems.length > 0) {
+        jumlahItem = cartItems.filter(it => (it.kategori || it.produkKategori || '') === selectedKat).length;
+        if (jumlahItem === 0) jumlahItem = cartItems.length;
+      } else {
+        jumlahItem = Math.max(cartItems.length, 1); // minimal 1 jika keranjang kosong
+      }
+      const totalPoin = poinPerItem * jumlahItem;
       prev.style.display = 'flex';
-      if (val) val.textContent = '+' + cfg.bonusTrx[idx].poin + ' poin';
+      if (val) val.textContent = '+' + totalPoin + ' poin' + (jumlahItem > 1 ? ' (' + poinPerItem + ' × ' + jumlahItem + ' item)' : '');
     } else {
       prev.style.display = 'none';
     }
@@ -26392,7 +26610,7 @@ window.addEventListener('resize', function() {
       </div>
       <div>
         <label style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:5px;">Jumlah yang Dibayar</label>
-        <input type="number" id="bhs-jumlah" placeholder="0" class="input-premium">
+        <input type="number" id="bhs-jumlah" placeholder="0" min="0" class="input-premium">
       </div>
       <div>
         <label style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:5px;">Bayar dari Dompet</label>
@@ -26552,14 +26770,18 @@ function renderRiwayatBeli() {
 
   list.innerHTML = data.map(r => {
     const sup = (db.supplier||[]).find(s => s.id === r.supplier_id);
+    const supNama = sup ? sup.nama : (r.supplier_nama_arsip || r.supplier_nama || null);
     const statusColor = r.status_bayar === 'lunas' ? '#059669' : '#dc2626';
     const statusBg = r.status_bayar === 'lunas' ? 'rgba(5,150,105,0.1)' : 'rgba(239,68,68,0.1)';
     const statusLabel = r.status_bayar === 'lunas' ? '✅ Lunas' : `⏳ Hutang (sisa ${fmtRp(r.sisa_hutang||0)})`;
+    const supLabel = supNama
+      ? (sup ? '🏭 '+supNama : '🏭 '+supNama+' <span style="font-size:7px;color:#94a3b8;font-weight:700;">(arsip)</span>')
+      : '<span style="color:#94a3b8;">Tanpa supplier</span>';
     return `<div style="background:white;border-radius:14px;padding:12px 14px;border:1.5px solid #fed7aa;box-shadow:0 2px 6px rgba(234,88,12,0.05);">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
         <div style="flex:1;min-width:0;">
           <p style="font-size:12px;font-weight:900;color:#1e293b;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.produk_nama||'-'}</p>
-          <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">${sup ? '🏭 '+sup.nama : 'Supplier tidak diset'} · ${r.tgl||'-'}</p>
+          <p style="font-size:9px;font-weight:700;color:#64748b;margin:0;">${supLabel} · ${r.tgl||'-'}</p>
           ${r.faktur ? `<p style="font-size:8px;font-weight:700;color:#94a3b8;margin:2px 0 0;">Faktur: ${r.faktur}</p>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0;">
@@ -26608,7 +26830,13 @@ function renderHutangSupplier() {
       + '<i class="fas fa-file-invoice-dollar" style="color:white;font-size:13px;"></i></div>'
       + '<div style="flex:1;min-width:0;">'
       + '<p style="font-size:12px;font-weight:900;color:#1e293b;margin:0;">' + (r.produk_nama||'-') + '</p>'
-      + '<p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">' + (sup ? '🏭 '+sup.nama : '-') + ' · ' + (r.tgl||'-') + '</p>'
+      + (function(){
+          const supNama = sup ? sup.nama : (r.supplier_nama_arsip || r.supplier_nama || null);
+          const supTxt  = supNama
+            ? (sup ? '🏭 '+supNama : '🏭 '+supNama+' <span style="font-size:7px;color:#94a3b8;">(arsip)</span>')
+            : '-';
+          return '<p style="font-size:9px;font-weight:700;color:#64748b;margin:2px 0 0;">' + supTxt + ' · ' + (r.tgl||'-') + '</p>';
+        })()
       + fakturHtml
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">'
       + '<span style="font-size:10px;font-weight:700;color:#94a3b8;">Total: ' + fmtRp(r.total_beli||0) + '</span>'
@@ -26707,19 +26935,61 @@ function simpanSupplier() {
 function hapusSupplier() {
   const id = document.getElementById('form-sup-id').value;
   if (!id) return;
+
+  // Cek hutang yang belum lunas
+  const hutangAktif = (db.riwayat_restok||[]).filter(r =>
+    r.supplier_id === id && r.status_bayar === 'hutang' && (r.sisa_hutang||0) > 0
+  );
+
+  if (hutangAktif.length > 0) {
+    const totalHutang = hutangAktif.reduce((a,b) => a + (b.sisa_hutang||0), 0);
+    Swal.fire({
+      icon: 'error',
+      title: 'Tidak Bisa Dihapus!',
+      html: '<p style="font-size:13px;color:#475569;">Supplier ini masih memiliki <b>' + hutangAktif.length + ' hutang</b> yang belum lunas.<br><br>' +
+            'Total sisa hutang: <b style="color:#dc2626;">Rp ' + totalHutang.toLocaleString('id-ID') + '</b><br><br>' +
+            '<span style="font-size:11px;color:#94a3b8;">Lunasi semua hutang terlebih dahulu sebelum menghapus supplier.</span></p>',
+      confirmButtonText: 'Mengerti',
+      confirmButtonColor: '#dc2626',
+      customClass: { popup: 'swal2-ku' }
+    });
+    return;
+  }
+
+  // Tidak ada hutang aktif — boleh hapus
+  const sup = (db.supplier||[]).find(s => s.id === id);
+  const namaSup = sup ? sup.nama : 'supplier';
+  const jmlRiwayat = (db.riwayat_restok||[]).filter(r => r.supplier_id === id).length;
+
+  const infoRiwayat = jmlRiwayat > 0
+    ? '<br><span style="font-size:11px;color:#f59e0b;"><i class="fas fa-info-circle"></i> ' + jmlRiwayat + ' riwayat pembelian tetap tersimpan untuk laporan keuangan.</span>'
+    : '';
+
   Swal.fire({
-    icon:'warning', title:'Hapus Supplier?',
-    text:'Data supplier akan dihapus. Riwayat pembelian tetap tersimpan.',
-    showCancelButton:true, confirmButtonText:'Hapus', cancelButtonText:'Batal',
-    customClass:{popup:'swal2-ku'}
+    icon: 'warning',
+    title: 'Hapus Supplier?',
+    html: '<p style="font-size:13px;color:#475569;">Data <b>' + namaSup + '</b> akan dihapus.' + infoRiwayat + '</p>',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Hapus',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#dc2626',
+    customClass: { popup: 'swal2-ku' }
   }).then(r => {
     if (!r.isConfirmed) return;
     db.supplier = (db.supplier||[]).filter(s => s.id !== id);
-  if (typeof window.sync === 'function') window.sync(); else if (typeof sync === 'function') sync();
+    // Riwayat restok TIDAK dihapus — freeze nama supplier untuk audit trail
+    (db.riwayat_restok||[]).forEach(function(r) {
+      if (r.supplier_id === id && !r.supplier_nama_arsip) {
+        r.supplier_nama_arsip = r.supplier_nama || namaSup;
+        r.supplier_id = null;
+      }
+    });
+    if (typeof window.sync === 'function') window.sync(); else if (typeof sync === 'function') sync();
     closeModal('modal-form-supplier');
     renderSupplierList();
     populateSupplierDropdowns();
     updateSupplierCountLabel();
+    Swal.fire({ icon:'success', title:'Supplier dihapus', timer:1500, showConfirmButton:false, customClass:{popup:'swal2-ku'} });
   });
 }
 
