@@ -13238,6 +13238,11 @@
         return;
       }
 
+      // Ambil poinConfig sekali untuk semua item
+      const _pCfg = window.getPoinConfig ? window.getPoinConfig() : null;
+      const _pAktif = _pCfg && _pCfg.aktif;
+      const _nilaiTukar = (_pCfg && _pCfg.nilaiTukar) || 1000;
+
       list.innerHTML = items.map((c, idx) => {
         const [gradClass, textClass] = getAvatarColor(c.nama);
         const initials = (c.nama||'?').trim().split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
@@ -13258,60 +13263,140 @@
           }
         }
 
+        // ── Panel Info Poin ──
+        const bisaTukar = _pAktif && poin >= 100;
+        const nilaiDiskon = bisaTukar ? Math.floor(poin / 100) * _nilaiTukar : 0;
+        const poinProgress = Math.min(100, Math.round((poin / 100) * 100));
+        const riwayat = (c.riwayatPoin || []).slice(-3).reverse(); // 3 terakhir
+        const poinPanelId = 'poin-panel-' + (c.id||idx);
+
+        const riwayatHtml = riwayat.length === 0
+          ? '<p style="font-size:9px;color:#94a3b8;font-weight:700;text-align:center;padding:4px 0;">Belum ada riwayat poin</p>'
+          : riwayat.map(r => {
+              const masuk = Number(r.poin||0) >= 0;
+              return `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f8fafc;">
+                <span style="font-size:9px;font-weight:700;color:#475569;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.aktivitas||'-'}</span>
+                <span style="font-size:9px;font-weight:900;color:${masuk?'#10b981':'#ef4444'};margin-left:8px;flex-shrink:0;">${masuk?'+':''}${r.poin} ⭐</span>
+              </div>`;
+            }).join('');
+
+        const poinPanel = _pAktif ? `
+          <div id="${poinPanelId}" style="display:none;margin-top:10px;background:${bisaTukar?'rgba(124,58,237,0.04)':'rgba(248,250,252,0.8)'};border:1.5px solid ${bisaTukar?'rgba(124,58,237,0.15)':'#f1f5f9'};border-radius:14px;padding:12px;transition:all 0.3s;">
+            <!-- Header poin -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <span style="font-size:18px;">⭐</span>
+                <div>
+                  <p style="font-size:18px;font-weight:900;color:${bisaTukar?'#7c3aed':'#0f172a'};margin:0;line-height:1;">${fmt(poin)}</p>
+                  <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:1px 0 0;">TOTAL POIN</p>
+                </div>
+              </div>
+              ${bisaTukar
+                ? `<div style="text-align:right;">
+                    <p style="font-size:14px;font-weight:900;color:#7c3aed;margin:0;">Rp ${fmt(nilaiDiskon)}</p>
+                    <p style="font-size:8px;font-weight:700;color:#94a3b8;margin:1px 0 0;">NILAI DISKON</p>
+                  </div>`
+                : `<div style="text-align:right;">
+                    <p style="font-size:10px;font-weight:800;color:#94a3b8;margin:0;">${100 - poin} poin lagi</p>
+                    <p style="font-size:8px;font-weight:700;color:#cbd5e1;margin:1px 0 0;">utk bisa tukar</p>
+                  </div>`
+              }
+            </div>
+            <!-- Progress bar menuju 100 poin -->
+            ${poin < 100 ? `
+              <div style="margin-bottom:10px;">
+                <div style="background:#f1f5f9;border-radius:6px;height:5px;overflow:hidden;">
+                  <div style="height:100%;width:${poinProgress}%;background:linear-gradient(90deg,#a78bfa,#7c3aed);border-radius:6px;transition:width 0.5s;"></div>
+                </div>
+                <p style="font-size:8px;color:#94a3b8;font-weight:700;margin:4px 0 0;text-align:right;">${poin}/100 poin minimum tukar</p>
+              </div>` : ''
+            }
+            <!-- Riwayat 3 terakhir -->
+            ${riwayat.length > 0 ? `
+              <div style="margin-bottom:10px;">
+                <p style="font-size:8px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin:0 0 5px;">Riwayat Terakhir</p>
+                ${riwayatHtml}
+              </div>` : ''
+            }
+            <!-- Tombol aksi -->
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${bisaTukar ? `
+                <button onclick="window._tukarPoin('${c.id}')" style="flex:1;min-width:80px;padding:7px 6px;border-radius:10px;font-size:9px;font-weight:900;color:#fff;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+                  <i class="fas fa-gift" style="font-size:8px;"></i>Tukar Diskon
+                </button>` : ''
+              }
+              ${c.phone ? `
+                <button onclick="window._kirimInfoPoinWA('${c.id}')" style="flex:1;min-width:80px;padding:7px 6px;border-radius:10px;font-size:9px;font-weight:900;color:#fff;background:linear-gradient(135deg,#059669,#10b981);border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+                  <i class="fab fa-whatsapp" style="font-size:9px;"></i>Info ke WA
+                </button>` : ''
+              }
+              <button onclick="window._tambahPoinManual('${c.id}')" style="flex:1;min-width:80px;padding:7px 6px;border-radius:10px;font-size:9px;font-weight:900;color:#0061C2;background:rgba(0,97,194,0.08);border:1.5px solid rgba(0,97,194,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+                <i class="fas fa-plus" style="font-size:8px;"></i>Tambah
+              </button>
+            </div>
+          </div>` : '';
+
         return `
-          <div class="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden">
-            <div class="absolute top-3 left-3 w-4 h-4 flex items-center justify-center">
-              <span class="text-[8px] font-black text-slate-300">${nomor}</span>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${gradClass} flex items-center justify-center shadow-md flex-shrink-0 ml-3 relative">
-              <span class="${textClass} text-sm font-black">${initials}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center flex-wrap gap-1">
-                <p class="text-[12px] font-black uppercase text-slate-800 truncate leading-tight">${c.nama||''}</p>
-                ${bdgBirthday}
+          <div class="bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden">
+            <!-- Baris utama -->
+            <div class="p-4 flex items-center gap-4">
+              <div class="absolute top-3 left-3 w-4 h-4 flex items-center justify-center">
+                <span class="text-[8px] font-black text-slate-300">${nomor}</span>
               </div>
-              <div class="flex items-center gap-1 mt-0.5">
-                <i class="fas fa-phone text-slate-300 text-[8px]"></i>
-                <p class="text-[9px] font-bold text-slate-400">${c.phone||'-'}</p>
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${gradClass} flex items-center justify-center shadow-md flex-shrink-0 ml-3 relative">
+                <span class="${textClass} text-sm font-black">${initials}</span>
               </div>
-              <div class="flex items-center gap-2 mt-2 flex-wrap">
-                <div class="flex items-center gap-1">
-                  <div class="w-4 h-4 rounded-md bg-blue-50 flex items-center justify-center">
-                    <i class="fas fa-receipt text-blue-400 text-[7px]"></i>
-                  </div>
-                  <span class="text-[9px] font-black text-blue-600">${trxCount} TRX</span>
+              <div class="flex-1 min-w-0" style="cursor:pointer;" onclick="${_pAktif ? `(function(){var p=document.getElementById('${poinPanelId}');if(p){var open=p.style.display==='none'||p.style.display==='';p.style.display=open?'block':'none';}})()` : `bukaProfilPelangganKu('${c.id}')`}">
+                <div class="flex items-center flex-wrap gap-1">
+                  <p class="text-[12px] font-black uppercase text-slate-800 truncate leading-tight">${c.nama||''}</p>
+                  ${bdgBirthday}
                 </div>
-                <div class="w-px h-3 bg-slate-200"></div>
-                <div class="flex items-center gap-1">
-                  <div class="w-4 h-4 rounded-md ${hutangAktif > 0 ? 'bg-red-50' : 'bg-emerald-50'} flex items-center justify-center">
-                    <i class="fas ${hutangAktif > 0 ? 'fa-exclamation text-red-400' : 'fa-check text-emerald-400'} text-[7px]"></i>
-                  </div>
-                  <span class="text-[9px] font-black ${hutangAktif > 0 ? 'text-red-500' : 'text-emerald-500'}">
-                    ${hutangAktif > 0 ? 'Rp ' + fmt(hutangAktif) : 'Lunas'}
-                  </span>
+                <div class="flex items-center gap-1 mt-0.5">
+                  <i class="fas fa-phone text-slate-300 text-[8px]"></i>
+                  <p class="text-[9px] font-bold text-slate-400">${c.phone||c.hp||'-'}</p>
                 </div>
-                <div class="w-px h-3 bg-slate-200"></div>
-                <span style="background:${tier.bg};color:${tier.c};border-radius:6px;padding:1px 6px;font-size:8px;font-weight:900;">${tier.l} · ${poin} poin</span>
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
+                  <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 rounded-md bg-blue-50 flex items-center justify-center">
+                      <i class="fas fa-receipt text-blue-400 text-[7px]"></i>
+                    </div>
+                    <span class="text-[9px] font-black text-blue-600">${trxCount} TRX</span>
+                  </div>
+                  <div class="w-px h-3 bg-slate-200"></div>
+                  <div class="flex items-center gap-1">
+                    <div class="w-4 h-4 rounded-md ${hutangAktif > 0 ? 'bg-red-50' : 'bg-emerald-50'} flex items-center justify-center">
+                      <i class="fas ${hutangAktif > 0 ? 'fa-exclamation text-red-400' : 'fa-check text-emerald-400'} text-[7px]"></i>
+                    </div>
+                    <span class="text-[9px] font-black ${hutangAktif > 0 ? 'text-red-500' : 'text-emerald-500'}">
+                      ${hutangAktif > 0 ? 'Rp ' + fmt(hutangAktif) : 'Lunas'}
+                    </span>
+                  </div>
+                  <div class="w-px h-3 bg-slate-200"></div>
+                  <span style="background:${tier.bg};color:${tier.c};border-radius:6px;padding:1px 6px;font-size:8px;font-weight:900;">${tier.l} · ${poin} ⭐</span>
+                  ${bisaTukar ? '<span style="background:rgba(124,58,237,0.12);color:#7c3aed;border-radius:6px;padding:1px 6px;font-size:8px;font-weight:900;animation:pulse 2s infinite;">💰 BISA TUKAR</span>' : ''}
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5 flex-shrink-0">
+                ${_pAktif ? `
+                <button onclick="(function(){var p=document.getElementById('${poinPanelId}');if(p){var open=p.style.display==='none'||p.style.display==='';p.style.display=open?'block':'none';}})()" class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all ${bisaTukar ? 'text-white' : 'bg-violet-50 text-violet-500'}" style="${bisaTukar ? 'background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 2px 8px rgba(124,58,237,0.3);' : ''}" title="Detail Poin">
+                  <i class="fas fa-star text-[11px]"></i>
+                </button>` : ''}
+                <button onclick="bukaProfilPelangganKu('${c.id}')" class="w-9 h-9 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Profil">
+                  <i class="fas fa-user-circle text-[11px]"></i>
+                </button>
+                <button onclick="editCustomer('${c.id}')" class="w-9 h-9 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Edit">
+                  <i class="fas fa-edit text-[11px]"></i>
+                </button>
+                <button onclick="deleteCustomerDirect('${c.id}')" class="w-9 h-9 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Hapus">
+                  <i class="fas fa-trash-alt text-[11px]"></i>
+                </button>
+                <button onclick="showMemberQR(this)" data-cid="${c.id}" data-nama="${(c.nama||'').replace(/"/g,'&quot;')}" data-phone="${(c.phone||'').replace(/"/g,'&quot;')}" class="w-9 h-9 hover:opacity-80 text-white rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" title="QR Kartu Member">
+                  <i class="fas fa-qrcode text-[11px]"></i>
+                </button>
               </div>
             </div>
-            <div class="flex flex-col gap-1.5 flex-shrink-0">
-              <button onclick="bukaProfilPelangganKu('${c.id}')" class="w-9 h-9 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Profil">
-                <i class="fas fa-user-circle text-[11px]"></i>
-              </button>
-              <button onclick="window.open('cek-poin.html?toko='+(localStorage.getItem('k_active_store_id')||localStorage.getItem('k_sid')||''),'_blank')" class="w-9 h-9 bg-violet-50 hover:bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Tukar Poin">
-                <i class="fas fa-gift text-[11px]"></i>
-              </button>
-              <button onclick="editCustomer('${c.id}')" class="w-9 h-9 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Edit">
-                <i class="fas fa-edit text-[11px]"></i>
-              </button>
-              <button onclick="deleteCustomerDirect('${c.id}')" class="w-9 h-9 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" title="Hapus">
-                <i class="fas fa-trash-alt text-[11px]"></i>
-              </button>
-              <button onclick="showMemberQR(this)" data-cid="${c.id}" data-nama="${(c.nama||'').replace(/"/g,'&quot;')}" data-phone="${(c.phone||'').replace(/"/g,'&quot;')}" class="w-9 h-9 hover:opacity-80 text-white rounded-xl flex items-center justify-center cursor-pointer border-0 transition-all" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" title="QR Kartu Member">
-                <i class="fas fa-qrcode text-[11px]"></i>
-              </button>
-            </div>
+            <!-- Panel Poin (expand/collapse) -->
+            ${poinPanel ? `<div style="padding:0 14px 14px;">${poinPanel}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -26027,6 +26112,46 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
     await window.sync?.();
     _S().fire({ icon:'success', title:'Poin Berhasil Ditukar!', html:`<p style="font-size:12px;">Diskon <b>Rp ${_fmt(nilaiDiskon)}</b> siap dipakai saat transaksi berikutnya.</p>`, customClass:{popup:'swal2-ku'} });
     window.bukaProfilPelangganKu(id);
+  };
+
+  /* -- Kirim info poin ke WA pelanggan -- */
+  window._kirimInfoPoinWA = function(id) {
+    const c = (window.db.pelanggan||[]).find(x=>x.id===id);
+    if (!c || !c.phone) return;
+    const poin = Number(c.poin||0);
+    const cfg = window.getPoinConfig ? window.getPoinConfig() : null;
+    const nilaiPer100 = (cfg && cfg.nilaiTukar) ? cfg.nilaiTukar : 1000;
+    const bisaTukar = poin >= 100;
+    const nilaiDiskon = bisaTukar ? Math.floor(poin/100)*nilaiPer100 : 0;
+    const storeName = localStorage.getItem('k_store_name') || 'Toko Kami';
+    const storeId = localStorage.getItem('k_active_store_id') || localStorage.getItem('k_sid') || '';
+
+    let pesan;
+    if (bisaTukar) {
+      pesan = `Halo *${c.nama}*! 👋\n\n`
+        + `Kami ingin menginformasikan bahwa poin Anda di *${storeName}* sudah bisa ditukar! 🎉\n\n`
+        + `⭐ *Poin Anda: ${_fmt(poin)} poin*\n`
+        + `💰 *Nilai Diskon: Rp ${_fmt(nilaiDiskon)}*\n\n`
+        + `Yuk segera tukar poin Anda menjadi diskon belanja!\n`
+        + (storeId ? `🔗 Cek poin: ${window.location.origin}/cek-poin.html?toko=${storeId}\n` : '')
+        + `\nTerima kasih sudah berbelanja di ${storeName}! 🙏`;
+    } else {
+      const kurang = 100 - poin;
+      pesan = `Halo *${c.nama}*! 👋\n\n`
+        + `Ini update poin Anda di *${storeName}*:\n\n`
+        + `⭐ *Poin Anda: ${_fmt(poin)} poin*\n`
+        + `📊 Butuh *${kurang} poin lagi* untuk bisa tukar diskon!\n`
+        + `💡 Setiap belanja Anda mendapatkan poin reward.\n\n`
+        + `Ayo belanja lagi dan kumpulkan poin Anda! 😊\n`
+        + `\nTerima kasih sudah berbelanja di ${storeName}! 🙏`;
+    }
+
+    // Format nomor WA
+    let noWA = (c.phone||c.hp||'').replace(/\D/g,'');
+    if (noWA.startsWith('0')) noWA = '62' + noWA.slice(1);
+    if (!noWA.startsWith('62')) noWA = '62' + noWA;
+
+    window.open('https://wa.me/' + noWA + '?text=' + encodeURIComponent(pesan), '_blank');
   };
 
   /* -- Birthday reminder saat app dibuka -- */
