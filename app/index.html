@@ -265,6 +265,9 @@
     .swal2-popup.swal2-ku.swal2-icon-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
     .swal2-popup.swal2-ku.swal2-icon-info::before    { background: linear-gradient(90deg, #0061C2, #38BDF8); }
     .swal2-popup.swal2-ku.swal2-icon-question::before{ background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    /* Trial warning dialogs — no icon class, warna top-bar via custom class */
+    .swal2-popup.swal2-ku.swal2-trial-kritis::before  { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .swal2-popup.swal2-ku.swal2-trial-warn::before    { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 
     /* Icon */
     .swal2-popup.swal2-ku .swal2-icon {
@@ -4465,6 +4468,7 @@
               localStorage.setItem('k_store_name', subData.store_name);
             }
             if (subData.plan) localStorage.setItem('k_plan', subData.plan.toLowerCase().trim());
+            if (subData.status) localStorage.setItem('k_sub_status', subData.status.toLowerCase().trim());
             if (subData.expired_at) {
               let expTs = subData.expired_at;
               if (expTs && expTs.toDate) expTs = expTs.toDate();
@@ -4480,7 +4484,14 @@
       // -- CEK EXPIRED SEBELUM MASUK APP --
       let isExpiredAccount = false;
       const expDateStr = localStorage.getItem('k_expired_date');
-      if (expDateStr) {
+      const subStatus  = localStorage.getItem('k_sub_status') || 'active';
+
+      // Blokir jika status Firestore = expired atau suspended
+      if (subStatus === 'expired' || subStatus === 'suspended') {
+        isExpiredAccount = true;
+      }
+      // Blokir jika tanggal sudah lewat
+      if (!isExpiredAccount && expDateStr) {
         const expDate = new Date(expDateStr + 'T23:59:59');
         const today   = new Date();
         today.setHours(0,0,0,0);
@@ -4492,6 +4503,7 @@
         try { await window._fbAuth.signOut(); } catch(e) {}
         // Hapus k_logged agar tidak auto-login
         localStorage.removeItem('k_logged');
+        localStorage.removeItem('k_sub_status');
         // Restore tombol login
         setLoginBtnLoading('btn-login', 'btn-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK');
         // Tampilkan overlay expired
@@ -10291,18 +10303,36 @@
         const key = 'day_' + t;
         if (daysLeft === t && !_trialWarnShown[key]) {
           _trialWarnShown[key] = true;
-          const msg = t === 0
-            ? '⏰ Trial Anda berakhir <b>hari ini!</b> Segera upgrade agar data & alur kerja tetap terjaga.'
-            : '⏰ Sisa trial Anda tinggal <b>' + t + ' hari</b>. Upgrade sekarang sebelum terlambat!';
+          const isKritis = t <= 1;
+          const gradBg   = isKritis
+            ? 'linear-gradient(135deg,#fee2e2,#fff)'
+            : 'linear-gradient(135deg,#fefce8,#fff)';
+          const iconColor = isKritis ? '#ef4444' : '#f59e0b';
+          const badgeColor = isKritis ? '#fef2f2' : '#fefce8';
+          const badgeBorder = isKritis ? '#fecaca' : '#fde68a';
+          const badgeText = isKritis ? '#dc2626' : '#b45309';
+          const badgeLabel = t === 0 ? '🚨 Berakhir Hari Ini!' : `⏰ Sisa ${t} Hari`;
+          const msgHtml = t === 0
+            ? `Masa trial Anda <b style="color:#dc2626;">berakhir hari ini</b>. Segera upgrade agar semua data & alur kerja tetap terjaga.`
+            : `Masa trial Anda tinggal <b style="color:#b45309;">${t} hari lagi</b>. Upgrade sekarang sebelum akses terbatas.`;
           if (typeof Swal !== 'undefined') {
             Swal.fire({
-              toast: true, position: 'top', icon: t <= 1 ? 'error' : 'warning',
-              iconColor: t <= 1 ? '#ef4444' : '#f59e0b',
-              title: '<span style="font-size:12px;font-weight:900;">' + msg + '</span>',
-              showConfirmButton: true, confirmButtonText: 'Upgrade',
+              customClass: { popup: 'swal2-ku ' + (isKritis ? 'swal2-trial-kritis' : 'swal2-trial-warn') },
+              html: `
+                <div style="text-align:center;padding:4px 0 8px;">
+                  <div style="width:64px;height:64px;border-radius:50%;background:${badgeColor};border:2px solid ${badgeBorder};display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <span style="font-size:30px;">${isKritis ? '🚨' : '⏰'}</span>
+                  </div>
+                  <div style="display:inline-block;background:${badgeColor};border:1px solid ${badgeBorder};color:${badgeText};font-size:11px;font-weight:900;padding:4px 12px;border-radius:20px;margin-bottom:10px;">${badgeLabel}</div>
+                  <p style="font-size:13px;color:#334155;line-height:1.6;margin:0;">${msgHtml}</p>
+                </div>`,
+              showConfirmButton: true,
+              confirmButtonText: '🚀 Upgrade Sekarang',
               confirmButtonColor: '#7c3aed',
-              showCloseButton: true, timer: 12000, timerProgressBar: true,
-              customClass: { popup: 'swal2-ku' }
+              showCancelButton: true,
+              cancelButtonText: 'Nanti',
+              reverseButtons: false,
+              focusConfirm: true,
             }).then(function(r) { if (r.isConfirmed) openModal('modal-sidebar-perpanjang'); });
           }
         }
@@ -10313,15 +10343,32 @@
         const key = 'trx_' + t;
         if (trxSisa <= t && trxSisa > (t === 30 ? 10 : t === 10 ? 5 : 0) && !_trialWarnShown[key]) {
           _trialWarnShown[key] = true;
+          const isKritis = t <= 5;
+          const badgeColor = isKritis ? '#fef2f2' : '#fefce8';
+          const badgeBorder = isKritis ? '#fecaca' : '#fde68a';
+          const badgeText  = isKritis ? '#dc2626' : '#b45309';
           if (typeof Swal !== 'undefined') {
             Swal.fire({
-              toast: true, position: 'top', icon: t <= 5 ? 'error' : 'warning',
-              iconColor: t <= 5 ? '#ef4444' : '#f59e0b',
-              title: '<span style="font-size:12px;font-weight:900;">🧾 Kuota trial tersisa <b>' + trxSisa + ' transaksi</b> lagi!</span>',
-              showConfirmButton: true, confirmButtonText: 'Upgrade',
+              customClass: { popup: 'swal2-ku ' + (isKritis ? 'swal2-trial-kritis' : 'swal2-trial-warn') },
+              background: isKritis ? 'linear-gradient(135deg,#fee2e2,#fff)' : 'linear-gradient(135deg,#fefce8,#fff)',
+              html: `
+                <div style="text-align:center;padding:4px 0 8px;">
+                  <div style="width:64px;height:64px;border-radius:50%;background:${badgeColor};border:2px solid ${badgeBorder};display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <span style="font-size:30px;">🧾</span>
+                  </div>
+                  <div style="display:inline-block;background:${badgeColor};border:1px solid ${badgeBorder};color:${badgeText};font-size:11px;font-weight:900;padding:4px 12px;border-radius:20px;margin-bottom:10px;">${isKritis ? '🚨 Kuota Hampir Habis!' : '⚠️ Kuota Menipis'}</div>
+                  <p style="font-size:13px;color:#334155;line-height:1.6;margin:0;">
+                    Kuota transaksi trial tersisa <b style="color:${badgeText};">${trxSisa} transaksi</b> lagi.<br>
+                    Upgrade sekarang agar transaksi tidak terhenti.
+                  </p>
+                </div>`,
+              showConfirmButton: true,
+              confirmButtonText: '🚀 Upgrade Sekarang',
               confirmButtonColor: '#7c3aed',
-              showCloseButton: true, timer: 10000, timerProgressBar: true,
-              customClass: { popup: 'swal2-ku' }
+              showCancelButton: true,
+              cancelButtonText: 'Nanti',
+              reverseButtons: false,
+              focusConfirm: true,
             }).then(function(r) { if (r.isConfirmed) openModal('modal-sidebar-perpanjang'); });
           }
         }
@@ -16351,7 +16398,7 @@ ${t.bayar ? `
           }
           if (window._fbAuth) window._fbAuth.signOut().catch(()=>{});
           // -- Hapus SEMUA key sesi --
-          ['k_logged','k_token','k_sid','k_email','k_store_name','k_plan','k_expired_date',
+          ['k_logged','k_token','k_sid','k_email','k_store_name','k_plan','k_expired_date','k_sub_status',
            'k_owner_uid','k_session_doc_id',
            'k_active_store_id','k_sync_version','k_pending_sync','k_last_sync',
            'k_kasir_mode','k_kasir_id','k_kasir_nama','k_kasir_username','k_kasir_izin',
@@ -17779,22 +17826,66 @@ ${t.bayar ? `
       }, 6000);
 
       if (localStorage.getItem('k_logged') === 'true') {
-        // Cek expired sebelum auto-login
-        const _autoExpStr = localStorage.getItem('k_expired_date');
-        if (_autoExpStr) {
-          const _autoExpDate = new Date(_autoExpStr + 'T23:59:59');
-          const _autoToday   = new Date(); _autoToday.setHours(0,0,0,0);
-          if (_autoExpDate < _autoToday) {
-            // Akun expired - hapus sesi, tampilkan overlay expired
+        // Sinkronisasi status subscription dari Firestore sebelum auto-login
+        // Ini memastikan akun yang di-expired/suspended admin tidak bisa masuk pakai cache lama
+        (async function _autoLoginWithVerify() {
+          let expiredBlocked = false;
+          try {
+            await new Promise(resolve => {
+              let w = 0;
+              const iv = setInterval(() => {
+                w += 100;
+                if (window._fbFirestore) { clearInterval(iv); resolve(); }
+                else if (w >= 4000) { clearInterval(iv); resolve(); }
+              }, 100);
+            });
+            const uid = localStorage.getItem('k_sid');
+            if (uid && window._fbFirestore) {
+              const subSnap = await window._fbFirestore.collection('subscriptions').doc(uid).get();
+              if (subSnap.exists) {
+                const sd = subSnap.data();
+                // Perbarui cache lokal dari Firestore
+                if (sd.plan)   localStorage.setItem('k_plan', sd.plan.toLowerCase().trim());
+                if (sd.status) localStorage.setItem('k_sub_status', sd.status.toLowerCase().trim());
+                if (sd.expired_at) {
+                  let expTs = sd.expired_at;
+                  if (expTs && expTs.toDate) expTs = expTs.toDate();
+                  else if (expTs) expTs = new Date(expTs);
+                  if (expTs) localStorage.setItem('k_expired_date', expTs.toISOString().split('T')[0]);
+                }
+              }
+            }
+          } catch(e) {
+            // Gagal ambil Firestore → lanjut pakai cache (mode offline)
+            console.warn('[AutoLogin] Gagal sync subscription:', e.message);
+          }
+
+          // Cek expired dari data terbaru (cache sudah diperbarui di atas)
+          const _autoExpStr  = localStorage.getItem('k_expired_date');
+          const _autoStatus  = localStorage.getItem('k_sub_status') || 'active';
+          const _autoUid     = localStorage.getItem('k_sid') || '';
+          const _autoEmail   = localStorage.getItem('k_email') || '';
+
+          // Blokir jika status Firestore = expired/suspended
+          if (_autoStatus === 'expired' || _autoStatus === 'suspended') {
+            expiredBlocked = true;
+          }
+          // Blokir jika tanggal sudah lewat
+          if (!expiredBlocked && _autoExpStr) {
+            const _autoExpDate = new Date(_autoExpStr + 'T23:59:59');
+            const _autoToday   = new Date(); _autoToday.setHours(0,0,0,0);
+            if (_autoExpDate < _autoToday) expiredBlocked = true;
+          }
+
+          if (expiredBlocked) {
             localStorage.removeItem('k_logged');
-            const _autoUid   = localStorage.getItem('k_sid') || '';
-            const _autoEmail = localStorage.getItem('k_email') || '';
             try { if (window._fbAuth) window._fbAuth.signOut(); } catch(e) {}
-            setTimeout(() => _showExpiredOverlay(_autoEmail, _autoUid, _autoExpStr), 500);
+            setTimeout(() => _showExpiredOverlay(_autoEmail, _autoUid, _autoExpStr || ''), 500);
             return;
           }
-        }
-        initApp(false, true); // skipCloudFetch=false, isRefresh=true → tidak tampil animasi login
+
+          initApp(false, true); // skipCloudFetch=false, isRefresh=true
+        })();
       }
     });
 
@@ -19621,7 +19712,8 @@ ${t.bayar ? `
         const subSnap = await window._fbFirestore.collection('subscriptions').doc(ownerUid).get();
         if (subSnap.exists) {
           const sub = subSnap.data();
-          if (sub.plan) localStorage.setItem('k_plan', sub.plan.toLowerCase().trim());
+          if (sub.plan)   localStorage.setItem('k_plan', sub.plan.toLowerCase().trim());
+          if (sub.status) localStorage.setItem('k_sub_status', sub.status.toLowerCase().trim());
           if (sub.expired_at) {
             let exp = sub.expired_at;
             if (exp && exp.toDate) exp = exp.toDate();
@@ -19634,18 +19726,28 @@ ${t.bayar ? `
       }
 
       // -- CEK EXPIRED SEBELUM MASUK APP (kasir) --
-      const _kasirExpStr = localStorage.getItem('k_expired_date');
-      if (_kasirExpStr) {
+      const _kasirExpStr    = localStorage.getItem('k_expired_date');
+      const _kasirSubStatus = localStorage.getItem('k_sub_status') || 'active';
+      let _kasirBlocked = false;
+
+      // Blokir jika status Firestore = expired atau suspended
+      if (_kasirSubStatus === 'expired' || _kasirSubStatus === 'suspended') {
+        _kasirBlocked = true;
+      }
+      // Blokir jika tanggal sudah lewat
+      if (!_kasirBlocked && _kasirExpStr) {
         const _kasirExpDate = new Date(_kasirExpStr + 'T23:59:59');
         const _kasirToday   = new Date(); _kasirToday.setHours(0,0,0,0);
-        if (_kasirExpDate < _kasirToday) {
-          // Bersihkan sesi kasir
-          localStorage.removeItem('k_logged');
-          try { if (window._fbAuth) window._fbAuth.signOut(); } catch(e) {}
-          setLoginBtnLoading('btn-kasir-login', 'btn-kasir-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK SEBAGAI KASIR');
-          showLoginError('❌ Akun toko ini sudah expired. Minta pemilik toko untuk perpanjang langganan.');
-          return;
-        }
+        if (_kasirExpDate < _kasirToday) _kasirBlocked = true;
+      }
+
+      if (_kasirBlocked) {
+        localStorage.removeItem('k_logged');
+        localStorage.removeItem('k_sub_status');
+        try { if (window._fbAuth) window._fbAuth.signOut(); } catch(e) {}
+        setLoginBtnLoading('btn-kasir-login', 'btn-kasir-login-text', false, '<i class="fas fa-arrow-right-to-bracket mr-2"></i>MASUK SEBAGAI KASIR');
+        showLoginError('❌ Akun toko ini sudah expired. Minta pemilik toko untuk perpanjang langganan.');
+        return;
       }
 
       // Masuk ke app - store_name dan plan sudah tersimpan di localStorage
@@ -20162,6 +20264,7 @@ ${t.bayar ? `
           if (subSnap.exists) {
             const sub = subSnap.data();
             planLabel = sub.plan || 'trial';
+            if (sub.status) localStorage.setItem('k_sub_status', sub.status.toLowerCase().trim());
             if (sub.expired_at) {
               let exp = sub.expired_at;
               if (exp && exp.toDate) exp = exp.toDate(); else exp = new Date(exp);
@@ -20169,6 +20272,24 @@ ${t.bayar ? `
             }
           }
         } catch(e) { /* plan tetap trial jika gagal */ }
+
+        // -- CEK EXPIRED sebelum restore sesi kasir --
+        const _restoreStatus = localStorage.getItem('k_sub_status') || 'active';
+        let _restoreBlocked = false;
+        if (_restoreStatus === 'expired' || _restoreStatus === 'suspended') _restoreBlocked = true;
+        if (!_restoreBlocked && expiredDate) {
+          const _expD = new Date(expiredDate + 'T23:59:59');
+          const _now  = new Date(); _now.setHours(0,0,0,0);
+          if (_expD < _now) _restoreBlocked = true;
+        }
+        if (_restoreBlocked) {
+          // Hapus sesi Firestore
+          await window._fbFirestore.collection('kasir_sessions').doc(deviceId).delete().catch(()=>{});
+          localStorage.removeItem('k_logged');
+          localStorage.removeItem('k_sub_status');
+          console.warn('[KasirSession] Sesi tidak dipulihkan — akun owner expired/suspended.');
+          return;
+        }
 
         // Ambil nama toko
         let storeName = sess.store_name || kasir.store_name || '';
@@ -21841,6 +21962,8 @@ ${t.bayar ? `
           <button class="panduan-tab-btn" onclick="showPanduanTab('backup')" id="ptab-backup">☁️ Backup</button>
           <button class="panduan-tab-btn" onclick="showPanduanTab('struk')" id="ptab-struk">🖨️ Struk</button>
           <button class="panduan-tab-btn" onclick="showPanduanTab('supplier')" id="ptab-supplier">🏭 Supplier</button>
+          <button class="panduan-tab-btn" onclick="showPanduanTab('poin')" id="ptab-poin">⭐ Poin Member</button>
+          <button class="panduan-tab-btn" onclick="showPanduanTab('notif')" id="ptab-notif">🔔 Push Notif</button>
         </div>
       </div>
 
@@ -21875,7 +21998,7 @@ ${t.bayar ? `
               <p style="color:#34d399;font-size:13px;font-weight:900;margin-bottom:4px;">Pemilik Toko</p>
               <p style="color:rgba(52,211,153,0.6);font-size:10px;line-height:1.4;">Akses semua fitur: laporan, stok, keuangan, multi-cabang</p>
               <div style="margin-top:12px;padding:6px 12px;border-radius:8px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.25);">
-                <span style="color:#34d399;font-size:10px;font-weight:800;">11 MODUL →</span>
+                <span style="color:#34d399;font-size:10px;font-weight:800;">13 MODUL →</span>
               </div>
             </div>
 
@@ -21926,13 +22049,21 @@ ${t.bayar ? `
                   <div style="width:24px;height:24px;border-radius:8px;background:#dbeafe;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-check" style="color:#2563eb;font-size:10px;"></i></div>
                   <span style="font-size:12px;color:#334155;">Multi-toko & monitor cabang</span>
                 </div>
+                <div class="intro-check-item" style="display:flex;align-items:center;gap:10px;opacity:0;animation:fadeSlideIn 0.4s ease forwards 1.1s;margin-top:8px;">
+                  <div style="width:24px;height:24px;border-radius:8px;background:#fdf4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-check" style="color:#7c3aed;font-size:10px;"></i></div>
+                  <span style="font-size:12px;color:#334155;">Sistem Poin Member & penukaran reward</span>
+                </div>
+                <div class="intro-check-item" style="display:flex;align-items:center;gap:10px;opacity:0;animation:fadeSlideIn 0.4s ease forwards 1.2s;margin-top:8px;">
+                  <div style="width:24px;height:24px;border-radius:8px;background:#fff7ed;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-check" style="color:#ea580c;font-size:10px;"></i></div>
+                  <span style="font-size:12px;color:#334155;">Push Notifikasi PWA (stok, hutang, saldo)</span>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- CTA mulai -->
           <button onclick="showPanduanTab('login')"
-            style="width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,#059669,#34d399);border:none;color:white;font-size:14px;font-weight:900;cursor:pointer;letter-spacing:0.05em;box-shadow:0 8px 24px rgba(5,150,105,0.35);animation:fadeSlideIn 0.4s ease forwards 1.1s;opacity:0;">
+            style="width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,#059669,#34d399);border:none;color:white;font-size:14px;font-weight:900;cursor:pointer;letter-spacing:0.05em;box-shadow:0 8px 24px rgba(5,150,105,0.35);animation:fadeSlideIn 0.4s ease forwards 1.35s;opacity:0;">
             MULAI TUTORIAL 🚀
           </button>
 
@@ -23193,6 +23324,332 @@ ${t.bayar ? `
         </div>
         <!-- end panduan-supplier -->
 
+        <!-- ===== TAB: POIN MEMBER ===== -->
+        <div id="panduan-poin" class="panduan-tab-content hidden" style="padding:0 0 20px;">
+          <div style="border-radius:20px;background:linear-gradient(135deg,#2e1065,#4c1d95,#5b21b6);padding:24px 20px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(167,139,250,0.12);"></div>
+            <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 24px rgba(124,58,237,0.45);position:relative;z-index:1;">
+              <i class="fas fa-star text-white" style="font-size:24px;"></i>
+            </div>
+            <h3 style="color:white;font-size:18px;font-weight:900;margin-bottom:6px;position:relative;z-index:1;">Sistem Poin Member</h3>
+            <p style="color:rgba(192,132,252,0.8);font-size:12px;line-height:1.5;position:relative;z-index:1;">Tingkatkan loyalitas pelanggan dengan program poin & reward otomatis</p>
+          </div>
+
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">📌</div>
+              <p class="panduan-step-title">Apa itu Sistem Poin Member?</p>
+            </div>
+            <div class="panduan-step-body">
+              <p class="panduan-text">Pelanggan mendapat poin otomatis setiap transaksi. Poin yang terkumpul bisa ditukar diskon atau hadiah fisik.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+                <div style="background:#f5f3ff;border:1px solid #ede9fe;border-radius:12px;padding:12px;text-align:center;">
+                  <div style="font-size:22px;margin-bottom:4px;">⭐</div>
+                  <p style="font-size:11px;font-weight:900;color:#6d28d9;">Kumpulkan Poin</p>
+                  <p style="font-size:10px;color:#7c3aed;font-weight:600;">Setiap transaksi</p>
+                </div>
+                <div style="background:#fdf4ff;border:1px solid #f3e8ff;border-radius:12px;padding:12px;text-align:center;">
+                  <div style="font-size:22px;margin-bottom:4px;">🎁</div>
+                  <p style="font-size:11px;font-weight:900;color:#6d28d9;">Tukar Reward</p>
+                  <p style="font-size:10px;color:#7c3aed;font-weight:600;">Diskon / Hadiah</p>
+                </div>
+              </div>
+              <div class="panduan-info" style="background:#f5f3ff;border-color:#ddd6fe;color:#5b21b6;">💡 Fitur ini khusus Owner/Admin paket <strong>Pro</strong>.</div>
+            </div>
+          </div>
+
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">1</div>
+              <p class="panduan-step-title">Aktifkan Sistem Poin</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li>Buka <strong>Sidebar → ⭐ Poin Pelanggan</strong></li>
+                <li>Tap <strong>Aktifkan Sistem Poin</strong></li>
+                <li>Atur: berapa rupiah untuk 1 poin, dan nilai tukar 1 poin = berapa rupiah</li>
+                <li>Tap <strong>Simpan Pengaturan</strong></li>
+              </ul>
+              <div class="panduan-info">💡 Contoh: Rp 1.000 = 1 poin, 1 poin = Rp 100. Belanja Rp 50.000 → dapat 50 poin.</div>
+            </div>
+          </div>
+
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">2</div>
+              <p class="panduan-step-title">Daftarkan Pelanggan sebagai Member</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li>Di menu Poin Pelanggan → tab <strong>Member</strong> → tap <strong>+ Tambah Member Baru</strong></li>
+                <li>Isi nama, nomor HP, dan tanggal lahir (opsional)</li>
+                <li>Sistem otomatis buat <strong>Member ID</strong> unik & <strong>QR Card</strong> digital</li>
+                <li>Bagikan kartu member ke pelanggan via WhatsApp</li>
+              </ul>
+              <div class="panduan-info">💡 Pelanggan bisa cek saldo poin sendiri lewat link QR kapan saja — tanpa buka app KonterKU.</div>
+            </div>
+          </div>
+
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">3</div>
+              <p class="panduan-step-title">Beri Poin Saat Transaksi Kasir</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li>Di halaman Kasir, pilih <strong>pelanggan/member</strong> (ikon 👤)</li>
+                <li>Muncul info poin saat ini & estimasi poin yang didapat</li>
+                <li>Proses transaksi seperti biasa — poin otomatis ditambahkan</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">4</div>
+              <p class="panduan-step-title">Proses Penukaran Poin</p>
+            </div>
+            <div class="panduan-step-body">
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+                <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;">
+                  <p style="font-size:12px;font-weight:900;color:#92400e;margin-bottom:4px;">💸 Tukar Diskon</p>
+                  <p style="font-size:11px;color:#78350f;font-weight:600;">Poin dikonversi jadi potongan harga di transaksi berikutnya.</p>
+                </div>
+                <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:10px 12px;">
+                  <p style="font-size:12px;font-weight:900;color:#5b21b6;margin-bottom:4px;">🎁 Tukar Hadiah</p>
+                  <p style="font-size:11px;color:#6d28d9;font-weight:600;">Poin ditukar hadiah fisik (snack, voucher, merchandise, dll).</p>
+                </div>
+              </div>
+              <ul class="panduan-list">
+                <li>Buka <strong>Poin Pelanggan → tab Tukar Poin</strong></li>
+                <li>Pilih member, pilih jenis reward, masukkan poin yang ditukar</li>
+                <li>Tap <strong>Proses Penukaran</strong> — poin berkurang otomatis</li>
+              </ul>
+              <div class="panduan-info">💡 Pelanggan bisa request tukar poin mandiri — notifikasi langsung muncul di kasir (bell 🔔).</div>
+            </div>
+          </div>
+
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">5</div>
+              <p class="panduan-step-title">Notifikasi Penukaran Poin (Bell 🔔)</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li>Ikon 🔔 di header bergoyang + badge merah saat ada request tukar</li>
+                <li>Tap bell → lihat detail penukaran → berikan hadiah/diskon</li>
+                <li>Tap <strong>✅ Tandai Semua Sudah Diberikan</strong> untuk selesaikan</li>
+              </ul>
+              <div class="panduan-warning">⚠️ Poin sudah berkurang otomatis saat pelanggan request. Pastikan berikan reward sebelum menandai selesai.</div>
+            </div>
+          </div>
+        </div>
+        <!-- end panduan-poin -->
+
+        <!-- ===== TAB: PUSH NOTIFIKASI PWA ===== -->
+        <div id="panduan-notif" class="panduan-tab-content hidden" style="padding:0 0 20px;">
+
+          <!-- Hero banner -->
+          <div style="border-radius:20px;background:linear-gradient(135deg,#7c2d12,#c2410c,#ea580c);padding:24px 20px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(251,146,60,0.15);"></div>
+            <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#c2410c,#f97316);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 24px rgba(194,65,12,0.45);position:relative;z-index:1;">
+              <i class="fas fa-bell text-white" style="font-size:24px;"></i>
+            </div>
+            <h3 style="color:white;font-size:18px;font-weight:900;margin-bottom:6px;position:relative;z-index:1;">Push Notifikasi PWA</h3>
+            <p style="color:rgba(253,186,116,0.85);font-size:12px;line-height:1.5;position:relative;z-index:1;">Dapatkan notifikasi otomatis stok menipis, hutang jatuh tempo, saldo rendah & konfirmasi transaksi — bahkan saat app tertutup</p>
+          </div>
+
+          <!-- Apa itu notif PWA -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#c2410c,#f97316);">📌</div>
+              <p class="panduan-step-title">Jenis Notifikasi yang Tersedia</p>
+            </div>
+            <div class="panduan-step-body">
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;">
+                  <span style="font-size:20px;">📦</span>
+                  <div><p style="font-size:12px;font-weight:900;color:#9a3412;">Stok Menipis</p><p style="font-size:11px;color:#c2410c;font-weight:600;">Notif saat stok produk di bawah batas minimal</p></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;">
+                  <span style="font-size:20px;">📋</span>
+                  <div><p style="font-size:12px;font-weight:900;color:#991b1b;">Hutang Jatuh Tempo</p><p style="font-size:11px;color:#dc2626;font-weight:600;">Diingatkan H-3 sebelum jatuh tempo hutang</p></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:10px 12px;">
+                  <span style="font-size:20px;">👛</span>
+                  <div><p style="font-size:12px;font-weight:900;color:#5b21b6;">Saldo Dompet Rendah</p><p style="font-size:11px;color:#7c3aed;font-weight:600;">Notif jika saldo dompet di bawah Rp 100K</p></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;">
+                  <span style="font-size:20px;">🖥️</span>
+                  <div><p style="font-size:12px;font-weight:900;color:#166534;">Konfirmasi Transaksi</p><p style="font-size:11px;color:#16a34a;font-weight:600;">Notif setiap transaksi kasir berhasil diproses</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cara aktifkan -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#c2410c,#f97316);">1</div>
+              <p class="panduan-step-title">Aktifkan Izin Notifikasi</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li>Tap ikon 🔔 di header app atau buka <strong>Pengaturan → Push Notifikasi PWA</strong></li>
+                <li>Status <strong>Izin Notifikasi</strong> akan muncul — jika belum diizinkan, tap <strong>Aktifkan Notifikasi</strong></li>
+                <li>Browser akan minta izin — pilih <strong>"Izinkan"</strong></li>
+                <li>Status berubah jadi <span style="color:#059669;font-weight:800;">✅ DIIZINKAN</span></li>
+              </ul>
+              <div class="panduan-info">💡 Setelah diizinkan, tap <strong>TEST KIRIM NOTIFIKASI</strong> untuk memastikan notif berjalan normal di perangkat Anda.</div>
+            </div>
+          </div>
+
+          <!-- Cara pilih jenis notif -->
+          <div class="panduan-card">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#c2410c,#f97316);">2</div>
+              <p class="panduan-step-title">Pilih Jenis Notifikasi</p>
+            </div>
+            <div class="panduan-step-body">
+              <p class="panduan-text">Setelah izin aktif, Anda bisa aktif/nonaktifkan tiap jenis notifikasi secara terpisah menggunakan toggle:</p>
+              <ul class="panduan-list">
+                <li>Toggle <strong>Stok Menipis</strong> — aktifkan agar tahu kapan produk hampir habis</li>
+                <li>Toggle <strong>Hutang Jatuh Tempo</strong> — diingatkan 3 hari sebelum tagih hutang</li>
+                <li>Toggle <strong>Saldo Dompet Rendah</strong> — notif jika saldo dompet &lt; Rp 100.000</li>
+                <li>Toggle <strong>Konfirmasi Transaksi</strong> — notif tiap transaksi kasir berhasil</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Install PWA -->
+          <div class="panduan-card" style="border-left:4px solid #ea580c;">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#c2410c,#f97316);">3</div>
+              <p class="panduan-step-title">Install KonterKU sebagai Aplikasi (PWA) — Wajib untuk Notif Background!</p>
+            </div>
+            <div class="panduan-step-body">
+              <div class="panduan-info" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412;margin-bottom:14px;">⚠️ Notifikasi hanya aktif saat app terbuka di browser biasa. Agar notif tetap masuk <strong>walaupun app tertutup</strong>, install KonterKU ke layar utama HP Anda (PWA).</div>
+
+              <!-- Step 1 visual -->
+              <div style="margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <div style="min-width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#c2410c,#f97316);display:flex;align-items:center;justify-content:center;">
+                    <span style="color:white;font-size:11px;font-weight:900;">1</span>
+                  </div>
+                  <p style="font-size:13px;font-weight:800;color:#1e293b;">Tap menu ⋮ (tiga titik) di pojok kanan atas Chrome</p>
+                </div>
+                <!-- Ilustrasi Step 1 -->
+                <div style="background:#1e1e2e;border-radius:14px;padding:12px;margin-left:32px;">
+                  <div style="background:#2d2d3f;border-radius:10px;overflow:hidden;">
+                    <!-- Chrome address bar mockup -->
+                    <div style="background:#3a3a4f;padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                      <div style="width:16px;height:16px;border-radius:50%;background:#555;"></div>
+                      <div style="flex:1;background:#2a2a3e;border-radius:6px;padding:4px 8px;font-size:10px;color:#94a3b8;">agscellpos.my.id/app/</div>
+                      <div style="width:8px;height:8px;border-radius:50%;background:#f97316;"></div>
+                    </div>
+                    <!-- Dropdown menu -->
+                    <div style="padding:6px 0;">
+                      <div style="padding:8px 14px;font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:10px;"><span>⊕</span> Tab baru</div>
+                      <div style="padding:8px 14px;font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:10px;"><span>↗</span> Bagikan...</div>
+                      <div style="padding:8px 14px;font-size:11px;color:#f97316;font-weight:800;display:flex;align-items:center;gap:10px;background:rgba(249,115,22,0.12);border-left:3px solid #f97316;">
+                        <span>⬇</span> <strong>Tambahkan ke Layar Utama...</strong>
+                        <span style="margin-left:auto;font-size:16px;">←</span>
+                      </div>
+                      <div style="padding:8px 14px;font-size:11px;color:#94a3b8;display:flex;align-items:center;gap:10px;"><span>🖥</span> Situs desktop</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 2 visual -->
+              <div style="margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <div style="min-width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#c2410c,#f97316);display:flex;align-items:center;justify-content:center;">
+                    <span style="color:white;font-size:11px;font-weight:900;">2</span>
+                  </div>
+                  <p style="font-size:13px;font-weight:800;color:#1e293b;">Pilih <strong>"Instal"</strong> (bukan "Buat pintasan")</p>
+                </div>
+                <!-- Ilustrasi Step 2 -->
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px;margin-left:32px;">
+                  <p style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:8px;text-align:center;">Tambahkan ke layar beranda</p>
+                  <!-- Instal option (highlighted) -->
+                  <div style="background:white;border:2.5px solid #f97316;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:6px;box-shadow:0 2px 8px rgba(249,115,22,0.2);">
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;position:relative;">
+                      <span style="font-size:18px;">🏪</span>
+                      <div style="position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:#f97316;display:flex;align-items:center;justify-content:center;">
+                        <span style="color:white;font-size:7px;font-weight:900;">↓</span>
+                      </div>
+                    </div>
+                    <div style="flex:1;"><p style="font-size:12px;font-weight:900;color:#1e293b;">Instal</p><p style="font-size:10px;color:#64748b;">App penuh, notif background aktif ✅</p></div>
+                    <span style="color:#f97316;font-weight:900;">›</span>
+                  </div>
+                  <!-- Buat pintasan option (not recommended) -->
+                  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;opacity:0.55;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;">
+                      <span style="font-size:18px;">🔗</span>
+                    </div>
+                    <div style="flex:1;"><p style="font-size:12px;font-weight:700;color:#94a3b8;">Buat pintasan</p><p style="font-size:10px;color:#94a3b8;">Pintasan biasa, notif background ❌</p></div>
+                    <span style="color:#94a3b8;">›</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 3 visual -->
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <div style="min-width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#c2410c,#f97316);display:flex;align-items:center;justify-content:center;">
+                    <span style="color:white;font-size:11px;font-weight:900;">3</span>
+                  </div>
+                  <p style="font-size:13px;font-weight:800;color:#1e293b;">Tap <strong>"Instal"</strong> di dialog konfirmasi</p>
+                </div>
+                <!-- Ilustrasi Step 3 -->
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px;margin-left:32px;">
+                  <div style="background:#1e293b;border-radius:12px;padding:16px;">
+                    <p style="color:white;font-size:13px;font-weight:800;margin-bottom:12px;">Instal aplikasi</p>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                      <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:22px;">🏪</span>
+                      </div>
+                      <div>
+                        <p style="color:white;font-size:12px;font-weight:800;">KonterKu Cloud</p>
+                        <p style="color:#94a3b8;font-size:10px;">www.agscellpos.my.id</p>
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;">
+                      <div style="padding:8px 16px;border-radius:8px;background:transparent;border:1px solid #475569;">
+                        <p style="color:#94a3b8;font-size:12px;">Batal</p>
+                      </div>
+                      <div style="padding:8px 20px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#3b82f6);box-shadow:0 2px 8px rgba(37,99,235,0.4);">
+                        <p style="color:white;font-size:12px;font-weight:900;">Instal ✅</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panduan-info" style="margin-top:14px;background:#f0fdf4;border-color:#bbf7d0;color:#166534;">✅ Setelah terinstal, buka KonterKU dari ikon di layar utama HP — bukan dari browser. Notifikasi background kini aktif penuh!</div>
+            </div>
+          </div>
+
+          <!-- Tips troubleshoot -->
+          <div class="panduan-card" style="border-left:4px solid #ea580c;">
+            <div class="panduan-step-header">
+              <div class="panduan-step-num" style="background:linear-gradient(135deg,#c2410c,#f97316);">💡</div>
+              <p class="panduan-step-title">Notifikasi Tidak Masuk? Cek Ini</p>
+            </div>
+            <div class="panduan-step-body">
+              <ul class="panduan-list">
+                <li><strong>Status masih "Diblokir"?</strong> → Buka Pengaturan Chrome → Privasi → Notifikasi → cari agscellpos.my.id → set ke Izinkan</li>
+                <li><strong>Notif hanya muncul saat app dibuka?</strong> → App belum diinstall sebagai PWA. Ikuti langkah install di atas.</li>
+                <li><strong>HP mati/silent mode?</strong> → Notifikasi masuk tapi tidak berbunyi, cek panel notifikasi HP.</li>
+                <li><strong>Test kirim tidak muncul?</strong> → Coba refresh app, lalu aktifkan ulang izin notifikasi.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+        <!-- end panduan-notif -->
+
       </div>
       <!-- end panduan-body -->
 
@@ -23339,8 +23796,8 @@ ${t.bayar ? `
     }
 
     // Urutan tab untuk progress tracking
-    const _PANDUAN_TABS_ORDER = ['intro','login','dashboard','kasir','stok','dompet','hutang','laporan','toko','absensi','backup','struk','supplier'];
-    const _PANDUAN_TABS_OWNER = ['intro','login','dashboard','kasir','stok','dompet','hutang','toko','absensi','backup','struk','supplier'];
+    const _PANDUAN_TABS_ORDER = ['intro','login','dashboard','kasir','stok','dompet','hutang','laporan','toko','absensi','backup','struk','supplier','poin','notif'];
+    const _PANDUAN_TABS_OWNER = ['intro','login','dashboard','kasir','stok','dompet','hutang','toko','absensi','backup','struk','supplier','poin','notif'];
     const _PANDUAN_TABS_KASIR = ['intro','login','kasir','stok','absensi'];
     let _panduanRole = localStorage.getItem('k_panduan_role') || 'owner';
     let _panduanCurrentTab = 'intro';
@@ -23358,6 +23815,11 @@ ${t.bayar ? `
         if (btnKasir) { btnKasir.style.background = 'linear-gradient(135deg,rgba(139,92,246,0.3),rgba(167,139,250,0.15))'; btnKasir.style.borderColor = 'rgba(167,139,250,0.6)'; btnKasir.style.color = '#a78bfa'; }
         if (btnOwner) { btnOwner.style.background = 'rgba(255,255,255,0.05)'; btnOwner.style.borderColor = 'rgba(255,255,255,0.1)'; btnOwner.style.color = 'rgba(255,255,255,0.45)'; }
       }
+      // Jika tab saat ini tidak ada di role baru, kembali ke tab pertama yang valid
+      const newTabs = role === 'kasir' ? _PANDUAN_TABS_KASIR : _PANDUAN_TABS_OWNER;
+      if (!newTabs.includes(_panduanCurrentTab)) {
+        _panduanCurrentTab = newTabs[1] || newTabs[0]; // skip intro, ambil tab pertama content
+      }
       updatePanduanProgress(_panduanCurrentTab);
     }
 
@@ -23365,15 +23827,32 @@ ${t.bayar ? `
       const tabs = _panduanRole === 'kasir' ? _PANDUAN_TABS_KASIR : _PANDUAN_TABS_OWNER;
       const idx = tabs.indexOf(tab);
       if (idx < 0) return;
-      const total = tabs.length;
-      const step = idx + 1;
-      const pct = Math.round(step / total * 100);
-      const bar = document.getElementById('panduan-progress-bar');
+
+      // Sembunyikan/tampilkan tab buttons berdasarkan role
+      document.querySelectorAll('.panduan-tab-btn').forEach(btn => {
+        const btnId = btn.id.replace('ptab-', '');
+        if (btnId === 'intro') { btn.style.display = 'none'; return; }
+        btn.style.display = tabs.includes(btnId) ? '' : 'none';
+      });
+
+      const bar   = document.getElementById('panduan-progress-bar');
       const label = document.getElementById('panduan-progress-label');
       const pctEl = document.getElementById('panduan-progress-pct');
-      const wrap = document.getElementById('panduan-progress-wrap');
+      const wrap  = document.getElementById('panduan-progress-wrap');
+
       if (wrap) wrap.style.display = tab === 'intro' ? 'none' : 'block';
-      if (bar) bar.style.width = pct + '%';
+      if (tab === 'intro') return;
+
+      // Hitung dari tab non-intro saja
+      const contentTabs = tabs.filter(t => t !== 'intro');
+      const contentIdx  = contentTabs.indexOf(tab);
+      if (contentIdx < 0) return;
+
+      const total = contentTabs.length;
+      const step  = contentIdx + 1;
+      const pct   = Math.round(step / total * 100);
+
+      if (bar)   bar.style.width = pct + '%';
       if (label) label.textContent = 'Langkah ' + step + ' dari ' + total;
       if (pctEl) pctEl.textContent = pct + '%';
     }
@@ -23401,7 +23880,7 @@ ${t.bayar ? `
       }
       const body = document.getElementById('panduan-body');
       if (body) body.scrollTop = 0;
-      updatePanduanProgress(tab);
+      updatePanduanProgress(tab); // juga filter tab grid di sini
       setPanduanRole(_panduanRole);
     }
 
