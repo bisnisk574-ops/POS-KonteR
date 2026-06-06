@@ -19238,6 +19238,7 @@ ${t.bayar ? `
     }
 
     // Tampilkan notif mode kasir
+    let _absensiSudahDijadwal = false;
     (_getMySwal()||Swal).fire({
       title: '👋 Halo, ' + kasirNama + '!',
       html: 'Anda masuk sebagai <b>Kasir</b>.<br><small style="color:#94a3b8;">Akses dibatasi sesuai izin dari pemilik toko.</small>',
@@ -19246,8 +19247,15 @@ ${t.bayar ? `
       showConfirmButton: false
     }).then(() => {
       // Cek absensi setelah notif selamat datang
+      _absensiSudahDijadwal = true;
       setTimeout(_cekAbsensiKasirHariIni, 400);
     });
+    // Fallback: pastikan notif absensi tetap muncul meski .then() tidak terpanggil
+    setTimeout(function() {
+      if (!_absensiSudahDijadwal) {
+        _cekAbsensiKasirHariIni();
+      }
+    }, 3500);
 
     // Sembunyikan menu poin pelanggan untuk kasir
     const _poinMenuMobile = document.getElementById('sidebar-poin-pelanggan-menu');
@@ -19270,7 +19278,7 @@ ${t.bayar ? `
     try {
       const _planRankNow = await _getPlanRankLive();
       if (_planRankNow < 2) return; // Plan tidak support absensi, skip notif
-    } catch(_pe) { /* jika gagal cek plan, lanjutkan saja */ }
+    } catch(_pe) { /* jika gagal cek plan, lanjutkan saja - tampilkan notif */ }
 
     const kasirNama = localStorage.getItem('k_kasir_nama') || 'Kasir';
     const ownerUid  = localStorage.getItem('k_owner_uid') || localStorage.getItem('k_sid');
@@ -19461,11 +19469,14 @@ ${t.bayar ? `
     if (cachedRank >= 2) return cachedRank;
 
     // 3. Jika rank rendah dari cache, coba ambil ulang dari Firestore (mungkin belum sync)
+    // [FIX] Selalu gunakan owner_uid (bukan currentUser) agar kasir anonim bisa cek plan owner
     try {
       if (!window._fbFirestore) return cachedRank;
-      const uid = (window._fbAuth && window._fbAuth.currentUser)
-        ? window._fbAuth.currentUser.uid
-        : (localStorage.getItem('k_sid') || '');
+      const uid = localStorage.getItem('k_owner_uid')
+        || localStorage.getItem('k_sid')
+        || (window._fbAuth && window._fbAuth.currentUser && !window._fbAuth.currentUser.isAnonymous
+            ? window._fbAuth.currentUser.uid
+            : '');
       if (!uid || uid === 'DEMO') return cachedRank;
 
       const snap = await window._fbFirestore.collection('subscriptions').doc(uid).get();
