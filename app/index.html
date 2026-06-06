@@ -7845,7 +7845,7 @@
               </div>
             </div>
             <div id="kd-poin-info-estimasi" style="display:none;background:rgba(124,58,237,0.1);border-radius:10px;padding:7px 11px;align-items:center;justify-content:space-between;">
-              <span style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
+              <span id="kd-poin-info-estimasi-lbl" style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
               <span id="kd-poin-info-estimasi-val" style="font-size:12px;font-weight:900;color:#7c3aed;">+0 poin</span>
             </div>
           </div>
@@ -8070,7 +8070,7 @@
               </div>
             </div>
             <div id="kf-poin-info-estimasi" style="display:none;background:rgba(124,58,237,0.1);border-radius:10px;padding:7px 11px;align-items:center;justify-content:space-between;">
-              <span style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
+              <span id="kf-poin-info-estimasi-lbl" style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
               <span id="kf-poin-info-estimasi-val" style="font-size:12px;font-weight:900;color:#7c3aed;">+0 poin</span>
             </div>
           </div>
@@ -8314,7 +8314,7 @@
               </div>
             </div>
             <div id="ke-poin-info-estimasi" style="display:none;background:rgba(124,58,237,0.1);border-radius:10px;padding:7px 11px;align-items:center;justify-content:space-between;">
-              <span style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
+              <span id="ke-poin-info-estimasi-lbl" style="font-size:9px;font-weight:700;color:rgba(109,40,217,0.8);">Estimasi poin didapat:</span>
               <span id="ke-poin-info-estimasi-val" style="font-size:12px;font-weight:900;color:#7c3aed;">+0 poin</span>
             </div>
           </div>
@@ -13434,11 +13434,49 @@
 
       // Estimasi dari jenis trx keranjang atau per nominal
       const jenisSel = document.getElementById('kasir-poin-jenis-trx');
-      const idx      = jenisSel ? parseInt(jenisSel.value) : NaN;
+      const idxCart  = jenisSel ? parseInt(jenisSel.value) : NaN;
       const bonusTrx = cfg.bonusTrx || [];
-      if (!isNaN(idx) && bonusTrx[idx]) {
+
+      // [FIX] Cari index bonusTrx yang tepat:
+      // 1. Pakai pilihan dari kasir-poin-jenis-trx (keranjang) jika ada
+      // 2. Auto-detect dari kategori produk yang dipilih di kasir digital/fisik
+      // 3. Fallback ke bonusTrx pertama jika ada
+      let resolvedIdx = NaN;
+      if (!isNaN(idxCart) && bonusTrx[idxCart]) {
+        resolvedIdx = idxCart;
+      } else {
+        // Auto-detect dari produk yang dipilih
+        let prodKategori = '';
+        if (prefix === 'kd') {
+          const kdSel = document.getElementById('kd-produk');
+          if (kdSel && kdSel.value && kdSel.value !== 'manual' && kdSel.value !== '') {
+            const prodItem = (window.db && (window.db.inventory || [])).find(function(p){ return p.id === kdSel.value; });
+            if (prodItem && prodItem.kategori) prodKategori = prodItem.kategori;
+          }
+        } else if (prefix === 'kf') {
+          const kfSel = document.getElementById('kf-produk');
+          if (kfSel && kfSel.value && kfSel.value !== '') {
+            const prodItem = (window.db && (window.db.inventory || [])).find(function(p){ return p.id === kfSel.value; });
+            if (prodItem && prodItem.kategori) prodKategori = prodItem.kategori;
+          }
+        }
+        // Coba cocokkan kategori produk ke bonusTrx
+        if (prodKategori) {
+          const matchIdx = bonusTrx.findIndex(function(t){ return t.kategori && t.kategori === prodKategori; });
+          if (matchIdx !== -1) resolvedIdx = matchIdx;
+        }
+        // Fallback: gunakan bonusTrx pertama jika masih tidak ada
+        if (isNaN(resolvedIdx) && bonusTrx.length > 0) {
+          resolvedIdx = 0;
+        }
+      }
+
+      if (!isNaN(resolvedIdx) && bonusTrx[resolvedIdx]) {
         if (estWrap) estWrap.style.display = 'flex';
-        if (estVal)  estVal.textContent = '+' + bonusTrx[idx].poin + ' poin';
+        if (estVal)  estVal.textContent = '+' + bonusTrx[resolvedIdx].poin + ' poin';
+        // Tampilkan nama jenis transaksi di label
+        const estLbl = document.getElementById(prefix + '-poin-info-estimasi-lbl');
+        if (estLbl) estLbl.textContent = bonusTrx[resolvedIdx].nama + ':';
       } else {
         const jual      = Number(document.getElementById(jualElId)?.value) || 0;
         const poinPer   = cfg.poinPerNominal || 0;
@@ -13447,6 +13485,8 @@
           const est = Math.floor(jual / kelipatan) * poinPer;
           if (estWrap) estWrap.style.display = 'flex';
           if (estVal)  estVal.textContent = '+' + est.toLocaleString('id-ID') + ' poin';
+          const estLbl = document.getElementById(prefix + '-poin-info-estimasi-lbl');
+          if (estLbl) estLbl.textContent = 'Estimasi poin didapat:';
         } else {
           if (estWrap) estWrap.style.display = 'none';
         }
