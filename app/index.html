@@ -560,6 +560,10 @@
       color: #64748b !important;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--slate-800); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+    /* Trial banner: tidak butuh tambahan layout karena diinsert sebagai block di awal body */
+    #_trial-banner { display: none; }
+    @keyframes _trial-pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+    #_trial-banner._urgent { animation: _trial-pulse 1.5s infinite; }
     /* ===== HEADER ===== */
     .header-gradient {
       background: linear-gradient(160deg, #061540 0%, #0a1f50 45%, #0d2d6b 100%);
@@ -829,9 +833,9 @@
     .tab-btn.inactive { background: transparent; color: #94A3B8; }
     .tab-btn.active:hover { background: #004a94; }
     label { font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; margin-bottom: 4px; display: block; margin-left: 4px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: flex-end; justify-content: center; overscroll-behavior: contain; touch-action: none; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: flex-end; justify-content: center; overscroll-behavior: none; touch-action: none; }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 32px 32px 0 0; padding: 24px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+    .modal-content { background: white; width: 100%; max-width: 600px; border-radius: 32px 32px 0 0; padding: 24px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
     .modal-overlay.active .modal-content { transform: translateY(0); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .filter-chip { padding: 6px 14px; border-radius: 100px; font-size: 10px; font-weight: 800; transition: 0.2s; border: 1.5px solid #F1F5F9; color: #94A3B8; cursor: pointer; white-space: nowrap; background: white; }
@@ -3933,7 +3937,7 @@
             </div>
 
             <button onclick="loginDemo()" class="login-btn-ghost">
-              <i class="fas fa-circle-play mr-2"></i>Coba Mode Demo
+              <i class="fas fa-gift mr-2"></i>Coba Demo — Trial 7 Hari Gratis
             </button>
           </div>
 
@@ -4673,6 +4677,8 @@
         expired_at  : expired,          // Timestamp Firestore
         created_at  : now,
         trial_days  : 7,
+        trial_trx_limit : 100,         // batas transaksi selama trial
+        trial_produk_limit: 100,       // batas produk selama trial
         payment_ref : ''                // diisi admin saat perpanjang
       };
 
@@ -9921,37 +9927,47 @@
       }
     });
 
-    // Bug #5: Swipe down untuk tutup modal
+    // Bug #5: Swipe down untuk tutup modal (fixed: scroll ke atas tidak memicu close)
     (function() {
-      let startY = 0, startScrollTop = 0, isDragging = false;
+      let startY = 0, startScrollTop = 0, isDragging = false, activeContent = null, swipeIntent = null;
       document.addEventListener('touchstart', function(e) {
         const content = e.target.closest('.modal-content');
-        if (!content) return;
+        if (!content) { isDragging = false; activeContent = null; return; }
         startY = e.touches[0].clientY;
         startScrollTop = content.scrollTop;
         isDragging = true;
+        activeContent = content;
+        swipeIntent = null; // reset intent setiap sentuhan baru
       }, { passive: true });
       document.addEventListener('touchmove', function(e) {
-        if (!isDragging) return;
-        const content = e.target.closest('.modal-content');
-        if (!content) return;
+        if (!isDragging || !activeContent) return;
+        const content = activeContent;
         const dy = e.touches[0].clientY - startY;
-        // Hanya swipe down saat sudah di atas scroll
-        if (dy > 0 && startScrollTop <= 0) {
+        // Tentukan intent awal berdasarkan arah gerak pertama (>8px)
+        if (swipeIntent === null && Math.abs(dy) > 8) {
+          swipeIntent = dy > 0 ? 'down' : 'up';
+        }
+        // Hanya animasi drag jika:
+        // 1. Intent awal memang ke bawah (swipe down)
+        // 2. Posisi scroll benar-benar di paling atas saat touchstart
+        if (swipeIntent === 'down' && startScrollTop <= 0 && dy > 0) {
           content.style.transform = 'translateY(' + Math.min(dy * 0.4, 80) + 'px)';
           content.style.transition = 'none';
         }
       }, { passive: true });
       document.addEventListener('touchend', function(e) {
-        if (!isDragging) return;
+        if (!isDragging || !activeContent) return;
         isDragging = false;
-        const content = e.target.closest('.modal-content');
-        if (!content) return;
+        const content = activeContent;
+        activeContent = null;
         const dy = e.changedTouches[0].clientY - startY;
         content.style.transform = '';
         content.style.transition = '';
-        if (dy > 90 && startScrollTop <= 0) {
-          // Swipe down cukup jauh → tutup modal
+        // Tutup modal hanya jika:
+        // 1. Intent sejak awal memang swipe down
+        // 2. Posisi scroll saat touchstart di paling atas
+        // 3. Total jarak cukup jauh (>90px)
+        if (swipeIntent === 'down' && dy > 90 && startScrollTop <= 0) {
           const overlay = content.closest('.modal-overlay');
           if (overlay) {
             overlay.classList.remove('active');
@@ -9961,6 +9977,17 @@
             if (idx !== -1) _modalStack.splice(idx, 1);
           }
         }
+        swipeIntent = null;
+      }, { passive: true });
+      // Pastikan state bersih jika sentuhan dibatalkan sistem
+      document.addEventListener('touchcancel', function() {
+        if (activeContent) {
+          activeContent.style.transform = '';
+          activeContent.style.transition = '';
+        }
+        isDragging = false;
+        activeContent = null;
+        swipeIntent = null;
       }, { passive: true });
     })();
 
@@ -10100,7 +10127,7 @@
       // -- FEATURE GATE: cek paket sebelum navigasi --
       const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      const rank = PLAN_RANK[plan] ?? 0;
+      const rank = _getEffectiveRank();
 
       // Hutang Piutang → minimal Basic
       if (v === 'hutang' && rank < 1) {
@@ -10146,15 +10173,361 @@
 
     // -- PLAN LIMITS --
     const PLAN_LIMITS = {
-      trial:     { produk: 100,  dompet: 20  },
-      basic:     { produk: 200,  dompet: 20  },
-      pro:       { produk: 500,  dompet: 50  },
-      unlimited: { produk: 1000, dompet: 100 },
+      trial:     { produk: 100,  dompet: 20, transaksi: 100, toko: 1 },
+      basic:     { produk: 200,  dompet: 20, transaksi: Infinity, toko: 1 },
+      pro:       { produk: 500,  dompet: 50, transaksi: Infinity, toko: 3 },
+      unlimited: { produk: 1000, dompet: 100, transaksi: Infinity, toko: 10 },
     };
     function getPlanLimits() {
       const plan = localStorage.getItem('k_plan') || 'trial';
       return PLAN_LIMITS[plan] || PLAN_LIMITS.trial;
     }
+
+    // ── TRIAL helpers ──
+    // ── KUNCI: Rank efektif — trial aktif = rank 3 (setara Unlimited) ──
+    // Semua feature gate harus pakai _getEffectiveRank(), bukan PLAN_RANK langsung
+    function _getEffectiveRank() {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
+      const baseRank = PLAN_RANK[plan] ?? 0;
+      // Jika trial dan masih aktif → beri akses penuh (rank 3)
+      if (plan === 'trial') {
+        const expStr = localStorage.getItem('k_expired_date');
+        if (!expStr) return 3; // belum set = masih trial aktif
+        const stillActive = new Date(expStr + 'T23:59:59') >= new Date();
+        return stillActive ? 3 : 0; // expired trial = rank 0
+      }
+      return baseRank;
+    }
+
+    function _isTrialActive() {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      if (plan !== 'trial') return false;
+      const expStr = localStorage.getItem('k_expired_date');
+      if (!expStr) return true;
+      return new Date(expStr + 'T23:59:59') >= new Date();
+    }
+    function _getTrialDaysLeft() {
+      const expStr = localStorage.getItem('k_expired_date');
+      if (!expStr) return 0;
+      return Math.max(0, Math.ceil((new Date(expStr + 'T23:59:59') - new Date()) / 86400000));
+    }
+    function _getTrialTrxCount() {
+      return (typeof db !== 'undefined' && db.transaksi) ? db.transaksi.length : 0;
+    }
+
+    // ── TRIAL BANNER ──
+    function _updateTrialBanner() {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      let el = document.getElementById('_trial-banner');
+      if (plan !== 'trial') { if (el) el.style.display = 'none'; return; }
+      const daysLeft = _getTrialDaysLeft();
+      const trxUsed  = _getTrialTrxCount();
+      const trxMax   = PLAN_LIMITS.trial.transaksi;
+      const trxSisa  = Math.max(0, trxMax - trxUsed);
+      const expStr   = localStorage.getItem('k_expired_date') || '';
+      const isUrgent = daysLeft <= 2 || trxSisa <= 10;
+      const isWarn   = daysLeft <= 5 || trxSisa <= 30;
+      const bgColor  = isUrgent ? 'linear-gradient(90deg,#7f1d1d,#991b1b)'
+                     : isWarn   ? 'linear-gradient(90deg,#78350f,#92400e)'
+                     : 'linear-gradient(90deg,#1e1b4b,#3730a3)';
+      const accent   = isUrgent ? '#fca5a5' : isWarn ? '#fcd34d' : '#a5b4fc';
+      if (!el) {
+        el = document.createElement('div');
+        el.id = '_trial-banner';
+        el.style.cssText = 'width:100%;z-index:1500;cursor:pointer;user-select:none;flex-shrink:0;';
+        el.onclick = function() { openModal('modal-sidebar-perpanjang'); };
+        const appEl = document.getElementById('app') || document.body.firstElementChild;
+        document.body.insertBefore(el, appEl);
+      }
+      const expLabel = expStr ? new Date(expStr + 'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : '—';
+      el.style.display = 'flex';
+      el.innerHTML = '<div style="background:' + bgColor + ';padding:7px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;box-sizing:border-box;">'
+        + '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">'
+        + '<div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:4px 6px;flex-shrink:0;"><i class="fas fa-gift" style="color:' + accent + ';font-size:11px;"></i></div>'
+        + '<div style="min-width:0;">'
+        + '<p style="font-size:10px;font-weight:900;color:white;margin:0;line-height:1.3;">🎁 Trial ' + daysLeft + ' hari · ' + trxSisa + ' trx tersisa</p>'
+        + '<p style="font-size:8px;font-weight:600;color:rgba(255,255,255,0.55);margin:0;line-height:1.4;">Semua fitur aktif · Upgrade sebelum ' + expLabel + '</p>'
+        + '</div></div>'
+        + '<div style="flex-shrink:0;background:' + accent + ';color:#1e1b4b;font-size:8px;font-weight:900;padding:4px 10px;border-radius:8px;white-space:nowrap;">UPGRADE</div>'
+        + '</div>';
+    }
+
+    // ── TRIAL: cek & tampilkan notif peringatan (throttled, max 1x/session per threshold) ──
+    var _trialWarnShown = {};
+    function _checkTrialWarning() {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      if (plan !== 'trial') return;
+      const daysLeft = _getTrialDaysLeft();
+      const trxUsed  = _getTrialTrxCount();
+      const trxSisa  = Math.max(0, PLAN_LIMITS.trial.transaksi - trxUsed);
+
+      // Threshold notifikasi hari: 5, 2, 1, 0
+      const dayThresholds = [5, 2, 1, 0];
+      for (const t of dayThresholds) {
+        const key = 'day_' + t;
+        if (daysLeft === t && !_trialWarnShown[key]) {
+          _trialWarnShown[key] = true;
+          const msg = t === 0
+            ? '⏰ Trial Anda berakhir <b>hari ini!</b> Segera upgrade agar data & alur kerja tetap terjaga.'
+            : '⏰ Sisa trial Anda tinggal <b>' + t + ' hari</b>. Upgrade sekarang sebelum terlambat!';
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              toast: true, position: 'top', icon: t <= 1 ? 'error' : 'warning',
+              iconColor: t <= 1 ? '#ef4444' : '#f59e0b',
+              title: '<span style="font-size:12px;font-weight:900;">' + msg + '</span>',
+              showConfirmButton: true, confirmButtonText: 'Upgrade',
+              confirmButtonColor: '#7c3aed',
+              showCloseButton: true, timer: 12000, timerProgressBar: true,
+              customClass: { popup: 'swal2-ku' }
+            }).then(function(r) { if (r.isConfirmed) openModal('modal-sidebar-perpanjang'); });
+          }
+        }
+      }
+      // Threshold notifikasi kuota trx: 30, 10, 5
+      const trxThresholds = [30, 10, 5];
+      for (const t of trxThresholds) {
+        const key = 'trx_' + t;
+        if (trxSisa <= t && trxSisa > (t === 30 ? 10 : t === 10 ? 5 : 0) && !_trialWarnShown[key]) {
+          _trialWarnShown[key] = true;
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              toast: true, position: 'top', icon: t <= 5 ? 'error' : 'warning',
+              iconColor: t <= 5 ? '#ef4444' : '#f59e0b',
+              title: '<span style="font-size:12px;font-weight:900;">🧾 Kuota trial tersisa <b>' + trxSisa + ' transaksi</b> lagi!</span>',
+              showConfirmButton: true, confirmButtonText: 'Upgrade',
+              confirmButtonColor: '#7c3aed',
+              showCloseButton: true, timer: 10000, timerProgressBar: true,
+              customClass: { popup: 'swal2-ku' }
+            }).then(function(r) { if (r.isConfirmed) openModal('modal-sidebar-perpanjang'); });
+          }
+        }
+      }
+    }
+
+    // ── TRIAL EXPIRED OVERLAY: tampilkan opsi pilih paket (bukan expired biasa) ──
+    function _showTrialExpiredChoose() {
+      if (typeof Swal === 'undefined') return;
+      Swal.fire({
+        title: '<span style="font-size:17px;font-weight:900;">🎁 Trial 7 Hari Telah Berakhir</span>',
+        html: `
+          <p style="font-size:12px;color:#475569;margin-bottom:14px;line-height:1.6;">
+            Anda telah mencoba semua fitur unggulan KonterKU.<br>
+            Pilih paket yang sesuai untuk melanjutkan.
+          </p>
+          <div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
+            <div onclick="Swal.close();openModal('modal-sidebar-perpanjang')" style="background:#f0f9ff;border:2px solid #bae6fd;border-radius:14px;padding:12px 14px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='#38bdf8'" onmouseout="this.style.borderColor='#bae6fd'">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="background:#0ea5e9;border-radius:9px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-store" style="color:white;font-size:12px;"></i></div>
+                <div>
+                  <p style="font-size:12px;font-weight:900;color:#0c4a6e;margin:0;">Basic — Rp 20.000/bln</p>
+                  <p style="font-size:10px;color:#0369a1;margin:0;">1 toko · 100 produk · fitur dasar</p>
+                </div>
+              </div>
+            </div>
+            <div onclick="Swal.close();openModal('modal-sidebar-perpanjang')" style="background:#f0fdf4;border:2px solid #86efac;border-radius:14px;padding:12px 14px;cursor:pointer;position:relative;overflow:hidden;" onmouseover="this.style.borderColor='#4ade80'" onmouseout="this.style.borderColor='#86efac'">
+              <div style="position:absolute;top:0;right:0;background:linear-gradient(135deg,#16a34a,#22c55e);padding:2px 9px;border-radius:0 12px 0 9px;"><p style="font-size:7px;font-weight:900;color:white;">TERPOPULER</p></div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="background:#16a34a;border-radius:9px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-rocket" style="color:white;font-size:12px;"></i></div>
+                <div>
+                  <p style="font-size:12px;font-weight:900;color:#14532d;margin:0;">Pro ⭐ — Rp 50.000/bln</p>
+                  <p style="font-size:10px;color:#15803d;margin:0;">3 toko · 500 produk · kasir · ekspor · struk</p>
+                </div>
+              </div>
+            </div>
+            <div onclick="Swal.close();openModal('modal-sidebar-perpanjang')" style="background:#fffbeb;border:2px solid #fcd34d;border-radius:14px;padding:12px 14px;cursor:pointer;" onmouseover="this.style.borderColor='#f59e0b'" onmouseout="this.style.borderColor='#fcd34d'">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="background:#d97706;border-radius:9px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-crown" style="color:white;font-size:12px;"></i></div>
+                <div>
+                  <p style="font-size:12px;font-weight:900;color:#78350f;margin:0;">Unlimited 🔥 — Rp 125.000/bln</p>
+                  <p style="font-size:10px;color:#92400e;margin:0;">10 toko · 1.000 produk · monitor cabang</p>
+                </div>
+              </div>
+            </div>
+          </div>`,
+        showConfirmButton: false,
+        showCloseButton: true,
+        customClass: { popup: 'swal2-ku' },
+        width: '360px'
+      });
+    }
+
+    // ── Ubah _showExpiredOverlay agar trial menampilkan pilih paket, bukan hanya WA ──
+    var _origShowExpiredOverlay = window._showExpiredOverlay;
+    window._showExpiredOverlayWithTrialCheck = function(email, uid, expDateStr) {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      if (plan === 'trial') {
+        // Untuk trial expired: tampilkan pilihan paket via Swal
+        setTimeout(_showTrialExpiredChoose, 600);
+        // Tetap tampilkan overlay dasar agar tidak bisa bypass
+        if (typeof _origShowExpiredOverlay === 'function') {
+          _origShowExpiredOverlay(email, uid, expDateStr);
+        } else {
+          const overlay = document.getElementById('expired-overlay');
+          if (overlay) {
+            const emailEl = document.getElementById('exp-overlay-email');
+            const dateEl  = document.getElementById('exp-overlay-date');
+            const uidEl   = document.getElementById('exp-overlay-uid');
+            if (emailEl) emailEl.textContent = email || '';
+            if (dateEl)  dateEl.textContent  = expDateStr || '';
+            if (uidEl)   uidEl.textContent   = uid || '';
+            overlay.style.display = 'flex';
+          }
+        }
+      } else {
+        if (typeof _origShowExpiredOverlay === 'function') _origShowExpiredOverlay(email, uid, expDateStr);
+      }
+    };
+
+    // ── Update teks di expired overlay untuk trial ──
+    function _patchExpiredOverlayForTrial() {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      if (plan !== 'trial') return;
+      const overlay = document.getElementById('expired-overlay');
+      if (!overlay) return;
+      // Ganti judul & warna untuk trial
+      const h2 = overlay.querySelector('h2');
+      const badge = overlay.querySelector('p[style*="AKUN EXPIRED"]') || overlay.querySelector('p');
+      const iconDiv = overlay.querySelector('div[style*="ef4444"]');
+      if (h2) h2.textContent = 'Trial 7 Hari Telah Berakhir';
+      if (badge && badge.textContent.includes('AKUN EXPIRED')) badge.textContent = 'TRIAL BERAKHIR';
+      // Ganti tombol WA menjadi "Pilih Paket"
+      const waBtn = document.getElementById('exp-overlay-wa-btn');
+      if (waBtn) {
+        waBtn.innerHTML = '<i class="fas fa-crown" style="font-size:18px;"></i> Pilih Paket & Lanjutkan';
+        waBtn.style.background = 'linear-gradient(135deg,#7c3aed,#6d28d9)';
+        waBtn.style.boxShadow = '0 8px 28px rgba(124,58,237,0.55)';
+        waBtn.onclick = function() {
+          const overlay2 = document.getElementById('expired-overlay');
+          if (overlay2) overlay2.style.display = 'none';
+          setTimeout(() => openModal('modal-sidebar-perpanjang'), 200);
+        };
+      }
+    }
+
+    // ── Tambahkan info kuota trial di modal akun (section badge plan) ──
+    function _injectTrialQuotaInAkun() {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      const existingEl = document.getElementById('_trial-quota-akun');
+      if (plan !== 'trial') { if (existingEl) existingEl.remove(); return; }
+
+      const trxUsed = _getTrialTrxCount();
+      const trxMax  = PLAN_LIMITS.trial.transaksi;
+      const trxSisa = Math.max(0, trxMax - trxUsed);
+      const trxPct  = Math.min(100, Math.round((trxUsed / trxMax) * 100));
+      const daysLeft = _getTrialDaysLeft();
+      const produkCount = (typeof db !== 'undefined' && db.inventory) ? db.inventory.length : 0;
+      const produkMax   = PLAN_LIMITS.trial.produk;
+      const produkPct   = Math.min(100, Math.round((produkCount / produkMax) * 100));
+
+      const barColorTrx    = trxPct >= 80 ? '#ef4444' : trxPct >= 60 ? '#f59e0b' : '#6366f1';
+      const barColorProduk = produkPct >= 80 ? '#ef4444' : produkPct >= 60 ? '#f59e0b' : '#6366f1';
+
+      const html = '<div id="_trial-quota-akun" style="background:rgba(99,102,241,0.07);border:1.5px solid rgba(99,102,241,0.2);border-radius:16px;padding:13px 14px;margin-bottom:8px;">'
+        + '<p style="font-size:8px;font-weight:900;color:#4338ca;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">🎁 KUOTA TRIAL</p>'
+        // Hari
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+        + '<span style="font-size:10px;font-weight:700;color:#334155;">⏳ Sisa Hari Trial</span>'
+        + '<span style="font-size:10px;font-weight:900;color:' + (daysLeft <= 2 ? '#ef4444' : '#4338ca') + ';">' + daysLeft + ' hari</span>'
+        + '</div>'
+        // Transaksi bar
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+        + '<span style="font-size:10px;font-weight:700;color:#334155;">🧾 Transaksi</span>'
+        + '<span style="font-size:10px;font-weight:700;color:#64748b;">' + trxUsed + '/' + trxMax + '</span>'
+        + '</div>'
+        + '<div style="height:6px;background:#e2e8f0;border-radius:9px;overflow:hidden;margin-bottom:8px;">'
+        + '<div style="height:100%;width:' + trxPct + '%;background:' + barColorTrx + ';border-radius:9px;transition:width 0.5s;"></div></div>'
+        // Produk bar
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+        + '<span style="font-size:10px;font-weight:700;color:#334155;">📦 Produk</span>'
+        + '<span style="font-size:10px;font-weight:700;color:#64748b;">' + produkCount + '/' + produkMax + '</span>'
+        + '</div>'
+        + '<div style="height:6px;background:#e2e8f0;border-radius:9px;overflow:hidden;margin-bottom:10px;">'
+        + '<div style="height:100%;width:' + produkPct + '%;background:' + barColorProduk + ';border-radius:9px;transition:width 0.5s;"></div></div>'
+        // Upgrade CTA
+        + '<button onclick="closeModal(&quot;modal-sidebar-akun&quot;);setTimeout(()=>openModal(&quot;modal-sidebar-perpanjang&quot;),200);" style="width:100%;padding:9px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:10px;font-size:11px;font-weight:900;cursor:pointer;letter-spacing:0.02em;">🚀 Upgrade Sekarang</button>'
+        + '</div>';
+
+      // Sisipkan setelah akun-plan-badge
+      const planBadge = document.getElementById('akun-plan-badge');
+      if (planBadge) {
+        // Remove existing if any
+        if (existingEl) existingEl.remove();
+        planBadge.insertAdjacentHTML('afterend', html);
+      }
+    }
+
+    // ── Hook ke openSidebarMenu('akun') agar inject kuota ──
+    var _origOpenSidebarMenuTrial = window.openSidebarMenu;
+    window.openSidebarMenu = function(menu) {
+      if (_origOpenSidebarMenuTrial) _origOpenSidebarMenuTrial.apply(this, arguments);
+      if (menu === 'akun') {
+        setTimeout(_injectTrialQuotaInAkun, 400);
+        setTimeout(_patchExpiredOverlayForTrial, 100);
+      }
+    };
+
+    // ── Juga patch _showExpiredOverlay global ──
+    var _origSEO = window._showExpiredOverlay;
+    if (!window._trialOverlayPatched) {
+      window._trialOverlayPatched = true;
+      var _realSEO = window._showExpiredOverlay;
+      window._showExpiredOverlay = function(email, uid, expDateStr) {
+        const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+        if (plan === 'trial') {
+          // Tampilkan overlay dasar
+          if (typeof _realSEO === 'function') _realSEO.apply(this, arguments);
+          setTimeout(_patchExpiredOverlayForTrial, 100);
+          setTimeout(_showTrialExpiredChoose, 700);
+        } else {
+          if (typeof _realSEO === 'function') _realSEO.apply(this, arguments);
+        }
+      };
+    }
+
+    // ── Update perpanjang modal hero untuk trial ──
+    function _patchPerpanjangForTrial() {
+      const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      if (plan !== 'trial') return;
+      const daysLeft  = _getTrialDaysLeft();
+      const trxUsed   = _getTrialTrxCount();
+      const trxSisa   = Math.max(0, PLAN_LIMITS.trial.transaksi - trxUsed);
+      const subtitleEl = document.querySelector('#modal-sidebar-perpanjang p[style*="font-size:9px"][style*="rgba(255,255,255,0.45)"]');
+      if (subtitleEl) {
+        subtitleEl.innerHTML = '🎁 Trial aktif &bull; <b style="color:rgba(251,191,36,0.8);">' + daysLeft + ' hari lagi</b> &bull; ' + trxSisa + ' trx tersisa';
+      }
+    }
+
+    // Hook openModal untuk patch perpanjang
+    var _origOpenModalForTrial = window.openModal;
+    window.openModal = function(id) {
+      if (typeof _origOpenModalForTrial === 'function') _origOpenModalForTrial.apply(this, arguments);
+      if (id === 'modal-sidebar-perpanjang') setTimeout(_patchPerpanjangForTrial, 200);
+    };
+
+    // ── Admin panel: tampilkan info trial di select plan ──
+    // (admin-input-plan sudah punya option value="trial")
+    // Tambahkan label lebih deskriptif via JS
+    (function _enrichAdminPlanOptions() {
+      document.addEventListener('DOMContentLoaded', function() {
+        const sel = document.getElementById('admin-input-plan');
+        if (sel) {
+          Array.from(sel.options).forEach(opt => {
+            if (opt.value === 'trial') opt.text = 'Trial (7 hari · 100 trx · 100 produk)';
+          });
+        }
+      });
+    })();
+
+    // ── Auto-run banner saat app siap (fallback jika renderAll belum dipanggil) ──
+    setTimeout(function() {
+      if (typeof _updateTrialBanner === 'function') _updateTrialBanner();
+    }, 2500);
+
+    // ── TRIAL: tampilkan summary kuota di checkout confirmation ──
+    // (Sudah ditangani oleh gate di atas, ini hanya untuk info)
+
+    
 
     // -- UPGRADE MODAL --
     const _UPGRADE_INFO = {
@@ -10239,7 +10612,7 @@
       const featureLabel = _FEATURE_LABEL[featureKey] || featureKey;
       const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      const rank = PLAN_RANK[plan] ?? 0;
+      const rank = _getEffectiveRank();
 
       // Buat modal overlay jika belum ada
       let el = document.getElementById('modal-upgrade-plan');
@@ -10858,6 +11231,18 @@
       localStorage.setItem('k_sid', 'DEMO');
       localStorage.setItem('k_email', 'demo@konterkupro.com');
       localStorage.setItem('k_store_name', 'Toko Demo');
+
+      // ── DEMO pakai sistem trial yang sama ──
+      // Set plan = trial, expired = 7 hari dari sekarang (atau pakai yg sudah ada)
+      if (!localStorage.getItem('k_plan') || localStorage.getItem('k_plan') === 'trial') {
+        localStorage.setItem('k_plan', 'trial');
+      }
+      if (!localStorage.getItem('k_expired_date')) {
+        const expDemo = new Date();
+        expDemo.setDate(expDemo.getDate() + 7);
+        localStorage.setItem('k_expired_date', expDemo.toISOString().split('T')[0]);
+      }
+
       initApp(true); // skip cloud fetch untuk demo
     }
 
@@ -11443,6 +11828,27 @@
         return a + (b.tipe==='ewallet' ? b.ewlData.adminAgen*qty : ((b.jualSatuan||b.jual)-(b.modalSatuan||b.modal))*qty);
       }, 0);
 
+      // ── TRIAL: cek limit transaksi ──
+      if (_isTrialActive()) {
+        const _trxLimitTrial = PLAN_LIMITS.trial.transaksi;
+        const _trxSudah = _getTrialTrxCount();
+        const _trxAkan  = items.length;
+        if (_trxSudah + _trxAkan > _trxLimitTrial) {
+          const _trxSisa = Math.max(0, _trxLimitTrial - _trxSudah);
+          (_getMySwal()||Swal).fire({
+            icon: 'warning',
+            title: '⚠️ Batas Trial Tercapai',
+            html: '<p style="font-size:13px;color:#475569;">Kuota transaksi trial Anda sudah habis (<b>' + _trxSudah + '/' + _trxLimitTrial + ' trx</b>).<br>Upgrade ke paket berbayar untuk transaksi tak terbatas.</p>',
+            showCancelButton: true,
+            confirmButtonText: '🚀 Upgrade Sekarang',
+            cancelButtonText: 'Nanti Saja',
+            confirmButtonColor: '#7c3aed',
+            customClass: { popup: 'swal2-ku' }
+          }).then(r => { if (r.isConfirmed) openModal('modal-sidebar-perpanjang'); });
+          return;
+        }
+      }
+
       const konfirm = await (_getMySwal()||Swal).fire({
         title: 'Proses Semua?',
         html: `<p style="font-size:13px;color:#475569;">
@@ -12015,6 +12421,10 @@
     function renderAll() {
       const today = getWIBDate();
       const trxToday = db.transaksi.filter(t => t.tgl === today);
+      // ── TRIAL BANNER update ──
+      if (typeof _updateTrialBanner === 'function') _updateTrialBanner();
+      // ── TRIAL: notifikasi peringatan habis ──
+      if (typeof _checkTrialWarning === 'function') _checkTrialWarning();
       document.getElementById('stat-omset-today').innerText = `Rp ${fmt(trxToday.reduce((a,b)=>a+Number(b.jual||0),0))}`;
       document.getElementById('stat-laba-today').innerText = `Rp ${fmt(trxToday.reduce((a,b)=>a+(Number(b.jual||0)-Number(b.modal||0)),0))}`;
       document.getElementById('stat-trx-today').innerText = trxToday.length;
@@ -13857,7 +14267,7 @@
         if (totalProduk >= limits.produk) {
           const plan = localStorage.getItem('k_plan') || 'trial';
           const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-          const rank = PLAN_RANK[plan] ?? 0;
+          const rank = _getEffectiveRank();
           const nextPlan = rank < 1 ? 'basic' : rank < 2 ? 'pro' : 'unlimited';
           closeModal('modal-produk');
           showUpgradeModal('limit_produk', nextPlan);
@@ -13897,7 +14307,7 @@
       if (totalDompet >= limits.dompet) {
         const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
         const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-        const rank = PLAN_RANK[plan] ?? 0;
+        const rank = _getEffectiveRank();
         const nextPlan = rank < 1 ? 'basic' : rank < 2 ? 'pro' : 'unlimited';
         closeModal('modal-wallet');
         showUpgradeModal('limit_dompet', nextPlan);
@@ -16349,8 +16759,9 @@ ${t.bayar ? `
               if (expIconEl) { expIconEl.style.background='rgba(239,68,68,0.12)'; expIconEl.querySelector('i').style.color='#ef4444'; expIconEl.querySelector('i').className='fas fa-calendar-times'; }
             }
           } else if (expDateEl) {
-            expDateEl.innerText = sid === 'DEMO' ? 'Mode Demo' : 'Belum diatur';
-            if (expSisaEl) expSisaEl.innerText = '';
+            // Jika DEMO tapi sudah ada expired (karena loginDemo kini set expired), biarkan flow normal
+            expDateEl.innerText = sid === 'DEMO' ? 'Demo — Trial 7 hari' : 'Belum diatur';
+            if (expSisaEl) expSisaEl.innerText = sid === 'DEMO' ? 'Sesi demo mengikuti sistem trial' : '';
           }
         })();
 
@@ -17817,7 +18228,7 @@ ${t.bayar ? `
     function applyPlanUI() {
       const plan = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
       const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
-      const rank = PLAN_RANK[plan] ?? 0;
+      const rank = _getEffectiveRank();
 
       // -- 1. Nav Hutang: tampilkan lock dot jika < basic --
       const navHutang = document.getElementById('nav-hutang');
@@ -18570,7 +18981,7 @@ ${t.bayar ? `
           return;
         }
         if (menu === 'monitor-cabang') {
-          var _r = ({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0;
+          var _r = _getEffectiveRank();
           if (_r < 2) {
             if (typeof showUpgradeModal === 'function') showUpgradeModal('monitor_cabang','pro');
             return;
@@ -19501,6 +19912,12 @@ ${t.bayar ? `
   // ===== HELPER: Ambil plan rank dari Firestore (real-time, tidak bergantung cache) =====
   async function _getPlanRankLive() {
     const PLAN_RANK = { trial: 0, basic: 1, pro: 2, unlimited: 3 };
+    // 0. Trial aktif → rank efektif = 3 (semua fitur terbuka)
+    if (typeof _getEffectiveRank === 'function') {
+      const effRank = _getEffectiveRank();
+      const cached0 = (localStorage.getItem('k_plan') || 'trial').toLowerCase().trim();
+      if (cached0 === 'trial') return effRank;
+    }
     // 1. Baca dari localStorage dulu (instan)
     const cached = localStorage.getItem('k_plan') || 'trial';
     const cachedRank = PLAN_RANK[cached.toLowerCase().trim()] ?? 0;
@@ -24739,7 +25156,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
   // ------------------------------------------
 
   window.bukaNotifPWA = function() {
-    var _r = ({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0;
+    var _r = _getEffectiveRank();
     if (_r < 3) {
       if (typeof showUpgradeModal === 'function') showUpgradeModal('notif_pwa','unlimited');
       return;
@@ -25345,7 +25762,7 @@ Mohon konfirmasi & aktivasi segera. Terima kasih! 🙏`;
 
   /* -- Buka modal Audit Trail -- */
   window.bukaAuditLog = async function () {
-    var _r = (typeof _getPlanRankLive === 'function') ? await _getPlanRankLive() : (({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0);
+    var _r = (typeof _getPlanRankLive === 'function') ? await _getPlanRankLive() : (_getEffectiveRank());
     if (_r < 2) {
       if (typeof showUpgradeModal === 'function') showUpgradeModal('audit_trail','pro');
       return;
@@ -26862,7 +27279,7 @@ function fmtRp(n) {
 
 // --- OPEN SIDEBAR SUPPLIER ---
 async function openSidebarMenuSupplier() {
-  const _r = (typeof _getPlanRankLive === 'function') ? await _getPlanRankLive() : (({trial:0,basic:1,pro:2,unlimited:3})[(localStorage.getItem('k_plan')||'trial').toLowerCase().trim()]??0);
+  const _r = (typeof _getPlanRankLive === 'function') ? await _getPlanRankLive() : (_getEffectiveRank());
   if (_r < 1) {
     if (typeof showUpgradeModal === 'function') showUpgradeModal('supplier_restok','basic');
     return;
