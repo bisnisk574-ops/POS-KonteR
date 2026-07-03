@@ -1,5 +1,5 @@
 // ============================================================
-//  CLOUD FUNCTIONS — KonterKU Cloud
+//  CLOUD FUNCTIONS — Access-Konter
 //  Versi  : 1.0.0
 //  Fungsi : Auto-cleanup anonymous users tidak aktif (7 hari)
 //           + cleanup kasir_sessions expired
@@ -65,7 +65,7 @@ exports.weeklyCleanup = functions
   .schedule('0 19 * * 0')             // UTC 19:00 = WIB 02:00 Minggu malam
   .timeZone('Asia/Jakarta')
   .onRun(async (context) => {
-    functions.logger.info('=== [KonterKU] Weekly Cleanup Dimulai ===');
+    functions.logger.info('=== [Access-Konter] Weekly Cleanup Dimulai ===');
 
     const results = {
       anonymousDeleted : 0,
@@ -161,7 +161,7 @@ exports.weeklyCleanup = functions
       functions.logger.warn('Gagal simpan cleanup log:', err.message);
     }
 
-    functions.logger.info('=== [KonterKU] Weekly Cleanup Selesai ===', results);
+    functions.logger.info('=== [Access-Konter] Weekly Cleanup Selesai ===', results);
     return null;
   });
 
@@ -181,7 +181,7 @@ exports.manualCleanup = functions
       );
     }
 
-    functions.logger.info('[KonterKU] Manual cleanup dipicu oleh admin');
+    functions.logger.info('[Access-Konter] Manual cleanup dipicu oleh admin');
 
     // Jalankan logika yang sama — reuse dengan memanggil context weeklyCleanup
     // Untuk simplicity, duplikat singkat di sini
