@@ -1,6 +1,6 @@
 {
-  "name": "konterkucloud-functions",
-  "description": "Cloud Functions - KonterKU Cloud",
+  "name": "access-konter-functions",
+  "description": "Cloud Functions - Access konter",
   "scripts": {
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
