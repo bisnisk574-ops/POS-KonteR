@@ -1,5 +1,5 @@
 // =====================================================
-// KonterKU — Service Worker Notifikasi
+// Access-Konter — Service Worker Notifikasi
 // Letakkan file ini di ROOT project (sejajar manifest.json)
 // =====================================================
 
