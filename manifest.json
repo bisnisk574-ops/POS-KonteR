@@ -1,6 +1,6 @@
 {
-  "name": "KonterKu Cloud",
-  "short_name": "KonterKu",
+  "name": "Access-Konter",
+  "short_name": "Konter",
   "description": "Aplikasi POS Multi-Toko berbasis Cloud untuk Konter Pulsa & Aksesoris",
   "start_url": "/app/",
   "scope": "/",
