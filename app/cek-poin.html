@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>access-Konter – Portal Member</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -25,13 +23,7 @@
   appId : "1:239585715244:web:8d5e55ed47b0dd0aad1d89" , 
   measurementId: "G-P0CFGPHR4R"
   };
-  function _initFB() {
-    if (typeof firebase === 'undefined') { setTimeout(_initFB, 50); return; }
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    window._db   = firebase.firestore();
-    window._auth = firebase.auth();
-  }
-  _initFB();
+  
 </script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1575,7 +1567,7 @@ async function loginKasir(){
   setBtnLoad(btn,'Memverifikasi...');
   try{
     const db=window._db;
-    // 1. Verifikasi akun kasir (kasir_accounts bisa dibaca publik sesuai rules)
+    // . Verifikasi akun kasir (kasir_accounts bisa dibaca publik sesuai rules)
     const snap=await db.collection('kasir_accounts')
       .where('kode_toko','==',kodeRaw)
       .where('username','==',username)
@@ -1584,21 +1576,15 @@ async function loginKasir(){
     if(snap.empty){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Username atau kode toko salah.');return;}
     const kasir=snap.docs[0].data();
     if(!_verifyHash(pwd,kasir.pw_hash)){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Password kasir salah.');return;}
-
-    // 2. Login anonymous ke Firebase Auth (diperlukan agar rules kasir_sessions & user_stores bisa diakses)
-    setBtnLoad(btn,'Masuk sebagai kasir...');
-    let anonUser=window._auth.currentUser;
-    if(!anonUser||!anonUser.isAnonymous){
-      const anonCred=await window._auth.signInAnonymously();
-      anonUser=anonCred.user;
     }
-    const anonUid=anonUser.uid;
+    
+  const anonUid=anonUser.uid;
 
-    // 3. owner_uid kasir ini adalah storeId yang sebenarnya
+    // . owner_uid kasir ini adalah storeId yang sebenarnya
     const ownerUid=kasir.owner_uid||kasir.store_id;
     if(!ownerUid){setBtnBack(btn,'<i class="fas fa-user-check"></i> Masuk sebagai Kasir');swalErr('Data kasir tidak lengkap (owner_uid kosong).');return;}
 
-    // 4. Buat/update kasir_session dengan doc ID = anonUid (sesuai Firestore rules)
+    // . Buat/update kasir_session dengan doc ID = anonUid (sesuai Firestore rules)
     await db.collection('kasir_sessions').doc(anonUid).set({
       owner_uid: ownerUid,
       kasir_username: username,
@@ -1607,7 +1593,7 @@ async function loginKasir(){
       login_at: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // 5. Ambil data toko dari user_stores where uid == ownerUid
+    // . Ambil data toko dari user_stores where uid == ownerUid
     let tokoSnap=await db.collection('user_stores').where('uid','==',ownerUid).limit(1).get().catch(()=>null);
     if(tokoSnap&&!tokoSnap.empty){
       storeId=tokoSnap.docs[0].id;
